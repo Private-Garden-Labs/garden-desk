@@ -1,22 +1,25 @@
 import { randomUUID } from "node:crypto";
 import { type AgentRunResult, type ChatGenerationResult, JobIdSchema } from "@gardendesk/shared";
 import { withCurrentTimeContext } from "../agent/chat-current-time.js";
-import type { ChatAgentInput } from "../agent/chat-loop-input.js";
+import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-input.js";
 import { streamCallbacks } from "../agent/chat-streaming.js";
 import { isSuccessfulExecution } from "../agent/execution-success.js";
 import type { InferenceService } from "../runtime/inference.js";
 import type { CommandInvocation } from "./library.js";
 import { reviewExtractionSource } from "./review-extraction.js";
 
-async function extractDocument(input: ChatAgentInput) {
-  const attachment = input.attachments?.[0];
-  if (input.attachments?.length !== 1 || attachment === undefined) {
-    throw new Error("agent_review_attachment_required");
-  }
-  const source = reviewExtractionSource(attachment.path);
+async function extractDocument(
+  input: ChatAgentInput,
+  attachment: Pick<ChatAttachmentInput, "path" | "displayName">,
+  directory: string,
+) {
+  const source = reviewExtractionSource(
+    attachment.path,
+    `/workspace/${directory}/review-extracted.txt`,
+  );
   input.onEvent?.("execution.started", "Extracting document text.", { language: "python", source });
   const result = await input.executor.execute(
-    { language: "python", path: ".garden-desk-tools/review-extract.py", source },
+    { language: "python", path: `${directory}/review-extract.py`, source },
     input.signal,
   );
   input.onEvent?.("execution.completed", "Document extraction finished.", {
@@ -116,7 +119,20 @@ export async function runDocumentReview(
   input: ChatAgentInput,
   chat: InferenceService["chat"],
 ): Promise<AgentRunResult> {
-  const extracted = await extractDocument(input);
+  const attachment = input.attachments?.[0];
+  if (input.attachments?.length !== 1 || attachment === undefined) {
+    throw new Error("agent_review_attachment_required");
+  }
+  return reviewDocument(command, input, chat, { attachment, directory: ".garden-desk-tools" });
+}
+
+export async function reviewDocument(
+  command: CommandInvocation,
+  input: ChatAgentInput,
+  chat: InferenceService["chat"],
+  source: { attachment: Pick<ChatAttachmentInput, "path" | "displayName">; directory: string },
+): Promise<AgentRunResult> {
+  const extracted = await extractDocument(input, source.attachment, source.directory);
   input.signal?.throwIfAborted();
   const request = {
     modelId: input.modelId,

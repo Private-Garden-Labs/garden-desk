@@ -15,6 +15,7 @@ import {
   textParam,
 } from "./generic-tool-support.js";
 import { questionTool } from "./question-tool.js";
+import { reviewTool } from "./review-tool.js";
 import { boundedToolOutput } from "./tool-output.js";
 
 function errorText(error: unknown): string {
@@ -223,6 +224,7 @@ function specs(context: ToolContext, skillNames: string[]): ToolSpec[] {
     bashTool(),
     ...guestFileTools(),
     imageTool(),
+    reviewTool(),
     skillTool(context.skills, skillNames),
     taskTool(context.subagents ?? []),
     questionTool(),

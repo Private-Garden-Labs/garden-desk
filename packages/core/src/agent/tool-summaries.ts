@@ -83,6 +83,8 @@ function verbObject(call: ChatToolCall): VerbObject {
     }
     case "question":
       return { running: "Asking a question", done: "Question answered" };
+    case "review":
+      return { running: "Reviewing document", done: "Document reviewed" };
     default:
       return { running: `Using ${call.name}`, done: `${call.name} completed` };
   }

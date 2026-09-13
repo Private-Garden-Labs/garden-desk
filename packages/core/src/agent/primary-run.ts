@@ -18,12 +18,14 @@ import type { AgentQuestionOutcome } from "./generic-tool-support.js";
 import { guestAttachmentName } from "./inputs.js";
 import { AGENT_MODEL_ID } from "./limits.js";
 import type { MarkdownDefinitionLibrary } from "./markdown-definition-library.js";
+import { runInternalReview } from "./review-run.js";
 import { createRunExecutor } from "./service-executor.js";
 import type { AgentSessionManager } from "./session-manager.js";
 import type { AgentStore } from "./store.js";
 import { runSubagent } from "./subagent-run.js";
 
 interface PrimaryRunInput {
+  reviewCommand(): CommandInvocation | undefined;
   command?: CommandInvocation;
   contextTokens: number | "auto";
   knownContextTokens?: number;
@@ -101,6 +103,11 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
     }),
     history: input.history,
     inspectImage: input.inspectImage,
+    reviewDocument: (path, prompt) => {
+      const review = input.reviewCommand();
+      if (review === undefined) throw new Error("command_not_found");
+      return runInternalReview({ ...review, arguments: prompt }, agentInput, input.chat, path);
+    },
     attachments,
     modelId: AGENT_MODEL_ID,
     modelNeedsLoad: input.modelNeedsLoad,
