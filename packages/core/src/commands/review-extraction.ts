@@ -1,4 +1,7 @@
-export function reviewExtractionSource(path: string): string {
+export function reviewExtractionSource(
+  path: string,
+  outputPath = "/workspace/.garden-desk-tools/review-extracted.txt",
+): string {
   return `from pathlib import Path
 import os
 import subprocess
@@ -31,11 +34,11 @@ elif suffix == '.pdf':
 elif suffix in ('.txt', '.md'):
     text = path.read_text(encoding='utf-8')
 else:
-    raise ValueError('Supported review attachments: DOC, DOCX, PDF, TXT, MD.')
+    raise ValueError('Supported review files: DOC, DOCX, PDF, TXT, MD.')
 if not text.strip():
     raise ValueError('The document has no readable text.')
 text = '\\n'.join(f'{number}: {line}' for number, line in enumerate(text.splitlines(), 1))
-Path('/workspace/.garden-desk-tools/review-extracted.txt').write_text(text, encoding='utf-8')
+Path(${JSON.stringify(outputPath)}).write_text(text, encoding='utf-8')
 print(text)
 `;
 }

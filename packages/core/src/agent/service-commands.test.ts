@@ -13,6 +13,51 @@ import {
 
 afterEach(cleanServiceFixtures);
 
+it("returns an internal review to the main agent without changing its title", async () => {
+  const path = "/source/agreement.txt";
+  const source = "1: Amount: 12\n2: Amount: 13";
+  let turn = 0;
+  let runId = "";
+  const { catalog, conversations, service } = await fixture(
+    {
+      async chat(request, _signal, streams) {
+        turn += 1;
+        if (turn === 1) {
+          return chatResult("", [
+            { id: "review-call", name: "review", params: { path, prompt: "Check amounts." } },
+          ]);
+        }
+        if (turn === 2) {
+          expect(request.tools).toEqual([]);
+          expect(request.messages.at(-1)?.text).toBe(
+            JSON.stringify({ source: path, extractedText: source }),
+          );
+          streams?.onResponseDelta?.("# Review Internal title\n\nAmounts differ.");
+          expect(service.snapshot(runId)).toMatchObject({
+            sessionTitle: "Check the document.",
+            run: { response: null },
+          });
+          return chatResult("# Review Internal title\n\nAmounts differ on lines 1 and 2.", []);
+        }
+        if (turn === 3) {
+          expect(JSON.stringify(request.messages)).toContain("Amounts differ on lines 1 and 2.");
+        }
+        return chatResult("Main answer.", []);
+      },
+    },
+    async (request) => outputExecution(request, source),
+  );
+  try {
+    runId = service.start(conversations.createSession(null).id, "Check the document.").id;
+    const snapshot = await terminal(service, runId);
+    expect(snapshot.run).toMatchObject({ state: "succeeded", response: "Main answer." });
+    expect(snapshot.sessionTitle).toBe("Check the document.");
+  } finally {
+    await service.close();
+    catalog.close();
+  }
+});
+
 it("ends an unknown command with a recorded failure", async () => {
   const { catalog, conversations, service } = await fixture({}, artifactExecution);
   try {

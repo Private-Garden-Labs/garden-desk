@@ -6,6 +6,7 @@ import type {
 } from "@gardendesk/shared";
 import type { AgentExecutor } from "./agent-executor.js";
 import type { ChatToolState } from "./chat-tool-turn.js";
+import type { ToolContext } from "./generic-tool-support.js";
 import type {
   AgentQuestionOutcome,
   GenericToolRegistry,
@@ -54,6 +55,7 @@ export interface ChatAgentInput {
   subagents?: readonly { name: string; description: string }[];
   inferencePriority?: "primary" | "secondary";
   inspectImage?(path: string, prompt: string): Promise<string>;
+  reviewDocument?: ToolContext["reviewDocument"];
   spawnTask?(request: SubagentRequest): Promise<Pick<AgentRunResult, "response" | "executions">>;
   askQuestion?(questions: AgentQuestion[]): Promise<AgentQuestionOutcome>;
   systemPrompt(name: string): string;

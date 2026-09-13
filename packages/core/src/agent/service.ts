@@ -48,7 +48,6 @@ export class AgentService {
   private readonly summaryQueue: SessionSummaryQueue;
   private readonly summaries: SessionSummaryStore;
   private readonly images: AgentImageInspector;
-
   // biome-ignore lint/complexity/useMaxParams: explicit ports keep security authorities visible at construction.
   constructor(
     private readonly database: DatabasePort,
@@ -234,6 +233,7 @@ export class AgentService {
       const anchored = this.summaries.load(run.sessionId);
       if (this.inference.chat === undefined) throw new Error("agent_chat_unavailable");
       const result = await runPrimaryAgent({
+        reviewCommand: () => this.commands.resolve("/review"),
         ...(command === undefined ? {} : { command }),
         chat: this.inference.chat.bind(this.inference),
         contextTokens: "auto",

@@ -45,6 +45,7 @@ export interface ToolContext {
   subagents?: readonly { name: string; description: string }[];
   toolCallId?: string;
   inspectImage?(path: string, prompt: string): Promise<string>;
+  reviewDocument?(path: string, prompt: string): Promise<ToolExecutionResult>;
   spawnTask?(request: SubagentRequest): Promise<Pick<AgentRunResult, "response" | "executions">>;
   askQuestion?(questions: AgentQuestion[]): Promise<AgentQuestionOutcome>;
   signal?: AbortSignal;

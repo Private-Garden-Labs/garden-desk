@@ -114,4 +114,6 @@ External implementation contributions stay closed through the M3 V1 launch unles
 
 Type `/` in the message box to see command names and descriptions. Filter with text, use Up/Down to select, and press Enter or Tab to insert. Escape closes the list. `/review` requires exactly one attachment and returns a text review in chat. Restart desktop development after a command or Core change so the packaged resources and desktop use the same version.
 
+The main agent can also select the same review process through `review({ path, prompt })`. It reviews one file from the selected folder, attachments, or workspace and returns findings to the main agent. Each internal call keeps its numbered text in a separate working directory. The user does not need to type `/review`.
+
 To add a prompt command, create `prompts/commands/<name>.md` with a short, unquoted `description:` in `---` frontmatter and instructions in the body. The filename supplies the command name. `$ARGUMENTS` inserts the user's remaining request; without it, the request follows the body. Commands use the normal agent by default. A fixed workflow needs a handler under `packages/core/src/commands/`; `review.md` shows `workflow: document-review`. Commands load at Core startup. Do not load command definitions from selected folders or attachments.
