@@ -10,6 +10,7 @@ import {
   RpcRequestSchema,
   type RpcResponse,
   SessionIdSchema,
+  ThinkingLevelSchema,
 } from "@gardendesk/shared";
 import type { GardenDeskCore } from "../facade.js";
 import { dispatchArtifactMethod } from "./artifact-methods.js";
@@ -172,7 +173,9 @@ async function startAgent(core: GardenDeskCore, request: RpcRequest): Promise<Rp
   if (typeof task !== "string" || task.trim().length === 0) {
     return failure(request, "invalid_request", "Invalid task.");
   }
-  return success(request, await core.startAgent(sessionId, task));
+  const thinking = ThinkingLevelSchema.safeParse(request.params.thinking);
+  if (!thinking.success) return failure(request, "invalid_request", "Invalid thinking level.");
+  return success(request, await core.startAgent(sessionId, task, thinking.data));
 }
 
 async function getAgentRun(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {

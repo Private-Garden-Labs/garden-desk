@@ -1,3 +1,4 @@
+import type { ThinkingLevel } from "@gardendesk/shared";
 import type { DesktopApi } from "./api.js";
 import { retryLocalRequest, waitForAgentRun } from "./run-polling.js";
 import { loadSessionActivity } from "./session-activity.js";
@@ -161,6 +162,7 @@ export async function showMore(options: ShowMoreOptions) {
 interface SendOptions {
   api: DesktopApi;
   text: string;
+  thinking: ThinkingLevel;
   activeSessionId: string | undefined;
   newSessionFolderId: string | null | undefined;
   dispatch: Dispatch;
@@ -184,7 +186,7 @@ export async function send(options: SendOptions) {
         setError,
       }));
     if (sessionId === undefined) return;
-    const run = await api.startAgent(sessionId, text);
+    const run = await api.startAgent(sessionId, text, options.thinking);
     started = true;
     dispatch({ type: "agent.started", run });
     setSubmitting(false);

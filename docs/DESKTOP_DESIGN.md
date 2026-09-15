@@ -95,6 +95,7 @@ The composer is multiline and anchored to the bottom of the conversation pane.
 
 - The add button opens attachment actions; folder selection remains a separate grant action.
 - Context chips show the active folder or explicit attachments.
+- A **Thinking** control sits immediately before Send. It offers **None**, **Low**, **Medium**, and **Extended**, and it starts at Medium. It sets how long the model thinks before it answers the next message. The choice applies to the primary agent for the messages the user sends after it. It stays in UI memory and returns to Medium on reload, so it adds no storage. Sub-agents always run at Medium, and the specialist view states that level while the user reads a sub-agent.
 - Send becomes Stop while a run is active.
 - Command-Enter sends the current message on macOS; Enter remains available for multiline text.
 - Switching conversations does not stop a run. Other conversations may start work up to the RAM-derived VM capacity; additional work stays queued without booting another guest.

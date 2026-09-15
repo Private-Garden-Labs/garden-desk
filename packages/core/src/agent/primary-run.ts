@@ -6,6 +6,7 @@ import type {
   AgentRunResult,
   AgentRunSummary,
   ConversationMessage,
+  ThinkingLevel,
 } from "@gardendesk/shared";
 import type { CommandInvocation } from "../commands/library.js";
 import { runCommand } from "../commands/run.js";
@@ -38,6 +39,7 @@ interface PrimaryRunInput {
   signal: AbortSignal;
   store: AgentStore;
   task: string;
+  thinking: ThinkingLevel;
   chat: InferenceService["chat"];
   inspectImage(path: string, prompt: string): Promise<string>;
   modelNeedsLoad: boolean;
@@ -140,6 +142,7 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
     spawnTask: (request) => runPrimarySubagent(input, request),
     systemPrompt: (name) => definitions.system(name),
     task: input.task,
+    thinking: input.thinking,
     trace: { runId: run.id, store: store.trace },
   };
   const runAgent = (request: ChatAgentInput) =>

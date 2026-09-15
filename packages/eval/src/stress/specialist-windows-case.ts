@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createGardenDeskCore, type GardenDeskCore } from "@gardendesk/core";
-import type { AgentRunSnapshot } from "@gardendesk/shared";
+import { type AgentRunSnapshot, DEFAULT_THINKING_LEVEL } from "@gardendesk/shared";
 import { prepareAgentModelStore } from "../gates/agent-model-store.js";
 import { cases as obligations } from "./specialist-contract-obligations.js";
 import { cases as comparison } from "./specialist-document-comparison.js";
@@ -108,7 +108,7 @@ async function run(task: SpecialistCase): Promise<void> {
       : `Use the ${task.agentId} specialist for this work.`;
     const prompt = `${selection}\n${task.request}\nUse the source files in /source. Write a concise final report to /workspace/result.md with the facts requested and source file references with page, paragraph, or row locations. Return a short summary. Do not change the source files.`;
     console.log(JSON.stringify({ case: task.id, stage: "starting", root }));
-    const started = await core.startAgent(session.id, prompt);
+    const started = await core.startAgent(session.id, prompt, DEFAULT_THINKING_LEVEL);
     await inspectReport(core, task, await terminal(core, started.id, started.jobId));
   } finally {
     await core.close();

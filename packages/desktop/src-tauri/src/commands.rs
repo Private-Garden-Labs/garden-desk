@@ -231,11 +231,12 @@ pub(crate) async fn start_agent(
     core: State<'_, CoreBridge>,
     session_id: String,
     task: String,
+    thinking: String,
 ) -> Result<Value, String> {
     crate::windows_setup::require_ready()?;
     core.call(
         "agent.start",
-        json!({ "sessionId": session_id, "task": task }),
+        json!({ "sessionId": session_id, "task": task, "thinking": thinking }),
     )
 }
 

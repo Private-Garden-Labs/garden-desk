@@ -1,4 +1,4 @@
-import type { AttachmentSummary, CommandSummary } from "@gardendesk/shared";
+import type { AttachmentSummary, CommandSummary, ThinkingLevel } from "@gardendesk/shared";
 import { type FormEvent, type KeyboardEvent, useEffect, useLayoutEffect, useRef } from "react";
 import { AttachmentChip } from "./attachment-chip.js";
 import { CommandMenu, useCommandMenu } from "./command-menu.js";
@@ -13,15 +13,47 @@ interface ComposerProps {
   nativeActionMessage?: string | undefined;
   removableAttachmentIds: string[];
   running: boolean;
+  thinking: ThinkingLevel;
   onAttach(): void;
   onCancel(): void;
   onChange(draft: string): void;
   onOpenAttachment(attachmentId: string): void;
   onRemoveAttachment(attachmentId: string): void;
   onSend(text: string): void;
+  onThinkingChange(level: ThinkingLevel): void;
 }
 
 export const COMPOSER_MAX_ROWS = 10;
+
+export const THINKING_LABELS: Record<ThinkingLevel, string> = {
+  none: "None",
+  low: "Low",
+  medium: "Medium",
+  xhigh: "Extended",
+};
+
+function ThinkingSelect({
+  disabled,
+  thinking,
+  onThinkingChange,
+}: Pick<ComposerProps, "disabled" | "thinking" | "onThinkingChange">) {
+  return (
+    <select
+      aria-label="Thinking"
+      className="thinking-select"
+      disabled={disabled}
+      onChange={(event) => onThinkingChange(event.target.value as ThinkingLevel)}
+      title="How long Garden Desk thinks before it answers"
+      value={thinking}
+    >
+      {Object.entries(THINKING_LABELS).map(([level, label]) => (
+        <option key={level} value={level}>
+          {label}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 export function composerHeightLimit(
   lineHeight: number,
@@ -94,12 +126,14 @@ export function Composer({
   nativeActionMessage,
   removableAttachmentIds,
   running,
+  thinking,
   onAttach,
   onCancel,
   onChange,
   onOpenAttachment,
   onRemoveAttachment,
   onSend,
+  onThinkingChange,
 }: ComposerProps) {
   const textarea = useRef<HTMLTextAreaElement>(null);
   const menu = useCommandMenu({
@@ -174,26 +208,33 @@ export function Composer({
         >
           <Icon name="add" />
         </button>
-        {running ? (
-          <button
-            aria-label="Cancel task"
-            className="stop-button"
-            disabled={disabled}
-            onClick={onCancel}
-            type="button"
-          >
-            Stop
-          </button>
-        ) : (
-          <button
-            aria-label="Send message"
-            className="send-button"
-            disabled={!canSend}
-            type="submit"
-          >
-            <Icon name="send" />
-          </button>
-        )}
+        <div className="composer-send-group">
+          <ThinkingSelect
+            disabled={disabled || running}
+            onThinkingChange={onThinkingChange}
+            thinking={thinking}
+          />
+          {running ? (
+            <button
+              aria-label="Cancel task"
+              className="stop-button"
+              disabled={disabled}
+              onClick={onCancel}
+              type="button"
+            >
+              Stop
+            </button>
+          ) : (
+            <button
+              aria-label="Send message"
+              className="send-button"
+              disabled={!canSend}
+              type="submit"
+            >
+              <Icon name="send" />
+            </button>
+          )}
+        </div>
       </div>
     </form>
   );

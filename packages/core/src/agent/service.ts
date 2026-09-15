@@ -1,11 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
-import type {
-  AgentRunSnapshot,
-  AgentRunSummary,
-  AgentTrace,
-  AttachmentSummary,
-  SessionDraft,
+import {
+  type AgentRunSnapshot,
+  type AgentRunSummary,
+  type AgentTrace,
+  type AttachmentSummary,
+  DEFAULT_THINKING_LEVEL,
+  type SessionDraft,
+  type ThinkingLevel,
 } from "@gardendesk/shared";
 import type { CodeAgentLauncher } from "@gardendesk/workers";
 import type { AuditLog } from "../audit/log.js";
@@ -130,7 +132,11 @@ export class AgentService {
     });
     return removed;
   }
-  start(sessionId: string, task: string): AgentRunSummary {
+  start(
+    sessionId: string,
+    task: string,
+    thinkingLevel: ThinkingLevel = DEFAULT_THINKING_LEVEL,
+  ): AgentRunSummary {
     if (this.closed) throw new Error("agent_service_closed");
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
       throw new Error("agent_busy");
@@ -142,7 +148,7 @@ export class AgentService {
     })();
     const controller = new AbortController();
     const finished = Promise.resolve()
-      .then(async () => await this.execute(run, task, controller.signal))
+      .then(async () => await this.execute(run, task, thinkingLevel, controller.signal))
       .finally(() => {
         this.active.delete(run.jobId);
       });
@@ -212,7 +218,12 @@ export class AgentService {
     });
   }
   // biome-ignore lint/complexity/noExcessiveLinesPerFunction: the run lifecycle stays linear so cleanup and terminal persistence remain paired.
-  private async execute(run: AgentRunSummary, task: string, signal: AbortSignal): Promise<void> {
+  private async execute(
+    run: AgentRunSummary,
+    task: string,
+    thinkingLevel: ThinkingLevel,
+    signal: AbortSignal,
+  ): Promise<void> {
     let releaseCapacity: (() => void) | undefined;
     let measuredContextTokens: number | undefined;
     try {
@@ -257,6 +268,7 @@ export class AgentService {
         signal,
         store: this.store,
         task,
+        thinking: thinkingLevel,
       });
       const performance = runPerformance(result, run.createdAt);
       this.updateActive(run.jobId, { thinking: null });

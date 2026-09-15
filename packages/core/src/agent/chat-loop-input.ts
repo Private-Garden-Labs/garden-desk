@@ -3,6 +3,7 @@ import type {
   AgentEventType,
   AgentQuestion,
   AgentRunResult,
+  ThinkingLevel,
 } from "@gardendesk/shared";
 import type { AgentExecutor } from "./agent-executor.js";
 import type { ChatToolState } from "./chat-tool-turn.js";
@@ -60,5 +61,6 @@ export interface ChatAgentInput {
   askQuestion?(questions: AgentQuestion[]): Promise<AgentQuestionOutcome>;
   systemPrompt(name: string): string;
   task: string;
+  thinking?: ThinkingLevel;
   trace?: { runId: string; store: AgentTraceStore };
 }

@@ -12,6 +12,7 @@ const chatInput = {
   contextSize: 512,
   maxTokens: 8,
   temperature: 0,
+  thinking: "medium" as const,
 };
 
 function chatSuccess(execution: Parameters<InferencePort["execute"]>[0]) {

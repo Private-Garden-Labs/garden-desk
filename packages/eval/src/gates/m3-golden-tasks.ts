@@ -1,7 +1,7 @@
 import { mkdir, readFile, rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { createGardenDeskCore } from "@gardendesk/core";
-import type { AgentRunSnapshot } from "@gardendesk/shared";
+import { type AgentRunSnapshot, DEFAULT_THINKING_LEVEL } from "@gardendesk/shared";
 import {
   createDocxCorpus,
   createPdf,
@@ -108,7 +108,7 @@ async function runOneTask(core: Core, root: string, task: GoldenTask): Promise<G
     await task.prepare(sourceDir);
     const folder = await core.addFolder(sourceDir);
     const session = await core.createSession(folder.id);
-    const run = await core.startAgent(session.id, task.prompt);
+    const run = await core.startAgent(session.id, task.prompt, DEFAULT_THINKING_LEVEL);
     const snapshot = await awaitTerminalRun(core, run.id);
     if (snapshot.run.state !== "succeeded" || snapshot.artifacts.length === 0) {
       return {

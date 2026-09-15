@@ -1550,6 +1550,35 @@ textarea:focus-visible {
   gap: 10px;
 }
 
+.composer-send-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.thinking-select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.thinking-select:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.specialist-thinking {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
 .question-prompt {
   display: flex;
   flex-direction: column;
