@@ -11,6 +11,7 @@ import {
   debugSnapshotReducer,
   initialDebugSnapshotState,
 } from "../debug-snapshot.js";
+import { showCatalogFolder, showFolder } from "../desktop-actions.js";
 import type { TimelineItem } from "../state.js";
 import type { AgentStep } from "../steps.js";
 import { DrawerResizeHandle, useDrawerResize } from "./drawer-resize.js";
@@ -28,6 +29,7 @@ interface TechnicalDetailsProps {
   artifacts: AgentArtifactSummary[];
   catalogPath: string;
   executions: AgentExecutionSnapshot[];
+  folderId: string | null | undefined;
   model: ModelRuntimeStatus;
   open: boolean;
   sessionId: string | undefined;
@@ -41,6 +43,7 @@ interface TechnicalDetailsProps {
   contextAllocatedTokens?: number | null;
   onClose(): void;
   onSelectStep(stepId: string | undefined): void;
+  setError(message: string | undefined): void;
 }
 
 function guestCapabilities(): string {
@@ -136,15 +139,18 @@ function Overview({
   api,
   catalogPath,
   executions,
+  folderId,
   model,
   nativeActionMessage,
   sessionId,
+  setError,
   timeline,
   contextUsedTokens,
   contextAllocatedTokens,
   artifacts,
 }: TechnicalDetailsProps) {
   const limits = timeline.find((item) => item.eventType === "run.started")?.text;
+  const nativeActions = nativeActionMessage === undefined;
   return (
     <div className="technical-details-scroll" role="tabpanel" id="technical-overview-panel">
       <article className="technical-details-item technical-overview">
@@ -154,6 +160,16 @@ function Overview({
           contextUsedTokens={contextUsedTokens}
           limits={limits}
           model={model}
+          onOpenCatalogFolder={
+            nativeActions && catalogPath !== ""
+              ? () => void showCatalogFolder(api, setError)
+              : undefined
+          }
+          onOpenSourceFolder={
+            nativeActions && typeof folderId === "string"
+              ? () => void showFolder(api, folderId, setError)
+              : undefined
+          }
           sessionId={sessionId}
         />
         <details>

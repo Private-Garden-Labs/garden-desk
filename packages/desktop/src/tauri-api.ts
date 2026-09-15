@@ -137,6 +137,9 @@ export const tauriDesktopApi: DesktopApi = {
   async openFolder(folderId) {
     await invokeDesktop("open_folder", () => undefined, { folderId });
   },
+  async openCatalogFolder() {
+    await invokeDesktop("open_catalog_folder", () => undefined);
+  },
   async createSession(folderId) {
     return invokeDesktop("create_session", (value) => SessionSummarySchema.parse(value), {
       folderId,
