@@ -123,6 +123,7 @@ function renderTechnicalDetails(selectedStepId?: string, nativeActionMessage?: s
       artifacts={[artifact]}
       catalogPath="/Users/alex/Library/Application Support/ai.gardendesk.desktop/state/.garden-desk/catalog.sqlite"
       executions={[execution]}
+      folderId="4d3a9f0c-2f4e-4e58-9d8a-6a3c5f2b1e70"
       model={{
         modelId: "gemma-4-12b-it-qat-q4_0",
         name: "Gemma 4 12B QAT",
@@ -142,6 +143,7 @@ function renderTechnicalDetails(selectedStepId?: string, nativeActionMessage?: s
       open
       selectedStepId={selectedStepId}
       sessionId="da911f87-ff26-46d8-9a58-bad222a584ab"
+      setError={() => undefined}
       steps={steps}
       thinkingByStep={{}}
       thinkingStepId={undefined}
@@ -180,6 +182,20 @@ it("keeps the overview separate from step evidence", () => {
   expect(markup).not.toContain("Response completed");
   expect(markup).not.toContain("Step 1 · Planning the task.");
   expect(markup).not.toContain("Code the model wrote");
+});
+
+it("links the catalog folder and source folder only when native actions are available", () => {
+  const markup = renderTechnicalDetails();
+  expect(markup).toMatch(
+    /Catalog path<\/th><td><button class="technical-path-link" type="button">\/Users\/alex\/Library/,
+  );
+  expect(markup).toMatch(
+    /Source mount<\/th><td><button class="technical-path-link" type="button">\/source/,
+  );
+
+  const demo = renderTechnicalDetails(undefined, "Unavailable in the public demo");
+  expect(demo).not.toContain("technical-path-link");
+  expect(demo).toContain("Source mount</th><td>/source");
 });
 
 it("offers a session transcript copy action in the overview", () => {

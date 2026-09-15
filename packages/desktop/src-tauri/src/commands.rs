@@ -141,6 +141,24 @@ pub(crate) async fn open_folder(
         .map_err(|error| error.to_string())
 }
 
+#[allow(deprecated)]
+#[tauri::command]
+pub(crate) async fn open_catalog_folder(
+    app: AppHandle,
+    core: State<'_, CoreBridge>,
+) -> Result<(), String> {
+    let status = core.call("status", json!({}))?;
+    let workspace_root = status
+        .get("workspace")
+        .and_then(|workspace| workspace.get("rootPath"))
+        .and_then(Value::as_str)
+        .ok_or_else(|| "Garden Desk Core returned an invalid workspace path.".to_owned())?;
+    let path = path_text(&Path::new(workspace_root).join(".garden-desk"))?;
+    app.shell()
+        .open(path, None)
+        .map_err(|error| error.to_string())
+}
+
 #[tauri::command]
 pub(crate) async fn revoke_folder(
     core: State<'_, CoreBridge>,
