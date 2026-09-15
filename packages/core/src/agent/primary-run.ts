@@ -18,12 +18,14 @@ import type { AgentQuestionOutcome } from "./generic-tool-support.js";
 import { guestAttachmentName } from "./inputs.js";
 import { AGENT_MODEL_ID } from "./limits.js";
 import type { MarkdownDefinitionLibrary } from "./markdown-definition-library.js";
+import { runInternalReview } from "./review-run.js";
 import { createRunExecutor } from "./service-executor.js";
 import type { AgentSessionManager } from "./session-manager.js";
 import type { AgentStore } from "./store.js";
 import { runSubagent } from "./subagent-run.js";
 
 interface PrimaryRunInput {
+  reviewCommand(): CommandInvocation | undefined;
   command?: CommandInvocation;
   contextTokens: number | "auto";
   knownContextTokens?: number;
@@ -101,6 +103,11 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
     }),
     history: input.history,
     inspectImage: input.inspectImage,
+    reviewDocument: (path, prompt) => {
+      const review = input.reviewCommand();
+      if (review === undefined) throw new Error("command_not_found");
+      return runInternalReview({ ...review, arguments: prompt }, agentInput, input.chat, path);
+    },
     attachments,
     modelId: AGENT_MODEL_ID,
     modelNeedsLoad: input.modelNeedsLoad,
@@ -111,6 +118,7 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
     onContext: input.onContext,
     askQuestion: input.askQuestion,
     signal: input.signal,
+    subagents: definitions.agents.filter((agent) => agent.mode === "subagent"),
     skills: {
       metadata: () => [...definitions.skills],
       read: (name) => definitions.skill(name).body,
@@ -122,6 +130,20 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
   };
   const runAgent = (request: ChatAgentInput) =>
     new ChatAgentLoop({ chat: input.chat }).run(request);
+  if (input.command?.agent !== undefined) {
+    const agent = definitions.agent(input.command.agent);
+    if (agent.mode !== "subagent") throw new Error("command_agent_invalid");
+    return runPrimarySubagent(
+      input,
+      {
+        subagentType: agent.name,
+        description: input.command.description,
+        prompt: input.command.arguments || input.command.description,
+        parentToolCallId: `command:${run.id}`,
+      },
+      "user",
+    );
+  }
   return input.command === undefined
     ? runAgent(agentInput)
     : runCommand(input.command, agentInput, input.chat, runAgent);
@@ -130,7 +152,8 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
 async function runPrimarySubagent(
   input: PrimaryRunInput,
   request: Parameters<typeof runSubagent>[1],
-): Promise<Pick<AgentRunResult, "response" | "executions">> {
+  outputOwner: "parent" | "user" = "parent",
+): Promise<AgentRunResult> {
   return await runSubagent(
     {
       contextTokens: input.contextTokens,
@@ -148,6 +171,14 @@ async function runPrimarySubagent(
       sessions: input.sessions,
       signal: input.signal,
       store: input.store,
+      outputOwner,
+      ...(outputOwner === "parent"
+        ? {}
+        : {
+            onResponse: input.onResponse,
+            onContext: input.onContext,
+            modelNeedsLoad: input.modelNeedsLoad,
+          }),
     },
     request,
   );

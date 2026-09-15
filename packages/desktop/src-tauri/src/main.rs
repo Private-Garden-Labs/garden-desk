@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use serde_json::{Value, json};
 use std::fs;
 use std::io::{Read, Write};

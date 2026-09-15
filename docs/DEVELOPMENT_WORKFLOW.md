@@ -10,9 +10,9 @@ This is the implementation and contribution workflow for Garden Desk. [AGENTS.md
 - Search the repository and maintained dependencies before writing custom infrastructure.
 - Prefer deterministic checks and primary-source evidence.
 - Report commands and results exactly; never imply that an unrun check passed.
-- Keep agent workflows in development tooling. They are not Garden Desk Core modules or shipped product behavior.
+- Keep repository development skills in development tooling. Packaged specialist workflows live in prompt files and use the shared child-run system.
 
-There is no coverage percentage, no test-driven development except for bug fixes, no proactive delegation, and no generic application architecture. The Test Rule in [AGENTS.md](../AGENTS.md) and the milestone gates define what is required.
+There is no coverage percentage, no test-driven development except for bug fixes, and no generic application architecture. The Test Rule in [AGENTS.md](../AGENTS.md) and the milestone gates define what is required.
 
 ## 1. Confirm The Scope
 
@@ -111,5 +111,7 @@ External implementation contributions stay closed through the M3 V1 launch unles
 ## Commands
 
 Type `/` in the message box to see command names and descriptions. Filter with text, use Up/Down to select, and press Enter or Tab to insert. Escape closes the list. `/review` requires exactly one attachment and returns a text review in chat. Its complete rendered input and output reserve must fit the Gemma context. Restart desktop development after a command or Core change so the packaged resources and desktop use the same version.
+
+The main agent can also select the same review process through `review({ path, prompt })`. It reviews one file from the selected folder, attachments, or workspace and returns findings to the main agent. Each internal call keeps its numbered text in a separate working directory. The user does not need to type `/review`.
 
 To add a prompt command, create `prompts/commands/<name>.md` with a short, unquoted `description:` in `---` frontmatter and instructions in the body. The filename supplies the command name. `$ARGUMENTS` inserts the user's remaining request; without it, the request follows the body. Commands use the normal agent by default. A fixed workflow needs a handler under `packages/core/src/commands/`; `review.md` shows `workflow: document-review`. Commands load at Core startup. Do not load command definitions from selected folders or attachments.
