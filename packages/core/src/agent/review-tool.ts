@@ -5,7 +5,7 @@ export function reviewTool(): ToolSpec {
     definition: {
       name: "review",
       description:
-        "Review one DOC, DOCX, text PDF, TXT, or MD file for text inconsistencies. Returns findings and a numbered text path. No calculations or image inspection.",
+        "Review one text document for inconsistencies. Returns findings and a numbered text path. No calculations or image inspection.",
       params: objectSchema(
         {
           path: {
