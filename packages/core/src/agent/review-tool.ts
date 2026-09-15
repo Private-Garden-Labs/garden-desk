@@ -5,7 +5,7 @@ export function reviewTool(): ToolSpec {
     definition: {
       name: "review",
       description:
-        "Review one text document for inconsistencies. Extracts the file itself; call it before any skill or extraction. Returns findings and a numbered text path. No calculations or image inspection.",
+        "Review one text document for inconsistencies. Extracts the file itself; for that check, call it before any skill or extraction. Returns findings and a numbered text path. No calculations or image inspection.",
       params: objectSchema(
         {
           path: {
