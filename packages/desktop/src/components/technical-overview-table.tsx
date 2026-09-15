@@ -58,7 +58,12 @@ export function TechnicalOverviewTable({
               {onOpen === undefined ? (
                 value
               ) : (
-                <button className="technical-path-link" onClick={onOpen} type="button">
+                <button
+                  className="technical-path-link"
+                  onClick={onOpen}
+                  title="Open the folder"
+                  type="button"
+                >
                   {value}
                 </button>
               )}

@@ -2127,6 +2127,8 @@ textarea:focus-visible {
 }
 
 .technical-overview-table .technical-path-link {
+  display: block;
+  width: 100%;
   padding: 0;
   border: 0;
   background: transparent;
@@ -2136,6 +2138,12 @@ textarea:focus-visible {
   text-decoration: underline;
   overflow-wrap: anywhere;
   cursor: pointer;
+}
+
+.technical-overview-table .technical-path-link:hover,
+.technical-overview-table .technical-path-link:focus-visible {
+  color: var(--accent-strong);
+  text-decoration-thickness: 2px;
 }
 
 .technical-details-item .technical-limits {
