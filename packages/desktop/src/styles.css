@@ -2140,12 +2140,6 @@ textarea:focus-visible {
   cursor: pointer;
 }
 
-.technical-overview-table .technical-path-link:hover,
-.technical-overview-table .technical-path-link:focus-visible {
-  color: var(--accent-strong);
-  text-decoration-thickness: 2px;
-}
-
 .technical-details-item .technical-limits {
   margin-top: 8px;
   color: var(--ink-soft);
