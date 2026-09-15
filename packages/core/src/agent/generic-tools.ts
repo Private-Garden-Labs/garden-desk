@@ -148,7 +148,7 @@ function taskTool(agents: readonly { name: string; description: string }[]): Too
     definition: {
       name: "task",
       description:
-        "Delegate a separate body of work to the matching specialist. Give the request, exact source paths, expected findings, and known limits. Children run one at a time.",
+        "Delegate a separate body of work to the matching specialist before processing files yourself. Give the request, exact source paths, expected findings, and known limits. Children run one at a time.",
       params: objectSchema(
         {
           description: { type: "string" },
