@@ -102,10 +102,11 @@ function childReviewInput(
     onResponse: (response) => ports.store.setLiveResponse(child.id, response),
     executor: {
       async execute(request, signal) {
-        output.guestExecutionsStarted = 1;
-        return await executor.execute(request, signal, () => {
+        const result = await executor.execute(request, signal, () => {
           output.guestExecutionsStarted = 1;
         });
+        output.guestExecutionsStarted = 1;
+        return result;
       },
     },
   };
