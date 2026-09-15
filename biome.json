@@ -133,11 +133,13 @@
         "packages/desktop/prepare-dev.ts",
         "packages/desktop/prepare-dev-runtime.ts",
         "packages/desktop/stage-windows-application.ts",
+        "packages/desktop/windows-release.test.ts",
         "packages/desktop/runtime-packages.ts",
         "packages/desktop/windows-runtime-assets.ts",
         "packages/desktop/src/package-compliance.test.ts",
         "packages/desktop/src/package-image-resources.test.ts",
         "packages/desktop/src/package-output-cleanup.test.ts",
+        "packages/desktop/src/package-resource-contract.test.ts",
         "scripts/**/*.ts"
       ],
       "linter": {
