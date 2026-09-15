@@ -61,6 +61,15 @@ export async function showFolder(api: DesktopApi, folderId: string, setError: Se
   }
 }
 
+export async function showCatalogFolder(api: DesktopApi, setError: SetError) {
+  setError(undefined);
+  try {
+    await api.openCatalogFolder();
+  } catch {
+    setError("The folder could not be opened.");
+  }
+}
+
 interface StartSessionOptions {
   api: DesktopApi;
   dispatch: Dispatch;

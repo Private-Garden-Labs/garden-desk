@@ -72,11 +72,12 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
     ? undefined
     : (capabilities.unavailableReason ?? "Unavailable in the public demo");
   const generatedFileActions = artifactActions(api, state.activeSessionId, setDesktopError);
-  const folderName = state.folders.find(
+  const activeFolder = state.folders.find(
     (folder) =>
       folder.id === state.newSessionFolderId ||
       folder.sessions.some((session) => session.id === state.activeSessionId),
-  )?.name;
+  );
+  const folderName = activeFolder?.name;
   const running =
     submitting || state.activeRun?.state === "queued" || state.activeRun?.state === "running";
   useModelRefresh(api, state.loaded, running || model.state === "busy", setModel);
@@ -276,6 +277,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         artifacts={detailState.artifacts}
         catalogPath={state.catalogPath}
         executions={detailState.executions}
+        folderId={state.activeSessionId === undefined ? undefined : activeFolder?.id}
         key={`${childOpen ? selectedChild.id : (state.activeSessionId ?? `new:${state.newSessionFolderId ?? "global"}`)}:${technicalDetailsOpen ? "open" : "closed"}`}
         api={api}
         model={model}
@@ -287,6 +289,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         contextAllocatedTokens={detailState.contextAllocatedTokens}
         selectedStepId={detailState.selectedStepId}
         sessionId={state.activeSessionId}
+        setError={setDesktopError}
         steps={steps}
         thinkingByStep={thinkingByStep}
         thinkingStepId={thinkingStepId}

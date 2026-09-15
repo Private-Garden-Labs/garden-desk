@@ -264,6 +264,7 @@ fn main() {
             commands::list_sessions,
             commands::load_draft,
             commands::model_status,
+            commands::open_catalog_folder,
             commands::open_folder,
             attachment_commands::open_attachment,
             commands::remove_attachment,

@@ -64,6 +64,7 @@ export interface DesktopApi {
   reorderFolders(folderIds: string[]): Promise<FolderSummary[]>;
   revokeFolder(folderId: string): Promise<boolean>;
   openFolder(folderId: string): Promise<void>;
+  openCatalogFolder(): Promise<void>;
   createSession(folderId: string | null): Promise<SessionSummary>;
   deleteSession(sessionId: string): Promise<boolean>;
   listSessions(folderId: string | null, cursor?: string): Promise<SessionPage>;

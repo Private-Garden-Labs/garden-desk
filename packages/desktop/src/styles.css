@@ -2126,6 +2126,20 @@ textarea:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
+.technical-overview-table .technical-path-link {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
 .technical-details-item .technical-limits {
   margin-top: 8px;
   color: var(--ink-soft);
