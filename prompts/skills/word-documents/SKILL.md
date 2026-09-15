@@ -1,6 +1,6 @@
 ---
 name: word-documents
-description: Use for DOCX files and Word deliverables. Before any legacy .doc access, load this skill; never use generic read or cat for binary DOC.
+description: Use for DOCX files and Word deliverables. Before you read a legacy .doc yourself, load this skill; never use generic read or cat for binary DOC.
 ---
 
 ## Library

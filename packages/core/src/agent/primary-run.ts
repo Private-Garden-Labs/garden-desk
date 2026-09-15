@@ -103,10 +103,24 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
     }),
     history: input.history,
     inspectImage: input.inspectImage,
-    reviewDocument: (path, prompt) => {
+    reviewDocument: (path, prompt, toolCallId) => {
       const review = input.reviewCommand();
       if (review === undefined) throw new Error("command_not_found");
-      return runInternalReview({ ...review, arguments: prompt }, agentInput, input.chat, path);
+      return runInternalReview({
+        ports: {
+          database: input.database,
+          jobs: input.jobs,
+          parentRunId: run.id,
+          sessionId: run.sessionId,
+          sessions: input.sessions,
+          store,
+          ...(toolCallId === undefined ? {} : { toolCallId }),
+        },
+        command: { ...review, arguments: prompt },
+        input: agentInput,
+        chat: input.chat,
+        path,
+      });
     },
     attachments,
     modelId: AGENT_MODEL_ID,

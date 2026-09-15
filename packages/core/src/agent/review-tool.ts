@@ -5,7 +5,7 @@ export function reviewTool(): ToolSpec {
     definition: {
       name: "review",
       description:
-        "Review one text document for inconsistencies. Extracts the file itself; for that check, call it before any skill or extraction. Returns findings and a numbered text path. No calculations or image inspection.",
+        "Review one text document for the requested purpose, by default its internal inconsistencies. Extracts the file itself; call it before any skill or extraction. Returns findings and a numbered text path. No calculations or image inspection.",
       params: objectSchema(
         {
           path: {
@@ -28,7 +28,7 @@ export function reviewTool(): ToolSpec {
       if (context.reviewDocument === undefined)
         return { content: "Document review is not available.", failed: true };
       const { path, prompt } = value as { path: string; prompt: string };
-      return context.reviewDocument(path, prompt);
+      return context.reviewDocument(path, prompt, context.toolCallId);
     },
   };
 }
