@@ -29,9 +29,9 @@ it("returns an internal review to the main agent without changing its title", as
         }
         if (turn === 2) {
           expect(request.tools).toEqual([]);
-          expect(request.messages.at(-1)?.text).toBe(
-            JSON.stringify({ source: path, extractedText: source }),
-          );
+          const source = request.messages.at(-1);
+          if (source?.role !== "user") throw new Error("Review source is missing.");
+          expect(source.text).toBe(JSON.stringify({ source: path, extractedText: source }));
           streams?.onResponseDelta?.("# Review Internal title\n\nAmounts differ.");
           expect(service.snapshot(runId)).toMatchObject({
             sessionTitle: "Check the document.",
