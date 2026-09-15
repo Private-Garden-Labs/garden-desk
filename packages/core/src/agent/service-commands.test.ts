@@ -58,6 +58,44 @@ it("returns an internal review to the main agent without changing its title", as
   }
 });
 
+it("records an internal review as a child run with its own steps", async () => {
+  const path = "/source/agreement.txt";
+  const extracted = "1: Amount: 12\n2: Amount: 13";
+  let turn = 0;
+  const { catalog, conversations, service } = await fixture(
+    {
+      async chat() {
+        turn += 1;
+        if (turn === 1) {
+          return chatResult("", [
+            { id: "review-call", name: "review", params: { path, prompt: "Check amounts." } },
+          ]);
+        }
+        if (turn === 2) return chatResult("# Review Amounts\n\nAmounts differ.", []);
+        return chatResult("Main answer.", []);
+      },
+    },
+    async (request) => outputExecution(request, extracted),
+  );
+  try {
+    const runId = service.start(conversations.createSession(null).id, "Check the document.").id;
+    const snapshot = await terminal(service, runId);
+    const child = snapshot.childRuns[0];
+    expect(child).toMatchObject({
+      agentId: "document-review",
+      parentToolCallId: "review-call",
+      state: "succeeded",
+    });
+    if (child === undefined) throw new Error("The review child run is missing.");
+    expect(service.snapshot(child.id).events.map((event) => event.summary)).toContain(
+      "Extracting document text.",
+    );
+  } finally {
+    await service.close();
+    catalog.close();
+  }
+});
+
 it("ends an unknown command with a recorded failure", async () => {
   const { catalog, conversations, service } = await fixture({}, artifactExecution);
   try {
