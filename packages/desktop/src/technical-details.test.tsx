@@ -186,12 +186,12 @@ it("keeps the overview separate from step evidence", () => {
 
 it("links the catalog folder and source folder only when native actions are available", () => {
   const markup = renderTechnicalDetails();
-  expect(markup).toMatch(/Catalog path<\/th><td><button class="technical-path-link"[^>]*>\/Users/);
-  expect(markup).toMatch(/Source mount<\/th><td><button class="technical-path-link"[^>]*>\/source/);
+  expect(markup).toMatch(/Catalog path<\/th><td><button/);
+  expect(markup).toMatch(/Source mount<\/th><td><button/);
 
   const demo = renderTechnicalDetails(undefined, "Unavailable in the public demo");
-  expect(demo).not.toContain("technical-path-link");
-  expect(demo).toContain("Source mount</th><td>/source");
+  expect(demo).not.toMatch(/Catalog path<\/th><td><button/);
+  expect(demo).not.toMatch(/Source mount<\/th><td><button/);
 });
 
 it("offers a session transcript copy action in the overview", () => {

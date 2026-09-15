@@ -1,19 +1,23 @@
 use crate::{CoreBridge, path_text};
 use serde_json::{Value, json};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tauri::{AppHandle, State};
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_shell::ShellExt;
 
-#[tauri::command]
-pub(crate) async fn desktop_bootstrap(core: State<'_, CoreBridge>) -> Result<Value, String> {
+fn state_root(core: &CoreBridge) -> Result<PathBuf, String> {
     let status = core.call("status", json!({}))?;
     let workspace_root = status
         .get("workspace")
         .and_then(|workspace| workspace.get("rootPath"))
         .and_then(Value::as_str)
         .ok_or_else(|| "Garden Desk Core returned an invalid workspace path.".to_owned())?;
-    let catalog_path = path_text(&Path::new(workspace_root).join(".garden-desk/catalog.sqlite"))?;
+    Ok(Path::new(workspace_root).join(".garden-desk"))
+}
+
+#[tauri::command]
+pub(crate) async fn desktop_bootstrap(core: State<'_, CoreBridge>) -> Result<Value, String> {
+    let catalog_path = path_text(&state_root(&core)?.join("catalog.sqlite"))?;
     let folders = core.call("folders.list", json!({}))?;
     let global_sessions = core.call("sessions.list", json!({ "folderId": null, "limit": 5 }))?;
     let mut folder_sessions = Vec::new();
@@ -147,13 +151,7 @@ pub(crate) async fn open_catalog_folder(
     app: AppHandle,
     core: State<'_, CoreBridge>,
 ) -> Result<(), String> {
-    let status = core.call("status", json!({}))?;
-    let workspace_root = status
-        .get("workspace")
-        .and_then(|workspace| workspace.get("rootPath"))
-        .and_then(Value::as_str)
-        .ok_or_else(|| "Garden Desk Core returned an invalid workspace path.".to_owned())?;
-    let path = path_text(&Path::new(workspace_root).join(".garden-desk"))?;
+    let path = path_text(&state_root(&core)?)?;
     app.shell()
         .open(path, None)
         .map_err(|error| error.to_string())

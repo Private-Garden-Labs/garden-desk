@@ -277,11 +277,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         artifacts={detailState.artifacts}
         catalogPath={state.catalogPath}
         executions={detailState.executions}
-        folderId={
-          activeFolder?.sessions.some((session) => session.id === state.activeSessionId)
-            ? activeFolder.id
-            : undefined
-        }
+        folderId={state.activeSessionId === undefined ? undefined : activeFolder?.id}
         key={`${childOpen ? selectedChild.id : (state.activeSessionId ?? `new:${state.newSessionFolderId ?? "global"}`)}:${technicalDetailsOpen ? "open" : "closed"}`}
         api={api}
         model={model}
