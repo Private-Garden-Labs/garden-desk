@@ -90,7 +90,7 @@ The runtime is the pinned llama.cpp server with a hash-verified Qwen3.8 27B Q4 m
 
 Core mediates all inference and retains tool authority. One resident server has one slot. The existing scheduler queues model turns and unloads generation before embedding or image work. Cancellation closes the request and waits at most one second for the slot to become idle; a failed server is then stopped. Shutdown stops the server and removes its private directory.
 
-Generation uses a fixed 32K context. Core retains compaction. Reasoning stays in transient memory during one task and is cleared at completion, cancellation, or compaction. Stored messages and traces contain no reasoning. Task time stays fixed across tool turns. Context accounting includes cached input; performance counts only evaluated input tokens. Unavailable allocation measurements are omitted.
+Generation uses a fixed 32K context with no separate output token budget; the thinking level and compaction are the only controls on generation length (owner decision in [ADR 0019](adr/0019-qwen38-private-server.md)). Core retains compaction. Reasoning stays in transient memory during one task and is cleared at completion, cancellation, or compaction. Stored messages and traces contain no reasoning. Task time stays fixed across tool turns. Context accounting includes cached input; performance counts only evaluated input tokens. Unavailable allocation measurements are omitted.
 
 ## State And Recovery
 

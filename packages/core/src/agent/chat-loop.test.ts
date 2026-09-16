@@ -90,7 +90,7 @@ describe("ChatAgentLoop tool conversation", () => {
     );
 
     expect(result.response).toBe("Two.");
-    expect(requests[0]?.maxTokens).toBe(4_096);
+    expect(requests[0]?.maxTokens).toBe(8_192);
     expect(requests[1]?.messages).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -150,10 +150,10 @@ describe("ChatAgentLoop malformed Python", () => {
 });
 
 describe("ChatAgentLoop automatic context", () => {
-  it("keeps the cold auto request stable while budgeting from the allocated context", async () => {
+  it("keeps the cold auto request stable while sending the allocated context as the limit", async () => {
     const requests: Parameters<InferenceService["chat"]>[0][] = [];
     const first = generated("", [tool("list", "call-1", { path: "/source" })]);
-    first.memory.contextSizeTokens = 65_536;
+    first.memory.contextSizeTokens = 16_384;
     const loop = new ChatAgentLoop(model([first, generated("Done.")], requests));
 
     await loop.run(
@@ -171,7 +171,7 @@ describe("ChatAgentLoop automatic context", () => {
       ),
     );
 
-    expect(requests[0]).toMatchObject({ contextSize: "auto", maxTokens: 4_096 });
+    expect(requests[0]).toMatchObject({ contextSize: "auto", maxTokens: 32_768 });
     expect(requests[1]).toMatchObject({ contextSize: "auto", maxTokens: 16_384 });
   });
 });
