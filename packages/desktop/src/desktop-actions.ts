@@ -1,3 +1,4 @@
+import type { ThinkingLevel } from "@gardendesk/shared";
 import type { DesktopApi } from "./api.js";
 import { retryLocalRequest, waitForAgentRun } from "./run-polling.js";
 import { loadSessionActivity } from "./session-activity.js";
@@ -52,22 +53,21 @@ export async function reorderFolders(
   }
 }
 
-export async function showFolder(api: DesktopApi, folderId: string, setError: SetError) {
+async function openWithError(open: () => Promise<void>, setError: SetError, failure: string) {
   setError(undefined);
   try {
-    await api.openFolder(folderId);
+    await open();
   } catch {
-    setError("The folder could not be opened.");
+    setError(failure);
   }
 }
 
+export async function showFolder(api: DesktopApi, folderId: string, setError: SetError) {
+  await openWithError(() => api.openFolder(folderId), setError, "The folder could not be opened.");
+}
+
 export async function showCatalogFolder(api: DesktopApi, setError: SetError) {
-  setError(undefined);
-  try {
-    await api.openCatalogFolder();
-  } catch {
-    setError("The folder could not be opened.");
-  }
+  await openWithError(() => api.openCatalogFolder(), setError, "The folder could not be opened.");
 }
 
 interface StartSessionOptions {
@@ -170,6 +170,7 @@ export async function showMore(options: ShowMoreOptions) {
 interface SendOptions {
   api: DesktopApi;
   text: string;
+  thinking: ThinkingLevel;
   activeSessionId: string | undefined;
   newSessionFolderId: string | null | undefined;
   dispatch: Dispatch;
@@ -186,14 +187,9 @@ export async function send(options: SendOptions) {
   try {
     const sessionId =
       activeSessionId ??
-      (await startSession({
-        api,
-        dispatch,
-        folderId: newSessionFolderId ?? null,
-        setError,
-      }));
+      (await startSession({ api, dispatch, folderId: newSessionFolderId ?? null, setError }));
     if (sessionId === undefined) return;
-    const run = await api.startAgent(sessionId, text);
+    const run = await api.startAgent(sessionId, text, options.thinking);
     started = true;
     dispatch({ type: "agent.started", run });
     setSubmitting(false);
@@ -276,12 +272,8 @@ export async function openAttachment(
   attachmentId: string,
   setError: SetError,
 ) {
-  setError(undefined);
-  try {
-    await api.openAttachment(sessionId, attachmentId);
-  } catch {
-    setError("The attached file could not be opened.");
-  }
+  const failure = "The attached file could not be opened.";
+  await openWithError(() => api.openAttachment(sessionId, attachmentId), setError, failure);
 }
 
 interface RemoveOptions {

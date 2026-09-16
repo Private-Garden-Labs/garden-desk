@@ -4,6 +4,8 @@ import { JobIdSchema, RequestIdSchema } from "./ids.js";
 
 export const InferenceProfileSchema = z.enum(["auto", "local16"]);
 export const InferenceOperationSchema = z.enum(["generate", "chat", "embed", "probe", "vision"]);
+export const ThinkingLevelSchema = z.enum(["none", "low", "medium", "xhigh"]);
+export const DEFAULT_THINKING_LEVEL: ThinkingLevel = "medium";
 export const GpuMemoryKindSchema = z.enum(["dedicated", "unified"]);
 export const InferenceBackendSchema = z.enum(["metal", "cuda", "vulkan"]);
 export const GenerationContextLimitReasonSchema = z.enum([
@@ -83,6 +85,7 @@ export const ChatGenerationRequestSchema = RequestBaseSchema.extend({
   contextSize: z.union([z.literal("auto"), z.number().int().min(512).max(32_768)]),
   maxTokens: z.number().int().positive().max(MAX_GENERATION_TOKENS),
   temperature: z.number().min(0).max(2),
+  thinking: ThinkingLevelSchema,
 });
 
 export const EmbeddingRequestSchema = RequestBaseSchema.extend({
@@ -222,6 +225,7 @@ export const InferenceWorkerMessageSchema = z.union([
 ]);
 
 export type InferenceProfile = z.infer<typeof InferenceProfileSchema>;
+export type ThinkingLevel = z.infer<typeof ThinkingLevelSchema>;
 export type InferenceOperation = z.infer<typeof InferenceOperationSchema>;
 export type GpuMemoryKind = z.infer<typeof GpuMemoryKindSchema>;
 export type InferenceBackend = z.infer<typeof InferenceBackendSchema>;

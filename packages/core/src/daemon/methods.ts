@@ -10,6 +10,7 @@ import {
   RpcRequestSchema,
   type RpcResponse,
   SessionIdSchema,
+  ThinkingLevelSchema,
 } from "@gardendesk/shared";
 import type { GardenDeskCore } from "../facade.js";
 import { dispatchArtifactMethod } from "./artifact-methods.js";
@@ -168,11 +169,11 @@ async function removeAttachment(core: GardenDeskCore, request: RpcRequest): Prom
 
 async function startAgent(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
   const sessionId = sessionIdParam(request);
-  const { task } = request.params;
-  if (typeof task !== "string" || task.trim().length === 0) {
+  const thinking = ThinkingLevelSchema.safeParse(request.params.thinking);
+  const task = typeof request.params.task === "string" ? request.params.task.trim() : "";
+  if (task.length === 0 || !thinking.success)
     return failure(request, "invalid_request", "Invalid task.");
-  }
-  return success(request, await core.startAgent(sessionId, task));
+  return success(request, await core.startAgent(sessionId, task, thinking.data));
 }
 
 async function getAgentRun(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {

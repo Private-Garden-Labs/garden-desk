@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 import type { ArtifactSaveResult } from "../artifact-actions.js";
 import type { TimelineItem } from "../state.js";
 import { stableStreamingMarkdown } from "../streaming-markdown.js";
+import { THINKING_LABELS } from "./effort-control.js";
 import { GeneratedFiles } from "./generated-files.js";
 import { Icon } from "./icons.js";
 import { copyUserMessage, UserMessage } from "./user-message.js";
@@ -31,6 +32,11 @@ function ResponseMetrics({ performance }: { performance: AgentRunPerformance }) 
       <span>
         <strong>{formatDuration(performance.totalDurationMs)}</strong> total
       </span>
+      {performance.thinking === undefined ? null : (
+        <span>
+          <strong>{THINKING_LABELS[performance.thinking]}</strong> effort
+        </span>
+      )}
     </footer>
   );
 }

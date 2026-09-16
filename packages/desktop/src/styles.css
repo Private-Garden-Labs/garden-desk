@@ -1550,6 +1550,130 @@ textarea:focus-visible {
   gap: 10px;
 }
 
+.composer-send-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.effort-field {
+  position: relative;
+  display: inline-flex;
+}
+
+.effort-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px 0 10px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-family: inherit;
+  font-size: 12px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.effort-control:hover,
+.effort-control:focus-visible,
+.effort-control[aria-expanded="true"] {
+  outline: none;
+  color: var(--accent-strong);
+  background: rgb(57 127 121 / 12%);
+}
+
+.effort-control svg {
+  width: 15px;
+  height: 15px;
+}
+
+.effort-value {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.effort-control:hover .effort-value,
+.effort-control:focus-visible .effort-value,
+.effort-control[aria-expanded="true"] .effort-value {
+  color: inherit;
+}
+
+.effort-caret {
+  width: 0;
+  height: 0;
+  border-top: 4px solid currentcolor;
+  border-right: 3.5px solid transparent;
+  border-left: 3.5px solid transparent;
+  opacity: 0.7;
+}
+
+.effort-control:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.effort-menu {
+  position: absolute;
+  z-index: 10;
+  right: 0;
+  bottom: calc(100% + 8px);
+  min-width: 168px;
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--reading-raised);
+  box-shadow: var(--surface-shadow);
+}
+
+.effort-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.effort-option:hover,
+.effort-option:focus-visible {
+  outline: none;
+  background: var(--navigation-hover);
+}
+
+.effort-option[aria-selected="true"] {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.effort-option-check {
+  display: grid;
+  place-items: center;
+  width: 14px;
+}
+
+.effort-option-check svg {
+  width: 14px;
+  height: 14px;
+}
+
+.specialist-thinking {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
 .question-prompt {
   display: flex;
   flex-direction: column;

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import {
   type AgentSessionSummary,
   type ConversationMessage,
+  DEFAULT_THINKING_LEVEL,
   JobIdSchema,
   MAX_ANCHORED_SUMMARY_CHARACTERS,
 } from "@gardendesk/shared";
@@ -133,6 +134,7 @@ export async function summarizeSession(
     contextSize: "auto" as const,
     maxTokens: SUMMARY_OUTPUT_TOKENS,
     temperature: 0,
+    thinking: DEFAULT_THINKING_LEVEL,
   };
   let retryUsed = false;
   while (true) {

@@ -11,6 +11,7 @@ const chatInput = {
   contextSize: 512,
   maxTokens: 8,
   temperature: 0,
+  thinking: "medium" as const,
 };
 
 function port(): InferencePort {

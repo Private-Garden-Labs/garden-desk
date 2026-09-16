@@ -35,6 +35,7 @@ const request = InferenceWorkerRequestSchema.parse({
   contextSize: 512,
   maxTokens: 1,
   temperature: 0,
+  thinking: "medium",
 });
 
 function deferred<T>() {

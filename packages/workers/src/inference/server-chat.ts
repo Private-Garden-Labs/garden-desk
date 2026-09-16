@@ -147,6 +147,12 @@ export async function completeChat(
   return result(reply, streams, began);
 }
 
+function thinkingOptions(request: ChatGenerationRequest | StructuredGenerationRequest) {
+  if (request.operation === "generate") return { preserve_thinking: false };
+  if (request.thinking === "none") return { preserve_thinking: false, enable_thinking: false };
+  return { preserve_thinking: false, reasoning_effort: request.thinking };
+}
+
 export function chatBody(
   request: ChatGenerationRequest | StructuredGenerationRequest,
   streams: ChatStreams,
@@ -163,8 +169,7 @@ export function chatBody(
     min_p: 0,
     presence_penalty: 0,
     repeat_penalty: 1,
-    reasoning_budget_tokens: Math.min(1024, Math.floor(request.maxTokens / 2)),
-    chat_template_kwargs: { preserve_thinking: false },
+    chat_template_kwargs: thinkingOptions(request),
     ...(request.operation === "generate"
       ? {
           response_format: {

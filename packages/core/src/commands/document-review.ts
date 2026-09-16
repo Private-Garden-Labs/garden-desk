@@ -1,5 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { type AgentRunResult, type ChatGenerationResult, JobIdSchema } from "@gardendesk/shared";
+import {
+  type AgentRunResult,
+  type ChatGenerationResult,
+  DEFAULT_THINKING_LEVEL,
+  JobIdSchema,
+} from "@gardendesk/shared";
 import { withCurrentTimeContext } from "../agent/chat-current-time.js";
 import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-input.js";
 import { streamCallbacks } from "../agent/chat-streaming.js";
@@ -140,6 +145,7 @@ export async function reviewDocument(
     contextSize: input.contextTokens,
     maxTokens: 4_096,
     temperature: 0,
+    thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     tools: [],
     messages: withCurrentTimeContext([
       { role: "system", text: command.body },

@@ -10,6 +10,20 @@ export const initialModelStatus: ModelRuntimeStatus = {
   thinkingSupported: true,
 };
 
+export async function unloadModel(
+  api: DesktopApi,
+  setModel: (model: ModelRuntimeStatus) => void,
+  setError: (message: string) => void,
+) {
+  try {
+    const unloaded = await api.unloadModel();
+    if (!unloaded) setError("The model is still in use and could not be unloaded.");
+    setModel(await api.getModelStatus());
+  } catch {
+    setError("The model could not be unloaded.");
+  }
+}
+
 export function useModelRefresh(
   api: DesktopApi,
   loaded: boolean,

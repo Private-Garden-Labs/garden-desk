@@ -1,5 +1,10 @@
-import { StructuredGenerationRequestSchema } from "@gardendesk/shared";
+import {
+  type ChatGenerationRequest,
+  ChatGenerationRequestSchema,
+  StructuredGenerationRequestSchema,
+} from "@gardendesk/shared";
 import { describe, expect, it } from "vitest";
+import { chatBody } from "./server-chat.js";
 import { serverArguments } from "./server-runtime.js";
 
 const request = {
@@ -28,6 +33,30 @@ describe("generation context contract", () => {
       StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: 32_769 }).success,
     ).toBe(false);
   });
+});
+
+it("sends the selected thinking level as the reasoning effort and no thinking budget", () => {
+  const chat = (thinking: ChatGenerationRequest["thinking"]) =>
+    ChatGenerationRequestSchema.parse({
+      ...request,
+      operation: "chat",
+      prompt: undefined,
+      jsonSchema: undefined,
+      contextSize: "auto",
+      messages: [{ role: "user", text: "Respond." }],
+      tools: [],
+      temperature: 0,
+      thinking,
+    });
+  expect(chatBody(chat("low"), {}).chat_template_kwargs).toEqual({
+    preserve_thinking: false,
+    reasoning_effort: "low",
+  });
+  expect(chatBody(chat("none"), {}).chat_template_kwargs).toEqual({
+    preserve_thinking: false,
+    enable_thinking: false,
+  });
+  expect(Object.keys(chatBody(chat("medium"), {}))).not.toContain("reasoning_budget_tokens");
 });
 
 it("uses the Metal buffer name accepted by the pinned server", () => {

@@ -10,6 +10,7 @@ import type {
   SessionDraft,
   SessionPage,
   SessionSummary,
+  ThinkingLevel,
 } from "@gardendesk/shared";
 
 export interface FolderSessionPage {
@@ -79,7 +80,7 @@ export interface DesktopApi {
   removeAttachment(sessionId: string, attachmentId: string): Promise<boolean>;
   saveDraft(sessionId: string, content: string): Promise<SessionDraft>;
   loadDraft(sessionId: string): Promise<SessionDraft | undefined>;
-  startAgent(sessionId: string, task: string): Promise<AgentRunSummary>;
+  startAgent(sessionId: string, task: string, thinking: ThinkingLevel): Promise<AgentRunSummary>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;
   listAgentRuns(sessionId: string): Promise<AgentRunSummary[]>;

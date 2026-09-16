@@ -1,3 +1,4 @@
+import type { ThinkingLevel } from "@gardendesk/shared";
 import type { DesktopApi } from "../api.js";
 import { attach, openAttachment, remove } from "../desktop-actions.js";
 import type { DropIntent } from "../desktop-drop.js";
@@ -18,10 +19,12 @@ interface AppChatControlsProps {
   onCancel(): void;
   onChange(draft: string): void;
   onSend(text: string): void;
+  onThinkingChange(level: ThinkingLevel): void;
   running: boolean;
   setConfirmation(request: ConfirmationRequest): void;
   setError(message: string | undefined): void;
   state: DesktopState;
+  thinking: ThinkingLevel;
 }
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: one chat control boundary; actions live in desktop-actions.
@@ -36,10 +39,12 @@ export function AppChatControls({
   onCancel,
   onChange,
   onSend,
+  onThinkingChange,
   running,
   setConfirmation,
   setError,
   state,
+  thinking,
 }: AppChatControlsProps) {
   if (childOpen) {
     return (
@@ -111,8 +116,10 @@ export function AppChatControls({
         }
       }}
       onSend={onSend}
+      onThinkingChange={onThinkingChange}
       removableAttachmentIds={state.removableAttachmentIds}
       running={running}
+      thinking={thinking}
     />
   );
 }

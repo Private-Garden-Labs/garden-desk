@@ -5,6 +5,7 @@ import {
   AgentRunResultSchema,
   type ChatGenerationResult,
   type ChatMessage,
+  DEFAULT_THINKING_LEVEL,
   JobIdSchema,
 } from "@gardendesk/shared";
 import type { InferenceService } from "../runtime/inference.js";
@@ -62,6 +63,7 @@ export class ChatAgentLoop {
       contextSize: this.requestedContextSize,
       maxTokens: chatOutputTokens(this.contextTokens, phase === "compaction"),
       temperature,
+      thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     } as const;
     const turnId = await input.trace?.store.begin(input.trace.runId, phase, {
       input: request,
@@ -155,6 +157,7 @@ export class ChatAgentLoop {
       executions: state.executions,
       guestExecutions: state.guestExecutionsStarted,
       inference: performance,
+      thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     });
   }
   private async recoverContext(

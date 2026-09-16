@@ -10,6 +10,7 @@ import type {
   SessionDraft,
   SessionPage,
   SessionSummary,
+  ThinkingLevel,
   WorkspaceStatus,
 } from "@gardendesk/shared";
 import type {
@@ -50,7 +51,7 @@ export interface GardenDeskCorePorts extends InferenceService {
   ): Promise<void>;
   exportArtifact(sessionId: string, artifactId: string, destination: string): Promise<void>;
   removeAttachment(sessionId: string, attachmentId: string): Promise<boolean>;
-  startAgent(sessionId: string, task: string): Promise<AgentRunSummary>;
+  startAgent(sessionId: string, task: string, thinking: ThinkingLevel): Promise<AgentRunSummary>;
   listAgentRuns(sessionId: string): Promise<AgentRunSummary[]>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;
@@ -119,7 +120,7 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
       ports.materializeAttachment(sessionId, attachmentId),
     ...artifactPorts(ports),
     removeAttachment: (sessionId, attachmentId) => ports.removeAttachment(sessionId, attachmentId),
-    startAgent: (sessionId, task) => ports.startAgent(sessionId, task),
+    startAgent: (sessionId, task, thinking) => ports.startAgent(sessionId, task, thinking),
     listAgentRuns: (sessionId) => ports.listAgentRuns(sessionId),
     getAgentRun: (runId) => ports.getAgentRun(runId),
     getAgentTrace: (runId) => ports.getAgentTrace(runId),

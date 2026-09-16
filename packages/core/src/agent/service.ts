@@ -1,11 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
-import type {
-  AgentRunSnapshot,
-  AgentRunSummary,
-  AgentTrace,
-  AttachmentSummary,
-  SessionDraft,
+import {
+  type AgentRunSnapshot,
+  type AgentRunSummary,
+  type AgentTrace,
+  type AttachmentSummary,
+  DEFAULT_THINKING_LEVEL,
+  type SessionDraft,
+  type ThinkingLevel,
 } from "@gardendesk/shared";
 import type { CodeAgentLauncher } from "@gardendesk/workers";
 import type { AuditLog } from "../audit/log.js";
@@ -25,14 +27,13 @@ import { MarkdownDefinitionLibrary } from "./markdown-definition-library.js";
 import { runPrimaryAgent } from "./primary-run.js";
 import { AgentRunCapacity } from "./run-capacity.js";
 import { type ActiveRun, activeRunSnapshot } from "./service-active.js";
-import { appendSuccessfulRunAudit } from "./service-audit.js";
+import { persistSuccessfulRun } from "./service-audit.js";
 import { AgentImageInspector } from "./service-image.js";
 import {
   agentFailureEvent,
   agentFailureText,
   agentHistory,
   inferenceRunContext,
-  runPerformance,
 } from "./service-results.js";
 import { SessionSummaryQueue } from "./service-summary-queue.js";
 import { AgentSessionManager } from "./session-manager.js";
@@ -83,6 +84,10 @@ export class AgentService {
       this.summaries,
     );
   }
+  private get persistencePorts() {
+    const { audit, conversations, database, jobs, store } = this;
+    return { audit, conversations, database, jobs, store };
+  }
   saveDraft(sessionId: string, content: string): SessionDraft {
     return this.store.saveDraft(sessionId, content);
   }
@@ -130,7 +135,7 @@ export class AgentService {
     });
     return removed;
   }
-  start(sessionId: string, task: string): AgentRunSummary {
+  start(sessionId: string, task: string, thinking = DEFAULT_THINKING_LEVEL): AgentRunSummary {
     if (this.closed) throw new Error("agent_service_closed");
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
       throw new Error("agent_busy");
@@ -142,7 +147,7 @@ export class AgentService {
     })();
     const controller = new AbortController();
     const finished = Promise.resolve()
-      .then(async () => await this.execute(run, task, controller.signal))
+      .then(async () => await this.execute(run, task, thinking, controller.signal))
       .finally(() => {
         this.active.delete(run.jobId);
       });
@@ -212,7 +217,12 @@ export class AgentService {
     });
   }
   // biome-ignore lint/complexity/noExcessiveLinesPerFunction: the run lifecycle stays linear so cleanup and terminal persistence remain paired.
-  private async execute(run: AgentRunSummary, task: string, signal: AbortSignal): Promise<void> {
+  private async execute(
+    run: AgentRunSummary,
+    task: string,
+    thinking: ThinkingLevel,
+    signal: AbortSignal,
+  ): Promise<void> {
     let releaseCapacity: (() => void) | undefined;
     let measuredContextTokens: number | undefined;
     try {
@@ -257,8 +267,8 @@ export class AgentService {
         signal,
         store: this.store,
         task,
+        thinking,
       });
-      const performance = runPerformance(result, run.createdAt);
       this.updateActive(run.jobId, { thinking: null });
       const deliverables = await prepareArtifacts(
         result.artifacts,
@@ -266,20 +276,7 @@ export class AgentService {
         this.artifacts,
         async (path) => await this.sessions.readWorkspaceFile(run.sessionId, path),
       );
-      this.database.transaction(() => {
-        this.conversations.appendMessage(run.sessionId, "assistant", result.response, run.id);
-        for (const deliverable of deliverables) this.store.addArtifact(run.id, deliverable);
-        this.store.transitionRun(run.id, {
-          state: "succeeded",
-          response: result.response,
-          performance,
-        });
-        this.jobs.transition(run.jobId, "succeeded");
-      })();
-      appendSuccessfulRunAudit(this.audit, run, {
-        executions: this.store.execution.list(run.id).length,
-        guestExecutions: result.guestExecutions,
-      });
+      persistSuccessfulRun(this.persistencePorts, run, result, deliverables);
       if (command === undefined || command.workflow === "agent")
         this.summaryQueue.enqueue(run, signal, measuredContextTokens);
     } catch (error) {

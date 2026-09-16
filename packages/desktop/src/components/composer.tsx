@@ -1,7 +1,8 @@
-import type { AttachmentSummary, CommandSummary } from "@gardendesk/shared";
+import type { AttachmentSummary, CommandSummary, ThinkingLevel } from "@gardendesk/shared";
 import { type FormEvent, type KeyboardEvent, useEffect, useLayoutEffect, useRef } from "react";
 import { AttachmentChip } from "./attachment-chip.js";
 import { CommandMenu, useCommandMenu } from "./command-menu.js";
+import { EffortControl } from "./effort-control.js";
 import { Icon } from "./icons.js";
 
 interface ComposerProps {
@@ -13,12 +14,14 @@ interface ComposerProps {
   nativeActionMessage?: string | undefined;
   removableAttachmentIds: string[];
   running: boolean;
+  thinking: ThinkingLevel;
   onAttach(): void;
   onCancel(): void;
   onChange(draft: string): void;
   onOpenAttachment(attachmentId: string): void;
   onRemoveAttachment(attachmentId: string): void;
   onSend(text: string): void;
+  onThinkingChange(level: ThinkingLevel): void;
 }
 
 export const COMPOSER_MAX_ROWS = 10;
@@ -94,12 +97,14 @@ export function Composer({
   nativeActionMessage,
   removableAttachmentIds,
   running,
+  thinking,
   onAttach,
   onCancel,
   onChange,
   onOpenAttachment,
   onRemoveAttachment,
   onSend,
+  onThinkingChange,
 }: ComposerProps) {
   const textarea = useRef<HTMLTextAreaElement>(null);
   const menu = useCommandMenu({
@@ -174,26 +179,33 @@ export function Composer({
         >
           <Icon name="add" />
         </button>
-        {running ? (
-          <button
-            aria-label="Cancel task"
-            className="stop-button"
-            disabled={disabled}
-            onClick={onCancel}
-            type="button"
-          >
-            Stop
-          </button>
-        ) : (
-          <button
-            aria-label="Send message"
-            className="send-button"
-            disabled={!canSend}
-            type="submit"
-          >
-            <Icon name="send" />
-          </button>
-        )}
+        <div className="composer-send-group">
+          <EffortControl
+            disabled={disabled || running}
+            onThinkingChange={onThinkingChange}
+            thinking={thinking}
+          />
+          {running ? (
+            <button
+              aria-label="Cancel task"
+              className="stop-button"
+              disabled={disabled}
+              onClick={onCancel}
+              type="button"
+            >
+              Stop
+            </button>
+          ) : (
+            <button
+              aria-label="Send message"
+              className="send-button"
+              disabled={!canSend}
+              type="submit"
+            >
+              <Icon name="send" />
+            </button>
+          )}
+        </div>
       </div>
     </form>
   );

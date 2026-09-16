@@ -2,16 +2,7 @@ import type { ModelRuntimeStatus } from "@gardendesk/shared";
 import capabilities from "../../../workers/images/agent/capabilities.json" with { type: "json" };
 import { TechnicalModelUsage } from "./technical-model-usage.js";
 
-export function TechnicalOverviewTable({
-  catalogPath,
-  contextAllocatedTokens,
-  contextUsedTokens,
-  limits,
-  model,
-  onOpenCatalogFolder,
-  onOpenSourceFolder,
-  sessionId,
-}: {
+interface OverviewProps {
   catalogPath: string;
   contextAllocatedTokens?: number | null | undefined;
   contextUsedTokens?: number | null | undefined;
@@ -20,9 +11,18 @@ export function TechnicalOverviewTable({
   onOpenCatalogFolder?: (() => void) | undefined;
   onOpenSourceFolder?: (() => void) | undefined;
   sessionId: string | undefined;
-}) {
+}
+
+function overviewRows({
+  catalogPath,
+  limits,
+  model,
+  onOpenCatalogFolder,
+  onOpenSourceFolder,
+  sessionId,
+}: OverviewProps): Array<[string, string, (() => void) | undefined]> {
   const { sourceMount, workspaceMount, runtimeMount } = capabilities;
-  const rows: Array<[string, string, (() => void) | undefined]> = [
+  return [
     ["Local session ID", sessionId ?? "No session selected", undefined],
     ["Catalog path", catalogPath || "Not available", onOpenCatalogFolder],
     [
@@ -48,10 +48,13 @@ export function TechnicalOverviewTable({
     ["Model", model.name, undefined],
     ["Model state", model.state, undefined],
   ];
+}
+
+export function TechnicalOverviewTable(props: OverviewProps) {
   return (
     <table aria-label="Session technical details" className="technical-overview-table">
       <tbody>
-        {rows.map(([label, value, onOpen]) => (
+        {overviewRows(props).map(([label, value, onOpen]) => (
           <tr key={label}>
             <th scope="row">{label}</th>
             <td>
@@ -71,9 +74,9 @@ export function TechnicalOverviewTable({
           </tr>
         ))}
         <TechnicalModelUsage
-          contextAllocatedTokens={contextAllocatedTokens}
-          contextUsedTokens={contextUsedTokens}
-          model={model}
+          contextAllocatedTokens={props.contextAllocatedTokens}
+          contextUsedTokens={props.contextUsedTokens}
+          model={props.model}
         />
       </tbody>
     </table>
