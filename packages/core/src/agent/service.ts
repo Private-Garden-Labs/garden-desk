@@ -94,12 +94,11 @@ export class AgentService {
   loadDraft(sessionId: string): SessionDraft | undefined {
     return this.store.loadDraft(sessionId);
   }
-
   async addAttachment(sessionId: string, path: string): Promise<AttachmentSummary> {
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
       throw new Error("agent_busy");
     const item = await this.store.addAttachment(sessionId, path);
-    await this.sessions.closeSession(sessionId);
+    this.closeGuestLater(sessionId);
     this.audit.append({
       type: "attachment.added",
       outcome: "succeeded",
@@ -107,7 +106,6 @@ export class AgentService {
     });
     return item;
   }
-
   listAttachments(sessionId: string): AttachmentSummary[] {
     return this.store.listAttachments(sessionId);
   }
@@ -127,13 +125,18 @@ export class AgentService {
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
       throw new Error("agent_busy");
     const removed = this.store.removeAttachment(sessionId, attachmentId);
-    if (removed) await this.sessions.closeSession(sessionId);
+    if (removed) this.closeGuestLater(sessionId);
     this.audit.append({
       type: "attachment.removed",
       outcome: removed ? "succeeded" : "failed",
       metadata: { sessionId, attachmentId },
     });
     return removed;
+  }
+  private closeGuestLater(sessionId: string): void {
+    void this.sessions.closeSession(sessionId).catch(() => {
+      this.audit.append({ type: "agent.close_failed", outcome: "failed", metadata: { sessionId } });
+    });
   }
   start(sessionId: string, task: string, thinking = DEFAULT_THINKING_LEVEL): AgentRunSummary {
     if (this.closed) throw new Error("agent_service_closed");

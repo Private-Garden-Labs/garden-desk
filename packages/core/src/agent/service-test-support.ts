@@ -150,11 +150,9 @@ function launcher(
   };
 }
 
-export async function fixture(
+export async function fixtureWithLauncher(
   inference: Partial<Pick<InferenceService, "chat" | "modelStatus">>,
-  execute: (request: AgentSessionExecution) => Promise<AgentExecutionResult>,
-  afterPrepared?: (observer: AgentExecutionObserver | undefined) => Promise<void>,
-  readWorkspaceFile?: WorkspaceReader,
+  codeLauncher: CodeAgentLauncher,
 ) {
   const root = await mkdtemp(join(tmpdir(), "garden-desk-agent-service-"));
   roots.push(root);
@@ -170,10 +168,19 @@ export async function fixture(
     new JobStore(catalog.database),
     artifacts,
     inference,
-    launcher(execute, afterPrepared, readWorkspaceFile),
+    codeLauncher,
     new AuditLog(catalog.database),
   );
   return { catalog, conversations, service };
+}
+
+export async function fixture(
+  inference: Partial<Pick<InferenceService, "chat" | "modelStatus">>,
+  execute: (request: AgentSessionExecution) => Promise<AgentExecutionResult>,
+  afterPrepared?: (observer: AgentExecutionObserver | undefined) => Promise<void>,
+  readWorkspaceFile?: WorkspaceReader,
+) {
+  return await fixtureWithLauncher(inference, launcher(execute, afterPrepared, readWorkspaceFile));
 }
 
 export async function terminal(service: AgentService, runId: string) {
