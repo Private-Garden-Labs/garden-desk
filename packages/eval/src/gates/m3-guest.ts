@@ -46,6 +46,11 @@ async function prepareSource(root: string): Promise<string> {
   await prepareDirectSourceFiles(source);
   return source;
 }
+async function prepareAttachment(root: string): Promise<string> {
+  const attachment = join(root, "attachment.txt");
+  await writeFile(attachment, "attachment evidence");
+  return attachment;
+}
 const PYTHON_PROBE = [
   "import json, os, pathlib, shutil, socket",
   "import PIL, pypdf, openpyxl, docx, reportlab, charset_normalizer",
@@ -203,18 +208,37 @@ async function pathOnlyProbe(session: CodeAgentSession) {
   await requirePathOnlyScript(session, script);
 }
 
+async function attachmentProbe(session: CodeAgentSession) {
+  const result = await session.execute({
+    language: "shell",
+    command: "cat /run/attachments/attachment.txt",
+  });
+  requireGuestSuccess(result);
+  requireM3ProductCheck(
+    result.stdout === "attachment evidence",
+    "Guest read-only attachment proof failed.",
+  );
+}
+
 export async function runGuestEvidence(root: string, launcherForWorkspace: LauncherFactory) {
   const source = await prepareSource(root);
+  const attachment = await prepareAttachment(root);
   const workspaceStore = join(root, "workspace-store");
   const launcher = launcherForWorkspace(workspaceStore);
   const sessionId = "00000000-0000-4000-8000-000000000031";
   const primary = await withSession(
     launcher,
-    { sessionId, sourceFolder: source, readonlyInputs: [], limits },
+    {
+      sessionId,
+      sourceFolder: source,
+      readonlyInputs: [{ path: attachment, name: "attachment.txt" }],
+      limits,
+    },
     async (session) => {
       const isolation = await isolationProbe(session);
       const directSource = await directSourceProbes(session, source);
       await pathOnlyProbe(session);
+      await attachmentProbe(session);
       await persistentFileProbe(session);
       return { directSource, isolation };
     },

@@ -5,6 +5,7 @@ import Virtualization
 enum HelperError: Error {
     case invalidArguments
     case invalidFrame
+    case guestClosed
     case socketClosed
     case socketUnavailable
 }
@@ -152,6 +153,7 @@ func relay(input: Int32, guest: Int32, output: Int32) throws {
             let count = Darwin.read(source, &buffer, buffer.count)
             if count == 0 {
                 try validators[index].finish()
+                if source == guest { throw HelperError.guestClosed }
                 return
             }
             if count < 0 {
@@ -230,7 +232,17 @@ func configuration(_ arguments: Arguments) throws -> VZVirtualMachineConfigurati
 @main
 struct GardenDeskVirtualizationHelper {
     @MainActor
-    static func main() async throws {
+    static func main() async {
+        do {
+            try await run()
+        } catch {
+            FileHandle.standardError.write(Data("\(error)\n".utf8))
+            exit(1)
+        }
+    }
+
+    @MainActor
+    static func run() async throws {
         let arguments = try parseArguments()
         let machineConfiguration = try configuration(arguments)
         let virtualMachine = VZVirtualMachine(configuration: machineConfiguration)

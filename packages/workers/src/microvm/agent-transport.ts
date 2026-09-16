@@ -168,6 +168,7 @@ export class AgentHelperTransport {
     if (this.child.exitCode !== null || this.child.signalCode !== null) return;
     try {
       this.write({ protocolVersion: 3, requestId: randomUUID(), operation: "shutdown" });
+      this.child.stdin.end();
     } catch {
       this.child.kill("SIGKILL");
     }
