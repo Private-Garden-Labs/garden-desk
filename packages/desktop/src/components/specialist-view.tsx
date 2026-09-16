@@ -1,8 +1,8 @@
 import { type AgentRunSummary, DEFAULT_THINKING_LEVEL } from "@gardendesk/shared";
 import { useEffect, useRef } from "react";
 import type { DesktopState, TimelineItem } from "../state.js";
-import { THINKING_LABELS } from "./composer.js";
 import { Conversation } from "./conversation.js";
+import { THINKING_LABELS } from "./effort-control.js";
 import { Icon } from "./icons.js";
 import { specialistIdentity } from "./specialist-run.js";
 
