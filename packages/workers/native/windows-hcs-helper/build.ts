@@ -56,6 +56,8 @@ if (process.platform === "win32") {
   });
   const executable = join(generated, "garden-desk-hcs-helper.exe");
   if (publish(join(target, "release", "garden-desk-hcs-helper.exe"), executable)) sign(executable);
+  else
+    console.log("The running Windows HCS helper is locked; kept the existing .generated binary.");
 } else {
   console.log("Windows HCS helper build is not required on this platform stage.");
 }

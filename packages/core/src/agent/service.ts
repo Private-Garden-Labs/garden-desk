@@ -99,7 +99,7 @@ export class AgentService {
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
       throw new Error("agent_busy");
     const item = await this.store.addAttachment(sessionId, path);
-    void this.sessions.closeSession(sessionId).catch(() => undefined);
+    this.closeGuestLater(sessionId);
     this.audit.append({
       type: "attachment.added",
       outcome: "succeeded",
@@ -127,13 +127,22 @@ export class AgentService {
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
       throw new Error("agent_busy");
     const removed = this.store.removeAttachment(sessionId, attachmentId);
-    if (removed) void this.sessions.closeSession(sessionId).catch(() => undefined);
+    if (removed) this.closeGuestLater(sessionId);
     this.audit.append({
       type: "attachment.removed",
       outcome: removed ? "succeeded" : "failed",
       metadata: { sessionId, attachmentId },
     });
     return removed;
+  }
+  private closeGuestLater(sessionId: string): void {
+    void this.sessions.closeSession(sessionId).catch(() => {
+      this.audit.append({
+        type: "agent.close_failed",
+        outcome: "failed",
+        metadata: { sessionId },
+      });
+    });
   }
   start(sessionId: string, task: string, thinking = DEFAULT_THINKING_LEVEL): AgentRunSummary {
     if (this.closed) throw new Error("agent_service_closed");
