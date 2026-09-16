@@ -94,7 +94,6 @@ export class AgentService {
   loadDraft(sessionId: string): SessionDraft | undefined {
     return this.store.loadDraft(sessionId);
   }
-
   async addAttachment(sessionId: string, path: string): Promise<AttachmentSummary> {
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
       throw new Error("agent_busy");
@@ -107,7 +106,6 @@ export class AgentService {
     });
     return item;
   }
-
   listAttachments(sessionId: string): AttachmentSummary[] {
     return this.store.listAttachments(sessionId);
   }
@@ -137,11 +135,7 @@ export class AgentService {
   }
   private closeGuestLater(sessionId: string): void {
     void this.sessions.closeSession(sessionId).catch(() => {
-      this.audit.append({
-        type: "agent.close_failed",
-        outcome: "failed",
-        metadata: { sessionId },
-      });
+      this.audit.append({ type: "agent.close_failed", outcome: "failed", metadata: { sessionId } });
     });
   }
   start(sessionId: string, task: string, thinking = DEFAULT_THINKING_LEVEL): AgentRunSummary {
