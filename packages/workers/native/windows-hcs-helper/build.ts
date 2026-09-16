@@ -36,6 +36,16 @@ function sign(executable: string): void {
   });
 }
 
+function publish(source: string, destination: string): boolean {
+  try {
+    copyFileSync(source, destination);
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "EBUSY") return false;
+    throw error;
+  }
+}
+
 if (process.platform === "win32") {
   const root = join(process.cwd(), "packages/workers/native/windows-hcs-helper");
   const generated = join(root, ".generated");
@@ -45,8 +55,7 @@ if (process.platform === "win32") {
     env: { ...process.env, CARGO_TARGET_DIR: target },
   });
   const executable = join(generated, "garden-desk-hcs-helper.exe");
-  copyFileSync(join(target, "release", "garden-desk-hcs-helper.exe"), executable);
-  sign(executable);
+  if (publish(join(target, "release", "garden-desk-hcs-helper.exe"), executable)) sign(executable);
 } else {
   console.log("Windows HCS helper build is not required on this platform stage.");
 }

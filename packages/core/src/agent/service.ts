@@ -99,7 +99,7 @@ export class AgentService {
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
       throw new Error("agent_busy");
     const item = await this.store.addAttachment(sessionId, path);
-    await this.sessions.closeSession(sessionId);
+    void this.sessions.closeSession(sessionId).catch(() => undefined);
     this.audit.append({
       type: "attachment.added",
       outcome: "succeeded",
@@ -127,7 +127,7 @@ export class AgentService {
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
       throw new Error("agent_busy");
     const removed = this.store.removeAttachment(sessionId, attachmentId);
-    if (removed) await this.sessions.closeSession(sessionId);
+    if (removed) void this.sessions.closeSession(sessionId).catch(() => undefined);
     this.audit.append({
       type: "attachment.removed",
       outcome: removed ? "succeeded" : "failed",

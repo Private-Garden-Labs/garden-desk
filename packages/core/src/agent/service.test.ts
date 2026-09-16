@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import type { ChatGenerationResult } from "@gardendesk/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ChatInput } from "../runtime/inference.js";
@@ -10,6 +11,7 @@ import {
   chatResult,
   cleanServiceFixtures,
   fixture,
+  fixtureWithLauncher,
   outputExecution,
   pendingQuestion,
   questionInference,
@@ -236,6 +238,29 @@ describe("persisted chat agent cancellation", () => {
     expect(snapshot.events.at(-1)?.type).toBe("run.cancelled");
     await service.close();
     catalog.close();
+  });
+});
+
+describe("attachments during a microVM warm-up", () => {
+  it("adds an attachment while another session is still warming", async () => {
+    const { catalog, conversations, service } = await fixtureWithLauncher(
+      {},
+      {
+        openAgentSession: () => new Promise(() => undefined),
+        async deleteWorkspace() {},
+      },
+    );
+    try {
+      void service.warmSession(conversations.createSession(null).id);
+      const session = conversations.createSession(null);
+      const attached = await Promise.race([
+        service.addAttachment(session.id, fileURLToPath(import.meta.url)),
+        new Promise<"timeout">((accept) => setTimeout(() => accept("timeout"), 500)),
+      ]);
+      expect(attached).toMatchObject({ sessionId: session.id });
+    } finally {
+      catalog.close();
+    }
   });
 });
 
