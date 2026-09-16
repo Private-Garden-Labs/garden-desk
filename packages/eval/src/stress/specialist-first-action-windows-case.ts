@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { createGardenDeskCore, type GardenDeskCore } from "@gardendesk/core";
 import { type AgentRunSnapshot, DEFAULT_THINKING_LEVEL } from "@gardendesk/shared";
 import { prepareAgentModelStore } from "../gates/agent-model-store.js";
+import { closeFirstActionCase } from "./specialist-first-action-cleanup.js";
 import { prepareSpecialistFiles, type SpecialistFiles } from "./specialist-fixtures.js";
 
 const repository = process.cwd();
@@ -133,19 +134,6 @@ async function waitForFirstSpecialistAction(
   throw new Error(`The ${task.id} case did not choose a specialist within two minutes.`);
 }
 
-async function waitForTerminal(
-  core: GardenDeskCore,
-  runId: string,
-  deadline: number,
-): Promise<void> {
-  while (Date.now() < deadline) {
-    const snapshot = await core.getAgentRun(runId);
-    if (snapshot.run.state !== "queued" && snapshot.run.state !== "running") return;
-    await pause(pollIntervalMs);
-  }
-  throw new Error("The case did not stop within its three-minute limit.");
-}
-
 async function run(task: SpecialistFirstActionCase): Promise<void> {
   const root = await mkdtemp(join(repository, `packages/eval/.generated/${task.id}-`));
   const source = join(root, "source");
@@ -158,10 +146,6 @@ async function run(task: SpecialistFirstActionCase): Promise<void> {
     const session = await core.createSession(folder.id);
     started = await core.startAgent(session.id, task.request, DEFAULT_THINKING_LEVEL);
     const selected = await waitForFirstSpecialistAction(core, started.id, task, startedAt);
-    assert.ok(
-      selected.elapsedMs <= selectionTimeoutMs,
-      "Specialist selection exceeded two minutes.",
-    );
     console.log(
       JSON.stringify({
         case: task.id,
@@ -171,11 +155,7 @@ async function run(task: SpecialistFirstActionCase): Promise<void> {
       }),
     );
   } finally {
-    if (started !== undefined) {
-      await core.cancelAgent(started.jobId);
-      await waitForTerminal(core, started.id, startedAt + caseTimeoutMs);
-    }
-    await core.close();
+    await closeFirstActionCase(core, started, startedAt + caseTimeoutMs);
   }
 }
 
