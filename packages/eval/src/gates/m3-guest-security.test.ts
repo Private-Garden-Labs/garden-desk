@@ -83,10 +83,10 @@ function launcher(
 }
 
 describe("M3 escaping-link security evidence", () => {
-  it("accepts the clean helper exit after the link process completed", async () => {
+  it("accepts the reported guest failure after the link process completed", async () => {
     await expect(
       runGuestSecurityEvidence(
-        launcher(new Error("agent_helper_exited_0"), ["process_start", "process_exit"]),
+        launcher(new Error("agent_helper_exited_1"), ["process_start", "process_exit"]),
         "/source",
       ),
     ).resolves.toMatchObject({ symlink: "rejected" });
@@ -101,12 +101,12 @@ describe("M3 escaping-link security evidence", () => {
     ).rejects.toThrow("agent_helper_transport_failed");
   });
 
-  it("propagates a clean helper exit without complete process evidence", async () => {
+  it("propagates a reported guest failure without complete process evidence", async () => {
     await expect(
       runGuestSecurityEvidence(
-        launcher(new Error("agent_helper_exited_0"), ["process_start"]),
+        launcher(new Error("agent_helper_exited_1"), ["process_start"]),
         "/source",
       ),
-    ).rejects.toThrow("agent_helper_exited_0");
+    ).rejects.toThrow("agent_helper_exited_1");
   });
 });

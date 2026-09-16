@@ -164,13 +164,13 @@
       "kernelFile": "Image",
       "kernelSha256": "211d283fafe9e094e614629ef21f8616cdce24c5e4b43b936c4c73a3e447e7bd",
       "initramfsFile": "rootfs.cpio",
-      "initramfsSha256": "5cff76f163a7f98f91b9446c1afb7fa2d97d581ff4b7fc1fafce64c0f1899703"
+      "initramfsSha256": "322126c8282cf4145b33cdbfaa6aa1c2848110a86b96e5534890db3791f475c9"
     },
     "x86_64": {
       "kernelFile": "bzImage",
       "kernelSha256": "9fabee42a89b8128aa9f16dee4d43289c113f8b2aea398cabc904b6911a41dea",
       "initramfsFile": "rootfs.cpio",
-      "initramfsSha256": "452478a3997469786ebfe14471da2983b5417f3033089d6c5ca513c1c65a7b63"
+      "initramfsSha256": "a7e3558b945b09b4d437d1aa6d97cb8206c3b417e512badb84ff0deee8f33e87"
     }
   }
 }

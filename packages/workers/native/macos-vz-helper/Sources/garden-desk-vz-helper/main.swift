@@ -5,6 +5,7 @@ import Virtualization
 enum HelperError: Error {
     case invalidArguments
     case invalidFrame
+    case guestClosed
     case socketClosed
     case socketUnavailable
 }
@@ -152,6 +153,7 @@ func relay(input: Int32, guest: Int32, output: Int32) throws {
             let count = Darwin.read(source, &buffer, buffer.count)
             if count == 0 {
                 try validators[index].finish()
+                if source == guest { throw HelperError.guestClosed }
                 return
             }
             if count < 0 {

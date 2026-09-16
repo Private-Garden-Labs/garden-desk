@@ -156,7 +156,7 @@ async function escapingLinkProbe(launcher: CodeAgentLauncher, sourceFolder: stri
     if (error instanceof M3ProductCheckFailure) throw error;
     if (
       error instanceof Error &&
-      error.message === "agent_helper_exited_0" &&
+      error.message === "agent_helper_exited_1" &&
       diagnostics.has("process_start") &&
       diagnostics.has("process_exit")
     ) {

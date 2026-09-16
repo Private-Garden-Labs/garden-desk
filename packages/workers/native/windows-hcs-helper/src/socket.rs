@@ -260,8 +260,9 @@ pub fn relay(runtime_id: &str) -> Result<(), Box<dyn Error>> {
     let (input_result_tx, input_result_rx) = std::sync::mpsc::channel();
     std::thread::spawn(move || {
         let result = input(handle).map_err(|error| error.to_string());
+        let failed = result.is_err();
         let _ = input_result_tx.send(result);
-        unsafe { shutdown(handle, 2) };
+        unsafe { shutdown(handle, if failed { 2 } else { 1 }) };
     });
     let stdout = std::io::stdout();
     let mut output = stdout.lock();
@@ -269,8 +270,9 @@ pub fn relay(runtime_id: &str) -> Result<(), Box<dyn Error>> {
         let mut header = [0; 4];
         if !read_socket(handle, &mut header)? {
             return match input_result_rx.recv_timeout(Duration::from_millis(100)) {
+                Ok(Ok(())) => Ok(()),
                 Ok(Err(error)) => Err(error.into()),
-                _ => Ok(()),
+                Err(_) => Err("The guest closed the agent connection.".into()),
             };
         }
         let length = u32::from_be_bytes(header) as usize;

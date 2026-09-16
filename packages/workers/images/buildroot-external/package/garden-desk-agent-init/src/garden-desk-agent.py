@@ -25,6 +25,7 @@ WORKSPACE = pathlib.Path("/workspace")
 SOURCE = pathlib.Path("/source")
 INPUTS = pathlib.Path("/run/attachments")
 RUNTIME = pathlib.Path("/run/user")
+BLOCK_DEVICES = pathlib.Path("/sys/class/block")
 SECCOMP_RET_ALLOW = 0x7FFF0000
 SECCOMP_RET_ERRNO = 0x00050000
 SECCOMP_RET_KILL_PROCESS = 0x80000000
@@ -70,7 +71,7 @@ def write_frame(connection, value):
 
 
 def block_devices():
-    names = [item.name for item in pathlib.Path("/sys/class/block").glob("vd*")]
+    names = [item.name for pattern in ("vd*", "sd*") for item in BLOCK_DEVICES.glob(pattern)]
     return [pathlib.Path("/dev") / name for name in sorted(names, key=lambda name: (len(name), name))]
 
 

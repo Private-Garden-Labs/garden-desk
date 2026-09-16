@@ -140,6 +140,34 @@ print(json.dumps([module.is_artifact_candidate(path) for path in json.loads(sys.
   ) as boolean[];
 }
 
+function inputDevices(names: string[]): string[] {
+  const program = `
+import importlib.util
+import json
+import pathlib
+import sys
+import tempfile
+
+if sys.platform == "win32":
+    import types
+    sys.modules["resource"] = types.ModuleType("resource")
+
+spec = importlib.util.spec_from_file_location("garden_desk_agent", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+with tempfile.TemporaryDirectory() as directory:
+    module.BLOCK_DEVICES = pathlib.Path(directory)
+    for name in json.loads(sys.argv[2]):
+        (module.BLOCK_DEVICES / name).touch()
+    print(json.dumps([path.as_posix() for path in module.block_devices()]))
+`;
+  return JSON.parse(
+    execFileSync(python, ["-B", "-c", program, agentPath, JSON.stringify(names)], {
+      encoding: "utf8",
+    }),
+  ) as string[];
+}
+
 describe("guest artifact baseline", () => {
   it("keeps the shared and guest artifact path rules equal", () => {
     const paths = [
@@ -188,5 +216,12 @@ describe("guest artifact baseline", () => {
       ),
       second: ["result-16.txt"],
     });
+  });
+});
+
+describe("guest input devices", () => {
+  it("finds the read-only attachment disks of both hypervisors", () => {
+    expect(inputDevices(["sdb", "sda", "loop0"])).toEqual(["/dev/sda", "/dev/sdb"]);
+    expect(inputDevices(["vdb", "vda"])).toEqual(["/dev/vda", "/dev/vdb"]);
   });
 });
