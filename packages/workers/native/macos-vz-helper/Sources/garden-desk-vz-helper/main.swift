@@ -232,7 +232,17 @@ func configuration(_ arguments: Arguments) throws -> VZVirtualMachineConfigurati
 @main
 struct GardenDeskVirtualizationHelper {
     @MainActor
-    static func main() async throws {
+    static func main() async {
+        do {
+            try await run()
+        } catch {
+            FileHandle.standardError.write(Data("\(error)\n".utf8))
+            exit(1)
+        }
+    }
+
+    @MainActor
+    static func run() async throws {
         let arguments = try parseArguments()
         let machineConfiguration = try configuration(arguments)
         let virtualMachine = VZVirtualMachine(configuration: machineConfiguration)
