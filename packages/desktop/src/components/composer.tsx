@@ -32,26 +32,31 @@ export const THINKING_LABELS: Record<ThinkingLevel, string> = {
   xhigh: "Extended",
 };
 
-function ThinkingSelect({
+function EffortControl({
   disabled,
   thinking,
   onThinkingChange,
 }: Pick<ComposerProps, "disabled" | "thinking" | "onThinkingChange">) {
   return (
-    <select
-      aria-label="Thinking"
-      className="thinking-select"
-      disabled={disabled}
-      onChange={(event) => onThinkingChange(event.target.value as ThinkingLevel)}
-      title="How long Garden Desk thinks before it answers"
-      value={thinking}
+    <label
+      className={`effort-control${disabled ? " effort-control-disabled" : ""}`}
+      title="How much effort the model spends before it answers"
     >
-      {Object.entries(THINKING_LABELS).map(([level, label]) => (
-        <option key={level} value={level}>
-          {label}
-        </option>
-      ))}
-    </select>
+      <Icon name="thinking" />
+      <span className="effort-label">Effort</span>
+      <select
+        aria-label="Effort"
+        disabled={disabled}
+        onChange={(event) => onThinkingChange(event.target.value as ThinkingLevel)}
+        value={thinking}
+      >
+        {Object.entries(THINKING_LABELS).map(([level, label]) => (
+          <option key={level} value={level}>
+            {label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
@@ -209,7 +214,7 @@ export function Composer({
           <Icon name="add" />
         </button>
         <div className="composer-send-group">
-          <ThinkingSelect
+          <EffortControl
             disabled={disabled || running}
             onThinkingChange={onThinkingChange}
             thinking={thinking}

@@ -14,7 +14,7 @@ import {
   JobIdSchema,
   SessionIdSchema,
 } from "./ids.js";
-import { InferencePerformanceSchema } from "./inference.js";
+import { InferencePerformanceSchema, ThinkingLevelSchema } from "./inference.js";
 
 export const AgentLanguageSchema = z.enum(["python", "node", "shell"]);
 
@@ -78,6 +78,7 @@ export const AgentRunResultSchema = z.object({
   executions: z.array(AgentExecutionResultSchema).max(1_280),
   guestExecutions: z.number().int().nonnegative().max(1_280),
   inference: InferencePerformanceSchema,
+  thinking: ThinkingLevelSchema.optional(),
 });
 
 export const AgentRunPerformanceSchema = z.object({
@@ -86,6 +87,7 @@ export const AgentRunPerformanceSchema = z.object({
   tokensPerSecond: z.number().finite().nonnegative(),
   promptTokensPerSecond: z.number().finite().nonnegative(),
   totalDurationMs: z.number().int().nonnegative(),
+  thinking: ThinkingLevelSchema.optional(),
 });
 
 export const AgentRunStateSchema = z.enum([

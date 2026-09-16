@@ -157,6 +157,7 @@ export class ChatAgentLoop {
       executions: state.executions,
       guestExecutions: state.guestExecutionsStarted,
       inference: performance,
+      thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     });
   }
   private async recoverContext(

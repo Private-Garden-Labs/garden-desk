@@ -81,7 +81,7 @@ The conversation timeline supports:
 - Active output follows only while the viewer remains within 40 pixels of the bottom. Manual scrolling is preserved and exposes **Jump to latest**. Switching conversations clears the selected step.
 - Plain-language running, cancelling, cancelled, timed-out, failed, and completed states.
 - Security or unsupported-operation warnings.
-- A compact performance row beneath the newest assistant response ordered as prompt-processing tokens per second, generation tokens per second, and total run time.
+- A compact performance row beneath the newest assistant response ordered as prompt-processing tokens per second, generation tokens per second, total run time, and the effort level the answer used. A run recorded before effort was captured omits that last item.
 
 When the approved model and runtime expose a typed thought segment, the segment streams into the matching collapsed activity row. It stays only in desktop memory until Garden Desk closes and is never restored. Hidden or unsegmented internal reasoning is never inferred, exposed, or persisted. Activity describes observable actions and results only.
 
@@ -95,7 +95,7 @@ The composer is multiline and anchored to the bottom of the conversation pane.
 
 - The add button opens attachment actions; folder selection remains a separate grant action.
 - Context chips show the active folder or explicit attachments.
-- A **Thinking** control sits immediately before Send. It offers **None**, **Low**, **Medium**, and **Extended**, and it starts at Medium. It sets how long the model thinks before it answers the next message. The choice applies to the primary agent for the messages the user sends after it. It stays in UI memory and returns to Medium on reload, so it adds no storage. Sub-agents always run at Medium, and the specialist view states that level while the user reads a sub-agent.
+- An **Effort** control sits immediately before Send. It shows a thinking icon, the word Effort, and the selected level: **None**, **Low**, **Medium**, or **Extended**. It starts at Medium and sets how much effort the model spends before it answers the next message. The choice applies to the primary agent for the messages the user sends after it. It stays in UI memory and returns to Medium on reload, so it adds no storage. Sub-agents always run at Medium, and the specialist view states that level while the user reads a sub-agent.
 - Send becomes Stop while a run is active.
 - Command-Enter sends the current message on macOS; Enter remains available for multiline text.
 - Switching conversations does not stop a run. Other conversations may start work up to the RAM-derived VM capacity; additional work stays queued without booting another guest.

@@ -36,7 +36,7 @@ export function tokenRate(tokens: number, milliseconds: number): number {
 }
 
 export function runPerformance(
-  result: Pick<AgentRunResult, "inference">,
+  result: Pick<AgentRunResult, "inference" | "thinking">,
   createdAt: string,
 ): AgentRunPerformance {
   return {
@@ -51,6 +51,7 @@ export function runPerformance(
       result.inference.promptDurationMs,
     ),
     totalDurationMs: Math.max(0, Date.now() - Date.parse(createdAt)),
+    ...(result.thinking === undefined ? {} : { thinking: result.thinking }),
   };
 }
 

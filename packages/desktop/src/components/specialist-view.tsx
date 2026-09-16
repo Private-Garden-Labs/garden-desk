@@ -76,7 +76,7 @@ export function SpecialistActions({
         Go back
       </button>
       <span className="specialist-thinking">
-        Thinking · {THINKING_LABELS[DEFAULT_THINKING_LEVEL]}
+        Effort · {THINKING_LABELS[DEFAULT_THINKING_LEVEL]}
       </span>
       {needsAnswer ? (
         <button className="activity-row-label" onClick={onBack} type="button">

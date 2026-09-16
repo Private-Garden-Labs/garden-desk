@@ -1557,21 +1557,61 @@ textarea:focus-visible {
   margin-left: auto;
 }
 
-.thinking-select {
-  height: 30px;
-  padding: 0 8px;
-  border: 1px solid var(--border-color);
+.effort-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px 0 10px;
   border-radius: 999px;
   color: var(--ink-soft);
-  font: inherit;
-  font-size: 13px;
-  background: transparent;
+  font-size: 12px;
   cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
 }
 
-.thinking-select:disabled {
+.effort-control:hover,
+.effort-control:focus-within {
+  color: var(--accent-strong);
+  background: rgb(57 127 121 / 12%);
+}
+
+.effort-control svg {
+  width: 15px;
+  height: 15px;
+}
+
+.effort-control select {
+  appearance: none;
+  padding: 0;
+  border: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  background: transparent;
+  cursor: inherit;
+}
+
+.effort-control:hover select,
+.effort-control:focus-within select {
+  color: var(--accent-strong);
+}
+
+.effort-control::after {
+  width: 0;
+  height: 0;
+  border-top: 4px solid currentcolor;
+  border-right: 3.5px solid transparent;
+  border-left: 3.5px solid transparent;
+  opacity: 0.7;
+  content: "";
+}
+
+.effort-control-disabled {
+  opacity: 0.5;
   cursor: default;
-  opacity: 0.6;
 }
 
 .specialist-thinking {
