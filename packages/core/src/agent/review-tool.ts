@@ -12,7 +12,11 @@ export function reviewTool(): ToolSpec {
             type: "string",
             description: "Exact guest path under /source, /run/attachments, or /workspace.",
           },
-          prompt: { type: "string", description: "The text check to perform." },
+          prompt: {
+            type: "string",
+            description:
+              "The user's request in the user's own words. Add no instructions; the review has its own.",
+          },
         },
         ["path", "prompt"],
       ),

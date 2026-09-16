@@ -3,10 +3,12 @@ import {
   type AgentRunResult,
   type ChatGenerationResult,
   DEFAULT_THINKING_LEVEL,
+  INFERENCE_PROFILE,
   JobIdSchema,
 } from "@gardendesk/shared";
 import { withCurrentTimeContext } from "../agent/chat-current-time.js";
 import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-input.js";
+import { chatOutputTokens } from "../agent/chat-output-budget.js";
 import { streamCallbacks } from "../agent/chat-streaming.js";
 import { isSuccessfulExecution } from "../agent/execution-success.js";
 import type { InferenceService } from "../runtime/inference.js";
@@ -140,10 +142,12 @@ export async function reviewDocument(
 ): Promise<AgentRunResult> {
   const extracted = await extractDocument(input, source.attachment, source.directory);
   input.signal?.throwIfAborted();
+  const contextTokens =
+    input.contextTokens === "auto" ? INFERENCE_PROFILE.contextTokens : input.contextTokens;
   const request = {
     modelId: input.modelId,
     contextSize: input.contextTokens,
-    maxTokens: 4_096,
+    maxTokens: chatOutputTokens(contextTokens, false),
     temperature: 0,
     thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     tools: [],
