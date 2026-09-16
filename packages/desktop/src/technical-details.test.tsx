@@ -260,10 +260,7 @@ it("shows pending, success, reveal, and failure states", () => {
     <DebugSnapshotPanel
       onCreate={() => undefined}
       onReveal={() => undefined}
-      state={{
-        ...initialDebugSnapshotState,
-        path: "/tmp/garden-desk-session-debug-ready",
-      }}
+      state={{ ...initialDebugSnapshotState, path: "/tmp/garden-desk-session-debug-ready" }}
     />,
   );
   expect(ready).toContain('aria-label="Debug snapshot path"');
@@ -274,10 +271,7 @@ it("shows pending, success, reveal, and failure states", () => {
     <DebugSnapshotPanel
       onCreate={() => undefined}
       onReveal={() => undefined}
-      state={{
-        ...initialDebugSnapshotState,
-        error: "The debug snapshot could not be created.",
-      }}
+      state={{ ...initialDebugSnapshotState, error: "The debug snapshot could not be created." }}
     />,
   );
   expect(failed).toContain('role="alert"');

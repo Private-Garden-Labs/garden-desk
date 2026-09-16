@@ -20,7 +20,7 @@ import { SpecialistView } from "./components/specialist-view.js";
 import { TechnicalDetails } from "./components/technical-details.js";
 import { openAttachment, selectSession, send } from "./desktop-actions.js";
 import { type DropIntent, useNativeDrop } from "./desktop-drop.js";
-import { initialModelStatus, useModelRefresh } from "./desktop-model.js";
+import { initialModelStatus, unloadModel, useModelRefresh } from "./desktop-model.js";
 import { useDraftPersistence } from "./draft-persistence.js";
 import { secureWorkspaceAllowsTasks } from "./secure-workspace.js";
 import { type DesktopBootstrapRequest, desktopBootstrapRequest } from "./startup.js";
@@ -103,6 +103,10 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
     setDropIntent,
     setError: setDesktopError,
   });
+  const changeDraft = (draft: string) => {
+    dispatch({ type: "draft.change", draft });
+    draftPersistence.schedule(state.activeSessionId, draft);
+  };
   const runTask = (text: string) => {
     if (!tasksAllowed) {
       setDesktopError("Set up the secure workspace before starting a new task.");
@@ -178,16 +182,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
             detailDispatch({ type: "step.select", stepId: undefined });
             setTechnicalDetailsOpen(true);
           }}
-          onUnload={() => {
-            void api
-              .unloadModel()
-              .then(async (unloaded) => {
-                if (!unloaded)
-                  setDesktopError("The model is still in use and could not be unloaded.");
-                setModel(await api.getModelStatus());
-              })
-              .catch(() => setDesktopError("The model could not be unloaded."));
-          }}
+          onUnload={() => void unloadModel(api, setModel, setDesktopError)}
         />
         <SecureWorkspaceBanner
           busy={secureWorkspace.busy}
@@ -232,14 +227,10 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
           nativeActionMessage={nativeUnavailable}
           ready={state.loaded}
           onOpenAttachment={(attachmentId) => {
-            if (state.activeSessionId !== undefined) {
+            if (state.activeSessionId !== undefined)
               void openAttachment(api, state.activeSessionId, attachmentId, setDesktopError);
-            }
           }}
-          onSuggestion={(draft) => {
-            dispatch({ type: "draft.change", draft });
-            draftPersistence.schedule(state.activeSessionId, draft);
-          }}
+          onSuggestion={changeDraft}
           {...generatedFileActions}
           onSelectStep={onSelectStep}
           selectedStepId={state.selectedStepId}
@@ -268,10 +259,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
           dropIntent={dropIntent}
           nativeActionMessage={nativeUnavailable}
           onCancel={cancelTask}
-          onChange={(draft) => {
-            dispatch({ type: "draft.change", draft });
-            draftPersistence.schedule(state.activeSessionId, draft);
-          }}
+          onChange={changeDraft}
           onSend={runTask}
           running={running}
           setConfirmation={setConfirmation}

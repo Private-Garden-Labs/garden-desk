@@ -169,12 +169,10 @@ async function removeAttachment(core: GardenDeskCore, request: RpcRequest): Prom
 
 async function startAgent(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
   const sessionId = sessionIdParam(request);
-  const { task } = request.params;
-  if (typeof task !== "string" || task.trim().length === 0) {
-    return failure(request, "invalid_request", "Invalid task.");
-  }
   const thinking = ThinkingLevelSchema.safeParse(request.params.thinking);
-  if (!thinking.success) return failure(request, "invalid_request", "Invalid thinking level.");
+  const task = typeof request.params.task === "string" ? request.params.task.trim() : "";
+  if (task.length === 0 || !thinking.success)
+    return failure(request, "invalid_request", "Invalid task.");
   return success(request, await core.startAgent(sessionId, task, thinking.data));
 }
 

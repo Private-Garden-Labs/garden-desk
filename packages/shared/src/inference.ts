@@ -5,7 +5,7 @@ import { JobIdSchema, RequestIdSchema } from "./ids.js";
 export const InferenceProfileSchema = z.enum(["auto", "local16"]);
 export const InferenceOperationSchema = z.enum(["generate", "chat", "embed", "probe", "vision"]);
 export const ThinkingLevelSchema = z.enum(["none", "low", "medium", "xhigh"]);
-export const DEFAULT_THINKING_LEVEL = "medium" as const;
+export const DEFAULT_THINKING_LEVEL: ThinkingLevel = "medium";
 export const GpuMemoryKindSchema = z.enum(["dedicated", "unified"]);
 export const InferenceBackendSchema = z.enum(["metal", "cuda", "vulkan"]);
 export const GenerationContextLimitReasonSchema = z.enum([

@@ -92,6 +92,7 @@ export class DemoDesktopApi implements DesktopApi {
   dismissQuestion = demoUnavailable;
   createDebugSnapshot = demoUnavailable;
   revealDebugSnapshot = demoUnavailable;
+  openCatalogFolder = demoUnavailable;
 
   async createSession(folderId: string | null) {
     this.sequence += 1;
