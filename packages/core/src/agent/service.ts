@@ -26,15 +26,10 @@ import { AGENT_WORKER_LIMITS } from "./limits.js";
 import { MarkdownDefinitionLibrary } from "./markdown-definition-library.js";
 import { runPrimaryAgent } from "./primary-run.js";
 import { AgentRunCapacity } from "./run-capacity.js";
-import { type ActiveRun, activeRunSnapshot } from "./service-active.js";
-import { persistSuccessfulRun } from "./service-audit.js";
+import { type ActiveRun, activeRunSnapshot, guestStartDuring } from "./service-active.js";
+import { persistFailedRun, persistSuccessfulRun } from "./service-audit.js";
 import { AgentImageInspector } from "./service-image.js";
-import {
-  agentFailureEvent,
-  agentFailureText,
-  agentHistory,
-  inferenceRunContext,
-} from "./service-results.js";
+import { agentHistory, inferenceRunContext } from "./service-results.js";
 import { SessionSummaryQueue } from "./service-summary-queue.js";
 import { AgentSessionManager } from "./session-manager.js";
 import { SessionSummaryStore } from "./session-summary-store.js";
@@ -166,7 +161,14 @@ export class AgentService {
   }
   snapshot(runId: string): AgentRunSnapshot {
     const snapshot = activeRunSnapshot(this.store, this.active.values(), runId);
-    return { ...snapshot, sessionTitle: this.conversations.getTitle(snapshot.run.sessionId) };
+    return {
+      ...snapshot,
+      sessionTitle: this.conversations.getTitle(snapshot.run.sessionId),
+      guestStart: guestStartDuring(
+        this.sessions.guestStartsFor(snapshot.run.sessionId),
+        snapshot.run,
+      ),
+    };
   }
   settleQuestion = (runId: string, questionId: string, answers?: string[][]): boolean =>
     settleActiveQuestion(this.active, runId, questionId, answers);
@@ -200,24 +202,6 @@ export class AgentService {
     const cancelled = this.jobs.cancel(jobId) !== undefined;
     active?.controller.abort(new DOMException("Agent run cancelled.", "AbortError"));
     return cancelled;
-  }
-  private failRun(run: AgentRunSummary, signal: AbortSignal, error: unknown): void {
-    const cancelled = signal.aborted || this.jobs.isCancellationRequested(run.jobId);
-    const state = cancelled ? "cancelled" : "failed";
-    const detail = cancelled ? "cancelled" : agentFailureText(error);
-    const event = agentFailureEvent(cancelled, detail);
-    this.updateActive(run.jobId, { thinking: null, response: null });
-    this.database.transaction(() => {
-      this.store.execution.failIncomplete(run.id, cancelled);
-      this.store.transitionRun(run.id, { state, error: detail });
-      if (!cancelled) this.jobs.transition(run.jobId, "failed");
-      this.store.appendEvent(run.id, event.type, event.summary, event.detail);
-    })();
-    this.audit.append({
-      type: "agent.completed",
-      outcome: "failed",
-      metadata: { runId: run.id, jobId: run.jobId, code: detail },
-    });
   }
   // biome-ignore lint/complexity/noExcessiveLinesPerFunction: the run lifecycle stays linear so cleanup and terminal persistence remain paired.
   private async execute(
@@ -283,7 +267,8 @@ export class AgentService {
       if (command === undefined || command.workflow === "agent")
         this.summaryQueue.enqueue(run, signal, measuredContextTokens);
     } catch (error) {
-      this.failRun(run, signal, error);
+      this.updateActive(run.jobId, { thinking: null, response: null });
+      persistFailedRun(this.persistencePorts, run, signal, error);
     } finally {
       releaseCapacity?.();
     }

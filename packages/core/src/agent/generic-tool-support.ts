@@ -242,7 +242,7 @@ export function inspectionTools(): ToolSpec[] {
       },
       required: ["path"],
       description:
-        "Read UTF-8 plain text by line range. Offset defaults to 1; limit defaults to 2000, clamped to 1-2000.",
+        "Read a file by line range. DOC, DOCX, and PDF return their extracted text; any other file must be UTF-8 text. Offset defaults to 1; limit defaults to 2000, clamped to 1-2000.",
     }),
     inspectionTool({
       name: "glob",

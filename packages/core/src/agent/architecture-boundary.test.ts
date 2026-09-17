@@ -4,7 +4,14 @@ import { readSourceFiles } from "../prompt-files.js";
 
 const FORBIDDEN =
   /\b(?:xlsx|docx|pdf|openpyxl|pypdf|python-docx|reportlab|avans|salari|tranzac)\b/iu;
-const ALLOWED = new Set([resolve(process.cwd(), "packages/core/src/agent/records.ts")]);
+const ALLOWED = new Set(
+  [
+    "packages/core/src/agent/document-text-source.ts",
+    "packages/core/src/agent/generic-tool-support.ts",
+    "packages/core/src/agent/records.ts",
+    "packages/core/src/agent/review-tool.ts",
+  ].map((path) => resolve(process.cwd(), path)),
+);
 
 describe("generic agent architecture boundary", () => {
   it("keeps document-format policy out of core and shared implementation sources", () => {

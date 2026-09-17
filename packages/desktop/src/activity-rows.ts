@@ -4,7 +4,7 @@ export type ActivityStatus = "running" | "done" | "failed";
 
 export interface ActivityRow {
   id: string;
-  kind: "tool" | "thinking" | "subagent";
+  kind: "tool" | "thinking" | "subagent" | "workspace";
   title: string;
   status: ActivityStatus;
   toolName: string | null | undefined;
@@ -30,6 +30,10 @@ function isSubagent(item: TimelineItem): boolean {
   );
 }
 
+function isGuestStart(item: TimelineItem): boolean {
+  return item.eventType === "guest.started" || item.eventType === "guest.completed";
+}
+
 function isToolPair(item: TimelineItem): boolean {
   return (
     item.eventType === "tool.started" ||
@@ -43,7 +47,9 @@ function statusFor(eventType: TimelineItem["eventType"], failed: boolean): Activ
   if (eventType === "tool.completed" || eventType === "subagent.completed") {
     return failed ? "failed" : "done";
   }
-  if (eventType === "execution.completed") return failed ? "failed" : "done";
+  if (eventType === "execution.completed" || eventType === "guest.completed") {
+    return failed ? "failed" : "done";
+  }
   return "running";
 }
 
@@ -97,13 +103,15 @@ function rowKey(item: TimelineItem): string {
   return `event:${item.id}`;
 }
 
-function newRow(key: string, item: TimelineItem, thinking: string | undefined): ActivityRow {
+function rowKind(item: TimelineItem, thinking: string | undefined): ActivityRow["kind"] {
+  if (isSubagent(item)) return "subagent";
+  if (isGuestStart(item)) return "workspace";
   const hasThinking = thinking !== undefined || item.durationMs !== undefined;
-  const kind = isSubagent(item)
-    ? "subagent"
-    : PLANNING_EVENTS.has(item.eventType ?? "") && hasThinking
-      ? "thinking"
-      : "tool";
+  return PLANNING_EVENTS.has(item.eventType ?? "") && hasThinking ? "thinking" : "tool";
+}
+
+function newRow(key: string, item: TimelineItem, thinking: string | undefined): ActivityRow {
+  const kind = rowKind(item, thinking);
   return {
     id: key,
     kind,

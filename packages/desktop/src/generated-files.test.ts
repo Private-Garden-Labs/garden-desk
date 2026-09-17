@@ -39,4 +39,27 @@ describe("generated file cards", () => {
     expect(markup).toContain('title="Unavailable in the public demo"');
     expect(markup).toContain('aria-live="polite"');
   });
+
+  it("hides code files and shows no section when only code files exist", () => {
+    const script = AgentArtifactSummarySchema.parse({
+      ...report,
+      id: "6ad824dc-bd7a-431a-9b2a-e79cdb8a9900",
+      name: "feb2025.py",
+      mediaType: "application/octet-stream",
+    });
+    const render = (artifacts: (typeof report)[]) =>
+      renderToStaticMarkup(
+        createElement(GeneratedFiles, {
+          artifacts,
+          disabledReason: undefined,
+          onOpen: async () => undefined,
+          onSave: async () => "cancelled" as const,
+        }),
+      );
+
+    expect(render([script])).toBe("");
+    const markup = render([script, report]);
+    expect(markup).toContain("report.csv");
+    expect(markup).not.toContain("feb2025.py");
+  });
 });

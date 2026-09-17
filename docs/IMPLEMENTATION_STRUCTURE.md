@@ -51,18 +51,21 @@ TypeScript owns only typed runtime facts, prompt selection, placeholder renderin
 schema construction. A skill directory and its required `name` and `description` frontmatter
 follow the open Agent Skills contract; the name matches the lowercase hyphenated directory and
 the description states what the skill does and when to use it. Core loads the metadata catalog,
-advertises that metadata to the model, and returns one body only when the model calls the generic
-`skill` tool. It never routes on arbitrary file contents or model output. It rejects malformed
+advertises the metadata named in the agent's `skills` list (or all of it) to an agent with the
+`skill` tool, and includes the listed bodies in the instructions of an agent without that tool.
+It never routes on arbitrary file contents or model output. It rejects malformed
 prompt assets at startup. The desktop package copies the complete tree into its
 offline Core resources. The resource manifest hashes every prompt, and the Windows host verifies
 and read-locks every packaged prompt before starting Core.
 
-M3 contains four format and command skills plus 14 professional review skills. Each product skill
+M3 contains four format and command skills plus 14 professional review skills. The format skills
+cover XLSX reading and DOCX, PDF, and XLSX deliverables; `read` returns DOC, DOCX, and PDF text
+through the fixed guest extraction, so no skill describes how to read those. Each product skill
 contains only `SKILL.md`; it has no script, reference, asset, UI metadata, or executable authority.
 `document-review` contains shared evidence and safety rules. The 12 focused domain skills do not
 repeat those rules. The prompt-only `review-report` guidance gives formal result structure and
-optional DOCX or PDF output. Core does not load a bundle, select a domain, select a skill body,
-route a format, or parse a document format.
+optional DOCX or PDF output. Core does not load a bundle, select a domain, or select a skill body
+from model output.
 
 ## M3 Package Shape
 

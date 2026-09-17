@@ -8,7 +8,7 @@ export interface FolderGroup extends FolderSummary {
 
 export interface TimelineItem {
   createdAt: string;
-  eventType?: AgentEventType;
+  eventType?: AgentEventType | "guest.started" | "guest.completed";
   id: string;
   kind: "user" | "assistant" | "activity";
   text: string;

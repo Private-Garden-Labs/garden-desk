@@ -6,7 +6,9 @@ import {
   type ChatGenerationResult,
   type ChatMessage,
   DEFAULT_THINKING_LEVEL,
+  INFERENCE_PROFILE,
   JobIdSchema,
+  MAX_GENERATION_TOKENS,
 } from "@gardendesk/shared";
 import type { InferenceService } from "../runtime/inference.js";
 import { artifactCandidateNames } from "./artifact-results.js";
@@ -16,7 +18,6 @@ import { generateWithInferenceRecovery } from "./chat-inference-recovery.js";
 import { initialChatMessages } from "./chat-initial-messages.js";
 import type { ChatAgentInput, ChatRecoveryState, ChatTurnOptions } from "./chat-loop-input.js";
 import { createToolRegistry } from "./chat-loop-registry.js";
-import { chatOutputTokens } from "./chat-output-budget.js";
 import { streamCallbacks } from "./chat-streaming.js";
 import { type ChatToolState, executeToolCalls, initialToolState } from "./chat-tool-turn.js";
 import type { GenericToolRegistry } from "./generic-tools.js";
@@ -61,7 +62,7 @@ export class ChatAgentLoop {
       messages: withCurrentTimeContext(messages, this.clock),
       tools,
       contextSize: this.requestedContextSize,
-      maxTokens: chatOutputTokens(this.contextTokens, phase === "compaction"),
+      maxTokens: Math.min(this.contextTokens, MAX_GENERATION_TOKENS),
       temperature,
       thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     } as const;
@@ -223,7 +224,9 @@ export class ChatAgentLoop {
     this.requestedContextSize = input.contextTokens;
     this.contextTokens =
       input.knownContextTokens ??
-      (input.contextTokens === "auto" ? 8_192 : Math.max(8_192, input.contextTokens));
+      (input.contextTokens === "auto"
+        ? INFERENCE_PROFILE.contextTokens
+        : Math.max(8_192, input.contextTokens));
     const registry = createToolRegistry(input);
     const performance = emptyPerformance();
     const state = initialToolState(initialChatMessages(input));

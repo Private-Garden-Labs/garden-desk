@@ -3,6 +3,7 @@ import {
   type AgentRunResult,
   type ChatGenerationResult,
   DEFAULT_THINKING_LEVEL,
+  INFERENCE_PROFILE,
   JobIdSchema,
 } from "@gardendesk/shared";
 import { withCurrentTimeContext } from "../agent/chat-current-time.js";
@@ -143,7 +144,8 @@ export async function reviewDocument(
   const request = {
     modelId: input.modelId,
     contextSize: input.contextTokens,
-    maxTokens: 4_096,
+    maxTokens:
+      input.contextTokens === "auto" ? INFERENCE_PROFILE.contextTokens : input.contextTokens,
     temperature: 0,
     thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     tools: [],

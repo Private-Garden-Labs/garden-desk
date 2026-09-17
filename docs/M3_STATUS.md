@@ -1,13 +1,13 @@
 # Milestone M3 Status
 
-Updated: 2026-09-07
+Updated: 2026-09-17
 
 M3 Offline Dev-Agent Desktop V1 is active. The desktop runs one general-purpose local agent per conversation: a system prompt plus a fixed tool set, executing every file read and every command inside a no-network microVM (a virtual machine with no network interface).
 
 ## What M3 Delivers Today
 
 - New chat sessions with folder or explicit file attachments, folder groups, and recent-session paging.
-- The agent inspects a selected folder, writes and runs Python or Node.js, runs shell commands, and returns every file it created or changed under `/workspace` as a deliverable.
+- The agent inspects a selected folder, writes and runs Python or Node.js, runs shell commands, and returns every file it created or changed under `/workspace` as a deliverable. The Generated files list hides the code files it wrote to do the work.
 - In-run clarifying questions, cancellation, and session restoration after a restart.
 - Concurrent conversations share one resident inference worker inside a RAM-bounded pool of reusable microVMs. Stop and generation timeouts keep a healthy model resident.
 - A private, owner-only debugging snapshot for one session, for local troubleshooting.

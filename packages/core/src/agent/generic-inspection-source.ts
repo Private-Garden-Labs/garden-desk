@@ -1,12 +1,26 @@
+import { DOCUMENT_SUFFIXES, documentTextSource } from "./document-text-source.js";
+
 export type InspectionName = "read" | "glob" | "grep" | "list";
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: this is one bounded generated guest program.
 export function inspectionSource(operation: InspectionName, params: unknown): string {
   return [
     "from pathlib import Path",
-    "import codecs, fnmatch, json, re, sys",
+    "import codecs, fnmatch, json, os, re, subprocess, sys",
     `op = ${JSON.stringify(operation)}`,
     `args = json.loads(${JSON.stringify(JSON.stringify(params))})`,
+    documentTextSource,
+    "def document_lines(path, offset, limit):",
+    "    info = path.stat()",
+    "    key = f'{path}:{info.st_mtime_ns}:{info.st_size}'",
+    "    cache = Path('/workspace/.garden-desk-tools/read-extracted.txt')",
+    "    cached = cache.read_text(encoding='utf-8') if cache.exists() else ''",
+    "    if cached.split(chr(10), 1)[0] != key:",
+    "        cached = key + chr(10) + chr(10).join(document_text(path).splitlines())",
+    "        cache.parent.mkdir(parents=True, exist_ok=True)",
+    "        cache.write_text(cached, encoding='utf-8')",
+    "    for number, line in enumerate(cached.split(chr(10))[1:], 1):",
+    "        if offset <= number < offset + limit: print(f'{number}: {line}')",
     "def read_utf8_lines(path, offset, limit):",
     "    line_endings = tuple(map(chr, (10, 13, 11, 12, 28, 29, 30, 133, 8232, 8233)))",
     "    def stream(handle):\n        current_line = 1\n        after_cr = False\n        has_content = False\n        writing = False\n        decoder = codecs.getincrementaldecoder('utf-8')('strict')",
@@ -54,7 +68,8 @@ export function inspectionSource(operation: InspectionName, params: unknown): st
     "if op == 'read':",
     "    offset = args.get('offset', 1)",
     "    limit = args.get('limit', 2000)",
-    "    read_utf8_lines(root, offset, limit)",
+    `    if root.suffix.lower() in ${DOCUMENT_SUFFIXES}: document_lines(root, offset, limit)`,
+    "    else: read_utf8_lines(root, offset, limit)",
     "elif op == 'glob':",
     "    pattern = args['pattern']",
     "    for item in sorted(root.glob(pattern)): print(item)",
@@ -69,7 +84,11 @@ export function inspectionSource(operation: InspectionName, params: unknown): st
     "        except OSError as error: print(f'{item}: {error}')",
     "else:",
     "    depth = args.get('depth', 2)",
-    "    for item in sorted(root.rglob('*')):",
-    "        if len(item.relative_to(root).parts) <= depth: print(str(item) + ('/' if item.is_dir() else ''))",
+    "    def walk(folder, level):",
+    "        if level > depth: return",
+    "        for item in sorted(folder.iterdir()):",
+    "            print(str(item) + ('/' if item.is_dir() else ''))",
+    "            if item.is_dir() and not item.is_symlink(): walk(item, level + 1)",
+    "    if root.is_dir(): walk(root, 1)",
   ].join("\n");
 }

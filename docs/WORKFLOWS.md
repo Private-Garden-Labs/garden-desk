@@ -37,7 +37,7 @@ Sessions persist user messages, assistant messages, observable agent activity, a
 
 ## Prompt-Only Format Methods
 
-The Word, PDF, XLSX, and review-report skills give prompt-only guest methods. Core advertises skill metadata and returns a body only when the model calls the generic `skill` tool. Core does not route file formats, select skill bodies, or parse document formats.
+The Word, PDF, XLSX, and review-report skills give prompt-only guest methods for creating and editing files. Core advertises the skills an agent lists and returns a body when the model calls the generic `skill` tool; a fixed specialist without that tool receives those bodies inside its instructions. `read` and `/review` select one fixed guest extraction by file suffix for DOC, DOCX, and PDF text; the host parses no document format.
 
 Python and Node source can be saved in the session workspace, then run again from that path without resending the source. Ordinary syntax or runtime failures remain evidence for repair; the model reads the error and edits the file. A run that loops or makes no progress simply reaches the 40-turn cap and ends.
 
@@ -55,7 +55,7 @@ The V1 workflow suite covers:
 - Restart, reconnect, cancellation, timeout, and guest crash.
 - Traversal, escaping links, host-write attempts, credential access, package installation, network access, process storms, and resource exhaustion.
 - Bounded generated source, commands, stdout, stderr, artifacts, observations, model turns, time, memory, CPU, and persistent workspace. The live read-only source folder is not copied or size-limited.
-- The generic `skill` tool loads product-owned Word, XLSX, PDF, review-report, and professional-review guidance on demand. Core has no format router, skill-body selection rule, or format parser. The Word guidance reads legacy DOC files as plain text through guest Antiword, but it creates and edits only DOCX files.
+- The generic `skill` tool loads the product-owned Word, XLSX, PDF, review-report, and professional-review guidance an agent lists; a fixed specialist receives it inside its instructions. The host has no format parser. The Word guidance creates and edits only DOCX files; `read` and `/review` return legacy DOC, DOCX, and PDF text through the fixed guest extraction.
 - Packaged macOS and Windows behavior with zero-download first launch.
 
 Task-quality cases use deterministic development and held-out inputs. Security invariants require complete detection; general answer quality is reported honestly rather than hidden behind one aggregate score.

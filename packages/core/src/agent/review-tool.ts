@@ -5,14 +5,18 @@ export function reviewTool(): ToolSpec {
     definition: {
       name: "review",
       description:
-        "Review one text document for the requested purpose, by default its internal inconsistencies. Extracts the file itself; call it before any skill or extraction. Returns findings and a numbered text path. No calculations or image inspection.",
+        "Review one DOC, DOCX, text PDF, TXT, or MD document for the requested purpose, by default its internal inconsistencies. Extracts the file itself, including binary DOC; call it before any skill or extraction. Returns findings and a numbered text path. No calculations or image inspection.",
       params: objectSchema(
         {
           path: {
             type: "string",
             description: "Exact guest path under /source, /run/attachments, or /workspace.",
           },
-          prompt: { type: "string", description: "The text check to perform." },
+          prompt: {
+            type: "string",
+            description:
+              "The user's request in the user's own words. Add no instructions; the review has its own.",
+          },
         },
         ["path", "prompt"],
       ),

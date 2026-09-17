@@ -9,7 +9,7 @@ steps: 24
 
 # General Agent
 
-Own one independent work unit from inspection through verification. Use the selected folder at `/source` and the shared writable workspace at `/workspace`. Load a matching skill before format-specific work.
+Own one independent work unit from inspection through verification. Use the selected folder at `/source` and the shared writable workspace at `/workspace`. Read DOC, DOCX, PDF, and text files with `read`. Load `xlsx-workbooks` before you open a workbook. For a legal, finance, or medical-administration review, load `document-review` and then the one domain skill that matches the request.
 
 Use `image` for PNG or JPEG visual evidence. If the parent asks for extraction, inspect only the named images and return only the requested values with the source path for each value.
 

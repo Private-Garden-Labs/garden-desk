@@ -1,4 +1,4 @@
-import type { WorkerLimits } from "@gardendesk/shared";
+import type { AgentGuestStart, WorkerLimits } from "@gardendesk/shared";
 import type {
   AgentExecutionObserver,
   AgentExecutionUpdate,
@@ -8,6 +8,8 @@ import type {
 } from "@gardendesk/workers";
 import { agentScriptPreparationFailure } from "./agent-executor.js";
 import type { AgentInputResolver, ResolvedAgentInputs } from "./inputs.js";
+
+const RECENT_GUEST_STARTS = 8;
 
 class LifecycleRelay implements AgentExecutionObserver {
   readonly executionId = "00000000-0000-4000-8000-000000000000";
@@ -42,6 +44,7 @@ interface WarmSession {
 
 export class AgentSessionManager {
   private readonly warm = new Map<string, WarmSession>();
+  private readonly guestStarts = new Map<string, AgentGuestStart[]>();
   // FIFO chain per session id. Parallel sub-agents share their parent's session guest, which can
   // run only one execution at a time, so overlapping executions queue here instead of failing with
   // `agent_session_busy`. Keyed by session id so it survives warm-session recreation.
@@ -100,6 +103,28 @@ export class AgentSessionManager {
       return existing;
     }
     if (!(await this.makeRoom())) return undefined;
+    const start: AgentGuestStart = {
+      startedAt: new Date().toISOString(),
+      durationMs: null,
+      failed: false,
+    };
+    const starts = [...(this.guestStarts.get(sessionId) ?? []), start];
+    this.guestStarts.set(sessionId, starts.slice(-RECENT_GUEST_STARTS));
+    try {
+      return await this.open(sessionId, signal, observer);
+    } catch (error) {
+      start.failed = true;
+      throw error;
+    } finally {
+      start.durationMs = Date.now() - Date.parse(start.startedAt);
+    }
+  }
+
+  private async open(
+    sessionId: string,
+    signal: AbortSignal | undefined,
+    observer: AgentExecutionObserver | undefined,
+  ): Promise<WarmSession> {
     const lifecycle = new LifecycleRelay();
     await lifecycle.activate(observer);
     const inputs = await this.resolver.resolve(sessionId);
@@ -121,6 +146,10 @@ export class AgentSessionManager {
       await inputs.dispose();
       throw error;
     }
+  }
+
+  guestStartsFor(sessionId: string): readonly AgentGuestStart[] {
+    return this.guestStarts.get(sessionId) ?? [];
   }
 
   warmSession(sessionId: string): Promise<void> {
@@ -200,6 +229,7 @@ export class AgentSessionManager {
     return this.exclusive(async () => {
       const session = this.warm.get(sessionId);
       if (session !== undefined) await this.closeWarm(session);
+      this.guestStarts.delete(sessionId);
       if (deleteWorkspace) await this.launcher.deleteWorkspace(sessionId);
     });
   }

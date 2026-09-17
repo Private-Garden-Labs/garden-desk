@@ -1,6 +1,6 @@
 ---
 name: document-review
-description: Legal/finance/medical-administration review. Load before domain/format skills.
+description: Shared evidence and safety rules for a legal, finance, or medical-administration review. Load before the one domain skill.
 ---
 
 Scope/criteria/reader/files/parts. Original/authentic/complete/authoritative needs evidence. Cite file plus PDF:page; DOCX:section; DOC:extracted section(no layout); XLSX:sheet/row/cell; text/CSV:line/row. Report missing/scanned/encrypted/corrupt/incomplete/truncated/unsupported; absence is not proof.
