@@ -24,25 +24,15 @@ function completedDetails(event: AgentEvent): Array<string | undefined> {
   ];
 }
 
-function toolDetails(event: AgentEvent): Array<string | undefined> {
-  return [
-    event.toolName === null ? undefined : `Tool: ${event.toolName}`,
-    event.toolCallId === null ? undefined : `Call ID: ${event.toolCallId}`,
-  ];
-}
-
 function detailsForEvent(event: AgentEvent): Array<string | undefined> {
   switch (event.type) {
     case "execution.started":
       return startedDetails(event);
     case "execution.completed":
       return completedDetails(event);
-    case "tool.started":
-    case "subagent.started":
-      return toolDetails(event);
     case "tool.completed":
     case "subagent.completed":
-      return [...toolDetails(event), ...completedDetails(event)];
+      return completedDetails(event);
     default:
       return [];
   }

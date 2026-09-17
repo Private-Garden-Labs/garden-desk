@@ -90,7 +90,7 @@ describe("tool activity timeline", () => {
 
     expect(items).toHaveLength(2);
     expect(items[0]).toMatchObject({ eventType: "tool.started", text: "Reading files." });
-    expect(items[1]?.detail).toContain("Tool: read");
+    expect(items[1]).toMatchObject({ toolName: "read", toolCallId: "call-1" });
     expect(agentSteps(items, []).map((step) => step.kind)).toEqual(["tool", "tool"]);
   });
 
