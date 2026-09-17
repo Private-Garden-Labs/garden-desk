@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdtemp, realpath, rm } from "node:fs/promises";
 import { createConnection } from "node:net";
-import { homedir, tmpdir } from "node:os";
+import { homedir, tmpdir, totalmem } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import type {
   NativeWorkerHandle,
@@ -117,7 +117,11 @@ function sandboxProfile(
 }
 
 export class MacOsNativeWorkerLauncher implements NativeWorkerLauncher {
-  readonly gpu = { backend: "metal", memoryKind: "unified" } as const;
+  readonly gpu = {
+    backend: "metal",
+    memoryKind: "unified",
+    detectedMemoryBytes: totalmem(),
+  } as const;
   constructor(
     private readonly deniedPaths: string[] = [],
     private readonly runtimeExecutable: string = resolve(

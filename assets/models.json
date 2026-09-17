@@ -40,6 +40,25 @@
       "sha256": "cbb841a9ee0636b2ec172f5bb8df2ea8dfeb01e90fe7c6126581d662a0b4e43e"
     },
     {
+      "family": "qwen3.8",
+      "license": "Apache-2.0",
+      "redistribution": {
+        "status": "candidate_to_ship",
+        "reviewOwner": "repository_owner"
+      },
+      "id": "qwen3.8-27b-mtp-q4_0",
+      "role": "multi_token_prediction",
+      "companionFor": "qwen3.8-27b-ud-iq4_xs",
+      "source": {
+        "host": "huggingface.co",
+        "repository": "unsloth/Qwen3.8-27B-GGUF",
+        "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+        "file": "MTP/mtp-Qwen3.8-27B-Q4_0.gguf"
+      },
+      "byteLength": 1369590656,
+      "sha256": "50d9ce5a6da381bbcfb31061cf73df94a90e6faf8efeddee379a9cb8f1501c6e"
+    },
+    {
       "id": "qwen3-embedding-0.6b-q8_0",
       "family": "qwen3-embedding",
       "role": "embedding",

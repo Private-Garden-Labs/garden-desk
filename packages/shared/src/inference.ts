@@ -136,6 +136,7 @@ export const InferenceMemoryReportSchema = z.object({
   contextLimitTokens: z.number().int().positive().optional(),
   contextLimitReason: GenerationContextLimitReasonSchema.optional(),
   sequenceCount: z.number().int().positive().optional(),
+  multiTokenPrediction: z.boolean().optional(),
 });
 
 export const InferencePerformanceSchema = z.object({

@@ -19,7 +19,7 @@ import {
 } from "./resident-worker.js";
 import { chatBody, completeChat } from "./server-chat.js";
 import { ServerError, serverRequest } from "./server-http.js";
-import { startServer } from "./server-runtime.js";
+import { multiTokenPredictionEnabled, startServer } from "./server-runtime.js";
 
 export { type InferenceExecution, InferenceWorkerError } from "./resident-worker.js";
 
@@ -37,6 +37,7 @@ function boundedFailure(error: unknown): Error {
 interface ResidentServer {
   handle: Awaited<ReturnType<typeof startServer>>;
   modelPath: string;
+  multiTokenPredictionPath: string | undefined;
   contextTokens: number;
   embedding: boolean;
 }
@@ -74,6 +75,10 @@ export class InferenceWorkerClient {
     private readonly launcher: NativeWorkerLauncher,
     private readonly workerEntryPath: string,
   ) {}
+
+  get multiTokenPrediction(): boolean {
+    return multiTokenPredictionEnabled(this.launcher.gpu);
+  }
 
   async unload(): Promise<boolean> {
     if (this.busy) return false;
@@ -139,12 +144,16 @@ export class InferenceWorkerClient {
   ): Promise<ResidentServer> {
     const modelPath = execution.modelPath;
     if (modelPath === undefined) throw new ServerError("invalid_argument");
+    const multiTokenPredictionPath = this.multiTokenPrediction
+      ? execution.multiTokenPredictionPath
+      : undefined;
     const contextTokens =
       request.contextSize === "auto" ? INFERENCE_PROFILE.contextTokens : request.contextSize;
     const embedding = request.operation === "embed";
     if (
       this.resident &&
       (this.resident.modelPath !== modelPath ||
+        this.resident.multiTokenPredictionPath !== multiTokenPredictionPath ||
         this.resident.contextTokens !== contextTokens ||
         this.resident.embedding !== embedding)
     )
@@ -153,7 +162,13 @@ export class InferenceWorkerClient {
     const handle = await startServer(
       this.launcher,
       this.workerEntryPath,
-      { modelPath, contextTokens, embedding, memoryBudgetBytes: execution.memoryBudgetBytes },
+      {
+        modelPath,
+        contextTokens,
+        embedding,
+        memoryBudgetBytes: execution.memoryBudgetBytes,
+        ...(multiTokenPredictionPath === undefined ? {} : { multiTokenPredictionPath }),
+      },
       signal,
     ).catch(async (error: unknown) => {
       if (
@@ -168,7 +183,7 @@ export class InferenceWorkerClient {
         );
       throw new InferenceWorkerError("worker_crash", "Inference worker stopped.");
     });
-    this.resident = { handle, modelPath, contextTokens, embedding };
+    this.resident = { handle, modelPath, multiTokenPredictionPath, contextTokens, embedding };
     return this.resident;
   }
 
@@ -195,13 +210,17 @@ export class InferenceWorkerClient {
     resident: ResidentServer,
     signal: AbortSignal,
   ) {
-    const { handle, contextTokens } = resident;
+    const { handle, contextTokens, multiTokenPredictionPath } = resident;
     const base = {
       protocolVersion: 2,
       requestId: request.requestId,
       status: "ok",
       operation: request.operation,
-      memory: { ...this.memory(contextTokens, execution.memoryBudgetBytes), ...handle.memory() },
+      memory: {
+        ...this.memory(contextTokens, execution.memoryBudgetBytes),
+        ...handle.memory(),
+        multiTokenPrediction: multiTokenPredictionPath !== undefined,
+      },
     };
     if (request.operation === "embed")
       return InferenceWorkerResponseSchema.parse({

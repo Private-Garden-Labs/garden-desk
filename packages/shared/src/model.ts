@@ -41,7 +41,7 @@ const ModelSourceSchema = z
     host: z.literal("huggingface.co"),
     repository: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u),
     revision: z.string().regex(/^[a-f0-9]{40}$/u),
-    file: z.string().regex(/^[A-Za-z0-9_.-]+$/u),
+    file: z.string().regex(/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)?$/u),
   })
   .strict();
 
@@ -49,7 +49,7 @@ export const ModelAssetSchema = z
   .object({
     id: ModelIdSchema,
     family: z.string().min(1),
-    role: z.enum(["generation", "embedding", "multimodal_projector"]),
+    role: z.enum(["generation", "embedding", "multimodal_projector", "multi_token_prediction"]),
     companionFor: ModelIdSchema.optional(),
     source: ModelSourceSchema,
     byteLength: z.number().int().positive(),
@@ -121,6 +121,7 @@ export const ModelRuntimeStatusSchema = z.object({
   contextLimitTokens: z.number().int().positive().optional(),
   contextLimitReason: GenerationContextLimitReasonSchema.optional(),
   sequenceCount: z.number().int().positive().optional(),
+  multiTokenPrediction: z.boolean().optional(),
 });
 
 export type ModelRedistributionStatus = z.infer<typeof ModelRedistributionStatusSchema>;

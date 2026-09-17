@@ -13,7 +13,11 @@ import {
   rollbackPackageBuild,
 } from "../package-output-cleanup.js";
 import { prepareDevelopmentRuntimeOutput } from "../prepare-dev-runtime.js";
-import { generationModelFileName, projectorModelFileName } from "./package-model-contract.js";
+import {
+  draftModelFileName,
+  generationModelFileName,
+  projectorModelFileName,
+} from "./package-model-contract.js";
 
 const roots: string[] = [];
 
@@ -36,6 +40,7 @@ async function writePackage(
   await mkdir(join(resources, "models"), { recursive: true });
   await writeFile(join(resources, "models", generationModelFileName), model);
   await writeFile(join(resources, "models", projectorModelFileName), "projector");
+  await writeFile(join(resources, "models", draftModelFileName), "draft");
   await writeFile(
     join(resources, "resource-manifest.json"),
     JSON.stringify({
@@ -43,6 +48,7 @@ async function writePackage(
       files: [
         [generationModelFileName, manifestModel],
         [projectorModelFileName, "projector"],
+        [draftModelFileName, "draft"],
       ].map(([name, content]) => ({
         path: `models/${name}`,
         byteLength: Buffer.byteLength(content as string),
@@ -68,6 +74,7 @@ async function macTarget(profile: "debug" | "release"): Promise<PackageBuildTarg
   await mkdir(canonical, { recursive: true });
   await writeFile(join(canonical, generationModelFileName), "model");
   await writeFile(join(canonical, projectorModelFileName), "projector");
+  await writeFile(join(canonical, draftModelFileName), "draft");
   return target;
 }
 

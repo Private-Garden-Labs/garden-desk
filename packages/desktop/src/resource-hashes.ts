@@ -12,5 +12,6 @@ export interface ResourceHashes {
   agentInitramfs?: string;
   generationModel?: string;
   projectorModel?: string;
+  draftModel?: string;
   resourceManifest?: string;
 }

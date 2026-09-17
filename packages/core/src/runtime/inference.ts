@@ -51,6 +51,7 @@ export interface InferenceExecution {
   reasoning?: Map<string, string>;
   request: InferenceWorkerRequest;
   modelPath?: string;
+  multiTokenPredictionPath?: string;
   memoryBudgetBytes: number;
   timeoutMs: number;
   signal?: AbortSignal;
@@ -59,6 +60,7 @@ export interface InferenceExecution {
 }
 
 export interface InferencePort {
+  readonly multiTokenPrediction?: boolean;
   execute(execution: InferenceExecution): Promise<InferenceWorkerResponse>;
   unload(): Promise<boolean>;
 }

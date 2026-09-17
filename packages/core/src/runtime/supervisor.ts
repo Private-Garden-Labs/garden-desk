@@ -1,7 +1,8 @@
-import type {
-  AuditEventInput,
-  InferenceOperation,
-  InferenceWorkerRequest,
+import {
+  type AuditEventInput,
+  INFERENCE_PROFILE,
+  type InferenceOperation,
+  type InferenceWorkerRequest,
 } from "@gardendesk/shared";
 import {
   type InferenceDiagnosticOperation,
@@ -80,6 +81,7 @@ export class InferenceSupervisor extends ImageInferenceController implements Inf
         modelId: string;
         operation: InferenceOperation;
         stagedModel: StagedModel;
+        stagedDraft: StagedModel | undefined;
         lease: ResourceLease;
       }
     | undefined;
@@ -97,12 +99,13 @@ export class InferenceSupervisor extends ImageInferenceController implements Inf
     request: InferenceWorkerRequest,
     execution: ActiveInferenceExecution,
     lease: ResourceLease,
-    options: InferenceStreamCallbacks & { stagedModel?: StagedModel },
+    options: InferenceStreamCallbacks & { stagedModel?: StagedModel; stagedDraft?: StagedModel },
   ) {
-    const { stagedModel, ...streams } = options;
+    const { stagedModel, stagedDraft, ...streams } = options;
     const response = await this.port.execute({
       request,
       ...(stagedModel === undefined ? {} : { modelPath: stagedModel.path }),
+      ...(stagedDraft === undefined ? {} : { multiTokenPredictionPath: stagedDraft.path }),
       memoryBudgetBytes: lease.memoryBudgetBytes,
       timeoutMs: Math.max(1, execution.timeoutMs - (Date.now() - execution.startedAt)),
       signal: execution.signal,
@@ -142,13 +145,32 @@ export class InferenceSupervisor extends ImageInferenceController implements Inf
     const lease = this.scheduler.reserve(operation);
     try {
       const stagedModel = await this.models.resolve(modelId, signal);
-      this.resident = { modelId, operation, stagedModel, lease };
+      const stagedDraft = await this.resolveDraft(modelId, operation, signal);
+      this.resident = { modelId, operation, stagedModel, stagedDraft, lease };
       return this.resident;
     } catch (error) {
       lease.release();
       await recordModelPreparationFailure(operation, error);
       throw modelPreparationFailure(error);
     }
+  }
+  private async resolveDraft(
+    modelId: string,
+    operation: InferenceDiagnosticOperation,
+    signal: AbortSignal,
+  ): Promise<StagedModel | undefined> {
+    if (
+      this.port.multiTokenPrediction !== true ||
+      modelId !== DEFAULT_MODEL_ID ||
+      operation === "embed"
+    )
+      return undefined;
+    return await this.models
+      .resolve(INFERENCE_PROFILE.multiTokenPredictionId, signal)
+      .catch((error: unknown) => {
+        if (error instanceof Error && error.message === "missing_model") return undefined;
+        throw error;
+      });
   }
   protected async releaseResident(): Promise<boolean> {
     const resident = this.resident;
@@ -157,22 +179,34 @@ export class InferenceSupervisor extends ImageInferenceController implements Inf
     const unloaded = await this.port.unload();
     if (resident === undefined) return unloaded;
     try {
-      await resident.stagedModel.dispose();
+      await resident.stagedDraft?.dispose();
     } finally {
-      resident.lease.release();
+      try {
+        await resident.stagedModel.dispose();
+      } finally {
+        resident.lease.release();
+      }
     }
     return true;
   }
   private async resources(request: InferenceWorkerRequest, signal: AbortSignal) {
     if (request.operation === "probe") {
-      return { lease: this.scheduler.reserve(request.operation), stagedModel: undefined };
+      return {
+        lease: this.scheduler.reserve(request.operation),
+        stagedModel: undefined,
+        stagedDraft: undefined,
+      };
     }
     // Serialize preparation while generation stays parallel across resident context sequences.
     const resident = await this.residency.run(
       () => this.prepareModel(request.modelId, request.operation, signal),
       signal,
     );
-    return { lease: resident.lease, stagedModel: resident.stagedModel };
+    return {
+      lease: resident.lease,
+      stagedModel: resident.stagedModel,
+      stagedDraft: resident.stagedDraft,
+    };
   }
   private async executeOne(
     request: InferenceWorkerRequest,
@@ -189,6 +223,7 @@ export class InferenceSupervisor extends ImageInferenceController implements Inf
       execution.signal.throwIfAborted();
       const response = await this.execute(request, execution, resources.lease, {
         ...(resources.stagedModel === undefined ? {} : { stagedModel: resources.stagedModel }),
+        ...(resources.stagedDraft === undefined ? {} : { stagedDraft: resources.stagedDraft }),
         ...streams,
       });
       return { response, lease: resources.lease };

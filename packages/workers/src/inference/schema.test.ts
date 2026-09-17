@@ -5,7 +5,7 @@ import {
 } from "@gardendesk/shared";
 import { describe, expect, it } from "vitest";
 import { chatBody } from "./server-chat.js";
-import { serverArguments } from "./server-runtime.js";
+import { multiTokenPredictionEnabled, serverArguments } from "./server-runtime.js";
 
 const request = {
   protocolVersion: 2,
@@ -67,4 +67,24 @@ it("uses the Metal buffer name accepted by the pinned server", () => {
 it("uses matching cache types for Metal Flash Attention", () => {
   const args = serverArguments({ backend: "metal", modelPath: "model.gguf", contextTokens: 32768 });
   expect(args[args.indexOf("--cache-type-k") + 1]).toBe(args[args.indexOf("--cache-type-v") + 1]);
+});
+
+it("enables multi-token prediction from 24 GB dedicated or 36 GiB unified memory", () => {
+  const dedicated = (bytes: number) =>
+    multiTokenPredictionEnabled({
+      backend: "cuda",
+      memoryKind: "dedicated",
+      detectedMemoryBytes: bytes,
+    });
+  const unified = (bytes: number) =>
+    multiTokenPredictionEnabled({
+      backend: "metal",
+      memoryKind: "unified",
+      detectedMemoryBytes: bytes,
+    });
+  expect(dedicated(24_000_000_000)).toBe(true);
+  expect(dedicated(23_999_999_999)).toBe(false);
+  expect(unified(36 * 1024 ** 3)).toBe(true);
+  expect(unified(36 * 1024 ** 3 - 1)).toBe(false);
+  expect(multiTokenPredictionEnabled({ backend: "metal" })).toBe(false);
 });

@@ -7,7 +7,11 @@ interface DevelopmentResourceContract {
 
 function modelInputs(repositoryRoot: string): string[] {
   const root = join(repositoryRoot, "packages", "eval", ".generated", "models");
-  return [join(root, "qwen3.8-27b-ud-iq4_xs.gguf"), join(root, "qwen3.8-27b-mmproj-f16.gguf")];
+  return [
+    join(root, "qwen3.8-27b-ud-iq4_xs.gguf"),
+    join(root, "qwen3.8-27b-mmproj-f16.gguf"),
+    join(root, "qwen3.8-27b-mtp-q4_0.gguf"),
+  ];
 }
 
 function commonInputs(desktopRoot: string, repositoryRoot: string): string[] {

@@ -57,6 +57,12 @@ export function TechnicalModelUsage({
   const gpuMemory = gpuMemoryUsage(model);
   const meter = contextMeter(contextUsedTokens, contextAllocatedTokens, model);
   const allocated = contextAllocatedTokens ?? model.contextSizeTokens;
+  const multiTokenPrediction =
+    model.multiTokenPrediction === undefined
+      ? "Not available"
+      : model.multiTokenPrediction
+        ? "on"
+        : "off";
   return (
     <>
       <GpuMemoryLine usage={gpuMemory} />
@@ -68,6 +74,10 @@ export function TechnicalModelUsage({
       ) : (
         <ContextMeterRow meter={meter} />
       )}
+      <tr>
+        <th scope="row">Multi-token prediction</th>
+        <td>{multiTokenPrediction}</td>
+      </tr>
     </>
   );
 }
