@@ -11,6 +11,7 @@ function iconFor(row: ActivityRow): IconName {
   if (row.status === "failed") return "error";
   if (row.kind === "thinking") return "thinking";
   if (row.kind === "subagent") return "subagent";
+  if (row.kind === "workspace") return "power";
   switch (row.toolName) {
     case "read":
       return "read";

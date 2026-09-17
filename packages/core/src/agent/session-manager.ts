@@ -1,4 +1,4 @@
-import type { WorkerLimits } from "@gardendesk/shared";
+import type { AgentGuestStart, WorkerLimits } from "@gardendesk/shared";
 import type {
   AgentExecutionObserver,
   AgentExecutionUpdate,
@@ -42,6 +42,7 @@ interface WarmSession {
 
 export class AgentSessionManager {
   private readonly warm = new Map<string, WarmSession>();
+  private readonly guestStarts = new Map<string, AgentGuestStart[]>();
   // FIFO chain per session id. Parallel sub-agents share their parent's session guest, which can
   // run only one execution at a time, so overlapping executions queue here instead of failing with
   // `agent_session_busy`. Keyed by session id so it survives warm-session recreation.
@@ -100,6 +101,27 @@ export class AgentSessionManager {
       return existing;
     }
     if (!(await this.makeRoom())) return undefined;
+    const start: AgentGuestStart = {
+      startedAt: new Date().toISOString(),
+      durationMs: null,
+      failed: false,
+    };
+    this.guestStarts.set(sessionId, [...(this.guestStarts.get(sessionId) ?? []), start]);
+    try {
+      return await this.open(sessionId, signal, observer);
+    } catch (error) {
+      start.failed = true;
+      throw error;
+    } finally {
+      start.durationMs = Date.now() - Date.parse(start.startedAt);
+    }
+  }
+
+  private async open(
+    sessionId: string,
+    signal: AbortSignal | undefined,
+    observer: AgentExecutionObserver | undefined,
+  ): Promise<WarmSession> {
     const lifecycle = new LifecycleRelay();
     await lifecycle.activate(observer);
     const inputs = await this.resolver.resolve(sessionId);
@@ -121,6 +143,10 @@ export class AgentSessionManager {
       await inputs.dispose();
       throw error;
     }
+  }
+
+  guestStartsFor(sessionId: string): readonly AgentGuestStart[] {
+    return this.guestStarts.get(sessionId) ?? [];
   }
 
   warmSession(sessionId: string): Promise<void> {

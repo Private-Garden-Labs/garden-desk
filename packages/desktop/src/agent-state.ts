@@ -1,6 +1,6 @@
 import type { AgentRunSnapshot, SessionSummary } from "@gardendesk/shared";
 import type { DesktopState } from "./state.js";
-import { eventItems } from "./timeline.js";
+import { eventItems, withGuestStart } from "./timeline.js";
 
 function runTimeline(state: DesktopState, snapshot: AgentRunSnapshot, working: boolean) {
   const responseId = `streaming-response-${snapshot.run.id}`;
@@ -8,7 +8,7 @@ function runTimeline(state: DesktopState, snapshot: AgentRunSnapshot, working: b
     (item) =>
       item.id !== responseId && (item.kind !== "activity" || item.runId !== snapshot.run.id),
   );
-  const events = eventItems(snapshot.events);
+  const events = withGuestStart(eventItems(snapshot.events), snapshot.run, snapshot.guestStart);
   const response = snapshot.run.response;
   const hasPersistedResponse =
     !working &&

@@ -1,4 +1,4 @@
-import type { AgentEvent } from "@gardendesk/shared";
+import type { AgentEvent, AgentGuestStart, AgentRunSummary } from "@gardendesk/shared";
 import type { TimelineItem } from "./state.js";
 
 function bounded(label: string, value: string | null, limit: number): string | undefined {
@@ -102,4 +102,35 @@ export function eventItems(events: AgentEvent[]): TimelineItem[] {
     if (!collapseCompletedSubagent(items, subagents, event)) items.push(eventItem(event));
   }
   return items;
+}
+
+const GUEST_TITLE = "Starting the secure workspace";
+
+function seconds(durationMs: number): string {
+  const value = Math.max(1, Math.round(durationMs / 1_000));
+  return `${value} ${value === 1 ? "second" : "seconds"}`;
+}
+
+function guestStartItem(run: AgentRunSummary, start: AgentGuestStart): TimelineItem {
+  const createdAt = start.startedAt < run.createdAt ? run.createdAt : start.startedAt;
+  const base = { createdAt, id: `guest-start-${run.id}`, kind: "activity" as const, runId: run.id };
+  if (start.durationMs === null) return { ...base, eventType: "guest.started", text: GUEST_TITLE };
+  return {
+    ...base,
+    eventType: "guest.completed",
+    text: start.failed ? `${GUEST_TITLE} failed.` : "Started the secure workspace.",
+    detail: `Duration: ${seconds(start.durationMs)}`,
+  };
+}
+
+/** Places the in-memory microVM start among the run's events by time, so the row reads in order. */
+export function withGuestStart(
+  items: TimelineItem[],
+  run: AgentRunSummary,
+  start: AgentGuestStart | null,
+): TimelineItem[] {
+  if (start === null) return items;
+  const item = guestStartItem(run, start);
+  const index = items.findIndex((candidate) => candidate.createdAt > item.createdAt);
+  return index === -1 ? [...items, item] : [...items.slice(0, index), item, ...items.slice(index)];
 }

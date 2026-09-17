@@ -1,4 +1,4 @@
-import type { AgentRunSnapshot } from "@gardendesk/shared";
+import type { AgentGuestStart, AgentRunSnapshot, AgentRunSummary } from "@gardendesk/shared";
 import type { PendingQuestion } from "./agent-questions.js";
 import type { AgentStore } from "./store.js";
 
@@ -28,4 +28,21 @@ export function activeRunSnapshot(
 ): AgentRunSnapshot {
   const active = [...activeRuns].find((run) => run.runId === runId);
   return withActiveRun(store.snapshot(runId), active);
+}
+
+/** The last microVM start whose time span overlapped the run, so the run waited for it. */
+export function guestStartDuring(
+  starts: readonly AgentGuestStart[],
+  run: AgentRunSummary,
+): AgentGuestStart | null {
+  const runBegan = Date.parse(run.createdAt);
+  const working = run.state === "queued" || run.state === "running";
+  const runEnded = working ? Number.POSITIVE_INFINITY : Date.parse(run.updatedAt);
+  return (
+    starts.findLast((start) => {
+      const began = Date.parse(start.startedAt);
+      const ended = start.durationMs === null ? Number.POSITIVE_INFINITY : began + start.durationMs;
+      return began <= runEnded && ended >= runBegan;
+    }) ?? null
+  );
 }

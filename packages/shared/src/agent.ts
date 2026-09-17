@@ -249,6 +249,13 @@ export const AgentQuestionRequestSchema = z.object({
 // Five offered options plus one typed custom answer for a multiple-choice question.
 export const AgentQuestionAnswerSchema = z.array(z.string().min(1).max(300)).max(6);
 
+// One microVM start observed while a run waited for it. Kept in memory only, never in the catalog.
+export const AgentGuestStartSchema = z.object({
+  startedAt: z.iso.datetime(),
+  durationMs: z.number().int().nonnegative().nullable(),
+  failed: z.boolean(),
+});
+
 export const AgentRunSnapshotSchema = z.object({
   run: AgentRunSummarySchema,
   childRuns: z.array(AgentRunSummarySchema).max(1_280).default([]),
@@ -257,6 +264,7 @@ export const AgentRunSnapshotSchema = z.object({
   executions: z.array(AgentExecutionSnapshotSchema).max(1_280).default([]),
   artifacts: z.array(AgentArtifactSummarySchema).max(100),
   thinking: z.string().max(64_000).nullable().default(null),
+  guestStart: AgentGuestStartSchema.nullable().default(null),
   contextUsedTokens: z.number().int().nonnegative().nullable().default(null),
   contextAllocatedTokens: z.number().int().positive().nullable().default(null),
   question: AgentQuestionRequestSchema.nullable().default(null),
@@ -290,6 +298,7 @@ export type AgentEventDetail = Pick<
 >;
 export type AgentArtifactSummary = z.infer<typeof AgentArtifactSummarySchema>;
 export type AgentRunSnapshot = z.infer<typeof AgentRunSnapshotSchema>;
+export type AgentGuestStart = z.infer<typeof AgentGuestStartSchema>;
 export type AgentQuestionOption = z.infer<typeof AgentQuestionOptionSchema>;
 export type AgentQuestion = z.infer<typeof AgentQuestionSchema>;
 export type AgentQuestionRequest = z.infer<typeof AgentQuestionRequestSchema>;

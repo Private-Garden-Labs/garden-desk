@@ -26,7 +26,7 @@ import { AGENT_WORKER_LIMITS } from "./limits.js";
 import { MarkdownDefinitionLibrary } from "./markdown-definition-library.js";
 import { runPrimaryAgent } from "./primary-run.js";
 import { AgentRunCapacity } from "./run-capacity.js";
-import { type ActiveRun, activeRunSnapshot } from "./service-active.js";
+import { type ActiveRun, activeRunSnapshot, guestStartDuring } from "./service-active.js";
 import { persistSuccessfulRun } from "./service-audit.js";
 import { AgentImageInspector } from "./service-image.js";
 import {
@@ -166,7 +166,14 @@ export class AgentService {
   }
   snapshot(runId: string): AgentRunSnapshot {
     const snapshot = activeRunSnapshot(this.store, this.active.values(), runId);
-    return { ...snapshot, sessionTitle: this.conversations.getTitle(snapshot.run.sessionId) };
+    return {
+      ...snapshot,
+      sessionTitle: this.conversations.getTitle(snapshot.run.sessionId),
+      guestStart: guestStartDuring(
+        this.sessions.guestStartsFor(snapshot.run.sessionId),
+        snapshot.run,
+      ),
+    };
   }
   settleQuestion = (runId: string, questionId: string, answers?: string[][]): boolean =>
     settleActiveQuestion(this.active, runId, questionId, answers);
