@@ -6,7 +6,9 @@ import { executeRead, readRegistry, readSource } from "./generic-read-test-suppo
 describe("generic read", () => {
   it("streams plain UTF-8 text, accented paths, offsets, and line limits", async () => {
     const program = await readSource({ path: "notes-ă.txt", offset: 2, limit: 1 });
-    const readProgram = program.split("elif op == 'glob':")[0] as string;
+    const readProgram = program
+      .slice(program.indexOf("def read_utf8_lines"))
+      .split("elif op == 'glob':")[0] as string;
 
     expect(program).toContain("notes-ă.txt");
     expect(program).toContain("offset = args.get('offset', 1)");

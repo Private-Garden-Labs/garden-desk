@@ -85,6 +85,7 @@ export function input(
       description: "Test agent",
       mode: "primary",
       body: "Work carefully.",
+      skills: [],
       steps: 12,
       temperature: 0,
       tools,

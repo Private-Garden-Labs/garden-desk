@@ -1,29 +1,28 @@
 ---
 name: pdf-documents
-description: PDF reading, page work, creation. Load for PDF input or deliverable.
+description: Create a PDF deliverable or split, merge, and rotate pages. Not for reading; `read` returns PDF text with page markers.
 ---
 
 ## Library
 
-Use the installed `pypdf` through `python` for reading and page work, and `reportlab` (Platypus) to create a PDF. Do not install packages.
-
-## Find The Files
-
-Search `/source` recursively for files ending in `.pdf`, case-insensitive.
+Use the installed `pypdf` through `python` for page work, and `reportlab` (Platypus) to create a PDF. Do not install packages.
 
 ## Recipe
 
 ```python
-from pypdf import PdfReader
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Table
+from reportlab.lib.styles import getSampleStyleSheet
 
-reader = PdfReader(path)
-for number, page in enumerate(reader.pages, start=1):
-    print(f"page {number}: {page.extract_text() or ''}")
+styles = getSampleStyleSheet()
+SimpleDocTemplate(path, pagesize=A4).build([
+    Paragraph("Title", styles["Heading1"]),
+    Paragraph("Body text.", styles["BodyText"]),
+    Table([["column_a", "column_b"], ["1", "2"]]),
+])
 ```
 
-Cite every fact by page number, using this same one-based numbering.
-
-To create a PDF, build a ReportLab `SimpleDocTemplate` with Platypus flowables (headings, paragraphs, tables); it handles page breaks and margins for you.
+Platypus handles page breaks and margins. For page work, use `PdfReader` and `PdfWriter` from `pypdf`.
 
 ## Verify
 
@@ -31,8 +30,6 @@ Reopen the PDF you write with `PdfReader` and assert its page count and the text
 
 ## Gotchas
 
-- `extract_text()` can return `None` on an image-only or scanned page; treat that as no text, not an error.
 - Set metadata with `PdfWriter.add_metadata()` using slash-prefixed keys, for example `{"/Title": "Report"}`.
-- Derive every value from the actual source PDF; do not assume a fixed input file name.
-- A rotated page can still report text in reading order; check `page.rotation` if layout looks wrong.
 - Reopen and check page count, order, rotation, and metadata before you report the deliverable done.
+- Save under `/workspace`; `/source` is read-only.

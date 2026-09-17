@@ -9,7 +9,7 @@ function systemText(input: ChatAgentInput): string {
   return [
     input.agent.body,
     "Environment: all commands run in a no-network guest. /source is the selected folder and is read-only. /workspace is writable and persistent. Attachments are under /run/attachments.",
-    `Available skills (load a body only with the skill tool):\n${skills || "(none)"}`,
+    ...(skills ? [`Available skills (load a body only with the skill tool):\n${skills}`] : []),
   ].join("\n\n");
 }
 

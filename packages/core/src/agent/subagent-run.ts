@@ -3,6 +3,7 @@ import type { AgentRunResult, AgentRunSummary } from "@gardendesk/shared";
 import type { JobStore } from "../jobs/jobs.js";
 import type { InferenceService } from "../runtime/inference.js";
 import type { DatabasePort } from "../workspace/database.js";
+import { agentInstructions, agentSkillReader } from "./agent-skills.js";
 import { ChatAgentLoop } from "./chat-loop.js";
 import type { SubagentRequest } from "./generic-tools.js";
 import { guestAttachmentName } from "./inputs.js";
@@ -93,7 +94,8 @@ function commandEvent(
 }
 
 function childDefinition(ports: SubagentPorts, definition: AgentDefinition, childId: string) {
-  if (["general", "explore"].includes(definition.name)) return definition;
+  const body = agentInstructions(ports.library, definition);
+  if (["general", "explore"].includes(definition.name)) return { ...definition, body };
   const workDirectory = `/workspace/.garden-desk-tools/${childId}`;
   const ownership =
     ports.outputOwner === "user"
@@ -101,7 +103,7 @@ function childDefinition(ports: SubagentPorts, definition: AgentDefinition, chil
       : "Return findings and source references to the parent. Save working evidence only in the working directory. The parent owns the final answer and user files.";
   return {
     ...definition,
-    body: `${definition.body}\n\n${ports.library.system("specialist")}\n\nWorking directory: ${workDirectory}\n${ownership}`,
+    body: `${body}\n\n${ports.library.system("specialist")}\n\nWorking directory: ${workDirectory}\n${ownership}`,
   };
 }
 
@@ -155,10 +157,7 @@ export async function runSubagent(
       signal: ports.signal,
       inferencePriority: "secondary",
       ...(definition.tools.includes("image") ? { inspectImage: ports.inspectImage } : {}),
-      skills: {
-        metadata: () => [...ports.library.skills],
-        read: (name) => ports.library.skill(name).body,
-      },
+      skills: agentSkillReader(ports.library, definition),
       systemPrompt: (name) => ports.library.system(name),
       task: child.assignment,
       trace: { runId: child.id, store: ports.store.trace },

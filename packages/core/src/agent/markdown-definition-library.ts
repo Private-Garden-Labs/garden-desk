@@ -15,6 +15,7 @@ export interface AgentMetadata {
   description: string;
   mode: "primary" | "subagent";
   name: string;
+  skills: readonly string[];
   steps: number;
   temperature: number;
   tools: readonly string[];
@@ -73,13 +74,13 @@ function only(values: ReadonlyMap<string, string>, keys: readonly string[], path
   }
 }
 
-function parseTools(value: string, path: string): string[] {
+function parseList(value: string, key: string, path: string, pattern: RegExp): string[] {
   const match = /^\[([^\]]+)\]$/u.exec(value.trim());
-  const tools = match?.[1]?.split(",").map((tool) => tool.trim()) ?? [];
-  if (tools.length === 0 || tools.some((tool) => !TOOL_NAME.test(tool))) {
-    throw new Error(`Invalid tools in ${path}`);
+  const items = match?.[1]?.split(",").map((item) => item.trim()) ?? [];
+  if (items.length === 0 || items.some((item) => !pattern.test(item))) {
+    throw new Error(`Invalid ${key} in ${path}`);
   }
-  return tools;
+  return items;
 }
 
 function numberValue(
@@ -102,14 +103,16 @@ function validateName(name: string, expectedName: string, path: string): string 
 
 function agentMetadata(path: string, expectedName: string): AgentMetadata {
   const { bodyStart, values } = readFrontmatter(path);
-  only(values, ["name", "description", "mode", "tools", "temperature", "steps"], path);
+  only(values, ["name", "description", "mode", "tools", "skills", "temperature", "steps"], path);
   if (bodyStart.trim().length === 0) throw new Error(`Missing Markdown body: ${path}`);
   const mode = required(values, "mode", path);
   if (mode !== "primary" && mode !== "subagent") throw new Error(`Invalid mode in ${path}`);
+  const skills = values.get("skills");
   return {
     description: required(values, "description", path),
     mode,
     name: validateName(required(values, "name", path), expectedName, path),
+    skills: skills === undefined ? [] : parseList(skills, "skills", path, IDENTIFIER),
     steps: numberValue(
       values,
       "steps",
@@ -117,7 +120,7 @@ function agentMetadata(path: string, expectedName: string): AgentMetadata {
       (value) => Number.isInteger(value) && value > 0 && value <= 40,
     ),
     temperature: numberValue(values, "temperature", path, (value) => value >= 0 && value <= 2),
-    tools: parseTools(required(values, "tools", path), path),
+    tools: parseList(required(values, "tools", path), "tools", path, TOOL_NAME),
   };
 }
 
@@ -162,6 +165,10 @@ export class MarkdownDefinitionLibrary {
     this.skillPaths = new Map(skillEntries.map((entry) => [entry.name, entry.path]));
     this.agents = agentFiles.map((entry) => agentMetadata(entry.path, entry.name));
     this.skills = skillEntries.map((entry) => skillMetadata(entry.path, entry.name));
+    for (const agent of this.agents) {
+      const unknown = agent.skills.find((name) => !this.skillPaths.has(name));
+      if (unknown !== undefined) throw new Error(`Unknown skill ${unknown} in agent ${agent.name}`);
+    }
   }
 
   agent(name: string): AgentDefinition {

@@ -1,12 +1,18 @@
+import { DOCUMENT_SUFFIXES, documentTextSource } from "./document-text-source.js";
+
 export type InspectionName = "read" | "glob" | "grep" | "list";
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: this is one bounded generated guest program.
 export function inspectionSource(operation: InspectionName, params: unknown): string {
   return [
     "from pathlib import Path",
-    "import codecs, fnmatch, json, re, sys",
+    "import codecs, fnmatch, json, os, re, subprocess, sys",
     `op = ${JSON.stringify(operation)}`,
     `args = json.loads(${JSON.stringify(JSON.stringify(params))})`,
+    documentTextSource,
+    "def document_lines(path, offset, limit):",
+    "    for number, line in enumerate(document_text(path).splitlines(), 1):",
+    "        if offset <= number < offset + limit: print(f'{number}: {line}')",
     "def read_utf8_lines(path, offset, limit):",
     "    line_endings = tuple(map(chr, (10, 13, 11, 12, 28, 29, 30, 133, 8232, 8233)))",
     "    def stream(handle):\n        current_line = 1\n        after_cr = False\n        has_content = False\n        writing = False\n        decoder = codecs.getincrementaldecoder('utf-8')('strict')",
@@ -54,7 +60,8 @@ export function inspectionSource(operation: InspectionName, params: unknown): st
     "if op == 'read':",
     "    offset = args.get('offset', 1)",
     "    limit = args.get('limit', 2000)",
-    "    read_utf8_lines(root, offset, limit)",
+    `    if root.suffix.lower() in ${DOCUMENT_SUFFIXES}: document_lines(root, offset, limit)`,
+    "    else: read_utf8_lines(root, offset, limit)",
     "elif op == 'glob':",
     "    pattern = args['pattern']",
     "    for item in sorted(root.glob(pattern)): print(item)",

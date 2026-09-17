@@ -13,6 +13,7 @@ import { runCommand } from "../commands/run.js";
 import type { JobStore } from "../jobs/jobs.js";
 import type { InferenceService } from "../runtime/inference.js";
 import type { DatabasePort } from "../workspace/database.js";
+import { agentSkillReader } from "./agent-skills.js";
 import { ChatAgentLoop } from "./chat-loop.js";
 import type { ChatAgentInput } from "./chat-loop-input.js";
 import type { AgentQuestionOutcome } from "./generic-tool-support.js";
@@ -86,13 +87,14 @@ function thinkingCallbacks(input: PrimaryRunInput) {
 export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunResult> {
   const { definitions, run, store } = input;
   const thinking = thinkingCallbacks(input);
+  const primary = definitions.agent("primary");
   const attachments = store.listAttachments(run.sessionId).map((item, index) => ({
     path: `/run/attachments/${guestAttachmentName(index, item.name)}`,
     displayName: item.name,
     mediaType: item.mediaType,
   }));
   const agentInput: ChatAgentInput = {
-    agent: definitions.agent("primary"),
+    agent: primary,
     contextTokens: input.contextTokens,
     ...(input.knownContextTokens === undefined
       ? {}
@@ -135,10 +137,7 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
     askQuestion: input.askQuestion,
     signal: input.signal,
     subagents: definitions.agents.filter((agent) => agent.mode === "subagent"),
-    skills: {
-      metadata: () => [...definitions.skills],
-      read: (name) => definitions.skill(name).body,
-    },
+    skills: agentSkillReader(definitions, primary),
     spawnTask: (request) => runPrimarySubagent(input, request),
     systemPrompt: (name) => definitions.system(name),
     task: input.task,
