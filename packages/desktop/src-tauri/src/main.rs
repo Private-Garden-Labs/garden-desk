@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use std::fs;
 use std::io::{Read, Write};
 use std::path::Path;
-use std::sync::{Mutex, atomic::AtomicU64, atomic::Ordering};
+use std::sync::{Arc, Mutex, atomic::AtomicBool, atomic::AtomicU64, atomic::Ordering};
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Manager, RunEvent};
 use tauri_plugin_shell::ShellExt;
@@ -24,6 +24,7 @@ mod windows_setup_windows;
 
 pub(crate) struct CoreBridge {
     child: Mutex<Option<CommandChild>>,
+    exited: Arc<AtomicBool>,
     endpoint: String,
     next_id: AtomicU64,
     _package_locks: package_integrity::PackageLocks,
@@ -93,14 +94,20 @@ impl CoreBridge {
         #[cfg(target_os = "macos")]
         let command = command.env("NODE_OPTIONS", "--jitless");
         let (mut events, child) = command.spawn().map_err(|error| error.to_string())?;
+        let exited = Arc::new(AtomicBool::new(false));
+        let terminated = exited.clone();
         tauri::async_runtime::spawn(async move {
             while let Some(event) = events.recv().await {
+                if matches!(event, CommandEvent::Terminated(_)) {
+                    terminated.store(true, Ordering::SeqCst);
+                }
                 forward_core_event(event);
             }
         });
         let endpoint = wait_for_ready_file(&ready_file)?;
         Ok(Self {
             child: Mutex::new(Some(child)),
+            exited,
             endpoint,
             next_id: AtomicU64::new(1),
             _package_locks: package_locks,
@@ -141,9 +148,22 @@ impl CoreBridge {
     }
 
     fn stop(&self) {
-        if let Ok(mut child) = self.child.lock()
-            && let Some(child) = child.take()
+        let Ok(mut child) = self.child.lock() else {
+            return;
+        };
+        let Some(child) = child.take() else {
+            return;
+        };
+        #[cfg(unix)]
         {
+            // SAFETY: kill only sends a signal to the sidecar process id.
+            unsafe { libc::kill(child.pid() as libc::pid_t, libc::SIGTERM) };
+            let deadline = Instant::now() + Duration::from_secs(10);
+            while !self.exited.load(Ordering::SeqCst) && Instant::now() < deadline {
+                std::thread::sleep(Duration::from_millis(20));
+            }
+        }
+        if !self.exited.load(Ordering::SeqCst) {
             let _ = child.kill();
         }
     }
