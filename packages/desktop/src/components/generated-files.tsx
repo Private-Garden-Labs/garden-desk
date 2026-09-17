@@ -4,6 +4,13 @@ import type { ArtifactSaveResult } from "../artifact-actions.js";
 
 type ActionState = ArtifactSaveResult | "idle" | "opening" | "saving";
 
+const codeExtensions = new Set(["py", "js", "mjs", "cjs", "sh"]);
+
+function isCodeFile(item: AgentArtifactSummary): boolean {
+  const extension = item.name.split(".").at(-1)?.toLocaleLowerCase("en-US") ?? "";
+  return codeExtensions.has(extension);
+}
+
 function fileType(item: AgentArtifactSummary): { icon: string; label: string } {
   const extension = item.name.split(".").at(-1)?.toLocaleLowerCase("en-US");
   if (extension === "docx") return { icon: "W", label: "Word document" };
@@ -102,11 +109,12 @@ export function GeneratedFiles({
   onOpen(item: AgentArtifactSummary): Promise<void>;
   onSave(item: AgentArtifactSummary): Promise<ArtifactSaveResult>;
 }) {
-  if (artifacts.length === 0) return null;
+  const documents = artifacts.filter((item) => !isCodeFile(item));
+  if (documents.length === 0) return null;
   return (
     <section aria-label="Generated files" className="generated-files">
       <h3>Generated files</h3>
-      {artifacts.map((item) => (
+      {documents.map((item) => (
         <GeneratedFileCard
           disabledReason={disabledReason}
           item={item}
