@@ -76,7 +76,11 @@ export function inspectionSource(operation: InspectionName, params: unknown): st
     "        except OSError as error: print(f'{item}: {error}')",
     "else:",
     "    depth = args.get('depth', 2)",
-    "    for item in sorted(root.rglob('*')):",
-    "        if len(item.relative_to(root).parts) <= depth: print(str(item) + ('/' if item.is_dir() else ''))",
+    "    def walk(folder, level):",
+    "        if level > depth: return",
+    "        for item in sorted(folder.iterdir()):",
+    "            print(str(item) + ('/' if item.is_dir() else ''))",
+    "            if item.is_dir() and not item.is_symlink(): walk(item, level + 1)",
+    "    if root.is_dir(): walk(root, 1)",
   ].join("\n");
 }
