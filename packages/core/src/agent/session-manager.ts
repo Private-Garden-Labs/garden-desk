@@ -9,6 +9,8 @@ import type {
 import { agentScriptPreparationFailure } from "./agent-executor.js";
 import type { AgentInputResolver, ResolvedAgentInputs } from "./inputs.js";
 
+const RECENT_GUEST_STARTS = 8;
+
 class LifecycleRelay implements AgentExecutionObserver {
   readonly executionId = "00000000-0000-4000-8000-000000000000";
   private readonly pending: AgentExecutionUpdate[] = [];
@@ -106,7 +108,8 @@ export class AgentSessionManager {
       durationMs: null,
       failed: false,
     };
-    this.guestStarts.set(sessionId, [...(this.guestStarts.get(sessionId) ?? []), start]);
+    const starts = [...(this.guestStarts.get(sessionId) ?? []), start];
+    this.guestStarts.set(sessionId, starts.slice(-RECENT_GUEST_STARTS));
     try {
       return await this.open(sessionId, signal, observer);
     } catch (error) {
@@ -226,6 +229,7 @@ export class AgentSessionManager {
     return this.exclusive(async () => {
       const session = this.warm.get(sessionId);
       if (session !== undefined) await this.closeWarm(session);
+      this.guestStarts.delete(sessionId);
       if (deleteWorkspace) await this.launcher.deleteWorkspace(sessionId);
     });
   }
