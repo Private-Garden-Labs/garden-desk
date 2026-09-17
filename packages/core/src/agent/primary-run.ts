@@ -187,6 +187,7 @@ async function runPrimarySubagent(
       sessions: input.sessions,
       signal: input.signal,
       store: input.store,
+      thinking: input.thinking,
       outputOwner,
       ...(outputOwner === "parent"
         ? {}

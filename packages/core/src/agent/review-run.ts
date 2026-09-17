@@ -97,6 +97,7 @@ function childReviewInput(
     skills: input.skills,
     systemPrompt: input.systemPrompt,
     ...(input.signal === undefined ? {} : { signal: input.signal }),
+    ...(input.thinking === undefined ? {} : { thinking: input.thinking }),
     trace: { runId: child.id, store: ports.store.trace },
     onEvent: (type, summary, detail) => ports.store.appendEvent(child.id, type, summary, detail),
     onResponse: (response) => ports.store.setLiveResponse(child.id, response),

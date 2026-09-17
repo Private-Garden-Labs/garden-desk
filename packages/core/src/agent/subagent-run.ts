@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { AgentRunResult, AgentRunSummary } from "@gardendesk/shared";
+import type { AgentRunResult, AgentRunSummary, ThinkingLevel } from "@gardendesk/shared";
 import type { JobStore } from "../jobs/jobs.js";
 import type { InferenceService } from "../runtime/inference.js";
 import type { DatabasePort } from "../workspace/database.js";
@@ -27,6 +27,7 @@ interface SubagentPorts {
   sessions: AgentSessionManager;
   signal: AbortSignal;
   store: AgentStore;
+  thinking?: ThinkingLevel;
   outputOwner?: "parent" | "user";
   modelNeedsLoad?: boolean;
   onResponse?(text: string | null): void;
@@ -155,6 +156,7 @@ export async function runSubagent(
         ports.onContext?.(used, allocated, measured);
       },
       signal: ports.signal,
+      ...(ports.thinking === undefined ? {} : { thinking: ports.thinking }),
       inferencePriority: "secondary",
       ...(definition.tools.includes("image") ? { inspectImage: ports.inspectImage } : {}),
       skills: agentSkillReader(ports.library, definition),

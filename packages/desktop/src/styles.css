@@ -1669,11 +1669,6 @@ textarea:focus-visible {
   height: 14px;
 }
 
-.specialist-thinking {
-  color: var(--ink-soft);
-  font-size: 13px;
-}
-
 .question-prompt {
   display: flex;
   flex-direction: column;
