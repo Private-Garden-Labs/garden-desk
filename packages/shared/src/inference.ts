@@ -19,7 +19,7 @@ export const GenerationContextLimitReasonSchema = z.enum([
 
 const JsonSchemaSchema = z.record(z.string(), z.unknown());
 export const MAX_EFFECTIVE_GENERATION_PROMPT_CHARACTERS = 256_054;
-export const MAX_GENERATION_TOKENS = 32_768;
+export const MAX_GENERATION_TOKENS = INFERENCE_PROFILE.maximumContextTokens;
 const RequestBaseSchema = z.object({
   protocolVersion: z.literal(2),
   requestId: RequestIdSchema,
