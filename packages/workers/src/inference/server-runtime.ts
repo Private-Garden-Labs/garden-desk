@@ -4,6 +4,15 @@ import type { NativeWorkerHandle, NativeWorkerLauncher } from "../native/launche
 import { ServerError, serverFailure, serverRequest } from "./server-http.js";
 import { observeServerMemory, type ServerAllocations } from "./server-memory.js";
 
+export function multiTokenPredictionEnabled(gpu: NativeWorkerLauncher["gpu"]): boolean {
+  if (gpu?.detectedMemoryBytes === undefined) return false;
+  const minimum =
+    gpu.memoryKind === "dedicated"
+      ? INFERENCE_PROFILE.multiTokenPredictionDedicatedMemoryBytes
+      : INFERENCE_PROFILE.multiTokenPredictionUnifiedMemoryBytes;
+  return gpu.detectedMemoryBytes >= minimum;
+}
+
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: keep the fixed runtime arguments together.
 export function serverArguments(input: {
   backend: "metal" | "cuda" | "vulkan";
@@ -11,8 +20,10 @@ export function serverArguments(input: {
   contextTokens: number;
   embedding?: boolean;
   projectorPath?: string;
+  multiTokenPredictionPath?: string;
 }): string[] {
   const device = { metal: "MTL0", cuda: "CUDA0", vulkan: "Vulkan0" }[input.backend];
+  const cacheType = input.embedding ? "f16" : input.backend === "metal" ? "q8_0" : "q4_0";
   return [
     "--model",
     input.modelPath,
@@ -44,9 +55,9 @@ export function serverArguments(input: {
     "--ubatch-size",
     String(input.embedding ? input.contextTokens : 256),
     "--cache-type-k",
-    input.embedding ? "f16" : input.backend === "metal" ? "q8_0" : "q4_0",
+    cacheType,
     "--cache-type-v",
-    input.embedding ? "f16" : input.backend === "metal" ? "q8_0" : "q4_0",
+    cacheType,
     "--ctx-checkpoints",
     "2",
     "--checkpoint-min-step",
@@ -55,6 +66,20 @@ export function serverArguments(input: {
     "0",
     "--log-verbosity",
     "3",
+    ...(input.multiTokenPredictionPath === undefined
+      ? []
+      : [
+          "--spec-draft-model",
+          input.multiTokenPredictionPath,
+          "--spec-type",
+          "draft-mtp",
+          "--spec-draft-n-max",
+          "2",
+          "--spec-draft-type-k",
+          cacheType,
+          "--spec-draft-type-v",
+          cacheType,
+        ]),
     ...(input.embedding ? ["--embedding", "--pooling", "last"] : []),
     ...(input.projectorPath === undefined
       ? []
@@ -76,6 +101,7 @@ export async function startServer(
     contextTokens: number;
     embedding?: boolean;
     projectorPath?: string;
+    multiTokenPredictionPath?: string;
   },
   signal: AbortSignal,
 ): Promise<NativeWorkerHandle & { memory(): ServerAllocations }> {
@@ -85,6 +111,7 @@ export async function startServer(
     readPaths: [
       input.modelPath,
       ...(input.projectorPath === undefined ? [] : [input.projectorPath]),
+      ...(input.multiTokenPredictionPath === undefined ? [] : [input.multiTokenPredictionPath]),
     ],
     serverArguments: serverArguments({ ...input, backend: launcher.gpu?.backend ?? "metal" }),
   });

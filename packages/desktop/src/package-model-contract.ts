@@ -7,6 +7,9 @@ export const generationModelResourcePath = `models/${generationModelFileName}`;
 export const projectorModelId = INFERENCE_PROFILE.projectorId;
 export const projectorModelFileName = `${projectorModelId}.gguf`;
 export const projectorModelResourcePath = `models/${projectorModelFileName}`;
+export const draftModelId = INFERENCE_PROFILE.multiTokenPredictionId;
+export const draftModelFileName = `${draftModelId}.gguf`;
+export const draftModelResourcePath = `models/${draftModelFileName}`;
 export const packagedModelFiles = [
   {
     id: generationModelId,
@@ -17,6 +20,11 @@ export const packagedModelFiles = [
     id: projectorModelId,
     fileName: projectorModelFileName,
     resourcePath: projectorModelResourcePath,
+  },
+  {
+    id: draftModelId,
+    fileName: draftModelFileName,
+    resourcePath: draftModelResourcePath,
   },
 ] as const;
 
@@ -34,6 +42,10 @@ export function canonicalGenerationModelPath(repositoryRoot: string): string {
 
 export function canonicalProjectorModelPath(repositoryRoot: string): string {
   return canonicalModelPath(repositoryRoot, projectorModelFileName);
+}
+
+export function canonicalDraftModelPath(repositoryRoot: string): string {
+  return canonicalModelPath(repositoryRoot, draftModelFileName);
 }
 
 export function packagedGenerationModelPath(resourcesRoot: string): string {
@@ -58,5 +70,6 @@ export function modelPackageFiles(repositoryRoot: string): Array<{ source: strin
   return [
     generationModelPackageFile(repositoryRoot),
     { source: canonicalProjectorModelPath(repositoryRoot), path: projectorModelResourcePath },
+    { source: canonicalDraftModelPath(repositoryRoot), path: draftModelResourcePath },
   ];
 }

@@ -17,6 +17,7 @@ export interface ModelRuntimeMeasurements {
   contextLimitTokens?: number;
   contextLimitReason?: GenerationContextLimitReason;
   sequenceCount?: number;
+  multiTokenPrediction?: boolean;
 }
 
 export function generationMeasurements(
@@ -37,6 +38,9 @@ export function generationMeasurements(
       ? {}
       : { contextLimitReason: memory.contextLimitReason }),
     ...(memory.sequenceCount === undefined ? {} : { sequenceCount: memory.sequenceCount }),
+    ...(memory.multiTokenPrediction === undefined
+      ? {}
+      : { multiTokenPrediction: memory.multiTokenPrediction }),
   };
 }
 

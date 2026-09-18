@@ -92,31 +92,23 @@ export async function installRuntimeResources(
 
 export async function installImageModelResources(
   sha256: HashFile,
-): Promise<Pick<ResourceHashes, "generationModel" | "projectorModel">> {
+): Promise<Pick<ResourceHashes, "generationModel" | "projectorModel" | "draftModel">> {
   reportDevelopmentResourceStage("model");
   const root = join(resourcesRoot, "models");
   await mkdir(root, { recursive: true });
-  const candidates = [
-    {
-      modelId: model.generationModelId,
-      storeKey: model.generationModelFileName,
-      source: model.canonicalGenerationModelPath(repositoryRoot),
-      runtimeBuild: "llama.cpp@b10816",
-    },
-    {
-      modelId: model.projectorModelId,
-      storeKey: model.projectorModelFileName,
-      source: model.canonicalProjectorModelPath(repositoryRoot),
-      runtimeBuild: "llama.cpp@b10816",
-    },
-  ] as const;
+  const candidates = model.packagedModelFiles.map((file) => ({
+    modelId: file.id,
+    storeKey: file.fileName,
+    source: model.canonicalModelPath(repositoryRoot, file.fileName),
+    runtimeBuild: "llama.cpp@b10816",
+  }));
   for (const candidate of candidates) {
     await requireFetchedAsset(
       candidate.source,
       `pnpm model:fetch --id ${candidate.modelId} --destination ${candidate.source}`,
     );
   }
-  const [generation, projector] = await Promise.all(
+  const [generation, projector, draft] = await Promise.all(
     candidates.map(async (candidate) => ({
       modelId: candidate.modelId,
       storeKey: candidate.storeKey,
@@ -126,12 +118,16 @@ export async function installImageModelResources(
       installedAt: "2026-08-15T00:00:00.000Z",
     })),
   );
-  if (generation === undefined || projector === undefined) {
+  if (generation === undefined || projector === undefined || draft === undefined) {
     throw new Error("Image model resource list is incomplete.");
   }
   await writeFile(
     join(root, "installed-models.json"),
-    `${JSON.stringify({ schemaVersion: 1, models: [generation, projector] })}\n`,
+    `${JSON.stringify({ schemaVersion: 1, models: [generation, projector, draft] })}\n`,
   );
-  return { generationModel: generation.sha256, projectorModel: projector.sha256 };
+  return {
+    generationModel: generation.sha256,
+    projectorModel: projector.sha256,
+    draftModel: draft.sha256,
+  };
 }
