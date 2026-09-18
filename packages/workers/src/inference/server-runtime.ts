@@ -1,8 +1,12 @@
 import { setTimeout as delay } from "node:timers/promises";
-import { INFERENCE_PROFILE } from "@gardendesk/shared";
+import { type ContextCacheType, INFERENCE_PROFILE } from "@gardendesk/shared";
 import type { NativeWorkerHandle, NativeWorkerLauncher } from "../native/launcher.js";
 import { ServerError, serverFailure, serverRequest } from "./server-http.js";
 import { observeServerMemory, type ServerAllocations } from "./server-memory.js";
+
+export function contextCacheType(backend: "metal" | "cuda" | "vulkan"): ContextCacheType {
+  return backend === "metal" ? "q8_0" : "q4_0";
+}
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: keep the fixed runtime arguments together.
 export function serverArguments(input: {
@@ -45,9 +49,9 @@ export function serverArguments(input: {
     "--ubatch-size",
     String(input.embedding ? input.contextTokens : 256),
     "--cache-type-k",
-    input.embedding ? "f16" : input.backend === "metal" ? "q8_0" : "q4_0",
+    input.embedding ? "f16" : contextCacheType(input.backend),
     "--cache-type-v",
-    input.embedding ? "f16" : input.backend === "metal" ? "q8_0" : "q4_0",
+    input.embedding ? "f16" : contextCacheType(input.backend),
     "--ctx-checkpoints",
     "2",
     "--checkpoint-min-step",

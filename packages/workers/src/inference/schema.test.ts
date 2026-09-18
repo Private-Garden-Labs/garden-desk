@@ -1,6 +1,7 @@
 import {
   type ChatGenerationRequest,
   ChatGenerationRequestSchema,
+  fittedContextTokens,
   StructuredGenerationRequestSchema,
 } from "@gardendesk/shared";
 import { describe, expect, it } from "vitest";
@@ -19,18 +20,18 @@ const request = {
 } as const;
 
 describe("generation context contract", () => {
-  it("accepts automatic context and the 32K product ceiling", () => {
+  it("accepts automatic context and the model maximum", () => {
     expect(
       StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: "auto" }).success,
     ).toBe(true);
     expect(
-      StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: 32_768 }).success,
+      StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: 262_144 }).success,
     ).toBe(true);
   });
 
-  it("rejects explicit generation context above the product ceiling", () => {
+  it("rejects explicit generation context above the model maximum", () => {
     expect(
-      StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: 32_769 }).success,
+      StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: 262_145 }).success,
     ).toBe(false);
   });
 });
@@ -77,4 +78,13 @@ it("uses matching cache types for Metal Flash Attention", () => {
     speculation: "none",
   });
   expect(args[args.indexOf("--cache-type-k") + 1]).toBe(args[args.indexOf("--cache-type-v") + 1]);
+});
+
+it("fits the context to the memory budget between the minimum and the model maximum", () => {
+  const fit = { memoryBudgetBytes: 16 * 1024 ** 3, modelByteLength: 7_206_168_928 };
+  expect(fittedContextTokens({ ...fit, cacheType: "q4_0" })).toBe(262_144);
+  expect(fittedContextTokens({ ...fit, cacheType: "q8_0" })).toBe(208_896);
+  expect(fittedContextTokens({ ...fit, memoryBudgetBytes: 8 * 1024 ** 3, cacheType: "q4_0" })).toBe(
+    32_768,
+  );
 });

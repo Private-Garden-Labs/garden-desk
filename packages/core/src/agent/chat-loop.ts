@@ -225,7 +225,7 @@ export class ChatAgentLoop {
     this.contextTokens =
       input.knownContextTokens ??
       (input.contextTokens === "auto"
-        ? INFERENCE_PROFILE.contextTokens
+        ? INFERENCE_PROFILE.minimumContextTokens
         : Math.max(8_192, input.contextTokens));
     const registry = createToolRegistry(input);
     const performance = emptyPerformance();

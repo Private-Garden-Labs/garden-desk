@@ -49,7 +49,7 @@ const runtimeDirectory =
     "packages/eval/.generated/inference",
     process.platform === "win32" ? "windows-cuda-x64" : "macos-arm64",
   );
-const contexts = (argument("--contexts") ?? String(INFERENCE_PROFILE.contextTokens))
+const contexts = (argument("--contexts") ?? String(INFERENCE_PROFILE.minimumContextTokens))
   .split(",")
   .map(Number);
 const outputDirectory = join(repository, "packages/eval/.generated/model-comparison");

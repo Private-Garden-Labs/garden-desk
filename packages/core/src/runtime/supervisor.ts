@@ -102,7 +102,9 @@ export class InferenceSupervisor extends ImageInferenceController implements Inf
     const { stagedModel, ...streams } = options;
     const response = await this.port.execute({
       request,
-      ...(stagedModel === undefined ? {} : { modelPath: stagedModel.path }),
+      ...(stagedModel === undefined
+        ? {}
+        : { modelPath: stagedModel.path, modelByteLength: stagedModel.byteLength }),
       memoryBudgetBytes: lease.memoryBudgetBytes,
       timeoutMs: Math.max(1, execution.timeoutMs - (Date.now() - execution.startedAt)),
       signal: execution.signal,

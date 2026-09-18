@@ -46,7 +46,7 @@ At `f6c7b6d`, bounded Mac checks passed on an M5 Pro with 48 GiB and macOS 26.6.
 
 [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) moves the generation model to Ternary-Bonsai-2-27B `PQ2_0` on the PrismML llama.cpp fork `prism-b10685-7dffb15`. One approved smoke check ran on Windows with an RTX 5070 Ti (16 GiB) and the product server arguments at 32K context with Q4/Q4 context caches. The model loaded in 7.6 seconds. The server reported 6,861.74 MiB of GPU weights, a 576 MiB KV cache, a 149.62 MiB recurrent-state buffer, and a 189.27 MiB compute buffer. A plain question answered correctly at 62.3 tokens/s. A request with a `read_file` tool returned one well-formed tool call with the right path at 888 tokens/s prefill and 62.0 tokens/s generation. A game process held GPU memory during this check, so these numbers are not the comparison.
 
-The full comparison against Qwen3.8 27B Q4 (`pnpm model:compare`, `pnpm model:compare:agent`, `pnpm model:compare:report`) is pending an owner run. Bonsai 2 has no dspark drafter, so the speculative comparison uses the server's n-gram self-speculation (`ngram-mod`). The MLX 2-bit release is a Mac measurement target only.
+The full comparison against Qwen3.8 27B Q4 (`pnpm model:compare`, `pnpm model:compare:agent`, `pnpm model:compare:report`) is pending an owner run. Bonsai 2 has no dspark drafter, so the speculative comparison uses the server's n-gram self-speculation (`ngram-mod`). The MLX 2-bit release is a Mac measurement target only. The context is now fitted to the memory budget (ADR 0020): 262,144 tokens on this Windows machine. The fitted size is unverified in a real run.
 
 ## Running The Golden Tasks
 
