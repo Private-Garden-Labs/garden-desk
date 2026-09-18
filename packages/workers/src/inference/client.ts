@@ -153,7 +153,13 @@ export class InferenceWorkerClient {
     const handle = await startServer(
       this.launcher,
       this.workerEntryPath,
-      { modelPath, contextTokens, embedding, memoryBudgetBytes: execution.memoryBudgetBytes },
+      {
+        modelPath,
+        contextTokens,
+        embedding,
+        memoryBudgetBytes: execution.memoryBudgetBytes,
+        speculation: embedding ? "none" : INFERENCE_PROFILE.speculation,
+      },
       signal,
     ).catch(async (error: unknown) => {
       if (

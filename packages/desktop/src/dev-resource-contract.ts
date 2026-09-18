@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { INFERENCE_PROFILE } from "@gardendesk/shared";
 
 interface DevelopmentResourceContract {
   inputRoots: string[];
@@ -7,7 +8,10 @@ interface DevelopmentResourceContract {
 
 function modelInputs(repositoryRoot: string): string[] {
   const root = join(repositoryRoot, "packages", "eval", ".generated", "models");
-  return [join(root, "qwen3.8-27b-ud-iq4_xs.gguf"), join(root, "qwen3.8-27b-mmproj-f16.gguf")];
+  return [
+    join(root, `${INFERENCE_PROFILE.modelId}.gguf`),
+    join(root, `${INFERENCE_PROFILE.projectorId}.gguf`),
+  ];
 }
 
 function commonInputs(desktopRoot: string, repositoryRoot: string): string[] {
@@ -108,7 +112,6 @@ function windowsContract(
     requiredOutputs: [
       ...commonOutputs(resourcesRoot),
       join(resourcesRoot, "licenses", "cuda-EULA.html"),
-      join(resourcesRoot, "licenses", "llvm-OpenMP-LICENSE.txt"),
       join(resourcesRoot, "inference", "garden-desk-appcontainer-launcher.exe"),
       ...["windows-cuda-x64", "windows-vulkan-x64"].map((name) =>
         join(resourcesRoot, "inference", name, "llama-server.exe"),

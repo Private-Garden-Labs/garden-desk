@@ -11,6 +11,7 @@ export function serverArguments(input: {
   contextTokens: number;
   embedding?: boolean;
   projectorPath?: string;
+  speculation: "none" | "ngram-mod";
 }): string[] {
   const device = { metal: "MTL0", cuda: "CUDA0", vulkan: "Vulkan0" }[input.backend];
   return [
@@ -54,7 +55,9 @@ export function serverArguments(input: {
     "--cache-ram",
     "0",
     "--log-verbosity",
-    "3",
+    "4",
+    "--spec-type",
+    input.speculation,
     ...(input.embedding ? ["--embedding", "--pooling", "last"] : []),
     ...(input.projectorPath === undefined
       ? []
@@ -76,6 +79,7 @@ export async function startServer(
     contextTokens: number;
     embedding?: boolean;
     projectorPath?: string;
+    speculation: "none" | "ngram-mod";
   },
   signal: AbortSignal,
 ): Promise<NativeWorkerHandle & { memory(): ServerAllocations }> {

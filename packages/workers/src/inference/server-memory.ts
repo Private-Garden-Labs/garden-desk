@@ -7,7 +7,7 @@ export interface ServerAllocations {
 
 function bufferAllocation(line: string) {
   const match =
-    /(?:load_tensors|llama_context|llama_kv_cache|llama_memory_recurrent|graph_reserve):\s+(\w+)\s+(model|KV|RS|compute|output) buffer size =\s+([\d.]+) MiB/u.exec(
+    /(?:load_tensors|llama_context|llama_kv_cache|llama_memory_recurrent|graph_reserve|sched_reserve):\s+(\w+)\s+(model|KV|RS|compute|output) buffer size =\s+([\d.]+) MiB/u.exec(
       line,
     );
   if (match === null) return undefined;
