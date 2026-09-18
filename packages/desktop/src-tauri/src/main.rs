@@ -2,9 +2,8 @@
 
 use serde_json::{Value, json};
 use std::fs;
-use std::io::{Read, Write};
 use std::path::Path;
-use std::sync::{Mutex, atomic::AtomicU64, atomic::Ordering};
+use std::sync::{Arc, Mutex, atomic::AtomicBool, atomic::AtomicU64, atomic::Ordering};
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Manager, RunEvent};
 use tauri_plugin_shell::ShellExt;
@@ -14,6 +13,7 @@ mod artifact_commands;
 mod attachment_commands;
 mod commands;
 mod core_arguments;
+mod core_transport;
 mod diagnostics;
 mod drop_commands;
 mod package_integrity;
@@ -24,6 +24,7 @@ mod windows_setup_windows;
 
 pub(crate) struct CoreBridge {
     child: Mutex<Option<CommandChild>>,
+    exited: Arc<AtomicBool>,
     endpoint: String,
     next_id: AtomicU64,
     _package_locks: package_integrity::PackageLocks,
@@ -93,14 +94,20 @@ impl CoreBridge {
         #[cfg(target_os = "macos")]
         let command = command.env("NODE_OPTIONS", "--jitless");
         let (mut events, child) = command.spawn().map_err(|error| error.to_string())?;
+        let exited = Arc::new(AtomicBool::new(false));
+        let terminated = exited.clone();
         tauri::async_runtime::spawn(async move {
             while let Some(event) = events.recv().await {
+                if matches!(event, CommandEvent::Terminated(_)) {
+                    terminated.store(true, Ordering::SeqCst);
+                }
                 forward_core_event(event);
             }
         });
         let endpoint = wait_for_ready_file(&ready_file)?;
         Ok(Self {
             child: Mutex::new(Some(child)),
+            exited,
             endpoint,
             next_id: AtomicU64::new(1),
             _package_locks: package_locks,
@@ -124,7 +131,7 @@ impl CoreBridge {
             "params": params,
             "protocolVersion": 1,
         });
-        let response = exchange(&self.endpoint, &format!("{request}\n"))?;
+        let response = core_transport::exchange(&self.endpoint, &format!("{request}\n"))?;
         let envelope: Value =
             serde_json::from_slice(&response).map_err(|error| error.to_string())?;
         if let Some(error) = envelope.get("error") {
@@ -141,9 +148,25 @@ impl CoreBridge {
     }
 
     fn stop(&self) {
-        if let Ok(mut child) = self.child.lock()
-            && let Some(child) = child.take()
+        let Ok(mut child) = self.child.lock() else {
+            return;
+        };
+        let Some(child) = child.take() else {
+            return;
+        };
+        if self.exited.load(Ordering::SeqCst) {
+            return;
+        }
+        #[cfg(unix)]
         {
+            // SAFETY: kill only sends a signal to the sidecar process id.
+            unsafe { libc::kill(child.pid() as libc::pid_t, libc::SIGTERM) };
+            let deadline = Instant::now() + Duration::from_secs(10);
+            while !self.exited.load(Ordering::SeqCst) && Instant::now() < deadline {
+                std::thread::sleep(Duration::from_millis(20));
+            }
+        }
+        if !self.exited.load(Ordering::SeqCst) {
             let _ = child.kill();
         }
     }
@@ -174,60 +197,6 @@ fn wait_for_ready_file(path: &Path) -> Result<String, String> {
             Ok(_) | Err(_) => return Err("Garden Desk Core did not become ready.".to_owned()),
         }
     }
-}
-
-#[cfg(unix)]
-fn connect(endpoint: &str) -> std::io::Result<std::os::unix::net::UnixStream> {
-    std::os::unix::net::UnixStream::connect(endpoint)
-}
-
-#[cfg(windows)]
-fn transient_pipe_open_error(error: &std::io::Error) -> bool {
-    matches!(error.raw_os_error(), Some(2 | 231))
-}
-
-#[cfg(windows)]
-fn connect(endpoint: &str) -> std::io::Result<std::fs::File> {
-    let deadline = Instant::now() + Duration::from_secs(5);
-    loop {
-        match std::fs::OpenOptions::new()
-            .read(true)
-            .write(true)
-            .open(endpoint)
-        {
-            Ok(stream) => return Ok(stream),
-            Err(error) if transient_pipe_open_error(&error) && Instant::now() < deadline => {
-                std::thread::sleep(Duration::from_millis(10));
-            }
-            Err(error) => return Err(error),
-        }
-    }
-}
-
-fn exchange(endpoint: &str, request: &str) -> Result<Vec<u8>, String> {
-    const MAX_RESPONSE_BYTES: u64 = 192 * 1024 * 1024;
-    let mut stream = connect(endpoint).map_err(|error| error.to_string())?;
-    #[cfg(unix)]
-    {
-        stream
-            .set_read_timeout(Some(Duration::from_secs(5)))
-            .map_err(|error| error.to_string())?;
-        stream
-            .set_write_timeout(Some(Duration::from_secs(5)))
-            .map_err(|error| error.to_string())?;
-    }
-    stream
-        .write_all(request.as_bytes())
-        .map_err(|error| error.to_string())?;
-    let mut response = Vec::new();
-    stream
-        .take(MAX_RESPONSE_BYTES + 1)
-        .read_to_end(&mut response)
-        .map_err(|error| error.to_string())?;
-    if response.len() as u64 > MAX_RESPONSE_BYTES {
-        return Err("Garden Desk Core response exceeded its limit.".to_owned());
-    }
-    Ok(response)
 }
 
 fn main() {
