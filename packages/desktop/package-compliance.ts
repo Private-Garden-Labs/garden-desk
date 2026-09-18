@@ -78,7 +78,14 @@ const hostPackages = [
     version: "PQ2_0",
     license: "Apache-2.0",
     notice:
-      "Created using Bonsai by Prism ML. Built from Qwen3.8-27B, Copyright 2026 Alibaba Cloud.",
+      "Copyright 2026-present Prism ML, Inc. Created using Bonsai by Prism ML. License text: licenses/ternary-bonsai-2-LICENSE.txt. Notice: licenses/ternary-bonsai-2-NOTICE.txt.",
+  },
+  {
+    name: "Qwen3.8-27B",
+    version: "base model of Ternary Bonsai 2",
+    license: "Apache-2.0",
+    notice:
+      "Copyright 2026 Alibaba Cloud. License text: licenses/qwen3.8-LICENSE.txt. https://huggingface.co/Qwen/Qwen3.8-27B",
   },
   { name: "React", version: "19.2.7", license: "MIT" },
   { name: "Tauri", version: "2.11.5", license: "Apache-2.0 OR MIT" },

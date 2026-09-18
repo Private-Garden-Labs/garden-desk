@@ -81,6 +81,9 @@ export async function installRuntimeResources(
   await mkdir(join(resourcesRoot, "licenses"), { recursive: true });
   const licenses = [
     "llama.cpp-LICENSE.txt",
+    "ternary-bonsai-2-LICENSE.txt",
+    "ternary-bonsai-2-NOTICE.txt",
+    "qwen3.8-LICENSE.txt",
     ...(process.platform === "win32" ? ["cuda-EULA.html"] : []),
   ];
   for (const license of licenses)
