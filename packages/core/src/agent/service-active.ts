@@ -12,15 +12,11 @@ export interface ActiveRun {
   question?: PendingQuestion | null;
 }
 
-export function withActiveRun(
-  snapshot: AgentRunSnapshot,
-  active: ActiveRun | undefined,
-  activeChild?: ActiveRun,
-) {
+export function withActiveRun(snapshot: AgentRunSnapshot, active: ActiveRun | undefined) {
   return {
     ...snapshot,
     run: active === undefined ? snapshot.run : { ...snapshot.run, response: active.response },
-    thinking: active?.thinking ?? activeChild?.thinking ?? null,
+    thinking: active?.thinking ?? snapshot.thinking,
     question: active?.question?.request ?? null,
   };
 }
@@ -30,14 +26,8 @@ export function activeRunSnapshot(
   activeRuns: Iterable<ActiveRun>,
   runId: string,
 ): AgentRunSnapshot {
-  const runs = [...activeRuns];
-  const snapshot = store.snapshot(runId);
-  const children = new Set<string>(snapshot.childRuns.map((child) => child.id));
-  return withActiveRun(
-    snapshot,
-    runs.find((run) => run.runId === runId),
-    runs.find((run) => children.has(run.runId) && run.thinking !== null),
-  );
+  const active = [...activeRuns].find((run) => run.runId === runId);
+  return withActiveRun(store.snapshot(runId), active);
 }
 
 /** The last microVM start whose time span overlapped the run, so the run waited for it. */

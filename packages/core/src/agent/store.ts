@@ -46,6 +46,7 @@ interface RunTransition {
 
 export class AgentStore {
   private readonly liveResponses = new Map<string, string | null>();
+  private readonly liveThinking = new Map<string, string | null>();
   readonly execution: AgentExecutionStore;
   readonly trace: AgentTraceStore;
   constructor(
@@ -164,11 +165,16 @@ export class AgentStore {
         id,
       );
     if (update.changes !== 1) throw new Error("run_not_found");
-    if (transition.state !== "queued" && transition.state !== "running")
+    if (transition.state !== "queued" && transition.state !== "running") {
       this.liveResponses.delete(id);
+      this.liveThinking.delete(id);
+    }
   }
   setLiveResponse(runId: string, response: string | null): void {
     this.liveResponses.set(runId, response);
+  }
+  setLiveThinking(runId: string, thinking: string | null): void {
+    this.liveThinking.set(runId, thinking);
   }
   appendEvent(
     runId: string,
@@ -271,6 +277,7 @@ export class AgentStore {
       ).map(runFromRow),
       contextUsedTokens: runRow.context_used_tokens,
       contextAllocatedTokens: runRow.context_allocated_tokens,
+      thinking: this.liveThinking.get(runId) ?? null,
       events,
       executions: this.execution.list(runId),
       artifacts,
