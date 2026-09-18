@@ -4,7 +4,7 @@ description: Answers one question from supplied records with a short cited brief
 mode: subagent
 tools: [bash, python, read, glob, grep, list]
 skills: [document-review]
-temperature: 0
+temperature: 1
 steps: 24
 ---
 

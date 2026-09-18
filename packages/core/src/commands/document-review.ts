@@ -146,7 +146,7 @@ export async function reviewDocument(
     contextSize: input.contextTokens,
     maxTokens:
       input.contextTokens === "auto" ? INFERENCE_PROFILE.maximumContextTokens : input.contextTokens,
-    temperature: 0,
+    temperature: 1,
     thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     tools: [],
     messages: withCurrentTimeContext([

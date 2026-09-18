@@ -62,7 +62,9 @@ export function serverArguments(input: {
     "4",
     "--spec-type",
     input.speculation,
-    ...(input.embedding ? ["--embedding", "--pooling", "last"] : []),
+    ...(input.embedding
+      ? ["--embedding", "--pooling", "last"]
+      : ["--reasoning-budget", String(INFERENCE_PROFILE.reasoningBudgetTokens)]),
     ...(input.projectorPath === undefined
       ? []
       : [

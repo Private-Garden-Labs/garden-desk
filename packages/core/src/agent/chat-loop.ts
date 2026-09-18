@@ -120,7 +120,7 @@ export class ChatAgentLoop {
             { role: "user", text: prompt },
           ],
           [],
-          { phase: "compaction", temperature: 0 },
+          { phase: "compaction", temperature: 1 },
         );
         addPerformance(performance, generated.result.performance);
         this.record(input, generated.turnId, "accepted_compaction");

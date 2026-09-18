@@ -4,7 +4,7 @@ description: Leads an end-to-end user task, deciding the next useful action and 
 mode: primary
 tools: [bash, python, node, read, glob, grep, list, write, edit, image, skill, task, question, review]
 skills: [word-documents, pdf-documents, xlsx-workbooks, terminal-commands, review-report]
-temperature: 0
+temperature: 1
 steps: 40
 ---
 
