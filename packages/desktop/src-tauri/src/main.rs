@@ -154,6 +154,9 @@ impl CoreBridge {
         let Some(child) = child.take() else {
             return;
         };
+        if self.exited.load(Ordering::SeqCst) {
+            return;
+        }
         #[cfg(unix)]
         {
             // SAFETY: kill only sends a signal to the sidecar process id.
