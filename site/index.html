@@ -392,7 +392,7 @@
               <h2 data-reveal data-reveal-delay="70">Everything else is assembly required.</h2>
             </div>
             <p data-reveal data-reveal-delay="140">
-              Seven ways to get the work done. The same seven questions. Checked against public
+              Seven ways to get the work done. The same nine questions. Checked against public
               documentation in September 2026.
             </p>
           </div>
@@ -464,23 +464,43 @@
                   <td>Yes</td>
                 </tr>
                 <tr>
+                  <th scope="row">Sealed, no-network sandbox</th>
+                  <td class="is-ours">Yes<sup>6</sup></td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Your files stay read-only</th>
+                  <td class="is-ours">Yes<sup>7</sup></td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
                   <th scope="row">Telemetry</th>
                   <td class="is-ours">None</td>
-                  <td>Yes<sup>6</sup></td>
-                  <td>Yes<sup>6</sup></td>
+                  <td>Yes<sup>8</sup></td>
+                  <td>Yes<sup>8</sup></td>
                   <td>Yes</td>
-                  <td>On by default<sup>7</sup></td>
+                  <td>On by default<sup>9</sup></td>
                   <td>Not for local use</td>
-                  <td>No analytics<sup>8</sup></td>
+                  <td>No analytics<sup>10</sup></td>
                 </tr>
                 <tr>
                   <th scope="row">Price</th>
                   <td class="is-ours">Free</td>
                   <td>$20 to $200 a month</td>
-                  <td>$25+ a seat<sup>9</sup></td>
+                  <td>$25+ a seat<sup>11</sup></td>
                   <td>$20 or $200 a month</td>
                   <td>Free</td>
-                  <td>Free, or $20+<sup>10</sup></td>
+                  <td>Free, or $20+<sup>12</sup></td>
                   <td>Free</td>
                 </tr>
                 <tr>
@@ -502,6 +522,8 @@
             <li>You run a local model server and point the tool at it.</li>
             <li>Prompts, skills, and workflows are tuned end to end for one model. A tool that accepts any model cannot tune for each one.</li>
             <li>The model can run locally, but the app still calls vendor services.</li>
+            <li>Agent commands run inside a virtual machine that has no network interface at all. The other tools run commands on your computer or on vendor servers, with a network.</li>
+            <li>The folder you select is mounted read-only. The agent writes only to a separate workspace, so it cannot change your originals.</li>
             <li>An account service. Your work runs on the vendor's computers.</li>
             <li>Set <code>DISABLE_TELEMETRY=true</code> to turn it off.</li>
             <li>Update and model-catalog checks still run until you turn them off.</li>
