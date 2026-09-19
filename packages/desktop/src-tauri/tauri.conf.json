@@ -30,7 +30,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app"],
+    "targets": ["app", "dmg"],
     "externalBin": ["binaries/garden-desk-core"],
     "resources": {
       "resources/core/": "resources/core/",
