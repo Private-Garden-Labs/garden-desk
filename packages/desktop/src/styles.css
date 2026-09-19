@@ -2920,10 +2920,6 @@ textarea:focus-visible {
   border-bottom: 1px solid var(--reading-border);
 }
 
-.skills-toolbar-gap {
-  flex: 1 1 auto;
-}
-
 .skills-search {
   display: flex;
   min-width: 0;

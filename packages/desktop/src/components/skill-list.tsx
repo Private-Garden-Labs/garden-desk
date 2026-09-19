@@ -98,7 +98,7 @@ function AddZone({
         A skill is one Markdown file that starts with a name and a description.
       </p>
       <button
-        className="skills-action skills-primary"
+        className="skills-action"
         disabled={controller.working || nativeActionMessage !== undefined}
         onClick={controller.addFiles}
         title={nativeActionMessage}

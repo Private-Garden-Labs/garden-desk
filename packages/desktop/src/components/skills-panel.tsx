@@ -34,9 +34,7 @@ function Toolbar({
             value={search.query}
           />
         </label>
-      ) : (
-        <span className="skills-toolbar-gap" />
-      )}
+      ) : null}
       <button
         className="skills-action skills-primary"
         disabled={controller.working || nativeActionMessage !== undefined}
