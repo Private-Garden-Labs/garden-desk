@@ -36,7 +36,7 @@ describe("generation context contract", () => {
   });
 });
 
-it("sends the selected thinking level as the reasoning effort and no thinking budget", () => {
+it("sends the selected thinking level as the reasoning effort with its thinking budget", () => {
   const chat = (thinking: ChatGenerationRequest["thinking"]) =>
     ChatGenerationRequestSchema.parse({
       ...request,
@@ -49,15 +49,16 @@ it("sends the selected thinking level as the reasoning effort and no thinking bu
       temperature: 0,
       thinking,
     });
-  expect(chatBody(chat("low"), {}).chat_template_kwargs).toEqual({
-    preserve_thinking: false,
-    reasoning_effort: "low",
+  expect(chatBody(chat("medium"), {})).toMatchObject({
+    chat_template_kwargs: { preserve_thinking: false, reasoning_effort: "medium" },
+    thinking_budget_tokens: 2048,
   });
+  expect(chatBody(chat("xhigh"), {}).thinking_budget_tokens).toBe(8192);
   expect(chatBody(chat("none"), {}).chat_template_kwargs).toEqual({
     preserve_thinking: false,
     enable_thinking: false,
   });
-  expect(Object.keys(chatBody(chat("medium"), {}))).not.toContain("reasoning_budget_tokens");
+  expect(Object.keys(chatBody(chat("none"), {}))).not.toContain("thinking_budget_tokens");
 });
 
 it("uses the model card sampling values and the reasoning guardrail", () => {
