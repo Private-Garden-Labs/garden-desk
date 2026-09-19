@@ -35,6 +35,7 @@ export function usePromptLocations(api: DesktopApi): SkillLocations | undefined 
 export interface SkillDraft {
   content: string;
   name: string;
+  path: string;
   source: SkillSummary["source"];
 }
 
@@ -44,6 +45,7 @@ export interface SkillsController {
   cancelEdit(): void;
   draft: SkillDraft | undefined;
   edit(skill: SkillSummary): void;
+  error: string | undefined;
   openFolder(): void;
   remove(name: string): void;
   save(content: string): void;
@@ -77,12 +79,14 @@ function useSkillRequests(setError: SetError) {
   return { run, skills, working };
 }
 
-export function useSkills(api: DesktopApi, open: boolean, setError: SetError): SkillsController {
+export function useSkills(api: DesktopApi, open: boolean): SkillsController {
+  const [error, setError] = useState<string>();
   const { run, skills, working } = useSkillRequests(setError);
   const [draft, setDraft] = useState<SkillDraft>();
   useEffect(() => {
     if (!open) return;
     setDraft(undefined);
+    setError(undefined);
     void run(() => api.listSkills(), LOAD_FAILURE);
   }, [api, open, run]);
   const change = (action: () => Promise<unknown>, failure: string) =>
@@ -92,6 +96,7 @@ export function useSkills(api: DesktopApi, open: boolean, setError: SetError): S
     }, failure);
   return {
     draft,
+    error,
     skills,
     working,
     addFiles: () => void run(() => api.chooseSkillFiles(), SAVE_FAILURE),
@@ -103,7 +108,9 @@ export function useSkills(api: DesktopApi, open: boolean, setError: SetError): S
       setError(undefined);
       api
         .readSkill(skill.name)
-        .then((content) => setDraft({ content, name: skill.name, source: skill.source }))
+        .then((content) =>
+          setDraft({ content, name: skill.name, path: skill.path, source: skill.source }),
+        )
         .catch(() => setError("The skill file could not be opened."));
     },
     openFolder: () => {

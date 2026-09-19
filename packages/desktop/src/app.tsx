@@ -81,7 +81,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const desktopReady = state.loaded && !sessionLoading;
   const tasksAllowed = secureWorkspaceAllowsTasks(secureWorkspace.status);
   const draftPersistence = useDraftPersistence(api, setDesktopError);
-  const skills = useSkills(api, skillsOpen, setDesktopError);
+  const skills = useSkills(api, skillsOpen);
   useNativeDrop({
     api,
     context: {
@@ -283,11 +283,12 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
       <ActiveConfirmation clear={() => setConfirmation(undefined)} request={confirmation} />
       <SkillsPanel
         controller={skills}
+        dropActive={skillsOpen && dropIntent !== undefined}
         nativeActionMessage={nativeUnavailable}
         onClose={() => setSkillsOpen(false)}
         open={skillsOpen}
       />
-      <DropOverlay intent={dropIntent} />
+      <DropOverlay intent={skillsOpen ? undefined : dropIntent} />
     </div>
   );
 }
