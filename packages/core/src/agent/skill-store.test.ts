@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { agentInstructions } from "./agent-skills.js";
+import { agentInstructions, agentSkillReader } from "./agent-skills.js";
 import { MarkdownDefinitionLibrary } from "./markdown-definition-library.js";
 import { SkillStore } from "./skill-store.js";
 
@@ -51,6 +51,10 @@ describe("skill store", () => {
       ["beta", "installed", true],
     ]);
     expect(library.skills.map((skill) => skill.name)).toEqual(["alpha", "beta"]);
+    expect(agentSkillReader(library, library.agent("primary")).metadata()).toEqual([
+      { description: "alpha description.", name: "alpha" },
+      { description: "beta description.", name: "beta" },
+    ]);
 
     skills.setEnabled("beta", false);
     expect(library.skills.map((skill) => skill.name)).toEqual(["alpha"]);

@@ -195,6 +195,16 @@ export class MarkdownDefinitionLibrary {
     ].sort((left, right) => left.name.localeCompare(right.name, "en-US"));
   }
 
+  /** Names the person added that no packaged skill uses, so every skill-loading agent can reach them. */
+  addedSkillNames(): ReadonlySet<string> {
+    const packaged = new Set(this.packagedSkills.map((skill) => skill.name));
+    return new Set(
+      (this.overlay?.installedSkills() ?? [])
+        .map((skill) => skill.name)
+        .filter((name) => !packaged.has(name)),
+    );
+  }
+
   agent(name: string): AgentDefinition {
     const metadata = this.agents.find((agent) => agent.name === name);
     const path = this.agentPaths.get(name);

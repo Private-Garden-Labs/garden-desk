@@ -5,11 +5,14 @@ export function agentSkillReader(
   library: MarkdownDefinitionLibrary,
   agent: AgentMetadata,
 ): SkillReader {
+  const added = library.addedSkillNames();
   const loadable = !agent.tools.includes("skill")
     ? []
     : agent.skills.length === 0
       ? library.skills
-      : library.skills.filter((skill) => agent.skills.includes(skill.name));
+      : library.skills.filter(
+          (skill) => agent.skills.includes(skill.name) || added.has(skill.name),
+        );
   return {
     metadata: () => [...loadable],
     read: (name) => library.skill(name).body,
