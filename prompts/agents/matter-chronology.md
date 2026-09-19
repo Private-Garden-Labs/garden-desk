@@ -4,7 +4,7 @@ description: Builds a cited timeline of events, people, actions, and conflicting
 mode: subagent
 tools: [bash, python, read, glob, grep, list]
 skills: [document-review, legal-matter-chronology]
-temperature: 0
+temperature: 1
 steps: 24
 ---
 

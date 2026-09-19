@@ -4,7 +4,7 @@ description: Matches financial records across supplied files, calculates differe
 mode: subagent
 tools: [bash, python, read, glob, grep, list]
 skills: [document-review, financial-records-reconciliation, xlsx-workbooks]
-temperature: 0
+temperature: 1
 steps: 24
 ---
 

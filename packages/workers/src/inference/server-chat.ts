@@ -153,6 +153,15 @@ function thinkingOptions(request: ChatGenerationRequest | StructuredGenerationRe
   return { preserve_thinking: false, reasoning_effort: request.thinking };
 }
 
+const THINKING_SAMPLING = { top_p: 0.95, top_k: 20, min_p: 0, presence_penalty: 0 };
+const NON_THINKING_SAMPLING = { top_p: 0.8, top_k: 20, min_p: 0, presence_penalty: 1.5 };
+
+function sampling(request: ChatGenerationRequest | StructuredGenerationRequest) {
+  if (request.operation === "generate") return { temperature: 0, ...THINKING_SAMPLING };
+  if (request.thinking === "none") return { temperature: 0.7, ...NON_THINKING_SAMPLING };
+  return { temperature: request.temperature, ...THINKING_SAMPLING };
+}
+
 export function chatBody(
   request: ChatGenerationRequest | StructuredGenerationRequest,
   streams: ChatStreams,
@@ -163,11 +172,7 @@ export function chatBody(
         ? serverMessages(request.messages, streams.reasoning)
         : [{ role: "user", content: request.prompt }],
     max_tokens: request.maxTokens,
-    temperature: request.operation === "chat" ? request.temperature : 0,
-    top_p: 0.95,
-    top_k: 20,
-    min_p: 0,
-    presence_penalty: 0,
+    ...sampling(request),
     repeat_penalty: 1,
     chat_template_kwargs: thinkingOptions(request),
     ...(request.operation === "generate"
