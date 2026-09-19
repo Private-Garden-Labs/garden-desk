@@ -343,6 +343,14 @@ textarea:focus-visible {
   user-select: none;
 }
 
+.app-shell[data-platform="windows"] .sidebar {
+  padding-top: 14px;
+}
+
+.app-shell[data-platform="windows"] .window-drag-region {
+  display: none;
+}
+
 .brand {
   padding: 7px 10px 17px;
   font-size: 18px;
@@ -417,6 +425,45 @@ textarea:focus-visible {
   color: var(--ink-soft);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.sidebar-settings {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 4px;
+  margin: 12px -12px -14px;
+  padding: 11px 12px 12px;
+  border-top: 1px solid var(--reading-border);
+}
+
+.sidebar-version {
+  margin: 0 10px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.sidebar-release {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--ink-soft);
+  background: transparent;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.sidebar-release:hover {
+  color: var(--accent-strong);
+  background: var(--navigation-hover);
 }
 
 .demo-unavailable-note {
@@ -734,8 +781,8 @@ textarea:focus-visible {
   user-select: none;
 }
 
-.model-identity,
-.model-title-row,
+.conversation-identity,
+.model-cluster,
 .model-state,
 .header-actions,
 .header-action {
@@ -743,25 +790,17 @@ textarea:focus-visible {
   align-items: center;
 }
 
-.model-identity {
+.conversation-identity {
+  position: relative;
   min-width: 0;
-  gap: 11px;
+  gap: 4px;
   pointer-events: none;
 }
 
-.model-copy {
-  min-width: 0;
-}
-
-.model-title-row {
-  min-width: 0;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.model-title-row strong {
+.conversation-title {
   overflow: hidden;
   flex: 0 1 auto;
+  margin-right: 3px;
   font-size: 14px;
   font-weight: 680;
   letter-spacing: -0.012em;
@@ -769,11 +808,128 @@ textarea:focus-visible {
   white-space: nowrap;
 }
 
-.model-state {
-  gap: 6px;
-  margin-top: 3px;
+.rename-action {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: var(--ink-soft);
+  background: transparent;
+  opacity: 0.55;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    opacity 160ms ease;
+}
+
+.rename-action:hover:not(:disabled) {
+  color: var(--accent-strong);
+  background: var(--navigation-hover);
+  opacity: 1;
+}
+
+.rename-action:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.rename-popover {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 9px);
+  left: 0;
+  display: grid;
+  width: 282px;
+  gap: 9px;
+  padding: 13px;
+  border: 1px solid var(--reading-border);
+  border-radius: 12px;
+  background: var(--reading-raised);
+  box-shadow: var(--surface-shadow);
+  pointer-events: auto;
+}
+
+.rename-popover label {
   color: var(--ink-soft);
   font-size: 11px;
+  font-weight: 620;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.rename-field {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  color: var(--ink);
+  border: 1px solid var(--reading-border);
+  border-radius: 9px;
+  background: var(--reading);
+  font: inherit;
+  font-size: 13px;
+}
+
+.rename-field:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.rename-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rename-actions button {
+  min-height: 30px;
+  padding: 0 13px;
+  border: 1px solid var(--reading-border);
+  border-radius: 9px;
+  color: var(--ink-soft);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 620;
+  cursor: pointer;
+}
+
+.rename-actions .rename-save {
+  border-color: transparent;
+  color: #fff;
+  background: var(--accent-strong);
+}
+
+.rename-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.model-cluster {
+  align-items: stretch;
+  min-height: 34px;
+  overflow: hidden;
+  border: 1px solid var(--reading-border);
+  border-radius: 10px;
+  background: rgb(255 250 240 / 28%);
+}
+
+.model-state {
+  min-width: 0;
+  gap: 7px;
+  padding: 0 11px;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+}
+
+.model-state-text {
+  overflow: hidden;
+  max-width: 188px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .model-state i {
@@ -829,6 +985,15 @@ textarea:focus-visible {
   padding: 0 11px;
   font-size: 12px;
   font-weight: 620;
+}
+
+.model-cluster .unload-action {
+  min-height: 0;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .appearance-action,
@@ -2708,6 +2873,14 @@ textarea:focus-visible {
   background: rgb(255 255 255 / 4%);
 }
 
+.app-shell[data-theme="dark"] .model-cluster {
+  background: rgb(255 255 255 / 4%);
+}
+
+.app-shell[data-theme="dark"] .model-cluster .unload-action {
+  background: transparent;
+}
+
 .app-shell[data-theme="dark"] .header-action:hover:not(:disabled) {
   border-color: rgb(134 190 180 / 26%);
   background: rgb(111 169 160 / 11%);
@@ -2945,6 +3118,8 @@ textarea:focus-visible {
   .sidebar-item-row,
   .guided-examples button,
   .header-action,
+  .rename-action,
+  .sidebar-release,
   .suggestions button,
   .composer,
   .question-prompt,

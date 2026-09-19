@@ -2,8 +2,10 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync } from "node:
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { AuditLog } from "../audit/log.js";
 import { openWorkspaceCatalog } from "../workspace/catalog.js";
 import { sameWindowsPathAfterDriveChange } from "./folder-relink.js";
+import { renameConversationSession } from "./session-rename.js";
 import { ConversationStore } from "./store.js";
 
 const roots: string[] = [];
@@ -182,6 +184,32 @@ describe("ConversationStore sessions", () => {
       .prepare("UPDATE sessions SET updated_at = ? WHERE id = ?")
       .run("2099-01-01T00:00:00.000Z", global.id);
     expect(store.mostRecentSessionId()).toBe(global.id);
+    catalog.close();
+  });
+});
+
+describe("ConversationStore session rename", () => {
+  it("keeps a renamed conversation name and its list position", () => {
+    const catalog = openWorkspaceCatalog(temporaryRoot("rename-session"));
+    const store = new ConversationStore(catalog.database);
+    const audit = new AuditLog(catalog.database);
+    const session = store.createSession(null);
+    const created = store.listSessions(null).items[0];
+
+    const rename = { sessionId: session.id, title: "Quarter close review" };
+    expect(renameConversationSession(audit, catalog.database, rename)).toBe(true);
+    const renamed = store.listSessions(null).items[0];
+    expect(renamed?.title).toBe("Quarter close review");
+    expect(renamed?.updatedAt).toBe(created?.updatedAt);
+
+    store.appendMessage(session.id, "user", "Check the invoices");
+    expect(store.listSessions(null).items[0]?.title).toBe("Quarter close review");
+    expect(
+      renameConversationSession(audit, catalog.database, {
+        sessionId: "3f4b5c26-1f0f-4c37-9a19-1a4c1b2d3e4f",
+        title: "Missing chat",
+      }),
+    ).toBe(false);
     catalog.close();
   });
 });

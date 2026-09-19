@@ -18,6 +18,7 @@ mod diagnostics;
 mod drop_commands;
 mod package_integrity;
 mod question_commands;
+mod session_commands;
 mod windows_setup;
 #[cfg(windows)]
 mod windows_setup_windows;
@@ -220,24 +221,26 @@ fn main() {
             question_commands::dismiss_agent_question,
             commands::choose_folder,
             commands::choose_files,
-            commands::create_session,
+            session_commands::create_session,
             drop_commands::classify_dropped_paths,
             diagnostics::create_debug_snapshot,
-            commands::delete_session,
+            session_commands::delete_session,
             commands::desktop_bootstrap,
             commands::get_agent_run,
             commands::get_agent_trace,
             commands::list_agent_runs,
             commands::list_attachments,
             commands::list_messages,
-            commands::list_sessions,
+            session_commands::list_sessions,
             commands::load_draft,
             commands::model_status,
             commands::open_catalog_folder,
             commands::open_folder,
+            commands::open_release_page,
             attachment_commands::open_attachment,
             commands::remove_attachment,
             commands::reorder_folders,
+            session_commands::rename_session,
             commands::revoke_folder,
             diagnostics::reveal_debug_snapshot,
             commands::save_draft,

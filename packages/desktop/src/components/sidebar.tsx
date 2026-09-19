@@ -11,9 +11,11 @@ import type { DesktopAction, FolderGroup } from "../state.js";
 import { Icon } from "./icons.js";
 import { SessionList } from "./session-list.js";
 import { SidebarItemRow } from "./sidebar-item-row.js";
+import { SidebarSettings } from "./sidebar-settings.js";
 
 interface SidebarProps {
   activeSessionId: string | undefined;
+  appVersion?: string | undefined;
   disabled: boolean;
   dropActive?: boolean;
   dispatch: Dispatch<DesktopAction>;
@@ -24,6 +26,7 @@ interface SidebarProps {
   onAddFolder(): void;
   onNewSession(folderId: string | null): void;
   onOpenFolder(folderId: string): void;
+  onOpenReleases(): void;
   onDeleteSession(session: SessionSummary): void;
   onRevokeFolder(folderId: string): void;
   onReorderFolders(folderIds: string[]): void;
@@ -277,6 +280,7 @@ export function Sidebar(props: SidebarProps) {
           <FolderSection {...props} />
         </div>
       </div>
+      <SidebarSettings appVersion={props.appVersion} onOpenReleases={props.onOpenReleases} />
       <SidebarResizeHandle resize={resize} />
     </aside>
   );

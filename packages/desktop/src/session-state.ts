@@ -1,7 +1,47 @@
-import type { ConversationMessage } from "@gardendesk/shared";
+import type { ConversationMessage, SessionSummary } from "@gardendesk/shared";
 import { applyAgentSnapshot } from "./agent-state.js";
 import type { DesktopAction, DesktopState } from "./state.js";
 import { emptyConversation } from "./state-initial.js";
+
+export function activeSessionTitle(state: DesktopState): string | undefined {
+  return [...state.globalSessions, ...state.folders.flatMap((folder) => folder.sessions)].find(
+    (session) => session.id === state.activeSessionId,
+  )?.title;
+}
+
+export function renameSession(
+  state: DesktopState,
+  action: { sessionId: string; title: string },
+): DesktopState {
+  const renamed = (session: SessionSummary) =>
+    session.id === action.sessionId ? { ...session, title: action.title } : session;
+  return {
+    ...state,
+    globalSessions: state.globalSessions.map(renamed),
+    folders: state.folders.map((folder) => ({
+      ...folder,
+      sessions: folder.sessions.map(renamed),
+    })),
+  };
+}
+
+export function deleteSession(state: DesktopState, sessionId: string): DesktopState {
+  const activeDeleted = state.activeSessionId === sessionId;
+  return {
+    ...state,
+    globalSessions: state.globalSessions.filter((session) => session.id !== sessionId),
+    folders: state.folders.map((folder) => ({
+      ...folder,
+      sessions: folder.sessions.filter((session) => session.id !== sessionId),
+    })),
+    workingSessionIds: state.workingSessionIds.filter((id) => id !== sessionId),
+    thinkingBySession: Object.fromEntries(
+      Object.entries(state.thinkingBySession).filter(([entry]) => entry !== sessionId),
+    ),
+    ...(activeDeleted ? emptyConversation(null) : {}),
+    ...(state.pendingSessionId === sessionId ? { pendingSessionId: undefined } : {}),
+  };
+}
 
 export function loadMessages(
   state: DesktopState,

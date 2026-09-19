@@ -16,6 +16,7 @@ interface IconProps {
     | "chevron-right"
     | "drag"
     | "document-check"
+    | "download"
     | "error"
     | "evidence"
     | "folder"
@@ -58,6 +59,7 @@ const paths: Record<IconProps["name"], string> = {
   "chevron-right": "M9 6l6 6-6 6",
   drag: "M7 7h10M7 12h10M7 17h10",
   "document-check": "M5 3h9l5 5v13H5zM14 3v5h5M8 14l3 3 5-6",
+  download: "M12 4v10m-4-4 4 4 4-4M5 19h14",
   error: "M12 3l9 16H3zM12 10v4m0 3v.5",
   evidence: "M6 3h13v16H6zM3 7v15h12M9 7h7M9 11h7M9 15h4",
   folder: "M3 7h6l2 2h10v10H3z",

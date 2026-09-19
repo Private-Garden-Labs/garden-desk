@@ -11,6 +11,7 @@ import {
   deleteConversationSession,
   warmConversationSession,
 } from "./conversations/lifecycle.js";
+import { renameConversationSession } from "./conversations/session-rename.js";
 import { ConversationStore } from "./conversations/store.js";
 import { createFacade, type GardenDeskCore, type GardenDeskCorePorts } from "./facade.js";
 import { JobStore } from "./jobs/jobs.js";
@@ -49,6 +50,7 @@ function createConversationPorts(
   | "revokeFolder"
   | "createSession"
   | "deleteSession"
+  | "renameSession"
   | "listSessions"
   | "appendMessage"
   | "listMessages"
@@ -96,6 +98,9 @@ function createConversationPorts(
       const deleted = deleteConversationSession(conversations, audit, database, sessionId);
       if (deleted) await agent?.closeSession(sessionId, true);
       return deleted;
+    },
+    async renameSession(sessionId, title) {
+      return renameConversationSession(audit, database, { sessionId, title });
     },
     async listSessions(folderId, cursor, limit) {
       return conversations.listSessions(folderId, cursor, limit);

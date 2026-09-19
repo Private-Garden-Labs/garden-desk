@@ -19,6 +19,7 @@ export interface FolderSessionPage {
 }
 
 export interface DesktopBootstrap {
+  appVersion?: string;
   catalogPath: string;
   commands: CommandSummary[];
   folders: FolderSummary[];
@@ -68,6 +69,7 @@ export interface DesktopApi {
   openCatalogFolder(): Promise<void>;
   createSession(folderId: string | null): Promise<SessionSummary>;
   deleteSession(sessionId: string): Promise<boolean>;
+  renameSession(sessionId: string, title: string): Promise<boolean>;
   listSessions(folderId: string | null, cursor?: string): Promise<SessionPage>;
   listMessages(sessionId: string): Promise<ConversationMessage[]>;
   appendUserMessage(sessionId: string, content: string): Promise<ConversationMessage>;
@@ -89,5 +91,6 @@ export interface DesktopApi {
   dismissQuestion(runId: string, questionId: string): Promise<boolean>;
   createDebugSnapshot(sessionId: string): Promise<string>;
   revealDebugSnapshot(sessionId: string): Promise<void>;
+  openReleasePage(): Promise<void>;
   listenForDroppedPaths?(listener: (event: NativeDropEvent) => void): Promise<() => void>;
 }

@@ -9,11 +9,12 @@ import { useAppearance } from "./appearance.js";
 import { artifactActions } from "./artifact-actions.js";
 import type { DesktopCapabilities } from "./capabilities.js";
 import { AppChatControls } from "./components/app-chat-controls.js";
+import { AppChatHeader } from "./components/app-chat-header.js";
 import { AppSidebar } from "./components/app-sidebar.js";
-import { ChatHeader } from "./components/chat-header.js";
 import { ActiveConfirmation, type ConfirmationRequest } from "./components/confirmation.js";
 import { Conversation } from "./components/conversation.js";
 import { DropOverlay } from "./components/drop-overlay.js";
+import { ErrorBanner } from "./components/error-banner.js";
 import { GuidedExamples } from "./components/guided-examples.js";
 import { SecureWorkspaceBanner } from "./components/secure-workspace-banner.js";
 import { SpecialistView } from "./components/specialist-view.js";
@@ -22,6 +23,7 @@ import { openAttachment, selectSession, send } from "./desktop-actions.js";
 import { type DropIntent, useNativeDrop } from "./desktop-drop.js";
 import { initialModelStatus, unloadModel, useModelRefresh } from "./desktop-model.js";
 import { useDraftPersistence } from "./draft-persistence.js";
+import { desktopPlatform } from "./platform.js";
 import { secureWorkspaceAllowsTasks } from "./secure-workspace.js";
 import { type DesktopBootstrapRequest, desktopBootstrapRequest } from "./startup.js";
 import { desktopReducer, initialDesktopState } from "./state.js";
@@ -49,6 +51,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const [confirmation, setConfirmation] = useState<ConfirmationRequest>();
   const [dropIntent, setDropIntent] = useState<DropIntent>();
   const [model, setModel] = useState(initialModelStatus);
+  const [appVersion, setAppVersion] = useState<string>();
   const [thinking, setThinking] = useState<ThinkingLevel>(DEFAULT_THINKING_LEVEL);
   const bootstrap = useRef<DesktopBootstrapRequest | undefined>(undefined);
   const secureWorkspace = useSecureWorkspace(api, setConfirmation, setDesktopError);
@@ -59,6 +62,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
       .then((snapshot) => {
         if (!active) return;
         setModel(snapshot.model);
+        setAppVersion(snapshot.appVersion);
         if (snapshot.model.state === "unsupported" && snapshot.model.message !== undefined)
           setDesktopError(snapshot.model.message);
         dispatch({ type: "desktop.hydrate", snapshot });
@@ -158,10 +162,12 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
     <div
       className="app-shell"
       data-appearance={appearance.preference}
+      data-platform={desktopPlatform(navigator.userAgent)}
       data-theme={appearance.resolved}
     >
       <AppSidebar
         api={api}
+        appVersion={appVersion}
         dispatch={dispatch}
         dropIntent={dropIntent}
         nativeActionMessage={nativeUnavailable}
@@ -171,11 +177,11 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
       />
       <main aria-busy={!desktopReady} className="workspace">
         <div aria-hidden="true" className="window-drag-region" data-tauri-drag-region="" />
-        <ChatHeader
+        <AppChatHeader
+          api={api}
           appearance={appearance.preference}
-          technicalDetailsOpen={technicalDetailsOpen}
+          dispatch={dispatch}
           model={model}
-          specialistAgentId={childOpen ? selectedChild.agentId : undefined}
           nativeActionMessage={nativeUnavailable}
           onAppearanceChange={appearance.cycle}
           onTechnicalDetailsOpen={() => {
@@ -183,6 +189,10 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
             setTechnicalDetailsOpen(true);
           }}
           onUnload={() => void unloadModel(api, setModel, setDesktopError)}
+          setError={setDesktopError}
+          specialistAgentId={childOpen ? selectedChild.agentId : undefined}
+          state={state}
+          technicalDetailsOpen={technicalDetailsOpen}
         />
         <SecureWorkspaceBanner
           busy={secureWorkspace.busy}
@@ -194,18 +204,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
           examples={capabilities.guidedExamples ?? []}
           onRun={runTask}
         />
-        {desktopError === undefined ? null : (
-          <div className="error-banner" role="alert">
-            <span>{desktopError}</span>
-            <button
-              aria-label="Dismiss error"
-              onClick={() => setDesktopError(undefined)}
-              type="button"
-            >
-              ×
-            </button>
-          </div>
-        )}
+        <ErrorBanner message={desktopError} onDismiss={() => setDesktopError(undefined)} />
         <Conversation
           hidden={childOpen}
           childRuns={state.childRuns}
