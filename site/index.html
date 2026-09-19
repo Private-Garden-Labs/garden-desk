@@ -392,17 +392,19 @@
               <h2 data-reveal data-reveal-delay="70">Everything else is assembly required.</h2>
             </div>
             <p data-reveal data-reveal-delay="140">
-              Five local setups. The same five questions. Checked against public documentation in
-              September 2026.
+              Seven ways to get the work done. The same seven questions. Checked against public
+              documentation in September 2026.
             </p>
           </div>
           <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: a horizontally scrollable table must be reachable with the keyboard -->
           <section class="compare-scroll" data-reveal tabindex="0" aria-labelledby="compare-caption">
             <table class="compare-table">
-              <caption class="visually-hidden" id="compare-caption">Garden Desk compared with four other local AI setups</caption>
+              <caption class="visually-hidden" id="compare-caption">Garden Desk compared with six other ways to get AI work done</caption>
               <colgroup>
                 <col class="compare-label" />
                 <col class="compare-ours" />
+                <col />
+                <col />
                 <col />
                 <col />
                 <col />
@@ -412,6 +414,8 @@
                 <tr>
                   <td></td>
                   <th scope="col" class="is-ours"><span>Garden Desk</span></th>
+                  <th scope="col"><span>Claude Cowork</span></th>
+                  <th scope="col"><span>Codex for Work</span></th>
                   <th scope="col"><span>Perplexity Portable Computer</span></th>
                   <th scope="col"><span>AnythingLLM</span></th>
                   <th scope="col"><span>LM Studio Bionic</span></th>
@@ -421,55 +425,87 @@
               <tbody>
                 <tr>
                   <th scope="row">What you install</th>
-                  <td class="is-ours">One app, model inside</td>
-                  <td>App and an account</td>
-                  <td>App and a separate model server</td>
-                  <td>App and models you download</td>
-                  <td>Two programs and a config file</td>
+                  <td class="is-ours">One app</td>
+                  <td>App and account</td>
+                  <td>Web and mobile</td>
+                  <td>App and account</td>
+                  <td>App and server</td>
+                  <td>App and models</td>
+                  <td>Two programs</td>
                 </tr>
                 <tr>
-                  <th scope="row">Model setup</th>
-                  <td class="is-ours">None</td>
-                  <td>Managed for you</td>
-                  <td>You select the provider and model</td>
-                  <td>You select and download the model</td>
-                  <td>You pull the model, then set the base URL, model ID, and context size</td>
+                  <th scope="row">Where the model runs</th>
+                  <td class="is-ours">Bundled with app<sup>1</sup></td>
+                  <td>Cloud only</td>
+                  <td>Cloud only</td>
+                  <td>Hybrid<sup>2</sup></td>
+                  <td>Hybrid<sup>2</sup></td>
+                  <td>Hybrid<sup>2</sup></td>
+                  <td>Local only<sup>3</sup></td>
+                </tr>
+                <tr>
+                  <th scope="row">Tuned for one model</th>
+                  <td class="is-ours">Yes<sup>4</sup></td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
                 </tr>
                 <tr>
                   <th scope="row">Works with no internet</th>
-                  <td class="is-ours">Always</td>
-                  <td>Asks to send steps to cloud models</td>
-                  <td>Model is local, app still calls its CDN and GitHub</td>
-                  <td>Local models, with optional cloud and web search</td>
-                  <td>Yes, after setup</td>
+                  <td class="is-ours">Yes</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>Partly<sup>5</sup></td>
+                  <td>Partly<sup>5</sup></td>
+                  <td>Yes</td>
+                  <td>Yes</td>
                 </tr>
                 <tr>
                   <th scope="row">Telemetry</th>
-                  <td class="is-ours">None. Nothing to turn off</td>
-                  <td>Diagnostics send crash and performance data</td>
-                  <td>On by default. You set <code>DISABLE_TELEMETRY=true</code></td>
-                  <td>None for local use. Model search and updates send data</td>
-                  <td>No analytics. Update and catalog checks run unless you disable them</td>
+                  <td class="is-ours">None</td>
+                  <td>Yes<sup>6</sup></td>
+                  <td>Yes<sup>6</sup></td>
+                  <td>Yes</td>
+                  <td>On by default<sup>7</sup></td>
+                  <td>Not for local use</td>
+                  <td>No analytics<sup>8</sup></td>
                 </tr>
                 <tr>
                   <th scope="row">Price</th>
                   <td class="is-ours">Free</td>
-                  <td>$20 or $200 each month</td>
+                  <td>$20 to $200 a month</td>
+                  <td>Paid plans only</td>
+                  <td>$20 or $200 a month</td>
                   <td>Free</td>
-                  <td>Free local. $20 or $100 each month</td>
+                  <td>Free, paid tiers</td>
                   <td>Free</td>
                 </tr>
                 <tr>
                   <th scope="row">Source code</th>
-                  <td class="is-ours">Apache 2.0, all of it</td>
+                  <td class="is-ours">Open source</td>
                   <td>Closed</td>
-                  <td>MIT</td>
-                  <td>App is closed. CLI and SDK are open</td>
-                  <td>MIT</td>
+                  <td>Closed</td>
+                  <td>Closed</td>
+                  <td>Open source</td>
+                  <td>Closed, partly open</td>
+                  <td>Open source</td>
                 </tr>
               </tbody>
             </table>
           </section>
+          <ol class="compare-notes">
+            <li>The model ships inside the download. There is nothing to pick or install.</li>
+            <li>You choose a local or a cloud model, and you install and select it yourself.</li>
+            <li>You run a local model server and point the tool at it.</li>
+            <li>Prompts, skills, and workflows are tuned end to end for one model. A tool that accepts any model cannot tune for each one.</li>
+            <li>The model can run locally, but the app still calls vendor services.</li>
+            <li>An account service. Your work runs on the vendor's computers.</li>
+            <li>Set <code>DISABLE_TELEMETRY=true</code> to turn it off.</li>
+            <li>Update and model-catalog checks still run until you turn them off.</li>
+          </ol>
         </div>
       </section>
 

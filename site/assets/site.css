@@ -2244,7 +2244,7 @@ nudged by the pointer. */
 
 .compare-table {
   width: 100%;
-  min-width: 1040px;
+  min-width: 1060px;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 14px;
@@ -2259,15 +2259,15 @@ nudged by the pointer. */
   line-height: 1.35;
   letter-spacing: -0.01em;
   vertical-align: bottom;
-  width: 16.6%;
+  width: 12.5%;
 }
 
 .compare-table col.compare-label {
-  width: 130px;
+  width: 124px;
 }
 
 .compare-table col.compare-ours {
-  width: 19%;
+  width: 14%;
 }
 
 .compare-table thead th.is-ours {
@@ -2278,7 +2278,7 @@ nudged by the pointer. */
 }
 
 .compare-table tbody th {
-  padding: 20px 18px 20px 0;
+  padding: 18px 14px 18px 0;
   color: var(--ink-faint);
   font-size: 12px;
   font-weight: 700;
@@ -2288,7 +2288,7 @@ nudged by the pointer. */
 }
 
 .compare-table td {
-  padding: 20px 18px;
+  padding: 18px 14px;
   color: var(--ink-soft);
   line-height: 1.55;
   vertical-align: top;
@@ -2324,6 +2324,31 @@ nudged by the pointer. */
 }
 
 .compare-table code {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--glass-strong);
+  font-size: 12px;
+}
+
+.compare-table sup {
+  margin-left: 2px;
+  color: var(--ink-faint);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.compare-notes {
+  display: grid;
+  gap: 7px;
+  margin: 28px 0 0;
+  padding-left: 18px;
+  max-width: 760px;
+  color: var(--ink-faint);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.compare-notes code {
   padding: 2px 6px;
   border-radius: 5px;
   background: var(--glass-strong);
