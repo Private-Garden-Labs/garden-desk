@@ -4,7 +4,7 @@ description: Checks invoice and expense calculations, possible duplicates, suppo
 mode: subagent
 tools: [bash, python, read, glob, grep, list]
 skills: [document-review, invoice-expense-review, xlsx-workbooks]
-temperature: 0
+temperature: 1
 steps: 24
 ---
 

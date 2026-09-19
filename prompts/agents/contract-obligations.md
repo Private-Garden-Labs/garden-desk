@@ -4,7 +4,7 @@ description: Extracts duties, payment terms, notice periods, renewal terms, and 
 mode: subagent
 tools: [bash, python, read, glob, grep, list]
 skills: [document-review, legal-document-review, legal-document-comparison]
-temperature: 0
+temperature: 1
 steps: 24
 ---
 
