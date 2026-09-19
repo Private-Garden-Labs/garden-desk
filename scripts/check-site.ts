@@ -10,6 +10,7 @@ const localAssetPattern = /(?:href|src)=["']([^"']+\.(?:css|js|png|svg|woff2))["
 const routeFiles = [
   "index.html",
   "demo/index.html",
+  "releases/index.html",
   "privacy/index.html",
   "terms/index.html",
   "security/index.html",
@@ -145,12 +146,22 @@ requireText(home, "16 GB GPU VRAM", "home Windows requirement");
 requireText(home, "Open it. Point it. Ask it.", "home how it works");
 requireText(home, 'id="how-it-works"', "home how-it-works anchor");
 requireText(home, 'id="requirements"', "home requirements anchor");
-if ((home.match(/Coming soon/gu) ?? []).length < 2) {
-  failures.push("home: both platforms must be unavailable");
+requireText(home, 'id="compare"', "home compare anchor");
+requireText(home, "Perplexity Portable Computer", "home comparison");
+requireText(home, "OpenCode + Ollama", "home comparison");
+requireText(home, 'href="./releases/"', "home releases link");
+
+const releases = await text("releases/index.html");
+for (const download of [
+  "releases/download/v1.0.0/Garden-Desk-1.0.0-macos-arm64.dmg",
+  "releases/download/v1.0.0/Garden-Desk-1.0.0-windows-x64.zip",
+]) {
+  requireText(home, download, "home download");
+  requireText(releases, download, "releases download");
 }
 
 const sitemap = await text("sitemap.xml");
-for (const route of ["/", "/demo/", "/privacy/", "/terms/", "/security/"]) {
+for (const route of ["/", "/demo/", "/releases/", "/privacy/", "/terms/", "/security/"]) {
   requireText(sitemap, new URL(route, publishedRoot).href, "sitemap");
 }
 

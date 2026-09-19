@@ -2202,3 +2202,243 @@ nudged by the pointer. */
     transition: none;
   }
 }
+
+.download-meta {
+  margin: 18px 0 0;
+  color: var(--ink-faint);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.garden .garden-actions {
+  max-width: none;
+}
+
+.garden .download-meta {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--leaf-soft);
+  opacity: 0.8;
+}
+
+.download-meta a {
+  color: var(--ink-soft);
+  text-underline-offset: 3px;
+}
+
+.download-meta a:hover {
+  color: var(--ink-strong);
+}
+
+.compare-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  border-radius: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.compare-scroll:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+
+.compare-table {
+  width: 100%;
+  min-width: 1040px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+  text-align: left;
+}
+
+.compare-table thead th {
+  padding: 0 18px 20px;
+  color: var(--ink-faint);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  vertical-align: bottom;
+  width: 16.6%;
+}
+
+.compare-table col.compare-label {
+  width: 130px;
+}
+
+.compare-table col.compare-ours {
+  width: 19%;
+}
+
+.compare-table thead th.is-ours {
+  color: var(--ink-strong);
+  font-size: 17px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+}
+
+.compare-table tbody th {
+  padding: 20px 18px 20px 0;
+  color: var(--ink-faint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: top;
+}
+
+.compare-table td {
+  padding: 20px 18px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  vertical-align: top;
+}
+
+.compare-table tbody tr + tr th,
+.compare-table tbody tr + tr td {
+  border-top: 1px solid var(--line);
+}
+
+.compare-table td.is-ours {
+  color: var(--ink-strong);
+  background: rgb(47 107 74 / 16%);
+  font-weight: 560;
+}
+
+.compare-table thead th.is-ours,
+.compare-table tbody tr:first-child td.is-ours {
+  border-radius: 16px 16px 0 0;
+}
+
+.compare-table thead th.is-ours {
+  padding-top: 18px;
+  background: rgb(47 107 74 / 16%);
+}
+
+.compare-table tbody tr:last-child td.is-ours {
+  border-radius: 0 0 16px 16px;
+}
+
+.compare-table tbody tr + tr td.is-ours {
+  border-top-color: rgb(240 237 227 / 10%);
+}
+
+.compare-table code {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--glass-strong);
+  font-size: 12px;
+}
+
+.releases {
+  width: min(940px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 90px 0 120px;
+}
+
+.releases .lede {
+  max-width: 620px;
+  margin: 24px 0 56px;
+  color: var(--ink-soft);
+  font-size: 19px;
+  line-height: 1.65;
+}
+
+.releases h1 {
+  margin: 0;
+  font-family: "IBM Plex Serif", Charter, Georgia, serif;
+  font-size: clamp(40px, 5vw, 62px);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+
+.release-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.release-card {
+  padding: 34px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--glass-shadow);
+}
+
+.release-icon {
+  display: inline-flex;
+  color: var(--leaf-soft);
+}
+
+.release-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.release-card h2 {
+  margin: 14px 0 6px;
+  color: var(--ink-strong);
+  font-size: 24px;
+  letter-spacing: -0.03em;
+}
+
+.release-card > p {
+  margin: 0 0 24px;
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+.release-meta {
+  margin: 16px 0 0;
+  color: var(--ink-faint);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.release-size {
+  margin: 22px 0 0;
+  color: var(--ink-faint);
+  font-size: 13px;
+}
+
+.releases section {
+  margin-top: 26px;
+  padding: 30px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.releases section h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.releases p,
+.releases li {
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+
+.releases pre {
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--glass-strong);
+}
+
+.releases code {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13px;
+}
+
+@media (width <= 900px) {
+  .release-grid {
+    grid-template-columns: 1fr;
+  }
+}
