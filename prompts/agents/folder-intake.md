@@ -4,7 +4,7 @@ description: Maps current folder contents, document groups, versions, worksheet 
 mode: subagent
 tools: [bash, python, read, glob, grep, list]
 skills: [xlsx-workbooks]
-temperature: 0
+temperature: 1
 steps: 24
 ---
 

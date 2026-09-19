@@ -4,6 +4,8 @@ import type { NativeWorkerHandle, NativeWorkerLauncher } from "../native/launche
 import { ServerError, serverFailure, serverRequest } from "./server-http.js";
 import { observeServerMemory, type ServerAllocations } from "./server-memory.js";
 
+const REASONING_BUDGET_TOKENS = 32_768;
+
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: keep the fixed runtime arguments together.
 export function serverArguments(input: {
   backend: "metal" | "cuda" | "vulkan";
@@ -35,6 +37,8 @@ export function serverArguments(input: {
     "on",
     "--ctx-size",
     String(input.contextTokens),
+    "--reasoning-budget",
+    String(REASONING_BUDGET_TOKENS),
     "--parallel",
     "1",
     "--no-context-shift",

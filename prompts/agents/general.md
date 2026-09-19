@@ -3,7 +3,7 @@ name: general
 description: Completes one independent multi-step work unit and returns verified evidence to the primary agent.
 mode: subagent
 tools: [bash, python, node, read, glob, grep, list, image, skill]
-temperature: 0
+temperature: 1
 steps: 24
 ---
 

@@ -3,7 +3,7 @@ name: explore
 description: Explores a bounded codebase or task context and returns concise, evidence-backed findings to a parent agent. Use when the parent needs orientation before choosing an implementation.
 mode: subagent
 tools: [read, glob, grep, list]
-temperature: 0
+temperature: 1
 steps: 16
 ---
 

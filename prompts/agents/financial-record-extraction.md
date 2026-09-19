@@ -4,7 +4,7 @@ description: Extracts requested financial fields from invoices, statements, and 
 mode: subagent
 tools: [bash, python, read, glob, grep, list]
 skills: [document-review, xlsx-workbooks]
-temperature: 0
+temperature: 1
 steps: 24
 ---
 
