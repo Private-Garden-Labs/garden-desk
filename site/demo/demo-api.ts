@@ -82,6 +82,7 @@ export class DemoDesktopApi implements DesktopApi {
   revokeFolder = demoUnavailable;
   openFolder = demoUnavailable;
   deleteSession = demoUnavailable;
+  renameSession = demoUnavailable;
   chooseFiles = demoUnavailable;
   addFiles = demoUnavailable;
   openAttachment = demoUnavailable;
@@ -93,6 +94,10 @@ export class DemoDesktopApi implements DesktopApi {
   createDebugSnapshot = demoUnavailable;
   revealDebugSnapshot = demoUnavailable;
   openCatalogFolder = demoUnavailable;
+
+  async openReleasePage() {
+    window.open("https://gardendesk.ai/releases", "_blank", "noopener");
+  }
 
   async createSession(folderId: string | null) {
     this.sequence += 1;

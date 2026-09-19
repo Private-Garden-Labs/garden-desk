@@ -15,6 +15,9 @@ export const FolderSummarySchema = z.object({
   revokedAt: z.iso.datetime().nullable().default(null),
 });
 
+export const MAX_SESSION_TITLE_LENGTH = 60;
+export const SessionTitleSchema = z.string().trim().min(1).max(MAX_SESSION_TITLE_LENGTH);
+
 export const SessionSummarySchema = z.object({
   id: SessionIdSchema,
   folderId: FolderIdSchema.nullable(),

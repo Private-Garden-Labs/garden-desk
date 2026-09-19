@@ -53,6 +53,7 @@ function parseBootstrap(value: unknown): DesktopBootstrap {
     : [];
   if (typeof input.catalogPath !== "string") throw new Error("Invalid catalog path.");
   return {
+    ...(typeof input.appVersion === "string" ? { appVersion: input.appVersion } : {}),
     catalogPath: input.catalogPath,
     commands: CommandSummarySchema.array().parse(input.commands),
     folders: FolderSummarySchema.array().parse(input.folders),
@@ -148,6 +149,12 @@ export const tauriDesktopApi: DesktopApi = {
   async deleteSession(sessionId) {
     return invokeDesktop("delete_session", (value) => record(value).deleted === true, {
       sessionId,
+    });
+  },
+  async renameSession(sessionId, title) {
+    return invokeDesktop("rename_session", (value) => record(value).renamed === true, {
+      sessionId,
+      title,
     });
   },
   async listSessions(folderId, cursor) {
@@ -273,6 +280,9 @@ export const tauriDesktopApi: DesktopApi = {
   },
   async revealDebugSnapshot(sessionId) {
     await invokeDesktop("reveal_debug_snapshot", () => undefined, { sessionId });
+  },
+  async openReleasePage() {
+    await invokeDesktop("open_release_page", () => undefined);
   },
   async listenForDroppedPaths(listener) {
     return await withDevelopmentError("listen_for_dropped_paths", async () =>

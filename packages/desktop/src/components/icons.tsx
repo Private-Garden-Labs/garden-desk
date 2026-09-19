@@ -18,6 +18,7 @@ interface IconProps {
     | "document-check"
     | "error"
     | "evidence"
+    | "external"
     | "folder"
     | "folder-tree"
     | "glob"
@@ -60,6 +61,7 @@ const paths: Record<IconProps["name"], string> = {
   "document-check": "M5 3h9l5 5v13H5zM14 3v5h5M8 14l3 3 5-6",
   error: "M12 3l9 16H3zM12 10v4m0 3v.5",
   evidence: "M6 3h13v16H6zM3 7v15h12M9 7h7M9 11h7M9 15h4",
+  external: "M12 5H5v14h14v-7M14 4h6v6M20 4l-9 9",
   folder: "M3 7h6l2 2h10v10H3z",
   "folder-tree": "M3 3h5l2 2h11v7H3zM6 12v8h4m-4-4h4m3-1h8v3h-8zM13 20h8v2h-8z",
   glob: "M5 6h14M5 12h14M5 18h9",
