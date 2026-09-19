@@ -19,6 +19,7 @@ interface AppSidebarProps {
   dispatch(action: DesktopAction): void;
   dropIntent: DropIntent | undefined;
   nativeActionMessage: string | undefined;
+  onOpenSkills(): void;
   setConfirmation(request: ConfirmationRequest): void;
   setError(message: string | undefined): void;
   state: DesktopState;
@@ -31,6 +32,7 @@ export function AppSidebar({
   dispatch,
   dropIntent,
   nativeActionMessage,
+  onOpenSkills,
   setConfirmation,
   setError,
   state,
@@ -50,6 +52,7 @@ export function AppSidebar({
       onNewSession={(folderId) => dispatch({ type: "session.new", folderId })}
       onOpenFolder={(folderId) => void showFolder(api, folderId, setError)}
       onOpenReleases={() => void showReleasePage(api, setError)}
+      onOpenSkills={onOpenSkills}
       onDeleteSession={(session) =>
         setConfirmation(
           deleteSessionConfirmation({

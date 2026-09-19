@@ -17,6 +17,7 @@ import { DropOverlay } from "./components/drop-overlay.js";
 import { ErrorBanner } from "./components/error-banner.js";
 import { GuidedExamples } from "./components/guided-examples.js";
 import { SecureWorkspaceBanner } from "./components/secure-workspace-banner.js";
+import { SkillsPanel } from "./components/skills-panel.js";
 import { SpecialistView } from "./components/specialist-view.js";
 import { TechnicalDetails } from "./components/technical-details.js";
 import { openAttachment, selectSession, send } from "./desktop-actions.js";
@@ -25,6 +26,7 @@ import { initialModelStatus, unloadModel, useModelRefresh } from "./desktop-mode
 import { useDraftPersistence } from "./draft-persistence.js";
 import { desktopPlatform } from "./platform.js";
 import { secureWorkspaceAllowsTasks } from "./secure-workspace.js";
+import { useSkills } from "./skills.js";
 import { type DesktopBootstrapRequest, desktopBootstrapRequest } from "./startup.js";
 import { desktopReducer, initialDesktopState } from "./state.js";
 import { selectStep } from "./step-selection.js";
@@ -39,6 +41,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const [desktopError, setDesktopError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [technicalDetailsOpen, setTechnicalDetailsOpen] = useState(false);
+  const [skillsOpen, setSkillsOpen] = useState(false);
   const [selectedChild, setSelectedChild] = useState<AgentRunSummary>();
   useEffect(() => {
     setSelectedChild((current) =>
@@ -94,6 +97,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const desktopReady = state.loaded && !sessionLoading;
   const tasksAllowed = secureWorkspaceAllowsTasks(secureWorkspace.status);
   const draftPersistence = useDraftPersistence(api, setDesktopError);
+  const skills = useSkills(api, skillsOpen, setDesktopError);
   useNativeDrop({
     api,
     context: {
@@ -101,6 +105,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
       draft: state.draft,
       newSessionFolderId: state.newSessionFolderId,
       running: running || sessionLoading,
+      ...(skillsOpen ? { addSkills: skills.addPaths } : {}),
     },
     dispatch,
     enabled: capabilities.nativeActions && !childOpen,
@@ -171,6 +176,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         dispatch={dispatch}
         dropIntent={dropIntent}
         nativeActionMessage={nativeUnavailable}
+        onOpenSkills={() => setSkillsOpen(true)}
         setConfirmation={setConfirmation}
         setError={setDesktopError}
         state={state}
@@ -291,6 +297,12 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         timeline={detailState.timeline}
       />
       <ActiveConfirmation clear={() => setConfirmation(undefined)} request={confirmation} />
+      <SkillsPanel
+        controller={skills}
+        nativeActionMessage={nativeUnavailable}
+        onClose={() => setSkillsOpen(false)}
+        open={skillsOpen}
+      />
       <DropOverlay intent={dropIntent} />
     </div>
   );

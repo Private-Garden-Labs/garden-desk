@@ -428,6 +428,7 @@ textarea:focus-visible {
 }
 
 .sidebar-settings {
+  position: relative;
   display: flex;
   flex: 0 0 auto;
   align-items: center;
@@ -436,7 +437,7 @@ textarea:focus-visible {
   border-top: 1px solid var(--reading-border);
 }
 
-.sidebar-release {
+.sidebar-settings-button {
   display: flex;
   min-width: 0;
   min-height: 40px;
@@ -457,26 +458,51 @@ textarea:focus-visible {
     background 160ms ease;
 }
 
-.sidebar-release-copy {
-  display: grid;
-  min-width: 0;
-  gap: 2px;
-}
-
-.sidebar-release-copy span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sidebar-version {
-  color: var(--ink-soft);
-  font-size: 11px;
-}
-
-.sidebar-release:hover {
+.sidebar-settings-button:hover {
   color: var(--accent-strong);
   background: var(--navigation-hover);
+}
+
+.sidebar-menu {
+  position: absolute;
+  z-index: 12;
+  right: 12px;
+  bottom: calc(100% - 6px);
+  left: 12px;
+  display: grid;
+  padding: 6px;
+  gap: 2px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--reading-raised);
+  box-shadow: 0 18px 44px rgb(3 16 20 / 24%);
+}
+
+.sidebar-menu-item {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--ink);
+  background: transparent;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar-menu-item:hover {
+  color: var(--accent-strong);
+  background: var(--navigation-hover);
+}
+
+.sidebar-menu-version {
+  margin: 2px 10px 4px;
+  color: var(--ink-soft);
+  font-size: 11px;
 }
 
 .demo-unavailable-note {
@@ -2796,6 +2822,245 @@ textarea:focus-visible {
   background: var(--accent);
 }
 
+.skills-backdrop {
+  position: fixed;
+  z-index: 11;
+  inset: 0;
+  display: grid;
+  padding: 24px;
+  place-items: center;
+  background: rgb(3 16 20 / 46%);
+  backdrop-filter: blur(5px);
+}
+
+.skills-sheet {
+  display: flex;
+  width: min(560px, 100%);
+  max-height: min(640px, 86vh);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  color: var(--ink);
+  background: var(--reading-raised);
+  box-shadow: 0 24px 70px rgb(3 16 20 / 36%);
+}
+
+.skills-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 20px 14px;
+}
+
+.skills-header h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.015em;
+}
+
+.skills-header p {
+  margin: 6px 0 0;
+  max-width: 42ch;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.skills-header button {
+  display: flex;
+  padding: 6px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--ink-soft);
+  background: transparent;
+  cursor: pointer;
+}
+
+.skills-header button:hover {
+  color: var(--ink);
+  background: var(--navigation-hover);
+}
+
+.skills-body {
+  overflow-y: auto;
+  padding: 0 20px 20px;
+}
+
+.skills-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.skills-actions button {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--ink);
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.skills-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.skills-actions .skills-primary {
+  border-color: rgb(40 111 109 / 24%);
+  color: var(--shell);
+  background: var(--accent);
+}
+
+.skills-hint,
+.skills-empty {
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.skill-list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--reading-border);
+}
+
+.skill-row-copy {
+  min-width: 0;
+}
+
+.skill-row-name {
+  display: flex;
+  margin: 0;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.skill-row-badge {
+  padding: 1px 7px;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: var(--navigation-hover);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.skill-row-description {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.skill-row-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+}
+
+.skill-row-actions button {
+  display: flex;
+  padding: 6px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--ink-soft);
+  background: transparent;
+  cursor: pointer;
+}
+
+.skill-row-actions button:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--navigation-hover);
+}
+
+.skill-row-actions .skill-switch {
+  width: 40px;
+  height: 24px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--reading-border);
+  transition: background 160ms ease;
+}
+
+.skill-row-actions .skill-switch[aria-checked="true"] {
+  background: var(--accent);
+}
+
+.skill-switch span {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--shell);
+  box-shadow: 0 1px 3px rgb(3 16 20 / 24%);
+  transition: transform 160ms ease;
+}
+
+.skill-switch[aria-checked="true"] span {
+  transform: translateX(16px);
+}
+
+.skill-editor {
+  display: grid;
+  gap: 12px;
+}
+
+.skill-editor-text {
+  min-height: 320px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--ink);
+  background: var(--reading-surface, transparent);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.skill-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.skill-editor-actions button {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--ink);
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.skill-editor-actions .skills-primary {
+  border-color: rgb(40 111 109 / 24%);
+  color: var(--shell);
+  background: var(--accent);
+}
+
 .error-banner {
   position: absolute;
   z-index: 2;
@@ -3136,7 +3401,7 @@ textarea:focus-visible {
   .guided-examples button,
   .header-action,
   .rename-action,
-  .sidebar-release,
+  .sidebar-settings-button,
   .suggestions button,
   .composer,
   .question-prompt,

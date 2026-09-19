@@ -27,6 +27,7 @@ interface SidebarProps {
   onNewSession(folderId: string | null): void;
   onOpenFolder(folderId: string): void;
   onOpenReleases(): void;
+  onOpenSkills(): void;
   onDeleteSession(session: SessionSummary): void;
   onRevokeFolder(folderId: string): void;
   onReorderFolders(folderIds: string[]): void;
@@ -280,7 +281,11 @@ export function Sidebar(props: SidebarProps) {
           <FolderSection {...props} />
         </div>
       </div>
-      <SidebarSettings appVersion={props.appVersion} onOpenReleases={props.onOpenReleases} />
+      <SidebarSettings
+        appVersion={props.appVersion}
+        onOpenReleases={props.onOpenReleases}
+        onOpenSkills={props.onOpenSkills}
+      />
       <SidebarResizeHandle resize={resize} />
     </aside>
   );
