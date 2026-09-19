@@ -33,6 +33,7 @@ interface SidebarProps {
   onReorderFolders(folderIds: string[]): void;
   onSelectSession(sessionId: string): void;
   onShowMore(folderId: string): void;
+  settingsActive?: boolean | undefined;
 }
 
 const SIDEBAR_MIN_WIDTH = 208;
@@ -282,6 +283,7 @@ export function Sidebar(props: SidebarProps) {
         </div>
       </div>
       <SidebarSettings
+        active={props.settingsActive === true}
         appVersion={props.appVersion}
         onOpenReleases={props.onOpenReleases}
         onOpenSkills={props.onOpenSkills}

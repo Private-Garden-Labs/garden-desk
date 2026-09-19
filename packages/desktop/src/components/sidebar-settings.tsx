@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "./icons.js";
 
 interface SidebarSettingsProps {
+  active: boolean;
   appVersion: string | undefined;
   onOpenReleases(): void;
   onOpenSkills(): void;
@@ -21,6 +22,7 @@ function useDismissOnOutsideClick(open: boolean, close: () => void) {
 }
 
 export function SidebarSettings({
+  active,
   appVersion,
   onOpenReleases,
   onOpenSkills,
@@ -67,9 +69,10 @@ export function SidebarSettings({
         </div>
       ) : null}
       <button
+        aria-current={active ? "page" : undefined}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="sidebar-settings-button"
+        className={`sidebar-settings-button${active ? " sidebar-settings-button-active" : ""}`}
         onClick={() => setOpen(!open)}
         type="button"
       >

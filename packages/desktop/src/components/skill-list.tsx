@@ -118,19 +118,30 @@ function matches(skill: SkillSummary, query: string): boolean {
 export function SkillList({
   controller,
   nativeActionMessage,
-  query,
 }: {
   controller: SkillsController;
   nativeActionMessage: string | undefined;
-  query: string;
 }) {
+  const [query, setQuery] = useState("");
   const skills = controller.skills;
   if (skills === undefined) return <p className="skills-empty">Reading the skills…</p>;
   const found = skills.filter((skill) => matches(skill, query));
   const own = found.filter((skill) => skill.source !== "built-in");
-  if (found.length === 0) return <p className="skills-empty">No skill matches that search.</p>;
   return (
     <>
+      {skills.length > 8 ? (
+        <label className="skills-search">
+          <Icon name="search" />
+          <input
+            aria-label="Search skills"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search"
+            type="search"
+            value={query}
+          />
+        </label>
+      ) : null}
+      {found.length === 0 ? <p className="skills-empty">No skill matches that search.</p> : null}
       {own.length === 0 && query === "" ? (
         <AddZone controller={controller} nativeActionMessage={nativeActionMessage} />
       ) : (
@@ -143,9 +154,4 @@ export function SkillList({
       />
     </>
   );
-}
-
-export function useSkillSearch(count: number) {
-  const [query, setQuery] = useState("");
-  return { query, setQuery, visible: count > 8 };
 }

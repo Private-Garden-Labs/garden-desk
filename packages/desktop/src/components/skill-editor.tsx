@@ -11,7 +11,6 @@ export function SkillEditor({
   const [content, setContent] = useState(draft.content);
   return (
     <div className="skill-editor">
-      <p className="skill-editor-path">{draft.path}</p>
       <textarea
         aria-label={`${draft.name} skill file`}
         className="skill-editor-text"

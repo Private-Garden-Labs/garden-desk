@@ -19,9 +19,10 @@ interface AppSidebarProps {
   dispatch(action: DesktopAction): void;
   dropIntent: DropIntent | undefined;
   nativeActionMessage: string | undefined;
-  onOpenSkills(): void;
+  onSkillsOpenChange(open: boolean): void;
   setConfirmation(request: ConfirmationRequest): void;
   setError(message: string | undefined): void;
+  skillsOpen: boolean;
   state: DesktopState;
 }
 
@@ -32,9 +33,10 @@ export function AppSidebar({
   dispatch,
   dropIntent,
   nativeActionMessage,
-  onOpenSkills,
+  onSkillsOpenChange,
   setConfirmation,
   setError,
+  skillsOpen,
   state,
 }: AppSidebarProps) {
   return (
@@ -49,10 +51,13 @@ export function AppSidebar({
       workingSessionIds={state.workingSessionIds}
       nativeActionMessage={nativeActionMessage}
       onAddFolder={() => void addFolder(api, dispatch, setError)}
-      onNewSession={(folderId) => dispatch({ type: "session.new", folderId })}
+      onNewSession={(folderId) => {
+        onSkillsOpenChange(false);
+        dispatch({ type: "session.new", folderId });
+      }}
       onOpenFolder={(folderId) => void showFolder(api, folderId, setError)}
       onOpenReleases={() => void showReleasePage(api, setError)}
-      onOpenSkills={onOpenSkills}
+      onOpenSkills={() => onSkillsOpenChange(true)}
       onDeleteSession={(session) =>
         setConfirmation(
           deleteSessionConfirmation({
@@ -75,7 +80,11 @@ export function AppSidebar({
         )
       }
       onReorderFolders={(folderIds) => void reorderFolders(api, folderIds, dispatch, setError)}
-      onSelectSession={(sessionId) => void selectSession(api, sessionId, dispatch, setError)}
+      onSelectSession={(sessionId) => {
+        onSkillsOpenChange(false);
+        void selectSession(api, sessionId, dispatch, setError);
+      }}
+      settingsActive={skillsOpen}
       onShowMore={(folderId) =>
         void showMore({
           api,
