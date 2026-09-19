@@ -1,5 +1,5 @@
 import type { SkillSummary } from "@gardendesk/shared";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import type { SkillsController } from "../skills.js";
 import { Icon } from "./icons.js";
 
@@ -115,12 +115,55 @@ function matches(skill: SkillSummary, query: string): boolean {
   return text.includes(query.trim().toLowerCase());
 }
 
-export function SkillList({
+function Toolbar({
   controller,
   nativeActionMessage,
+  onDone,
+  search,
 }: {
   controller: SkillsController;
   nativeActionMessage: string | undefined;
+  onDone(): void;
+  search: ReactNode;
+}) {
+  return (
+    <div className="skills-toolbar">
+      {search}
+      <button
+        className="skills-action skills-primary"
+        disabled={controller.working || nativeActionMessage !== undefined}
+        onClick={controller.addFiles}
+        title={nativeActionMessage}
+        type="button"
+      >
+        <Icon name="add" />
+        Add skill
+      </button>
+      <button
+        aria-label="Open the skills folder"
+        className="skills-action skills-icon-action"
+        disabled={nativeActionMessage !== undefined}
+        onClick={controller.openFolder}
+        title={nativeActionMessage ?? "Open the skills folder"}
+        type="button"
+      >
+        <Icon name="folder" />
+      </button>
+      <button className="skills-action" onClick={onDone} type="button">
+        Done
+      </button>
+    </div>
+  );
+}
+
+export function SkillList({
+  controller,
+  nativeActionMessage,
+  onDone,
+}: {
+  controller: SkillsController;
+  nativeActionMessage: string | undefined;
+  onDone(): void;
 }) {
   const [query, setQuery] = useState("");
   const skills = controller.skills;
@@ -129,18 +172,25 @@ export function SkillList({
   const own = found.filter((skill) => skill.source !== "built-in");
   return (
     <>
-      {skills.length > 8 ? (
-        <label className="skills-search">
-          <Icon name="search" />
-          <input
-            aria-label="Search skills"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search"
-            type="search"
-            value={query}
-          />
-        </label>
-      ) : null}
+      <Toolbar
+        controller={controller}
+        nativeActionMessage={nativeActionMessage}
+        onDone={onDone}
+        search={
+          skills.length > 8 ? (
+            <label className="skills-search">
+              <Icon name="search" />
+              <input
+                aria-label="Search skills"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search"
+                type="search"
+                value={query}
+              />
+            </label>
+          ) : null
+        }
+      />
       {found.length === 0 ? <p className="skills-empty">No skill matches that search.</p> : null}
       {own.length === 0 && query === "" ? (
         <AddZone controller={controller} nativeActionMessage={nativeActionMessage} />
