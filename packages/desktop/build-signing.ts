@@ -70,9 +70,13 @@ function signWindows(executable: string): string {
       );
 }
 
-export function signExecutable(executable: string): string {
+export function signExecutable(executable: string, entitlements?: string): string {
   if (process.platform === "win32") return signWindows(executable);
-  run("codesign", ["--force", "--sign", "-", executable]);
+  const identity = process.env.APPLE_SIGNING_IDENTITY;
+  const args = ["--force", "--sign", identity ?? "-"];
+  if (identity !== undefined) args.push("--options", "runtime", "--timestamp");
+  if (entitlements !== undefined) args.push("--entitlements", entitlements);
+  run("codesign", [...args, executable]);
   run("codesign", ["--verify", "--strict", executable]);
-  return "macos-adhoc";
+  return identity === undefined ? "macos-adhoc" : "macos-developer-id";
 }
