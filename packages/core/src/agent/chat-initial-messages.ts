@@ -8,7 +8,7 @@ function systemText(input: ChatAgentInput): string {
     .join("\n");
   return [
     input.agent.body,
-    "Environment: all commands run in a no-network guest. /source is the selected folder and is read-only. /workspace is writable and persistent. Attachments are under /run/attachments.",
+    input.systemPrompt("environment"),
     ...(skills ? [`Available skills (load a body only with the skill tool):\n${skills}`] : []),
   ].join("\n\n");
 }

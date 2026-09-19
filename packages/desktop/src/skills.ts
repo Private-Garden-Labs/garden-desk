@@ -1,8 +1,36 @@
-import type { SkillSummary } from "@gardendesk/shared";
+import type { SkillLocations, SkillSummary } from "@gardendesk/shared";
 import { useCallback, useEffect, useState } from "react";
-import type { DesktopApi } from "./api.js";
+import type { DesktopApi, PromptFolder } from "./api.js";
 
 type SetError = (message: string | undefined) => void;
+
+const FOLDER_FAILURE = "The folder could not be opened.";
+
+export async function showPromptFolder(api: DesktopApi, folder: PromptFolder, setError: SetError) {
+  setError(undefined);
+  try {
+    await api.openPromptFolder(folder);
+  } catch {
+    setError(FOLDER_FAILURE);
+  }
+}
+
+export function usePromptLocations(api: DesktopApi): SkillLocations | undefined {
+  const [locations, setLocations] = useState<SkillLocations>();
+  useEffect(() => {
+    let active = true;
+    api
+      .skillLocations()
+      .then((value) => {
+        if (active) setLocations(value);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [api]);
+  return locations;
+}
 
 export interface SkillDraft {
   content: string;
@@ -79,8 +107,7 @@ export function useSkills(api: DesktopApi, open: boolean, setError: SetError): S
         .catch(() => setError("The skill file could not be opened."));
     },
     openFolder: () => {
-      setError(undefined);
-      api.openPromptFolder("skills").catch(() => setError("The folder could not be opened."));
+      void showPromptFolder(api, "skills", setError);
     },
     remove: (name) => change(() => api.removeSkill(name), "The skill could not be removed."),
     save: (content) => {

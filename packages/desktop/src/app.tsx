@@ -3,7 +3,7 @@ import {
   DEFAULT_THINKING_LEVEL,
   type ThinkingLevel,
 } from "@gardendesk/shared";
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import type { DesktopApi } from "./api.js";
 import { useAppearance } from "./appearance.js";
 import { artifactActions } from "./artifact-actions.js";
@@ -20,14 +20,14 @@ import { SecureWorkspaceBanner } from "./components/secure-workspace-banner.js";
 import { SkillsPanel } from "./components/skills-panel.js";
 import { SpecialistView } from "./components/specialist-view.js";
 import { TechnicalDetails } from "./components/technical-details.js";
-import { openAttachment, selectSession, send } from "./desktop-actions.js";
+import { openAttachment, send } from "./desktop-actions.js";
 import { type DropIntent, useNativeDrop } from "./desktop-drop.js";
 import { initialModelStatus, unloadModel, useModelRefresh } from "./desktop-model.js";
 import { useDraftPersistence } from "./draft-persistence.js";
 import { desktopPlatform } from "./platform.js";
 import { secureWorkspaceAllowsTasks } from "./secure-workspace.js";
 import { useSkills } from "./skills.js";
-import { type DesktopBootstrapRequest, desktopBootstrapRequest } from "./startup.js";
+import { useDesktopBootstrap } from "./startup.js";
 import { desktopReducer, initialDesktopState } from "./state.js";
 import { selectStep } from "./step-selection.js";
 import { agentSteps, desktopThinking } from "./steps.js";
@@ -56,30 +56,14 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const [model, setModel] = useState(initialModelStatus);
   const [appVersion, setAppVersion] = useState<string>();
   const [thinking, setThinking] = useState<ThinkingLevel>(DEFAULT_THINKING_LEVEL);
-  const bootstrap = useRef<DesktopBootstrapRequest | undefined>(undefined);
   const secureWorkspace = useSecureWorkspace(api, setConfirmation, setDesktopError);
-  useEffect(() => {
-    bootstrap.current = desktopBootstrapRequest(api, bootstrap.current);
-    let active = true;
-    void bootstrap.current.promise
-      .then((snapshot) => {
-        if (!active) return;
-        setModel(snapshot.model);
-        setAppVersion(snapshot.appVersion);
-        if (snapshot.model.state === "unsupported" && snapshot.model.message !== undefined)
-          setDesktopError(snapshot.model.message);
-        dispatch({ type: "desktop.hydrate", snapshot });
-        if (snapshot.initialSessionId !== undefined) {
-          void selectSession(api, snapshot.initialSessionId, dispatch, setDesktopError);
-        }
-      })
-      .catch(() => {
-        if (active) setDesktopError("Garden Desk could not finish loading.");
-      });
-    return () => {
-      active = false;
-    };
-  }, [api]);
+  useDesktopBootstrap({
+    api,
+    dispatch,
+    setAppVersion,
+    setError: setDesktopError,
+    setModel,
+  });
   const nativeUnavailable = capabilities.nativeActions
     ? undefined
     : (capabilities.unavailableReason ?? "Unavailable in the public demo");

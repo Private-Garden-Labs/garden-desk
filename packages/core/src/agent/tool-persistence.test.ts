@@ -181,6 +181,7 @@ async function subagentLibrary(root: string): Promise<MarkdownDefinitionLibrary>
       "---\nname: general\ndescription: Test sub-agent.\nmode: subagent\ntools: [list]\ntemperature: 0\nsteps: 1\n---\nTest sub-agent.",
     ),
     writeFile(join(prompts, "system", "general.md"), "Test system prompt."),
+    writeFile(join(prompts, "system", "environment.md"), "Test environment."),
   ]);
   return new MarkdownDefinitionLibrary(prompts);
 }
