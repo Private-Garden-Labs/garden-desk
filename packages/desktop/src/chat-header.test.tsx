@@ -59,7 +59,7 @@ describe("unsupported hardware status", () => {
     );
 
     expect(markup).toContain("This Mac has 8 GB of memory");
-    expect(markup).toContain("disabled");
+    expect(markup).not.toContain("Unload");
     expect(markup).toContain('aria-label="Open technical details"');
     expect(markup).toContain('aria-label="Appearance: Dark. Switch to System"');
     expect(markup).toContain("icon-appearance-dark");

@@ -428,37 +428,50 @@ textarea:focus-visible {
 }
 
 .sidebar-settings {
-  display: grid;
+  display: flex;
   flex: 0 0 auto;
-  gap: 4px;
+  align-items: center;
   margin: 12px -12px -14px;
-  padding: 11px 12px 12px;
+  padding: 10px 12px;
   border-top: 1px solid var(--reading-border);
-}
-
-.sidebar-version {
-  margin: 0 10px;
-  color: var(--ink-soft);
-  font-size: 11px;
-  letter-spacing: 0.02em;
 }
 
 .sidebar-release {
   display: flex;
-  min-height: 34px;
+  min-width: 0;
+  min-height: 40px;
+  flex: 1 1 auto;
   align-items: center;
   gap: 10px;
-  padding: 0 10px;
+  padding: 6px 10px;
   border: 0;
   border-radius: 9px;
-  color: var(--ink-soft);
+  color: var(--ink);
   background: transparent;
   font-size: 13px;
+  line-height: 1.3;
   text-align: left;
   cursor: pointer;
   transition:
     color 160ms ease,
     background 160ms ease;
+}
+
+.sidebar-release-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.sidebar-release-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-version {
+  color: var(--ink-soft);
+  font-size: 11px;
 }
 
 .sidebar-release:hover {
@@ -793,38 +806,42 @@ textarea:focus-visible {
 .conversation-identity {
   position: relative;
   min-width: 0;
-  gap: 4px;
+  gap: 6px;
   pointer-events: none;
 }
 
 .conversation-title {
   overflow: hidden;
   flex: 0 1 auto;
-  margin-right: 3px;
-  font-size: 14px;
-  font-weight: 680;
-  letter-spacing: -0.012em;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.014em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .rename-action {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   flex: 0 0 auto;
   place-items: center;
   border: 0;
   border-radius: 8px;
   color: var(--ink-soft);
   background: transparent;
-  opacity: 0.55;
+  opacity: 0.45;
   cursor: pointer;
   pointer-events: auto;
   transition:
     color 160ms ease,
     background 160ms ease,
     opacity 160ms ease;
+}
+
+.chat-header:hover .rename-action:not(:disabled),
+.rename-action:focus-visible {
+  opacity: 0.85;
 }
 
 .rename-action:hover:not(:disabled) {
@@ -834,7 +851,7 @@ textarea:focus-visible {
 }
 
 .rename-action:disabled {
-  opacity: 0.25;
+  opacity: 0.2;
   cursor: default;
 }
 
@@ -919,10 +936,10 @@ textarea:focus-visible {
 
 .model-state {
   min-width: 0;
-  gap: 7px;
-  padding: 0 11px;
+  gap: 8px;
+  padding: 0 12px;
   color: var(--ink-soft);
-  font-size: 11.5px;
+  font-size: 12px;
 }
 
 .model-state-text {

@@ -161,19 +161,18 @@ function ModelCluster({
         <i aria-hidden="true" />
         <span className="model-state-text">{modelStatus}</span>
       </span>
-      <button
-        className="header-action unload-action"
-        disabled={model.state !== "ready" || nativeActionMessage !== undefined}
-        onClick={onUnload}
-        title={
-          nativeActionMessage ??
-          (model.state === "ready" ? "Unload model from memory" : modelStatus)
-        }
-        type="button"
-      >
-        <Icon name="power" />
-        <span>Unload</span>
-      </button>
+      {model.state === "ready" ? (
+        <button
+          className="header-action unload-action"
+          disabled={nativeActionMessage !== undefined}
+          onClick={onUnload}
+          title={nativeActionMessage ?? "Unload model from memory"}
+          type="button"
+        >
+          <Icon name="power" />
+          <span>Unload</span>
+        </button>
+      ) : null}
     </div>
   );
 }

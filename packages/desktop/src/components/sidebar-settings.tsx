@@ -9,12 +9,14 @@ export function SidebarSettings({
 }) {
   return (
     <section aria-label="App settings" className="sidebar-settings">
-      <p className="sidebar-version">
-        {appVersion === undefined ? "Garden Desk" : `Version ${appVersion}`}
-      </p>
       <button className="sidebar-release" onClick={onOpenReleases} type="button">
         <Icon name="download" />
-        <span>Get the latest release</span>
+        <span className="sidebar-release-copy">
+          <span>Get the latest release</span>
+          {appVersion === undefined ? null : (
+            <span className="sidebar-version">Version {appVersion} installed</span>
+          )}
+        </span>
       </button>
     </section>
   );
