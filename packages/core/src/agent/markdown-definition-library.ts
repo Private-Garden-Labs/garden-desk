@@ -34,6 +34,11 @@ export interface SkillDefinition extends SkillMetadata {
   body: string;
 }
 
+export interface SkillOverlay {
+  installedSkills(): ReadonlyArray<SkillMetadata & { path: string }>;
+  isDisabled(name: string): boolean;
+}
+
 interface FrontmatterDocument {
   bodyStart: string;
   values: ReadonlyMap<string, string>;
@@ -125,13 +130,17 @@ function agentMetadata(path: string, expectedName: string): AgentMetadata {
 }
 
 function skillMetadata(path: string, expectedName: string): SkillMetadata {
-  const { bodyStart, values } = readFrontmatter(path);
+  const metadata = skillDocumentMetadata(readPromptPrefix(path, FRONTMATTER_LIMIT), path);
+  return { ...metadata, name: validateName(metadata.name, expectedName, path) };
+}
+
+export function skillDocumentMetadata(content: string, path: string): SkillMetadata {
+  const { bodyStart, values } = parseFrontmatter(content, path);
   only(values, ["name", "description"], path);
   if (bodyStart.trim().length === 0) throw new Error(`Missing Markdown body: ${path}`);
-  return {
-    description: required(values, "description", path),
-    name: validateName(required(values, "name", path), expectedName, path),
-  };
+  const name = required(values, "name", path);
+  if (!IDENTIFIER.test(name) || name.length > 64) throw new Error(`Invalid name in ${path}`);
+  return { description: required(values, "description", path), name };
 }
 
 function body(path: string): string {
@@ -154,21 +163,35 @@ function skillFiles(directory: string): Array<{ name: string; path: string }> {
 
 export class MarkdownDefinitionLibrary {
   readonly agents: readonly AgentMetadata[];
-  readonly skills: readonly SkillMetadata[];
+  private readonly packagedSkills: readonly SkillMetadata[];
   private readonly agentPaths: ReadonlyMap<string, string>;
   private readonly skillPaths: ReadonlyMap<string, string>;
 
-  constructor(private readonly root: string) {
+  constructor(
+    private readonly root: string,
+    private readonly overlay?: SkillOverlay,
+  ) {
     const agentFiles = markdownFiles(join(root, "agents"));
     const skillEntries = skillFiles(join(root, "skills"));
     this.agentPaths = new Map(agentFiles.map((entry) => [entry.name, entry.path]));
     this.skillPaths = new Map(skillEntries.map((entry) => [entry.name, entry.path]));
     this.agents = agentFiles.map((entry) => agentMetadata(entry.path, entry.name));
-    this.skills = skillEntries.map((entry) => skillMetadata(entry.path, entry.name));
+    this.packagedSkills = skillEntries.map((entry) => skillMetadata(entry.path, entry.name));
     for (const agent of this.agents) {
       const unknown = agent.skills.find((name) => !this.skillPaths.has(name));
       if (unknown !== undefined) throw new Error(`Unknown skill ${unknown} in agent ${agent.name}`);
     }
+  }
+
+  get skills(): readonly SkillMetadata[] {
+    const installed = this.overlay?.installedSkills() ?? [];
+    const installedNames = new Set(installed.map((skill) => skill.name));
+    return [
+      ...this.packagedSkills.filter(
+        (skill) => !installedNames.has(skill.name) && this.overlay?.isDisabled(skill.name) !== true,
+      ),
+      ...installed.map((skill) => ({ description: skill.description, name: skill.name })),
+    ].sort((left, right) => left.name.localeCompare(right.name, "en-US"));
   }
 
   agent(name: string): AgentDefinition {
@@ -179,10 +202,11 @@ export class MarkdownDefinitionLibrary {
   }
 
   skill(name: string): SkillDefinition {
-    const metadata = this.skills.find((skill) => skill.name === name);
-    const path = this.skillPaths.get(name);
+    const installed = this.overlay?.installedSkills().find((skill) => skill.name === name);
+    const metadata = installed ?? this.packagedSkills.find((skill) => skill.name === name);
+    const path = installed?.path ?? this.skillPaths.get(name);
     if (metadata === undefined || path === undefined) throw new Error(`Unknown skill: ${name}`);
-    return { ...metadata, body: body(path) };
+    return { description: metadata.description, name: metadata.name, body: body(path) };
   }
 
   system(name: string): string {

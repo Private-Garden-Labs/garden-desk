@@ -27,5 +27,6 @@ export {
 } from "./model.js";
 export * from "./policy.js";
 export * from "./rpc.js";
+export * from "./skills.js";
 export * from "./worker.js";
 export * from "./workspace.js";
