@@ -53,7 +53,9 @@ async function requireFetchedAsset(path: string, fetchCommand: string): Promise<
 }
 
 function signRuntimeFile(path: string): void {
-  if (process.platform === "darwin") signExecutable(path);
+  if (process.platform === "darwin" && process.env.APPLE_SIGNING_IDENTITY !== undefined) {
+    signExecutable(path);
+  }
 }
 
 export async function installRuntimeResources(

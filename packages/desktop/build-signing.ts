@@ -78,5 +78,5 @@ export function signExecutable(executable: string, entitlements?: string): strin
   if (entitlements !== undefined) args.push("--entitlements", entitlements);
   run("codesign", [...args, executable]);
   run("codesign", ["--verify", "--strict", executable]);
-  return identity === undefined ? "macos-adhoc" : "macos-developer-id";
+  return identity === undefined ? "macos-adhoc" : `macos-identity-${identity}`;
 }
