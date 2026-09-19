@@ -17,7 +17,7 @@ export const INFERENCE_PROFILE = {
   windowsDedicatedHostMemoryBytes: 20 * 1024 ** 3,
   minimumUnifiedMemoryBytes: 24 * 1024 ** 3,
   minimumDedicatedMemoryBytes: 16_000_000_000,
-  runtimeBuild: "llama.cpp@prism-b10685-7dffb15",
+  runtimeBuild: "llama.cpp@prism-b10709-9a9394a",
 } as const;
 
 export type ContextCacheType = keyof typeof INFERENCE_PROFILE.contextCacheBytesPerToken;

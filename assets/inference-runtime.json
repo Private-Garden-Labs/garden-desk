@@ -1,35 +1,35 @@
 {
   "schemaVersion": 1,
   "runtime": "llama.cpp",
-  "revision": "prism-b10685-7dffb15",
+  "revision": "prism-b10709-9a9394a",
   "source": "https://github.com/PrismML-Eng/llama.cpp",
   "platforms": {
     "macos-arm64": {
-      "archive": "llama-prism-b10685-7dffb15-bin-macos-arm64.tar.gz",
-      "byteLength": 11663250,
-      "sha256": "7fffa7a40c74f3e9bd78f3f2f9f12f9befb7b13af45d5a69c239cf3fd37b9045",
-      "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10685-7dffb15/llama-prism-b10685-7dffb15-bin-macos-arm64.tar.gz",
+      "archive": "llama-prism-b10709-9a9394a-bin-macos-arm64.tar.gz",
+      "byteLength": 11500187,
+      "sha256": "f9cdf245fb7b832f1996dd776b321d4ae1f23b6d88c380100f636742c3a980ff",
+      "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-macos-arm64.tar.gz",
       "files": {
-        "llama-prism-b10685-7dffb15/libllama-common.0.2.0.dylib": "libllama-common.0.dylib",
-        "llama-prism-b10685-7dffb15/libmtmd.0.2.0.dylib": "libmtmd.0.dylib",
-        "llama-prism-b10685-7dffb15/libllama.0.2.0.dylib": "libllama.0.dylib",
-        "llama-prism-b10685-7dffb15/libggml-base.0.21.0.dylib": "libggml-base.0.dylib",
-        "llama-prism-b10685-7dffb15/libggml.0.21.0.dylib": "libggml.0.dylib",
-        "llama-prism-b10685-7dffb15/libggml-cpu.0.21.0.dylib": "libggml-cpu.0.dylib",
-        "llama-prism-b10685-7dffb15/libggml-metal.0.21.0.dylib": "libggml-metal.0.dylib",
-        "llama-prism-b10685-7dffb15/libggml-blas.0.21.0.dylib": "libggml-blas.0.dylib",
-        "llama-prism-b10685-7dffb15/libggml-rpc.0.21.0.dylib": "libggml-rpc.0.dylib",
-        "llama-prism-b10685-7dffb15/llama-server": "llama-server",
-        "llama-prism-b10685-7dffb15/libllama-server-impl.dylib": "libllama-server-impl.dylib",
-        "llama-prism-b10685-7dffb15/libllama-fit-params-impl.dylib": "libllama-fit-params-impl.dylib"
+        "llama-prism-b10709-9a9394a/libllama-common.0.2.0.dylib": "libllama-common.0.dylib",
+        "llama-prism-b10709-9a9394a/libmtmd.0.2.0.dylib": "libmtmd.0.dylib",
+        "llama-prism-b10709-9a9394a/libllama.0.2.0.dylib": "libllama.0.dylib",
+        "llama-prism-b10709-9a9394a/libggml-base.0.21.0.dylib": "libggml-base.0.dylib",
+        "llama-prism-b10709-9a9394a/libggml.0.21.0.dylib": "libggml.0.dylib",
+        "llama-prism-b10709-9a9394a/libggml-cpu.0.21.0.dylib": "libggml-cpu.0.dylib",
+        "llama-prism-b10709-9a9394a/libggml-metal.0.21.0.dylib": "libggml-metal.0.dylib",
+        "llama-prism-b10709-9a9394a/libggml-blas.0.21.0.dylib": "libggml-blas.0.dylib",
+        "llama-prism-b10709-9a9394a/libggml-rpc.0.21.0.dylib": "libggml-rpc.0.dylib",
+        "llama-prism-b10709-9a9394a/llama-server": "llama-server",
+        "llama-prism-b10709-9a9394a/libllama-server-impl.dylib": "libllama-server-impl.dylib",
+        "llama-prism-b10709-9a9394a/libllama-fit-params-impl.dylib": "libllama-fit-params-impl.dylib"
       },
       "executable": "llama-server"
     },
     "windows-cuda-x64": {
-      "archive": "llama-prism-b10685-7dffb15-bin-win-cuda-13.3-x64.zip",
-      "byteLength": 144928999,
-      "sha256": "0b0e44045b0b55bb892c5afa8fd4c988194c47c02967ff1da55cd01c0c8eda69",
-      "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10685-7dffb15/llama-prism-b10685-7dffb15-bin-win-cuda-13.3-x64.zip",
+      "archive": "llama-prism-b10709-9a9394a-bin-win-cuda-13.3-x64.zip",
+      "byteLength": 145031500,
+      "sha256": "d656f217172c489706df40951e46bef647eb1a81eb8eeb1398c8f38bd7fa9725",
+      "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-win-cuda-13.3-x64.zip",
       "files": {
         "ggml-base.dll": "ggml-base.dll",
         "ggml-cpu.dll": "ggml-cpu.dll",
@@ -49,7 +49,7 @@
           "archive": "cudart-llama-bin-win-cuda-13.3-x64.zip",
           "byteLength": 390970417,
           "sha256": "1462a050eb4c684921ba51dcc4cc488a036674c3e73e9945ee705b854808d03e",
-          "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10685-7dffb15/cudart-llama-bin-win-cuda-13.3-x64.zip",
+          "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/cudart-llama-bin-win-cuda-13.3-x64.zip",
           "files": {
             "cublas64_13.dll": "cublas64_13.dll",
             "cublasLt64_13.dll": "cublasLt64_13.dll",
@@ -70,10 +70,10 @@
       ]
     },
     "windows-vulkan-x64": {
-      "archive": "llama-prism-b10685-7dffb15-bin-win-vulkan-x64.zip",
-      "byteLength": 33962393,
-      "sha256": "f1e8090392390e5c26b184ff90f5350a5e6421bfdd74606f12c8c5de9c668b2b",
-      "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10685-7dffb15/llama-prism-b10685-7dffb15-bin-win-vulkan-x64.zip",
+      "archive": "llama-prism-b10709-9a9394a-bin-win-vulkan-x64.zip",
+      "byteLength": 29908460,
+      "sha256": "fabef609b588cbbed85b5f10b45809c46088f0a63caca7976054034e24b40836",
+      "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-win-vulkan-x64.zip",
       "files": {
         "ggml-base.dll": "ggml-base.dll",
         "ggml-cpu-alderlake.dll": "ggml-cpu-alderlake.dll",

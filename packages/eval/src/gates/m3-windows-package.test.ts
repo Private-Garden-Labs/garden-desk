@@ -42,7 +42,7 @@ describe("M3 Windows portable package", () => {
       expect(staging).toContain(value);
     }
     const cuda = JSON.parse(assets).platforms["windows-cuda-x64"];
-    expect(cuda.archive).toBe("llama-prism-b10685-7dffb15-bin-win-cuda-13.3-x64.zip");
+    expect(cuda.archive).toBe("llama-prism-b10709-9a9394a-bin-win-cuda-13.3-x64.zip");
     expect(Object.values(cuda.dependencies[0].files)).toEqual([
       "cublas64_13.dll",
       "cublasLt64_13.dll",

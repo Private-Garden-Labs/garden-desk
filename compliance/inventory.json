@@ -113,7 +113,7 @@
     },
     {
       "name": "llama.cpp (PrismML fork)",
-      "version": "prism-b10685-7dffb15",
+      "version": "prism-b10709-9a9394a",
       "license": "MIT",
       "use": "packaged_private_inference_runtime"
     },
