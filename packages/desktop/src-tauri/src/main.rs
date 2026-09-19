@@ -19,6 +19,7 @@ mod drop_commands;
 mod package_integrity;
 mod question_commands;
 mod session_commands;
+mod skill_commands;
 mod windows_setup;
 #[cfg(windows)]
 mod windows_setup_windows;
@@ -244,6 +245,15 @@ fn main() {
             commands::revoke_folder,
             diagnostics::reveal_debug_snapshot,
             commands::save_draft,
+            skill_commands::add_skill_files,
+            skill_commands::choose_skill_files,
+            skill_commands::list_skills,
+            skill_commands::open_prompt_folder,
+            skill_commands::read_skill,
+            skill_commands::remove_skill,
+            skill_commands::set_skill_enabled,
+            skill_commands::skill_locations,
+            skill_commands::write_skill,
             windows_setup::secure_workspace_status,
             commands::start_agent,
             commands::unload_model,
