@@ -32,8 +32,9 @@ describe("desktop window layout", () => {
     expect(markup).not.toContain("Thinking on");
     expect(markup).not.toContain(">G4<");
     expect(markup).toMatch(
-      /<button[^>]*class="header-action unload-action"[^>]*>.*Unload.*<button[^>]*class="header-action appearance-action"[^>]*>.*<button[^>]*class="header-action technical-details-action"/s,
+      /<div class="model-cluster model-cluster-unloaded">.*<button[^>]*class="header-action appearance-action"[^>]*>.*<button[^>]*class="header-action technical-details-action"/s,
     );
+    expect(markup).not.toContain("Unload");
     expect(markup).toContain('data-appearance="system"');
     expect(markup).toContain('data-theme="light"');
   });

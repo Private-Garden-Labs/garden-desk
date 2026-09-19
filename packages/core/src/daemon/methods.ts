@@ -1,7 +1,6 @@
 import {
   AgentRunIdSchema,
   AttachmentIdSchema,
-  type ErrorCode,
   FolderIdSchema,
   JobIdSchema,
   MessageRoleSchema,
@@ -15,15 +14,8 @@ import {
 import type { GardenDeskCore } from "../facade.js";
 import { dispatchArtifactMethod } from "./artifact-methods.js";
 import { dispatchQuestionMethod } from "./question-methods.js";
-
-function failure(request: RpcRequest | undefined, code: ErrorCode, message: string): RpcResponse {
-  return {
-    jsonrpc: "2.0",
-    id: request?.id ?? null,
-    error: { code, message },
-    protocolVersion: PROTOCOL_VERSION,
-  };
-}
+import { failure, success } from "./responses.js";
+import { createSession, deleteSession, listSessions, renameSession } from "./session-methods.js";
 
 function executionFailure(request: RpcRequest, error: unknown): RpcResponse {
   const message = error instanceof Error ? error.message : "";
@@ -45,16 +37,6 @@ function executionFailure(request: RpcRequest, error: unknown): RpcResponse {
     return failure(request, "invalid_request", "The request parameters are invalid.");
   }
   return failure(request, "internal", "The request could not be completed.");
-}
-
-function success(request: RpcRequest, result: unknown): RpcResponse {
-  return { jsonrpc: "2.0", id: request.id, result, protocolVersion: PROTOCOL_VERSION };
-}
-
-function nullableFolderId(value: unknown): string | null | undefined {
-  if (value === null) return null;
-  const parsed = FolderIdSchema.safeParse(value);
-  return parsed.success ? parsed.data : undefined;
 }
 
 async function addFolder(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
@@ -79,31 +61,6 @@ async function resolveFolderPath(core: GardenDeskCore, request: RpcRequest): Pro
   const folderId = FolderIdSchema.safeParse(request.params.folderId);
   if (!folderId.success) return failure(request, "invalid_request", "Invalid folder id.");
   return success(request, await core.resolveFolderPath(folderId.data));
-}
-
-async function createSession(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
-  const folderId = nullableFolderId(request.params.folderId);
-  if (folderId === undefined) return failure(request, "invalid_request", "Invalid folder id.");
-  return success(request, await core.createSession(folderId));
-}
-
-async function deleteSession(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
-  const sessionId = SessionIdSchema.safeParse(request.params.sessionId);
-  if (!sessionId.success) return failure(request, "invalid_request", "Invalid session id.");
-  return success(request, { deleted: await core.deleteSession(sessionId.data) });
-}
-
-async function listSessions(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
-  const folderId = nullableFolderId(request.params.folderId);
-  if (folderId === undefined) return failure(request, "invalid_request", "Invalid folder id.");
-  const { cursor, limit } = request.params;
-  if (cursor !== undefined && typeof cursor !== "string") {
-    return failure(request, "invalid_request", "Invalid session cursor.");
-  }
-  if (limit !== undefined && typeof limit !== "number") {
-    return failure(request, "invalid_request", "Invalid page limit.");
-  }
-  return success(request, await core.listSessions(folderId, cursor, limit));
 }
 
 async function appendMessage(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
@@ -234,6 +191,8 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
       return createSession(core, request);
     case "sessions.delete":
       return deleteSession(core, request);
+    case "sessions.rename":
+      return renameSession(core, request);
     case "sessions.list":
       return listSessions(core, request);
     case "messages.append":

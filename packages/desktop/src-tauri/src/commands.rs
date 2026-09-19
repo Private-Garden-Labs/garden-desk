@@ -5,6 +5,8 @@ use tauri::{AppHandle, State};
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_shell::ShellExt;
 
+const RELEASE_PAGE_URL: &str = "https://gardendesk.ai/releases";
+
 fn state_root(core: &CoreBridge) -> Result<PathBuf, String> {
     let status = core.call("status", json!({}))?;
     let workspace_root = status
@@ -16,7 +18,10 @@ fn state_root(core: &CoreBridge) -> Result<PathBuf, String> {
 }
 
 #[tauri::command]
-pub(crate) async fn desktop_bootstrap(core: State<'_, CoreBridge>) -> Result<Value, String> {
+pub(crate) async fn desktop_bootstrap(
+    app: AppHandle,
+    core: State<'_, CoreBridge>,
+) -> Result<Value, String> {
     let catalog_path = path_text(&state_root(&core)?.join("catalog.sqlite"))?;
     let folders = core.call("folders.list", json!({}))?;
     let global_sessions = core.call("sessions.list", json!({ "folderId": null, "limit": 5 }))?;
@@ -36,6 +41,7 @@ pub(crate) async fn desktop_bootstrap(core: State<'_, CoreBridge>) -> Result<Val
         folder_sessions.push(json!({ "folderId": folder_id, "page": page }));
     }
     Ok(json!({
+        "appVersion": app.package_info().version.to_string(),
         "catalogPath": catalog_path,
         "commands": core.call("commands.list", json!({}))?,
         "folders": folders,
@@ -165,33 +171,12 @@ pub(crate) async fn revoke_folder(
     core.call("folders.revoke", json!({ "folderId": folder_id }))
 }
 
+#[allow(deprecated)]
 #[tauri::command]
-pub(crate) async fn create_session(
-    core: State<'_, CoreBridge>,
-    folder_id: Option<String>,
-) -> Result<Value, String> {
-    core.call("sessions.create", json!({ "folderId": folder_id }))
-}
-
-#[tauri::command]
-pub(crate) async fn delete_session(
-    core: State<'_, CoreBridge>,
-    session_id: String,
-) -> Result<Value, String> {
-    core.call("sessions.delete", json!({ "sessionId": session_id }))
-}
-
-#[tauri::command]
-pub(crate) async fn list_sessions(
-    core: State<'_, CoreBridge>,
-    folder_id: Option<String>,
-    cursor: Option<String>,
-) -> Result<Value, String> {
-    let mut params = json!({ "folderId": folder_id, "limit": 5 });
-    if let Some(cursor) = cursor {
-        params["cursor"] = Value::String(cursor);
-    }
-    core.call("sessions.list", params)
+pub(crate) async fn open_release_page(app: AppHandle) -> Result<(), String> {
+    app.shell()
+        .open(RELEASE_PAGE_URL, None)
+        .map_err(|error| error.to_string())
 }
 
 #[tauri::command]

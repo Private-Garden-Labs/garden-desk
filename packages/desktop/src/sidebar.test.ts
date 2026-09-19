@@ -39,6 +39,7 @@ describe("sidebar rows", () => {
         onAddFolder: () => undefined,
         onNewSession: () => undefined,
         onOpenFolder: () => undefined,
+        onOpenReleases: () => undefined,
         onDeleteSession: () => undefined,
         onRevokeFolder: () => undefined,
         onReorderFolders: () => undefined,

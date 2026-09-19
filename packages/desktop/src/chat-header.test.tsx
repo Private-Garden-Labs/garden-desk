@@ -7,6 +7,7 @@ describe("model hardware status", () => {
     const markup = renderToStaticMarkup(
       <ChatHeader
         appearance="system"
+        conversationTitle="Quarter close review"
         technicalDetailsOpen={false}
         model={{
           modelId: "gemma-4-12b-it-qat-q4_0",
@@ -19,12 +20,14 @@ describe("model hardware status", () => {
           contextSizeTokens: 131_072,
         }}
         onAppearanceChange={() => undefined}
+        onRename={() => undefined}
         onTechnicalDetailsOpen={() => undefined}
         onUnload={() => undefined}
       />,
     );
 
-    expect(markup).toContain("Gemma 4 12B QAT");
+    expect(markup).toContain("Quarter close review");
+    expect(markup).toContain('aria-label="Rename conversation"');
     expect(markup).toContain("Loaded and ready");
     expect(markup).not.toContain("model-usage");
     expect(markup).not.toContain("16.0 GiB budget");
@@ -39,6 +42,7 @@ describe("unsupported hardware status", () => {
     const markup = renderToStaticMarkup(
       <ChatHeader
         appearance="dark"
+        conversationTitle="New chat"
         technicalDetailsOpen={false}
         model={{
           modelId: "gemma-4-12b-it-qat-q4_0",
@@ -48,13 +52,14 @@ describe("unsupported hardware status", () => {
           message: "This Mac has 8 GB of memory. Garden Desk requires more memory to run locally.",
         }}
         onAppearanceChange={() => undefined}
+        onRename={() => undefined}
         onTechnicalDetailsOpen={() => undefined}
         onUnload={() => undefined}
       />,
     );
 
     expect(markup).toContain("This Mac has 8 GB of memory");
-    expect(markup).toContain("disabled");
+    expect(markup).not.toContain("Unload");
     expect(markup).toContain('aria-label="Open technical details"');
     expect(markup).toContain('aria-label="Appearance: Dark. Switch to System"');
     expect(markup).toContain("icon-appearance-dark");

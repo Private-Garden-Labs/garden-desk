@@ -15,7 +15,7 @@ import type {
 import { applyAgentSnapshot } from "./agent-state.js";
 import type { DesktopBootstrap } from "./api.js";
 import { appendMessage } from "./message-state.js";
-import { loadMessages, loadSession } from "./session-state.js";
+import { deleteSession, loadMessages, loadSession, renameSession } from "./session-state.js";
 import { emptyConversation } from "./state-initial.js";
 import type { FolderGroup, TimelineItem } from "./state-types.js";
 
@@ -59,6 +59,7 @@ export type DesktopAction =
   | { type: "folder.refresh"; folderId: string; page: SessionPage }
   | { type: "session.created"; session: SessionSummary }
   | { type: "session.deleted"; sessionId: string }
+  | { type: "session.renamed"; sessionId: string; title: string }
   | { type: "session.new"; folderId: string | null }
   | { type: "session.select"; sessionId: string }
   | {
@@ -207,26 +208,9 @@ export function desktopReducer(state: DesktopState, action: DesktopAction): Desk
     };
   }
   if (action.type === "session.created") return addSession(state, action.session);
-  if (action.type === "session.deleted") {
-    const activeDeleted = state.activeSessionId === action.sessionId;
-    return {
-      ...state,
-      globalSessions: state.globalSessions.filter((session) => session.id !== action.sessionId),
-      folders: state.folders.map((folder) => ({
-        ...folder,
-        sessions: folder.sessions.filter((session) => session.id !== action.sessionId),
-      })),
-      workingSessionIds: state.workingSessionIds.filter((id) => id !== action.sessionId),
-      thinkingBySession: Object.fromEntries(
-        Object.entries(state.thinkingBySession).filter(
-          ([sessionId]) => sessionId !== action.sessionId,
-        ),
-      ),
-      ...(activeDeleted ? emptyConversation(null) : {}),
-      ...(state.pendingSessionId === action.sessionId ? { pendingSessionId: undefined } : {}),
-    };
-  }
+  if (action.type === "session.deleted") return deleteSession(state, action.sessionId);
   if (action.type === "session.new") return { ...state, ...emptyConversation(action.folderId) };
+  if (action.type === "session.renamed") return renameSession(state, action);
   if (action.type === "session.select") {
     return { ...state, pendingSessionId: action.sessionId };
   }

@@ -1,4 +1,5 @@
 import type { DesktopApi } from "../api.js";
+import { showReleasePage } from "../app-release.js";
 import { deleteSessionConfirmation, revokeFolderConfirmation } from "../confirmations.js";
 import {
   addFolder,
@@ -14,6 +15,7 @@ import { Sidebar } from "./sidebar.js";
 
 interface AppSidebarProps {
   api: DesktopApi;
+  appVersion: string | undefined;
   dispatch(action: DesktopAction): void;
   dropIntent: DropIntent | undefined;
   nativeActionMessage: string | undefined;
@@ -25,6 +27,7 @@ interface AppSidebarProps {
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: one sidebar wiring boundary; its actions live in desktop-actions and confirmations.
 export function AppSidebar({
   api,
+  appVersion,
   dispatch,
   dropIntent,
   nativeActionMessage,
@@ -35,6 +38,7 @@ export function AppSidebar({
   return (
     <Sidebar
       activeSessionId={state.activeSessionId}
+      appVersion={appVersion}
       disabled={!state.loaded}
       dropActive={dropIntent === "folders" || dropIntent === "mixed"}
       dispatch={dispatch}
@@ -45,6 +49,7 @@ export function AppSidebar({
       onAddFolder={() => void addFolder(api, dispatch, setError)}
       onNewSession={(folderId) => dispatch({ type: "session.new", folderId })}
       onOpenFolder={(folderId) => void showFolder(api, folderId, setError)}
+      onOpenReleases={() => void showReleasePage(api, setError)}
       onDeleteSession={(session) =>
         setConfirmation(
           deleteSessionConfirmation({
