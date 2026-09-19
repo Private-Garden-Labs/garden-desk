@@ -133,7 +133,7 @@ export async function summarizeSession(
     tools: [],
     contextSize: "auto" as const,
     maxTokens: SUMMARY_OUTPUT_TOKENS,
-    temperature: 0,
+    temperature: 1,
     thinking: DEFAULT_THINKING_LEVEL,
   };
   let retryUsed = false;

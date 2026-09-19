@@ -60,6 +60,43 @@ it("sends the selected thinking level as the reasoning effort and no thinking bu
   expect(Object.keys(chatBody(chat("medium"), {}))).not.toContain("reasoning_budget_tokens");
 });
 
+it("uses the model card sampling values and the reasoning guardrail", () => {
+  const chat = (thinking: ChatGenerationRequest["thinking"]) =>
+    ChatGenerationRequestSchema.parse({
+      ...request,
+      operation: "chat",
+      prompt: undefined,
+      jsonSchema: undefined,
+      contextSize: "auto",
+      messages: [{ role: "user", text: "Respond." }],
+      tools: [],
+      temperature: 1,
+      thinking,
+    });
+  expect(chatBody(chat("medium"), {})).toMatchObject({
+    temperature: 1,
+    top_p: 0.95,
+    top_k: 20,
+    min_p: 0,
+    presence_penalty: 0,
+    repeat_penalty: 1,
+  });
+  expect(chatBody(chat("none"), {})).toMatchObject({
+    temperature: 0.7,
+    top_p: 0.8,
+    presence_penalty: 1.5,
+  });
+  const structured = StructuredGenerationRequestSchema.parse({ ...request, contextSize: "auto" });
+  expect(chatBody(structured, {}).temperature).toBe(0);
+  const args = serverArguments({
+    backend: "metal",
+    modelPath: "model.gguf",
+    contextTokens: 32768,
+    speculation: "none",
+  });
+  expect(args[args.indexOf("--reasoning-budget") + 1]).toBe("32768");
+});
+
 it("uses the Metal buffer name accepted by the pinned server", () => {
   const args = serverArguments({
     backend: "metal",
