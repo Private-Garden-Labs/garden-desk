@@ -7,21 +7,26 @@ interface SidebarSettingsProps {
   onOpenSkills(): void;
 }
 
+function useDismissOnOutsideClick(open: boolean, close: () => void) {
+  const container = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const dismiss = (event: MouseEvent) => {
+      if (!container.current?.contains(event.target as Node)) close();
+    };
+    document.addEventListener("mousedown", dismiss);
+    return () => document.removeEventListener("mousedown", dismiss);
+  }, [close, open]);
+  return container;
+}
+
 export function SidebarSettings({
   appVersion,
   onOpenReleases,
   onOpenSkills,
 }: SidebarSettingsProps) {
   const [open, setOpen] = useState(false);
-  const container = useRef<HTMLElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const dismiss = (event: MouseEvent) => {
-      if (!container.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", dismiss);
-    return () => document.removeEventListener("mousedown", dismiss);
-  }, [open]);
+  const container = useDismissOnOutsideClick(open, () => setOpen(false));
   const choose = (action: () => void) => {
     setOpen(false);
     action();
@@ -56,9 +61,9 @@ export function SidebarSettings({
             <Icon name="external" />
             Open the releases page
           </button>
-          <p className="sidebar-menu-version">
-            {appVersion === undefined ? "Version not available" : `Version ${appVersion}`}
-          </p>
+          {appVersion === undefined ? null : (
+            <p className="sidebar-menu-version">Version {appVersion}</p>
+          )}
         </div>
       ) : null}
       <button

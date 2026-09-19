@@ -3011,7 +3011,7 @@ textarea:focus-visible {
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  background: var(--shell);
+  background: rgb(255 255 255 / 94%);
   box-shadow: 0 1px 3px rgb(3 16 20 / 24%);
   transition: transform 160ms ease;
 }
