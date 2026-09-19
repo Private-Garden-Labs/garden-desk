@@ -76,6 +76,11 @@ function RenamePopover({
       onKeyDown={(event) => {
         if (event.key === "Escape") onCancel();
       }}
+      onMouseDown={(event) => {
+        // Some webviews give a clicked button no focus, which would close the panel
+        // through onBlur before the action runs.
+        if (event.target !== field.current) event.preventDefault();
+      }}
       onSubmit={(event) => {
         event.preventDefault();
         if (trimmed.length > 0) onSave(trimmed);
