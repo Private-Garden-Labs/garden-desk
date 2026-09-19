@@ -1,4 +1,5 @@
 import type { ChatMessage } from "@gardendesk/shared";
+import { fillPrompt } from "../prompt-files.js";
 
 function serialized(message: ChatMessage): string {
   if (message.role === "assistant") {
@@ -35,7 +36,7 @@ export async function compactChatHistory(
   messages: readonly ChatMessage[],
   instructions: string,
   summarize: (prompt: string) => Promise<string>,
-  options: { assistantTurns?: number } = {},
+  options: { assistantTurns?: number; opening: { create: string; update: string } },
 ): Promise<CompactHistoryResult> {
   const assistantTurns = options.assistantTurns ?? 2;
   const retained = retainedIndexes(messages, assistantTurns);
@@ -51,8 +52,8 @@ export async function compactChatHistory(
   if (head.length === 0) return { messages: [...messages], summary: "" };
   const prompt = [
     previous?.role === "user"
-      ? `Update the existing summary and preserve facts that remain true:\n${previous.text}`
-      : "Create a new anchored summary.",
+      ? fillPrompt(options.opening.update, { summary: previous.text })
+      : options.opening.create,
     instructions,
     "Conversation history:",
     head.map(serialized).join("\n\n"),

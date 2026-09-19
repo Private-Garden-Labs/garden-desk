@@ -98,10 +98,9 @@ function childDefinition(ports: SubagentPorts, definition: AgentDefinition, chil
   const body = agentInstructions(ports.library, definition);
   if (["general", "explore"].includes(definition.name)) return { ...definition, body };
   const workDirectory = `/workspace/.garden-desk-tools/${childId}`;
-  const ownership =
-    ports.outputOwner === "user"
-      ? "Return the findings to the user. If the user requests a final file, create and reopen it under /workspace. Otherwise return findings in chat."
-      : "Return findings and source references to the parent. Save working evidence only in the working directory. The parent owns the final answer and user files.";
+  const ownership = ports.library.system(
+    ports.outputOwner === "user" ? "specialist-user-output" : "specialist-parent-output",
+  );
   return {
     ...definition,
     body: `${body}\n\n${ports.library.system("specialist")}\n\nWorking directory: ${workDirectory}\n${ownership}`,

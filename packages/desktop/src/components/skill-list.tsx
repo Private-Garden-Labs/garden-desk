@@ -2,6 +2,7 @@ import type { SkillSummary } from "@gardendesk/shared";
 import { type ReactNode, useState } from "react";
 import type { SkillsController } from "../skills.js";
 import { Icon } from "./icons.js";
+import { SkillHelp } from "./skill-help.js";
 
 const INVALID = "This file needs a name and a description at the top.";
 
@@ -191,6 +192,7 @@ export function SkillList({
           ) : null
         }
       />
+      <SkillHelp nativeActionMessage={nativeActionMessage} />
       {found.length === 0 ? <p className="skills-empty">No skill matches that search.</p> : null}
       {own.length === 0 && query === "" ? (
         <AddZone controller={controller} nativeActionMessage={nativeActionMessage} />

@@ -2879,7 +2879,6 @@ textarea:focus-visible {
 
 .skills-intro {
   margin: 0;
-  max-width: 64ch;
   color: var(--ink-soft);
   font-size: 13px;
   line-height: 1.5;
@@ -2888,9 +2887,47 @@ textarea:focus-visible {
 
 .skills-toolbar {
   display: flex;
-  margin: 16px 0 4px;
+  margin: 14px 0 0;
   align-items: center;
   gap: 8px;
+}
+
+.skill-help {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--reading-border);
+  border-radius: 12px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.skill-help summary {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.skill-help p {
+  margin: 10px 0 0;
+  max-width: 76ch;
+}
+
+.skill-help pre {
+  margin: 10px 0 0;
+  padding: 11px 12px;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: var(--reading-soft);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.skill-help button {
+  margin-top: 12px;
 }
 
 .skills-search {

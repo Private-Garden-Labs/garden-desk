@@ -22,6 +22,7 @@ function localIsoTimestamp(now: Date, timeZone: string): string {
 }
 
 export function currentTimeContext(
+  guidance: string,
   now = new Date(),
   timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
 ): string {
@@ -29,13 +30,13 @@ export function currentTimeContext(
     "Current host date and time:",
     `- Local: ${localIsoTimestamp(now, timeZone)} [${timeZone}]`,
     `- UTC: ${now.toISOString()}`,
-    "This clock snapshot was made when this user task started. For a value with a time zone, compare the exact instants. For a date without a time or time zone, compare it with the local date above. The same local date is today, not past or future.",
+    guidance,
   ].join("\n");
 }
 
 export function withCurrentTimeContext(
   messages: readonly ChatMessage[],
-  clock = currentTimeContext(),
+  clock: string,
 ): ChatMessage[] {
   const first = messages[0];
   if (first?.role !== "system") throw new Error("agent_system_prompt_missing");

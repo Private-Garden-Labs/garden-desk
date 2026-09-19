@@ -1,4 +1,5 @@
 import { type AgentQuestion, AgentQuestionSchema } from "@gardendesk/shared";
+import { fillPrompt } from "../prompt-files.js";
 import { object, objectSchema, type ToolSpec } from "./generic-tool-support.js";
 
 function parsedQuestions(value: unknown): AgentQuestion[] {
@@ -17,14 +18,19 @@ function questionParams(value: unknown): { questions: AgentQuestion[] } {
   return { questions: parsedQuestions(value) };
 }
 
-function answerText(questions: AgentQuestion[], answers: string[][]): string {
+function answerText(
+  questions: AgentQuestion[],
+  answers: string[][],
+  template: string | undefined,
+): string {
   const formatted = questions
     .map((item, index) => {
       const reply = answers[index]?.length ? answers[index].join(", ") : "Unanswered";
       return `${JSON.stringify(item.question)}=${JSON.stringify(reply)}`;
     })
     .join("\n");
-  return `The user answered your questions:\n${formatted}\nContinue the task with these answers in mind.`;
+  if (template === undefined) return formatted;
+  return fillPrompt(template, { answers: formatted });
 }
 
 const QUESTION_ITEM_SCHEMA = {
@@ -78,12 +84,14 @@ export function questionTool(): ToolSpec {
       const outcome = await context.askQuestion(questions);
       if (outcome.dismissed) {
         return {
-          content:
-            "The user dismissed the questions without answering. Continue the task using your best judgment.",
+          content: context.systemPrompt?.("question-dismissed") ?? "",
           failed: false,
         };
       }
-      return { content: answerText(questions, outcome.answers), failed: false };
+      return {
+        content: answerText(questions, outcome.answers, context.systemPrompt?.("question-answers")),
+        failed: false,
+      };
     },
   };
 }

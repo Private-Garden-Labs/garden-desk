@@ -31,6 +31,11 @@ export function promptDirectoryExists(path: string): boolean {
   return existsSync(path);
 }
 
+/** Replaces every {name} in a prompt file with the supplied value. */
+export function fillPrompt(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/gu, (match, key: string) => values[key] ?? match);
+}
+
 export function promptPathIsDirectory(path: string): boolean {
   return statSync(path).isDirectory();
 }
