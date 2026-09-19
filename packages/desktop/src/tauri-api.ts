@@ -21,13 +21,8 @@ import type {
   SecureWorkspaceStatus,
 } from "./api.js";
 import { invokeDesktop, withDevelopmentError } from "./development-errors.js";
-
-function record(value: unknown): Record<string, unknown> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new Error("The desktop bridge returned an invalid response.");
-  }
-  return value as Record<string, unknown>;
-}
+import { record } from "./tauri-parse.js";
+import { tauriSkillApi } from "./tauri-skills.js";
 
 function parseDroppedPaths(value: unknown): DroppedPaths {
   const input = record(value);
@@ -284,6 +279,7 @@ export const tauriDesktopApi: DesktopApi = {
   async openReleasePage() {
     await invokeDesktop("open_release_page", () => undefined);
   },
+  ...tauriSkillApi,
   async listenForDroppedPaths(listener) {
     return await withDevelopmentError("listen_for_dropped_paths", async () =>
       getCurrentWebview().onDragDropEvent(({ payload }) => {

@@ -16,6 +16,7 @@ import { dispatchArtifactMethod } from "./artifact-methods.js";
 import { dispatchQuestionMethod } from "./question-methods.js";
 import { failure, success } from "./responses.js";
 import { createSession, deleteSession, listSessions, renameSession } from "./session-methods.js";
+import { dispatchSkillMethod } from "./skill-methods.js";
 
 function executionFailure(request: RpcRequest, error: unknown): RpcResponse {
   const message = error instanceof Error ? error.message : "";
@@ -235,6 +236,14 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
       return success(request, { unloaded: await core.unloadModel() });
     case "jobs.cancel":
       return cancelJob(core, request);
+    case "skills.list":
+    case "skills.locations":
+    case "skills.install":
+    case "skills.read":
+    case "skills.write":
+    case "skills.remove":
+    case "skills.setEnabled":
+      return dispatchSkillMethod(core, request);
     default:
       return failure(request, "unsupported", `Unsupported method: ${request.method}`);
   }

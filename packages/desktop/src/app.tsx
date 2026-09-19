@@ -3,7 +3,7 @@ import {
   DEFAULT_THINKING_LEVEL,
   type ThinkingLevel,
 } from "@gardendesk/shared";
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import type { DesktopApi } from "./api.js";
 import { useAppearance } from "./appearance.js";
 import { artifactActions } from "./artifact-actions.js";
@@ -17,15 +17,17 @@ import { DropOverlay } from "./components/drop-overlay.js";
 import { ErrorBanner } from "./components/error-banner.js";
 import { GuidedExamples } from "./components/guided-examples.js";
 import { SecureWorkspaceBanner } from "./components/secure-workspace-banner.js";
+import { SkillsPage } from "./components/skills-page.js";
 import { SpecialistView } from "./components/specialist-view.js";
 import { TechnicalDetails } from "./components/technical-details.js";
-import { openAttachment, selectSession, send } from "./desktop-actions.js";
+import { openAttachment, send } from "./desktop-actions.js";
 import { type DropIntent, useNativeDrop } from "./desktop-drop.js";
 import { initialModelStatus, unloadModel, useModelRefresh } from "./desktop-model.js";
 import { useDraftPersistence } from "./draft-persistence.js";
 import { desktopPlatform } from "./platform.js";
 import { secureWorkspaceAllowsTasks } from "./secure-workspace.js";
-import { type DesktopBootstrapRequest, desktopBootstrapRequest } from "./startup.js";
+import { useSkills } from "./skills.js";
+import { useDesktopBootstrap } from "./startup.js";
 import { desktopReducer, initialDesktopState } from "./state.js";
 import { selectStep } from "./step-selection.js";
 import { agentSteps, desktopThinking } from "./steps.js";
@@ -39,6 +41,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const [desktopError, setDesktopError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [technicalDetailsOpen, setTechnicalDetailsOpen] = useState(false);
+  const [skillsOpen, setSkillsOpen] = useState(false);
   const [selectedChild, setSelectedChild] = useState<AgentRunSummary>();
   useEffect(() => {
     setSelectedChild((current) =>
@@ -53,30 +56,14 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const [model, setModel] = useState(initialModelStatus);
   const [appVersion, setAppVersion] = useState<string>();
   const [thinking, setThinking] = useState<ThinkingLevel>(DEFAULT_THINKING_LEVEL);
-  const bootstrap = useRef<DesktopBootstrapRequest | undefined>(undefined);
   const secureWorkspace = useSecureWorkspace(api, setConfirmation, setDesktopError);
-  useEffect(() => {
-    bootstrap.current = desktopBootstrapRequest(api, bootstrap.current);
-    let active = true;
-    void bootstrap.current.promise
-      .then((snapshot) => {
-        if (!active) return;
-        setModel(snapshot.model);
-        setAppVersion(snapshot.appVersion);
-        if (snapshot.model.state === "unsupported" && snapshot.model.message !== undefined)
-          setDesktopError(snapshot.model.message);
-        dispatch({ type: "desktop.hydrate", snapshot });
-        if (snapshot.initialSessionId !== undefined) {
-          void selectSession(api, snapshot.initialSessionId, dispatch, setDesktopError);
-        }
-      })
-      .catch(() => {
-        if (active) setDesktopError("Garden Desk could not finish loading.");
-      });
-    return () => {
-      active = false;
-    };
-  }, [api]);
+  useDesktopBootstrap({
+    api,
+    dispatch,
+    setAppVersion,
+    setError: setDesktopError,
+    setModel,
+  });
   const nativeUnavailable = capabilities.nativeActions
     ? undefined
     : (capabilities.unavailableReason ?? "Unavailable in the public demo");
@@ -94,6 +81,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const desktopReady = state.loaded && !sessionLoading;
   const tasksAllowed = secureWorkspaceAllowsTasks(secureWorkspace.status);
   const draftPersistence = useDraftPersistence(api, setDesktopError);
+  const skills = useSkills(api, skillsOpen);
   useNativeDrop({
     api,
     context: {
@@ -101,6 +89,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
       draft: state.draft,
       newSessionFolderId: state.newSessionFolderId,
       running: running || sessionLoading,
+      ...(skillsOpen ? { addSkills: skills.addPaths } : {}),
     },
     dispatch,
     enabled: capabilities.nativeActions && !childOpen,
@@ -171,103 +160,114 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         dispatch={dispatch}
         dropIntent={dropIntent}
         nativeActionMessage={nativeUnavailable}
+        onSkillsOpenChange={setSkillsOpen}
         setConfirmation={setConfirmation}
         setError={setDesktopError}
+        skillsOpen={skillsOpen}
         state={state}
       />
-      <main aria-busy={!desktopReady} className="workspace">
-        <div aria-hidden="true" className="window-drag-region" data-tauri-drag-region="" />
-        <AppChatHeader
-          api={api}
-          appearance={appearance.preference}
-          dispatch={dispatch}
-          model={model}
+      {skillsOpen ? (
+        <SkillsPage
+          controller={skills}
+          dropActive={dropIntent !== undefined}
           nativeActionMessage={nativeUnavailable}
-          onAppearanceChange={appearance.cycle}
-          onTechnicalDetailsOpen={() => {
-            detailDispatch({ type: "step.select", stepId: undefined });
-            setTechnicalDetailsOpen(true);
-          }}
-          onUnload={() => void unloadModel(api, setModel, setDesktopError)}
-          setError={setDesktopError}
-          specialistAgentId={childOpen ? selectedChild.agentId : undefined}
-          state={state}
-          technicalDetailsOpen={technicalDetailsOpen}
+          onDone={() => setSkillsOpen(false)}
         />
-        <SecureWorkspaceBanner
-          busy={secureWorkspace.busy}
-          onSetup={secureWorkspace.showSetup}
-          status={secureWorkspace.status}
-        />
-        <GuidedExamples
-          disabled={!desktopReady || running || !tasksAllowed}
-          examples={capabilities.guidedExamples ?? []}
-          onRun={runTask}
-        />
-        <ErrorBanner message={desktopError} onDismiss={() => setDesktopError(undefined)} />
-        <Conversation
-          hidden={childOpen}
-          childRuns={state.childRuns}
-          onOpenChild={(run) => {
-            dispatch({
-              type: "step.select",
-              stepId: state.timeline.find(
-                (item) =>
-                  item.runId === run.parentRunId && item.toolCallId === run.parentToolCallId,
-              )?.id,
-            });
-            setSelectedChild(run);
-            setTechnicalDetailsOpen(false);
-          }}
-          artifacts={state.artifacts}
-          attachments={state.attachments}
-          folderName={folderName}
-          key={state.activeSessionId ?? `new:${state.newSessionFolderId ?? "global"}`}
-          nativeActionMessage={nativeUnavailable}
-          ready={state.loaded}
-          onOpenAttachment={(attachmentId) => {
-            if (state.activeSessionId !== undefined)
-              void openAttachment(api, state.activeSessionId, attachmentId, setDesktopError);
-          }}
-          onSuggestion={changeDraft}
-          {...generatedFileActions}
-          onSelectStep={onSelectStep}
-          selectedStepId={state.selectedStepId}
-          timeline={state.timeline}
-          performance={state.activeRun?.performance ?? null}
-          runId={state.activeRun?.id}
-          thinkingByStep={desktopThinking(state).thinkingByStep}
-          working={state.activeRun?.state === "queued" || state.activeRun?.state === "running"}
-          activeRunState={state.activeRun?.state}
-        />
-        {childOpen ? (
-          <SpecialistView
-            key={selectedChild.id}
-            run={selectedChild}
-            state={child.state}
-            unavailable={child.unavailable}
-            onSelectStep={onSelectStep}
+      ) : (
+        <main aria-busy={!desktopReady} className="workspace">
+          <div aria-hidden="true" className="window-drag-region" data-tauri-drag-region="" />
+          <AppChatHeader
+            api={api}
+            appearance={appearance.preference}
+            dispatch={dispatch}
+            model={model}
+            nativeActionMessage={nativeUnavailable}
+            onAppearanceChange={appearance.cycle}
+            onTechnicalDetailsOpen={() => {
+              detailDispatch({ type: "step.select", stepId: undefined });
+              setTechnicalDetailsOpen(true);
+            }}
+            onUnload={() => void unloadModel(api, setModel, setDesktopError)}
+            setError={setDesktopError}
+            specialistAgentId={childOpen ? selectedChild.agentId : undefined}
+            state={state}
+            technicalDetailsOpen={technicalDetailsOpen}
           />
-        ) : null}
-        <AppChatControls
-          api={api}
-          childOpen={childOpen}
-          onBack={closeChild}
-          disabled={!desktopReady || model.state === "unsupported" || !tasksAllowed}
-          dispatch={dispatch}
-          dropIntent={dropIntent}
-          nativeActionMessage={nativeUnavailable}
-          onCancel={cancelTask}
-          onChange={changeDraft}
-          onSend={runTask}
-          running={running}
-          setConfirmation={setConfirmation}
-          setError={setDesktopError}
-          state={state}
-          thinking={thinking}
-          onThinkingChange={setThinking}
-        />
-      </main>
+          <SecureWorkspaceBanner
+            busy={secureWorkspace.busy}
+            onSetup={secureWorkspace.showSetup}
+            status={secureWorkspace.status}
+          />
+          <GuidedExamples
+            disabled={!desktopReady || running || !tasksAllowed}
+            examples={capabilities.guidedExamples ?? []}
+            onRun={runTask}
+          />
+          <ErrorBanner message={desktopError} onDismiss={() => setDesktopError(undefined)} />
+          <Conversation
+            hidden={childOpen}
+            childRuns={state.childRuns}
+            onOpenChild={(run) => {
+              dispatch({
+                type: "step.select",
+                stepId: state.timeline.find(
+                  (item) =>
+                    item.runId === run.parentRunId && item.toolCallId === run.parentToolCallId,
+                )?.id,
+              });
+              setSelectedChild(run);
+              setTechnicalDetailsOpen(false);
+            }}
+            artifacts={state.artifacts}
+            attachments={state.attachments}
+            folderName={folderName}
+            key={state.activeSessionId ?? `new:${state.newSessionFolderId ?? "global"}`}
+            nativeActionMessage={nativeUnavailable}
+            ready={state.loaded}
+            onOpenAttachment={(attachmentId) => {
+              if (state.activeSessionId !== undefined)
+                void openAttachment(api, state.activeSessionId, attachmentId, setDesktopError);
+            }}
+            onSuggestion={changeDraft}
+            {...generatedFileActions}
+            onSelectStep={onSelectStep}
+            selectedStepId={state.selectedStepId}
+            timeline={state.timeline}
+            performance={state.activeRun?.performance ?? null}
+            runId={state.activeRun?.id}
+            thinkingByStep={desktopThinking(state).thinkingByStep}
+            working={state.activeRun?.state === "queued" || state.activeRun?.state === "running"}
+            activeRunState={state.activeRun?.state}
+          />
+          {childOpen ? (
+            <SpecialistView
+              key={selectedChild.id}
+              run={selectedChild}
+              state={child.state}
+              unavailable={child.unavailable}
+              onSelectStep={onSelectStep}
+            />
+          ) : null}
+          <AppChatControls
+            api={api}
+            childOpen={childOpen}
+            onBack={closeChild}
+            disabled={!desktopReady || model.state === "unsupported" || !tasksAllowed}
+            dispatch={dispatch}
+            dropIntent={dropIntent}
+            nativeActionMessage={nativeUnavailable}
+            onCancel={cancelTask}
+            onChange={changeDraft}
+            onSend={runTask}
+            running={running}
+            setConfirmation={setConfirmation}
+            setError={setDesktopError}
+            state={state}
+            thinking={thinking}
+            onThinkingChange={setThinking}
+          />
+        </main>
+      )}
       <TechnicalDetails
         artifacts={detailState.artifacts}
         catalogPath={state.catalogPath}
@@ -278,7 +278,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         model={model}
         nativeActionMessage={nativeUnavailable}
         onClose={() => setTechnicalDetailsOpen(false)}
-        open={technicalDetailsOpen}
+        open={technicalDetailsOpen && !skillsOpen}
         onSelectStep={onSelectStep}
         contextUsedTokens={detailState.contextUsedTokens}
         contextAllocatedTokens={detailState.contextAllocatedTokens}
@@ -291,7 +291,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         timeline={detailState.timeline}
       />
       <ActiveConfirmation clear={() => setConfirmation(undefined)} request={confirmation} />
-      <DropOverlay intent={dropIntent} />
+      <DropOverlay intent={skillsOpen ? undefined : dropIntent} />
     </div>
   );
 }

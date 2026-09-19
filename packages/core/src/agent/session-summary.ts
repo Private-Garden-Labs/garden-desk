@@ -6,9 +6,10 @@ import {
   JobIdSchema,
   MAX_ANCHORED_SUMMARY_CHARACTERS,
 } from "@gardendesk/shared";
+import { fillPrompt } from "../prompt-files.js";
 import type { InferenceService } from "../runtime/inference.js";
 import { InferenceFailure } from "../runtime/inference-errors.js";
-import { withCurrentTimeContext } from "./chat-current-time.js";
+import { currentTimeContext, withCurrentTimeContext } from "./chat-current-time.js";
 import { canRetryInference } from "./chat-inference-recovery.js";
 import type { MarkdownDefinitionLibrary } from "./markdown-definition-library.js";
 import type { AgentTraceStore } from "./trace-store.js";
@@ -35,8 +36,8 @@ function conversationText(messages: readonly ConversationMessage[]): string {
 
 function prompt(input: SessionSummaryInput, messages: readonly ConversationMessage[]): string {
   const anchor = input.previous?.text
-    ? `Update this existing anchored summary and preserve facts that remain true:\n<previous-summary>\n${input.previous.text}\n</previous-summary>`
-    : "Create a new anchored summary.";
+    ? fillPrompt(input.library.system("session-summary-update"), { summary: input.previous.text })
+    : input.library.system("compaction-new");
   return input.library
     .system("session-summary")
     .replace("{{anchor_instruction}}", anchor)
@@ -126,10 +127,13 @@ export async function summarizeSession(
   const { last, selected } = candidate;
   const request = {
     modelId: input.modelId,
-    messages: withCurrentTimeContext([
-      { role: "system", text: "Produce only the requested anchored summary." },
-      { role: "user", text: prompt(input, selected) },
-    ]),
+    messages: withCurrentTimeContext(
+      [
+        { role: "system", text: input.library.system("session-summary-request") },
+        { role: "user", text: prompt(input, selected) },
+      ],
+      currentTimeContext(input.library.system("current-time")),
+    ),
     tools: [],
     contextSize: "auto" as const,
     maxTokens: SUMMARY_OUTPUT_TOKENS,

@@ -10,6 +10,8 @@ import type {
   SessionDraft,
   SessionPage,
   SessionSummary,
+  SkillLocations,
+  SkillSummary,
   ThinkingLevel,
 } from "@gardendesk/shared";
 
@@ -44,6 +46,8 @@ export type SecureWorkspaceState =
   | "permission_required"
   | "sign_out_required"
   | "unavailable";
+
+export type PromptFolder = "skills" | "built-in-skills" | "system-prompts";
 
 export interface SecureWorkspaceStatus {
   state: SecureWorkspaceState;
@@ -92,5 +96,14 @@ export interface DesktopApi {
   createDebugSnapshot(sessionId: string): Promise<string>;
   revealDebugSnapshot(sessionId: string): Promise<void>;
   openReleasePage(): Promise<void>;
+  listSkills(): Promise<SkillSummary[]>;
+  chooseSkillFiles(): Promise<SkillSummary[] | undefined>;
+  addSkillFiles(paths: string[]): Promise<SkillSummary[]>;
+  readSkill(name: string): Promise<string>;
+  writeSkill(name: string, content: string): Promise<boolean>;
+  removeSkill(name: string): Promise<boolean>;
+  setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
+  skillLocations(): Promise<SkillLocations>;
+  openPromptFolder(folder: PromptFolder): Promise<void>;
   listenForDroppedPaths?(listener: (event: NativeDropEvent) => void): Promise<() => void>;
 }

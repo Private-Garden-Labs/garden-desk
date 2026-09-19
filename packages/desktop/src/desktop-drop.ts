@@ -7,6 +7,7 @@ export type DropIntent = "checking" | "files" | "folders" | "mixed";
 
 interface DropContext {
   activeSessionId: string | undefined;
+  addSkills?(paths: string[]): Promise<void>;
   draft: string;
   newSessionFolderId: string | null | undefined;
   running: boolean;
@@ -28,6 +29,11 @@ export function intentForDroppedPaths(paths: DroppedPaths): DropIntent | undefin
 }
 
 async function importDroppedPaths(paths: DroppedPaths, options: NativeDropOptions) {
+  const addSkills = options.context.addSkills;
+  if (addSkills !== undefined) {
+    await addSkills([...paths.files, ...paths.folders]);
+    return;
+  }
   const imports: Promise<void>[] = [];
   if (paths.folders.length > 0) {
     imports.push(addDroppedFolders(options.api, paths.folders, options.dispatch, options.setError));

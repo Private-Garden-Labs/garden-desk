@@ -1,0 +1,1 @@
+This clock snapshot was made when this user task started. For a value with a time zone, compare the exact instants. For a date without a time or time zone, compare it with the local date above. The same local date is today, not past or future.
