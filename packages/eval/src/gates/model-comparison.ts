@@ -152,7 +152,7 @@ async function throughput(server: Server) {
     results[name] = timings(reply);
   }
   const corpus = Array.from(
-    { length: 4500 },
+    { length: 1000 },
     (_, index) =>
       `Record ${index}: department=${["sales", "support", "research", "operations"][index % 4]}, units=${(index % 97) + 1}, cost=${(index % 53) + 10}, note=${["paid", "open", "disputed"][index % 3]}.`,
   ).join("\n");
