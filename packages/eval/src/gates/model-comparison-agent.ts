@@ -16,11 +16,19 @@ import { cases as intake } from "../stress/specialist-folder-intake.js";
 import { cases as expenses } from "../stress/specialist-invoice-expense-review.js";
 import { cases as chronology } from "../stress/specialist-matter-chronology.js";
 import { prepareAgentModelStore } from "./agent-model-store.js";
+import { developmentInferenceWorkerEntryPath } from "./development-inference-path.js";
 
 const repository = process.cwd();
+const macos = process.platform === "darwin";
 const label = argument("--label") ?? INFERENCE_PROFILE.modelId;
 const runtimeDirectory =
-  argument("--runtime") ?? join(repository, "packages/eval/.generated/inference/windows-cuda-x64");
+  argument("--runtime") ??
+  join(
+    repository,
+    "packages/eval/.generated/inference",
+    macos ? "macos-arm64" : "windows-cuda-x64",
+  );
+const imageRoot = argument("--images") ?? join(repository, "packages/workers/images");
 const selected = argument("--cases")?.split(",");
 const cases = [
   ...intake,
@@ -43,23 +51,33 @@ function argument(name: string): string | undefined {
 async function openCore(root: string): Promise<GardenDeskCore> {
   const modelStoreDir = join(repository, "packages/eval/.generated/models");
   await prepareAgentModelStore(modelStoreDir);
+  const macosHelper = join(
+    repository,
+    "packages/workers/native/macos-vz-helper/.generated/garden-desk-vz-helper",
+  );
   return createGardenDeskCore({
     workspaceDir: join(root, "state"),
     modelStoreDir,
     profile: "auto",
     migrationDirectory: join(repository, "packages/core/src/workspace/migrations"),
     promptDirectory: join(repository, "prompts"),
-    workerEntryPath: "",
-    inferenceHelperPath: join(
-      repository,
-      "packages/workers/native/windows-appcontainer-launcher/.generated/garden-desk-appcontainer-launcher.exe",
-    ),
-    inferenceRuntimePath: join(runtimeDirectory, "llama-server.exe"),
-    agentHelperPath: join(
-      repository,
-      "packages/workers/native/windows-hcs-helper/.generated/garden-desk-hcs-helper.exe",
-    ),
-    agentImageRoot: join(repository, "packages/workers/images"),
+    workerEntryPath: macos ? developmentInferenceWorkerEntryPath() : "",
+    ...(macos
+      ? {}
+      : {
+          inferenceHelperPath: join(
+            repository,
+            "packages/workers/native/windows-appcontainer-launcher/.generated/garden-desk-appcontainer-launcher.exe",
+          ),
+        }),
+    inferenceRuntimePath: join(runtimeDirectory, macos ? "llama-server" : "llama-server.exe"),
+    agentHelperPath: macos
+      ? macosHelper
+      : join(
+          repository,
+          "packages/workers/native/windows-hcs-helper/.generated/garden-desk-hcs-helper.exe",
+        ),
+    agentImageRoot: imageRoot,
   });
 }
 
