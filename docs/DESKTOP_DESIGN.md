@@ -33,7 +33,7 @@ On macOS the sidebar background extends beneath the native traffic-light control
 
 ## Sidebar
 
-The sidebar has separate **Chats** and **Folders** sections. **New chat** is the first option under Chats, followed by global sessions. **Add folder** is the first option under Folders, followed by folder groups. A settings panel stays at the bottom of the sidebar. It shows the application version and a **Get the latest release** action that opens the releases page in the default browser.
+The sidebar has separate **Chats** and **Folders** sections. **New chat** is the first option under Chats, followed by global sessions. **Add folder** is the first option under Folders, followed by folder groups. A settings panel stays at the bottom of the sidebar. It shows the installed application version and an **Open the releases page** action that opens the releases page in the default browser. Garden Desk does not contact the network to find a newer version.
 
 Each folder group:
 

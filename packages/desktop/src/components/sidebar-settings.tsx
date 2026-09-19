@@ -9,10 +9,15 @@ export function SidebarSettings({
 }) {
   return (
     <section aria-label="App settings" className="sidebar-settings">
-      <button className="sidebar-release" onClick={onOpenReleases} type="button">
-        <Icon name="download" />
+      <button
+        className="sidebar-release"
+        onClick={onOpenReleases}
+        title="Garden Desk does not check for updates. This opens gardendesk.ai/releases in your browser."
+        type="button"
+      >
+        <Icon name="external" />
         <span className="sidebar-release-copy">
-          <span>Get the latest release</span>
+          <span>Open the releases page</span>
           {appVersion === undefined ? null : (
             <span className="sidebar-version">Version {appVersion} installed</span>
           )}
