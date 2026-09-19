@@ -58,42 +58,43 @@ const LOAD_FAILURE = "The skills could not be read.";
 const SAVE_FAILURE =
   "The skill was not saved. Each skill file starts with a name and a description.";
 
-function useSkillRequests(setError: SetError) {
+function useSkillRequests(api: DesktopApi, setError: SetError) {
   const [skills, setSkills] = useState<SkillSummary[]>();
   const [working, setWorking] = useState(false);
+  const refresh = useCallback(async () => {
+    try {
+      setSkills(await api.listSkills());
+    } catch {
+      setError(LOAD_FAILURE);
+    }
+  }, [api, setError]);
   const run = useCallback(
-    async (action: () => Promise<SkillSummary[] | undefined>, failure: string) => {
+    async (action: () => Promise<unknown>, failure: string) => {
       setWorking(true);
       setError(undefined);
       try {
-        const next = await action();
-        if (next !== undefined) setSkills(next);
+        await action();
       } catch {
         setError(failure);
-      } finally {
-        setWorking(false);
       }
+      await refresh();
+      setWorking(false);
     },
-    [setError],
+    [refresh, setError],
   );
-  return { run, skills, working };
+  return { refresh, run, skills, working };
 }
 
 export function useSkills(api: DesktopApi, open: boolean): SkillsController {
   const [error, setError] = useState<string>();
-  const { run, skills, working } = useSkillRequests(setError);
+  const { refresh, run, skills, working } = useSkillRequests(api, setError);
   const [draft, setDraft] = useState<SkillDraft>();
   useEffect(() => {
     if (!open) return;
     setDraft(undefined);
     setError(undefined);
-    void run(() => api.listSkills(), LOAD_FAILURE);
-  }, [api, open, run]);
-  const change = (action: () => Promise<unknown>, failure: string) =>
-    void run(async () => {
-      await action();
-      return api.listSkills();
-    }, failure);
+    void refresh();
+  }, [open, refresh]);
   return {
     draft,
     error,
@@ -116,14 +117,14 @@ export function useSkills(api: DesktopApi, open: boolean): SkillsController {
     openFolder: () => {
       void showPromptFolder(api, "skills", setError);
     },
-    remove: (name) => change(() => api.removeSkill(name), "The skill could not be removed."),
+    remove: (name) => void run(() => api.removeSkill(name), "The skill could not be removed."),
     save: (content) => {
       const name = draft?.name;
       if (name === undefined) return;
       setDraft(undefined);
-      change(() => api.writeSkill(name, content), SAVE_FAILURE);
+      void run(() => api.writeSkill(name, content), SAVE_FAILURE);
     },
     setEnabled: (name, enabled) =>
-      change(() => api.setSkillEnabled(name, enabled), "The skill could not be changed."),
+      void run(() => api.setSkillEnabled(name, enabled), "The skill could not be changed."),
   };
 }

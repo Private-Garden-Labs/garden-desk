@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { agentInstructions } from "./agent-skills.js";
 import { MarkdownDefinitionLibrary } from "./markdown-definition-library.js";
 import { SkillStore } from "./skill-store.js";
 
@@ -27,6 +28,10 @@ async function store(): Promise<{
     join(prompts, "agents", "primary.md"),
     "---\nname: primary\ndescription: Test.\nmode: primary\ntools: [skill]\nskills: [alpha]\ntemperature: 0\nsteps: 1\n---\nBody.",
   );
+  await writeFile(
+    join(prompts, "agents", "fixed.md"),
+    "---\nname: fixed\ndescription: Test.\nmode: subagent\ntools: [read]\nskills: [alpha]\ntemperature: 0\nsteps: 1\n---\nBody.",
+  );
   const downloads = join(base, "downloads");
   await mkdir(downloads, { recursive: true });
   const root = join(base, "state", "skills");
@@ -50,6 +55,10 @@ describe("skill store", () => {
     skills.setEnabled("beta", false);
     expect(library.skills.map((skill) => skill.name)).toEqual(["alpha"]);
     expect(skills.list().find((skill) => skill.name === "beta")?.enabled).toBe(false);
+
+    skills.setEnabled("alpha", false);
+    expect(agentInstructions(library, library.agent("fixed"))).toBe("Body.");
+    skills.setEnabled("alpha", true);
 
     skills.write("alpha", document("alpha", "Edited rules."));
     expect(skills.list().find((skill) => skill.name === "alpha")?.source).toBe("customized");

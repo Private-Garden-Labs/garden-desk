@@ -4,6 +4,7 @@ import type {
   ModelRuntimeStatus,
 } from "@gardendesk/shared";
 import { type CSSProperties, useEffect, useReducer, useState } from "react";
+import capabilities from "../../../workers/images/agent/capabilities.json" with { type: "json" };
 import type { DesktopApi, PromptFolder } from "../api.js";
 import {
   type DebugSnapshotState,
@@ -15,7 +16,6 @@ import { showPromptFolder, usePromptLocations } from "../skills.js";
 import type { TimelineItem } from "../state.js";
 import type { AgentStep } from "../steps.js";
 import { DrawerResizeHandle, useDrawerResize } from "./drawer-resize.js";
-import { guestCapabilities } from "./guest-capabilities.js";
 import { Icon } from "./icons.js";
 import { StepList } from "./step-list.js";
 import { selectAdjacentTab } from "./tab-keyboard.js";
@@ -24,6 +24,22 @@ import { TechnicalOverviewTable } from "./technical-overview-table.js";
 import { TranscriptCopy } from "./transcript-copy.js";
 
 export { shouldFollowLog } from "./technical-logs.js";
+
+function guestCapabilities(): string {
+  const runtimes = Object.entries(capabilities.runtimes).map(
+    ([name, version]) => `${name}: ${version}`,
+  );
+  return [
+    `Source: ${capabilities.sourceMount.path} (${capabilities.sourceMount.mode}, live)`,
+    `Workspace: ${capabilities.workspaceMount.path} (${capabilities.workspaceMount.maximumBytes} bytes)`,
+    `Temporary runtime: ${capabilities.runtimeMount.path} (${capabilities.runtimeMount.maximumBytes} bytes, ephemeral)`,
+    `Shell: ${capabilities.shell}`,
+    "Runtimes:",
+    ...runtimes,
+    "Executables:",
+    ...capabilities.executables,
+  ].join("\n");
+}
 
 interface TechnicalDetailsProps {
   api: DesktopApi;

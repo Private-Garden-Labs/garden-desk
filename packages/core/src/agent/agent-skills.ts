@@ -22,8 +22,11 @@ export function agentInstructions(
 ): string {
   const body = library.agent(agent.name).body;
   if (agent.tools.includes("skill")) return body;
+  const available = new Set(library.skills.map((skill) => skill.name));
   return [
     body,
-    ...agent.skills.map((name) => `## Skill: ${name}\n\n${library.skill(name).body}`),
+    ...agent.skills
+      .filter((name) => available.has(name))
+      .map((name) => `## Skill: ${name}\n\n${library.skill(name).body}`),
   ].join("\n\n");
 }

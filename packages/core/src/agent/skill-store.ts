@@ -81,6 +81,13 @@ export class SkillStore implements SkillOverlay {
       });
   }
 
+  installedSkill(name: string): (SkillMetadata & { path: string }) | undefined {
+    if (!SKILL_NAME.test(name)) return undefined;
+    const path = skillFile(this.root, name);
+    const metadata = readMetadata(path);
+    return metadata?.name === name ? { ...metadata, path } : undefined;
+  }
+
   isDisabled(name: string): boolean {
     return this.disabledNames().has(name);
   }
@@ -139,15 +146,14 @@ export class SkillStore implements SkillOverlay {
     try {
       const file = promptPathIsDirectory(path) ? join(path, "SKILL.md") : path;
       if (!file.toLowerCase().endsWith(".md")) throw new Error("invalid_skill_file");
-      const content = readPromptFile(file);
-      if (content.length > CONTENT_LIMIT) throw new Error("invalid_skill_file");
-      return content;
+      return readPromptFile(file);
     } catch {
       throw new Error("invalid_skill_file");
     }
   }
 
   private validated(content: string): SkillMetadata {
+    if (content.length > CONTENT_LIMIT) throw new Error("invalid_skill_file");
     try {
       return skillDocumentMetadata(content, "skill");
     } catch {

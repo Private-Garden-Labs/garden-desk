@@ -35,6 +35,7 @@ export interface SkillDefinition extends SkillMetadata {
 }
 
 export interface SkillOverlay {
+  installedSkill(name: string): (SkillMetadata & { path: string }) | undefined;
   installedSkills(): ReadonlyArray<SkillMetadata & { path: string }>;
   isDisabled(name: string): boolean;
 }
@@ -202,7 +203,7 @@ export class MarkdownDefinitionLibrary {
   }
 
   skill(name: string): SkillDefinition {
-    const installed = this.overlay?.installedSkills().find((skill) => skill.name === name);
+    const installed = this.overlay?.installedSkill(name);
     const metadata = installed ?? this.packagedSkills.find((skill) => skill.name === name);
     const path = installed?.path ?? this.skillPaths.get(name);
     if (metadata === undefined || path === undefined) throw new Error(`Unknown skill: ${name}`);
