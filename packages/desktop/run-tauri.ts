@@ -57,6 +57,12 @@ if (tauriArguments[0] === "dev") {
 if (tauriArguments[0] === "dev" || tauriArguments[0] === "build") {
   tauriArguments.push("--config", join(desktopRoot, "src-tauri", "tauri.package-model.conf.json"));
 }
+if (tauriArguments[0] === "build" && process.env.APPLE_SIGNING_IDENTITY !== undefined) {
+  tauriArguments.push(
+    "--config",
+    JSON.stringify({ bundle: { macOS: { signingIdentity: process.env.APPLE_SIGNING_IDENTITY } } }),
+  );
+}
 if (
   process.platform === "win32" &&
   tauriArguments[0] === "dev" &&

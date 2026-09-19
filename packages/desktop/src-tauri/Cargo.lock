@@ -899,7 +899,7 @@ dependencies = [
 
 [[package]]
 name = "garden-desk-desktop"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "libc",
  "serde",

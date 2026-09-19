@@ -1,6 +1,7 @@
 import { chmod, copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { signExecutable } from "./build-signing.js";
 import { reportDevelopmentResourceStage } from "./src/dev-resource-progress.js";
 import * as model from "./src/package-model-contract.js";
 import type { ResourceHashes } from "./src/resource-hashes.js";
@@ -51,6 +52,12 @@ async function requireFetchedAsset(path: string, fetchCommand: string): Promise<
   }
 }
 
+function signRuntimeFile(path: string): void {
+  if (process.platform === "darwin" && process.env.APPLE_SIGNING_IDENTITY !== undefined) {
+    signExecutable(path);
+  }
+}
+
 export async function installRuntimeResources(
   sha256: HashFile,
   destinationRoot: string,
@@ -74,6 +81,7 @@ export async function installRuntimeResources(
     );
     for (const entry of await readdir(destination, { withFileTypes: true })) {
       if (!entry.isFile()) throw new Error("Inference runtime must contain files only.");
+      signRuntimeFile(join(destination, entry.name));
       hashes[`${platform}/${entry.name}`] = await sha256(join(destination, entry.name));
     }
   }

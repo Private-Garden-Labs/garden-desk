@@ -15,6 +15,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "build-signing.ts",
     "package-compliance.ts",
     "package-image-resources.ts",
     "package-output-cleanup.ts",
