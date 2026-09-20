@@ -764,6 +764,15 @@ html.motion-ready [data-reveal].is-revealed {
   font-weight: 700;
 }
 
+.model-facts dd small {
+  display: block;
+  margin-top: 4px;
+  color: var(--leaf-soft);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
 .demo-wrap {
   overflow: hidden;
   border: 1px solid var(--line);
