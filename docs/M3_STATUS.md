@@ -40,7 +40,7 @@ Findings. The initramfs root holds about 147 MiB of guest RAM permanently, which
 - Blind qualified-reviewer check of the professional review skills' outputs (legal, finance, medical administration) on both platforms before public release.
 - Packaged Open and Save As for generated files, observed on the built macOS and Windows applications.
 - Windows setup certified under a dedicated standard-user account (current evidence used an administrator account with UAC filtering).
-- Windows release signing: Authenticode signing under the production certificate. The macOS release is signed with a Developer ID certificate and notarized; set `APPLE_SIGNING_IDENTITY` and the `APPLE_API_*` variables to reproduce that build.
+- Windows release signing: Authenticode signing under the production certificate, covering the inference runtime files as well as the sidecar and the helpers. Smart App Control blocks the unsigned runtime, so this is required to run, not only to ship. The macOS release is signed with a Developer ID certificate and notarized; set `APPLE_SIGNING_IDENTITY` and the `APPLE_API_*` variables to reproduce that build.
 
 ## 2026-09-03 Windows Gate Result
 
@@ -76,6 +76,28 @@ The full comparison against Qwen3.8 27B Q4 (`pnpm model:compare`, `pnpm model:co
 At 32,768 tokens, a 24,816-token prompt filled at 111.7 tokens/s. Generation gave 23.3 tokens/s for code, 22.8 tokens/s for prose, and 24.1 tokens/s for code with thinking on. Tool-call precision was 9 of 11 and specialist choice was 6 of 12. The result file is `packages/eval/.generated/model-comparison/bonsai2-mac-metal.json`.
 
 This run measures the new model alone on one machine. The Qwen3.8 27B Q4 comparison, the Windows measurements, the Windows agent stage, the MLX 2-bit measurement, and the full macOS gate stay open.
+
+## 2026-09-20 Ternary Bonsai 2 On Windows NVIDIA
+
+One run on physical Windows 11 (build 26200) with an AMD Ryzen 9 7945HX, 33,511,849,984 bytes of installed memory, and an NVIDIA GeForce RTX 4080 Laptop GPU on driver 32.0.15.5597. The pinned fork `windows-cuda-x64` archive reported `CUDA0: NVIDIA GeForce RTX 4080 Laptop GPU (12281 MiB, 11063 MiB free)`.
+
+The memory policy and the context rule ran on those probe numbers through the product functions. Detected memory was 12,877,561,856 bytes, above the 10 GB dedicated threshold. Usable memory was 11,600,396,288 bytes, and the budget followed it rather than the total, below the 16 GiB cap. The host reservation was 20 GiB. With Q4/Q4 caches and the 7,206,168,928-byte model, the fitted context was 90,112 tokens.
+
+The server loaded that context in 3.4 seconds and answered. It reported 6,861.74 MiB of GPU weights, a 1,584.00 MiB KV cache, a 149.62 MiB recurrent-state buffer, and a 441.27 MiB compute buffer, with 49.27 MiB of host compute and 0.95 MiB of host output. GPU allocation totalled about 9,036 MiB inside the 11,063 MiB the device reported free. A short request generated 13 tokens at 31.7 tokens/s after an 81.6 tokens/s prefill. The budget that follows usable memory did not select a context that fails to load.
+
+This run started `llama-server.exe` directly, because the machine has no Rust toolchain and therefore no AppContainer launcher. Device selection through `resolveWindowsGpuProfile`, the isolated per-device probes, the guest stages, and the stress comparison stay unverified.
+
+## 2026-09-20 Windows Code Integrity Blocks The Unsigned Runtime
+
+Smart App Control was enforcing on this machine (`VerifiedAndReputablePolicyState` 1). It stopped `llama-server.exe` with exit code `0xC0E90002` and no output. CodeIntegrity events 3077 and 3033 named `mtmd.dll` as the file that did not meet the signing requirement.
+
+Eleven files in each Windows archive carry no signature: `llama-server.exe`, `llama-server-impl.dll`, `llama-fit-params-impl.dll`, `llama.dll`, `llama-common.dll`, `mtmd.dll`, `ggml.dll`, `ggml-base.dll`, `ggml-cpu.dll`, `ggml-rpc.dll`, and the backend `ggml-cuda.dll` or `ggml-hip.dll`. The NVIDIA, AMD, and Microsoft redistributables beside them are already signed.
+
+Signing those eleven files with an Authenticode signature lets them load, including a self-signed certificate whose chain is not trusted. An unsigned copy of the same directory still failed, and neither copy carried a download zone marker, so the signature is what changed the outcome. Mainline llama.cpp `b10816` is equally unsigned and runs on the same machine, so reputation covers it and a fork build has none. The macOS package already signs each runtime file through `signRuntimeFile`; the Windows package does not. Signing the Windows runtime is open release work.
+
+## 2026-09-20 Windows AMD HIP Is Unsupported On This Machine
+
+The `windows-hip-x64` runtime started after signing and reported no devices. `ggml-hip.dll` cannot load at all: it imports `amdhip64_7.dll`, and this system has only `amdhip64.dll`. The integrated adapter is an AMD Radeon 610M, which is gfx1036 and outside the compiled list in [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md). A current Adrenalin driver could supply the missing file; the unsupported architecture stands regardless. HIP has no measurement on this hardware.
 
 ## Running The Golden Tasks
 
