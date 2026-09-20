@@ -14,7 +14,7 @@ import {
   stat,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, dirname, isAbsolute, join, normalize, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
@@ -56,15 +56,17 @@ async function sha256(path: string): Promise<string> {
   return hash.digest("hex");
 }
 
+const SAFE_PATH_SEGMENT = /^[A-Za-z0-9._-]+$/u;
+
+/** Manifest paths always use forward slashes, on every platform. */
+function isSafeRelativePath(value: string): boolean {
+  return value
+    .split("/")
+    .every((segment) => segment !== "." && segment !== ".." && SAFE_PATH_SEGMENT.test(segment));
+}
+
 function archivePath(path: string): string {
-  if (
-    path.includes("\0") ||
-    isAbsolute(path) ||
-    normalize(path) !== path ||
-    path.split(/[\\/]/u).includes("..")
-  ) {
-    throw new Error("inference_archive_path_invalid");
-  }
+  if (!isSafeRelativePath(path)) throw new Error("inference_archive_path_invalid");
   return path;
 }
 
@@ -76,14 +78,7 @@ function targetName(path: string): string {
 }
 
 function targetDirectory(path: string): string {
-  if (
-    path.includes("\0") ||
-    isAbsolute(path) ||
-    normalize(path) !== path ||
-    path.split(/[\\/]/u).includes("..")
-  ) {
-    throw new Error("inference_target_directory_invalid");
-  }
+  if (!isSafeRelativePath(path)) throw new Error("inference_target_directory_invalid");
   return path;
 }
 

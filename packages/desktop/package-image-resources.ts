@@ -9,7 +9,7 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
-import { basename, dirname, isAbsolute, join, normalize, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { INFERENCE_PROFILE } from "@gardendesk/shared";
 import { signExecutable } from "./build-signing.js";
@@ -33,6 +33,16 @@ interface InferenceRuntimeManifest {
 const desktopRoot = fileURLToPath(new URL(".", import.meta.url));
 const repositoryRoot = resolve(desktopRoot, "../..");
 const resourcesRoot = join(desktopRoot, "src-tauri", "resources", "core");
+
+const SAFE_PATH_SEGMENT = /^[A-Za-z0-9._-]+$/u;
+
+/** Manifest paths always use forward slashes, on every platform. */
+function isSafeRelativePath(value: string): boolean {
+  const segments = value.split("/");
+  return segments.every(
+    (segment) => segment !== "." && segment !== ".." && SAFE_PATH_SEGMENT.test(segment),
+  );
+}
 
 export function runtimeResourceNames(
   manifest: InferenceRuntimeManifest,
@@ -61,15 +71,7 @@ export function runtimeResourceDirectories(
   const runtime = manifest.platforms[platform];
   if (runtime === undefined) throw new Error("Image inspection runtime platform is missing.");
   const targets = Object.values(runtime.directories ?? {});
-  if (
-    targets.some(
-      (target) =>
-        target.length === 0 ||
-        isAbsolute(target) ||
-        normalize(target) !== target ||
-        target.split(/[\\/]/u).includes(".."),
-    )
-  ) {
+  if (targets.some((target) => !isSafeRelativePath(target))) {
     throw new Error("Image inspection runtime manifest is invalid.");
   }
   return targets.sort();
@@ -165,7 +167,7 @@ export async function installRuntimeResources(
       join(destination, (manifest.platforms[platform] as { executable: string }).executable),
       0o755,
     );
-    const roots = new Set(directories.map((directory) => directory.split(/[\\/]/u)[0] as string));
+    const roots = new Set(directories.map((directory) => directory.split("/")[0] as string));
     for (const [name, hash] of Object.entries(
       await hashRuntimePackage(sha256, destination, roots),
     )) {
