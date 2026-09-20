@@ -2040,6 +2040,32 @@ body {
   padding-block: 76px 84px;
 }
 
+.origin-section {
+  padding-block: 104px 8px;
+  text-align: center;
+}
+
+.origin {
+  display: grid;
+  justify-items: center;
+  width: min(720px, calc(100% - 40px));
+}
+
+.origin-line {
+  margin: 26px 0 0;
+  color: var(--ink-soft);
+  font-size: 21px;
+  line-height: 1.5;
+}
+
+.origin-note {
+  max-width: 54ch;
+  margin: 36px 0 0;
+  color: var(--ink-faint);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
 .claim-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
@@ -2085,10 +2111,24 @@ body {
   line-height: 1.62;
 }
 
+.claims-note {
+  width: min(1180px, 100% - 96px);
+  margin: 48px auto 0;
+  padding-right: min(34%, 380px);
+  color: var(--ink-faint);
+  font-size: 13.5px;
+  line-height: 1.72;
+}
+
 @media (max-width: 760px) {
   .claim-list {
     width: min(1180px, 100% - 44px);
     gap: 34px;
+  }
+
+  .claims-note {
+    width: min(1180px, 100% - 44px);
+    padding-right: 0;
   }
 }
 
