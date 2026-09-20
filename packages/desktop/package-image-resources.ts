@@ -77,6 +77,16 @@ export function runtimeResourceDirectories(
   return targets.sort();
 }
 
+/** The fork builds these; the vendor dependencies beside them arrive signed. */
+export function forkBuiltResourceNames(
+  manifest: InferenceRuntimeManifest,
+  platform: string,
+): string[] {
+  const runtime = manifest.platforms[platform];
+  if (runtime === undefined) throw new Error("Image inspection runtime platform is missing.");
+  return Object.values(runtime.files).sort();
+}
+
 async function hashTree(
   sha256: HashFile,
   root: string,
@@ -117,6 +127,7 @@ async function hashRuntimePackage(
   sha256: HashFile,
   destination: string,
   directoryRoots: Set<string>,
+  forkBuilt: Set<string>,
 ): Promise<Record<string, string>> {
   const hashes: Record<string, string> = {};
   for (const entry of await readdir(destination, { withFileTypes: true })) {
@@ -125,7 +136,7 @@ async function hashRuntimePackage(
       continue;
     }
     if (!entry.isFile()) throw new Error("Inference runtime must contain files only.");
-    signRuntimeFile(join(destination, entry.name));
+    signRuntimeFile(join(destination, entry.name), forkBuilt.has(entry.name));
     hashes[entry.name] = await sha256(join(destination, entry.name));
   }
   return hashes;
@@ -141,10 +152,13 @@ async function requireFetchedAsset(path: string, fetchCommand: string): Promise<
   }
 }
 
-function signRuntimeFile(path: string): void {
+/** Windows code integrity refuses to load the fork's binaries while they carry no signature. */
+function signRuntimeFile(path: string, forkBuilt: boolean): void {
   if (process.platform === "darwin" && process.env.APPLE_SIGNING_IDENTITY !== undefined) {
     signExecutable(path);
+    return;
   }
+  if (process.platform === "win32" && forkBuilt) signExecutable(path);
 }
 
 export async function installRuntimeResources(
@@ -169,7 +183,12 @@ export async function installRuntimeResources(
     );
     const roots = new Set(directories.map((directory) => directory.split("/")[0] as string));
     for (const [name, hash] of Object.entries(
-      await hashRuntimePackage(sha256, destination, roots),
+      await hashRuntimePackage(
+        sha256,
+        destination,
+        roots,
+        new Set(forkBuiltResourceNames(manifest, platform)),
+      ),
     )) {
       hashes[`${platform}/${name}`] = hash;
     }
