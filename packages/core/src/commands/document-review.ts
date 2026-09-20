@@ -6,7 +6,7 @@ import {
   INFERENCE_PROFILE,
   JobIdSchema,
 } from "@gardendesk/shared";
-import { withCurrentTimeContext } from "../agent/chat-current-time.js";
+import { currentTimeContext, withCurrentTimeContext } from "../agent/chat-current-time.js";
 import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-input.js";
 import { streamCallbacks } from "../agent/chat-streaming.js";
 import { isSuccessfulExecution } from "../agent/execution-success.js";
@@ -149,20 +149,23 @@ export async function reviewDocument(
     temperature: 1,
     thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     tools: [],
-    messages: withCurrentTimeContext([
-      { role: "system", text: command.body },
-      {
-        role: "user",
-        text: command.arguments || "Review this document for internal inconsistencies.",
-      },
-      {
-        role: "user",
-        text: JSON.stringify({
-          source: extracted.attachment.displayName,
-          extractedText: extracted.result.stdout,
-        }),
-      },
-    ]),
+    messages: withCurrentTimeContext(
+      [
+        { role: "system", text: command.body },
+        {
+          role: "user",
+          text: command.arguments || input.systemPrompt("document-review-request"),
+        },
+        {
+          role: "user",
+          text: JSON.stringify({
+            source: extracted.attachment.displayName,
+            extractedText: extracted.result.stdout,
+          }),
+        },
+      ],
+      currentTimeContext(input.systemPrompt("current-time")),
+    ),
   };
   input.onEvent?.("inference.started", "Reviewing the extracted text.");
   const { result, response } = await generateReview(input, chat, request);

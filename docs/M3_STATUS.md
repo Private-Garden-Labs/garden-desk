@@ -11,6 +11,7 @@ M3 Offline Dev-Agent Desktop V1 is active. The desktop runs one general-purpose 
 - In-run clarifying questions, cancellation, and session restoration after a restart.
 - Concurrent conversations share one resident inference worker inside a RAM-bounded pool of reusable microVMs. Stop and generation timeouts keep a healthy model resident.
 - A private, owner-only debugging snapshot for one session, for local troubleshooting.
+- A Skills page beside the conversations sidebar. A person adds a Markdown skill file, edits it, turns it off, or removes it; Core keeps those files in the workspace skills folder and reads them at each run.
 - A `task` tool that selects a child from packaged definitions. The Folder intake specialist maps current file groups and structures before work across files. Children run one at a time and have separate activity views.
 
 ## Security Boundary
@@ -24,7 +25,7 @@ M3 Offline Dev-Agent Desktop V1 is active. The desktop runs one general-purpose 
 - Blind qualified-reviewer check of the professional review skills' outputs (legal, finance, medical administration) on both platforms before public release.
 - Packaged Open and Save As for generated files, observed on the built macOS and Windows applications.
 - Windows setup certified under a dedicated standard-user account (current evidence used an administrator account with UAC filtering).
-- Release signing: macOS Developer ID notarization and Windows Authenticode signing under the production certificate.
+- Windows release signing: Authenticode signing under the production certificate. The macOS release is signed with a Developer ID certificate and notarized; set `APPLE_SIGNING_IDENTITY` and the `APPLE_API_*` variables to reproduce that build.
 
 ## 2026-09-03 Windows Gate Result
 

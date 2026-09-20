@@ -10,6 +10,8 @@ import type {
   SessionDraft,
   SessionPage,
   SessionSummary,
+  SkillLocations,
+  SkillSummary,
   ThinkingLevel,
   WorkspaceStatus,
 } from "@gardendesk/shared";
@@ -60,6 +62,13 @@ export interface GardenDeskCorePorts extends InferenceService {
   answerQuestion(runId: string, questionId: string, answers: string[][]): Promise<boolean>;
   dismissQuestion(runId: string, questionId: string): Promise<boolean>;
   cancelJob(jobId: string): Promise<boolean>;
+  listSkills(): Promise<SkillSummary[]>;
+  installSkills(paths: string[]): Promise<SkillSummary[]>;
+  readSkill(name: string): Promise<string>;
+  writeSkill(name: string, content: string): Promise<boolean>;
+  removeSkill(name: string): Promise<boolean>;
+  setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
+  skillLocations(): Promise<SkillLocations>;
   verifyAudit(): Promise<boolean>;
   close(): Promise<void>;
 }
@@ -74,6 +83,18 @@ function artifactPorts(ports: GardenDeskCorePorts) {
       ports.recordArtifactOpen(sessionId, artifactId, outcome),
     exportArtifact: (sessionId: string, artifactId: string, destination: string) =>
       ports.exportArtifact(sessionId, artifactId, destination),
+  };
+}
+
+function skillPorts(ports: GardenDeskCorePorts) {
+  return {
+    listSkills: () => ports.listSkills(),
+    installSkills: (paths: string[]) => ports.installSkills(paths),
+    readSkill: (name: string) => ports.readSkill(name),
+    writeSkill: (name: string, content: string) => ports.writeSkill(name, content),
+    removeSkill: (name: string) => ports.removeSkill(name),
+    setSkillEnabled: (name: string, enabled: boolean) => ports.setSkillEnabled(name, enabled),
+    skillLocations: () => ports.skillLocations(),
   };
 }
 
@@ -131,6 +152,7 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
       ports.answerQuestion(runId, questionId, answers),
     dismissQuestion: (runId, questionId) => ports.dismissQuestion(runId, questionId),
     cancelJob: (jobId) => ports.cancelJob(jobId),
+    ...skillPorts(ports),
     verifyAudit: () => ports.verifyAudit(),
     ...inferencePorts(ports),
     close: () => ports.close(),

@@ -31,6 +31,7 @@ interface IconProps {
     | "reconcile"
     | "search"
     | "send"
+    | "settings"
     | "skill"
     | "subagent"
     | "terminal"
@@ -74,6 +75,7 @@ const paths: Record<IconProps["name"], string> = {
   reconcile: "M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4",
   search: "M10 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12zM20 20l-5.6-5.6",
   send: "m5 12 14-7-4 14-3-6z",
+  settings: "M4 8h8m4 0h4M4 16h4m4 0h8M12 6v4M8 14v4",
   skill: "M12 3l2.3 5.5 5.9.5-4.5 3.8 1.4 5.7L12 15.8 6.5 18.5l1.4-5.7L3.4 9l5.9-.5z",
   subagent: "M6 4v6a4 4 0 0 0 4 4h8m0 0-3-3m3 3-3 3",
   terminal: "M4 5h16v14H4zM7 9l3 3-3 3M13 15h4",

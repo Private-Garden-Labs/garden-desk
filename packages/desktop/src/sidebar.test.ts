@@ -26,27 +26,28 @@ const folderSession = SessionSummarySchema.parse({
   updatedAt: timestamp,
 });
 
+const sidebarRowProps = {
+  activeSessionId: globalSession.id,
+  disabled: false,
+  dispatch: () => undefined,
+  folders: [{ ...folder, expanded: true, nextCursor: null, sessions: [folderSession] }],
+  globalSessions: [globalSession],
+  workingSessionIds: [folderSession.id],
+  onAddFolder: () => undefined,
+  onNewSession: () => undefined,
+  onOpenFolder: () => undefined,
+  onOpenReleases: () => undefined,
+  onOpenSkills: () => undefined,
+  onDeleteSession: () => undefined,
+  onRevokeFolder: () => undefined,
+  onReorderFolders: () => undefined,
+  onSelectSession: () => undefined,
+  onShowMore: () => undefined,
+};
+
 describe("sidebar rows", () => {
   it("uses the same row controls for chats and folders, with an icon only on folders", () => {
-    const markup = renderToStaticMarkup(
-      createElement(Sidebar, {
-        activeSessionId: globalSession.id,
-        disabled: false,
-        dispatch: () => undefined,
-        folders: [{ ...folder, expanded: true, nextCursor: null, sessions: [folderSession] }],
-        globalSessions: [globalSession],
-        workingSessionIds: [folderSession.id],
-        onAddFolder: () => undefined,
-        onNewSession: () => undefined,
-        onOpenFolder: () => undefined,
-        onOpenReleases: () => undefined,
-        onDeleteSession: () => undefined,
-        onRevokeFolder: () => undefined,
-        onReorderFolders: () => undefined,
-        onSelectSession: () => undefined,
-        onShowMore: () => undefined,
-      }),
-    );
+    const markup = renderToStaticMarkup(createElement(Sidebar, sidebarRowProps));
 
     expect(
       markup.match(

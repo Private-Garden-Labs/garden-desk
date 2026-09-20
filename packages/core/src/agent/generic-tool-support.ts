@@ -42,6 +42,7 @@ export interface ToolExecutionResult extends AgentToolResult {
 export interface ToolContext {
   executor: AgentExecutor;
   skills: SkillReader;
+  systemPrompt?(name: string): string;
   subagents?: readonly { name: string; description: string }[];
   toolCallId?: string;
   inspectImage?(path: string, prompt: string): Promise<string>;

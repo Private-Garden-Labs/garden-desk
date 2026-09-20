@@ -96,9 +96,13 @@ async function installMacAgentResources(): Promise<
     helper,
   );
   await chmod(helper, 0o755);
+  const agentHelperSignature = signExecutable(
+    helper,
+    join(workersNativeRoot, "macos-vz-helper/garden-desk-vz-helper.entitlements.plist"),
+  );
   return {
     agentHelper: await sha256(helper),
-    agentHelperSignature: "macos-adhoc",
+    agentHelperSignature,
     ...(await installAgentImage("aarch64", "Image")),
   };
 }

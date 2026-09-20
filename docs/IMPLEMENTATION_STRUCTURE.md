@@ -47,6 +47,13 @@ prompts/system/*.md                 compaction and session-summary instructions 
 prompts/skills/<name>/SKILL.md      progressively disclosed Agent Skills-compatible workflows
 ```
 
+A person can add skills without a new release. Core reads `<workspace>/skills/<name>/SKILL.md` at
+each run and overlays it on the packaged set. A new name is offered to every agent that has the
+`skill` tool, whatever its own `skills` list says. A packaged name replaces the packaged body in
+place and keeps that skill with the agents that already had it. `<workspace>/skills/settings.json`
+lists the names that stay off, and a name that is off reaches no agent. Core validates the same
+frontmatter before it writes such a file and never changes the packaged tree.
+
 TypeScript owns only typed runtime facts, prompt selection, placeholder rendering, limits, and
 schema construction. A skill directory and its required `name` and `description` frontmatter
 follow the open Agent Skills contract; the name matches the lowercase hyphenated directory and

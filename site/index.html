@@ -55,8 +55,9 @@
       </a>
       <nav aria-label="Main navigation" class="site-nav">
         <a href="#how-it-works">How it works</a>
-        <a href="#run-locally">Run locally</a>
+        <a href="#compare">Compare</a>
         <a href="#requirements">Requirements</a>
+        <a href="./releases/">Releases</a>
         <a class="nav-source" href="https://github.com/alex-alecu/garden-desk">
           <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.2-3.09-.12-.29-.52-1.46.11-3.04 0 0 .98-.31 3.16 1.18A11 11 0 0 1 12 6.91c.98 0 1.94.13 2.85.38 2.18-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.75.11 3.04.75.8 1.2 1.83 1.2 3.09 0 4.42-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v2.47c0 .31.21.67.79.56A11.5 11.5 0 0 0 12 .7Z" /></svg><span>GitHub</span><span aria-hidden="true" class="nav-source-arrow">&#8599;</span>
         </a>
@@ -71,23 +72,20 @@
         <div class="garden-copy">
           <h1>Crowded cloud.<br />Private garden.</h1>
           <p class="garden-lede">Cloud privacy has limits. Your AI coworker stays on your computer.</p>
-          <div class="garden-start" id="run-locally">
-            <h2>Run the app locally</h2>
-            <p>Clone the repository:</p>
-            <pre><code>git clone git@github.com:alex-alecu/garden-desk.git</code></pre>
-            <p>Open a terminal in the <code>garden-desk</code> folder. On macOS:</p>
-            <pre><code>bash setup.sh</code></pre>
-            <p>On Windows, use standard PowerShell:</p>
-            <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1</code></pre>
-            <p>Setup asks before it installs missing tools and downloads. Then it starts the app. For later starts, use <code>pnpm start</code>.</p>
-            <a href="https://github.com/alex-alecu/garden-desk#run-locally-with-one-command">Setup and platform requirements &#8599;</a>
-          </div>
           <div class="garden-actions">
-            <a class="button button-primary" href="./demo/">
-              <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-              <span>See it work</span>
+            <a class="button button-primary" data-download-mac href="https://github.com/alex-alecu/garden-desk/releases/download/v1.0.0/Garden-Desk-1.0.0-macos-arm64.dmg">
+              <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.8c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8-.7 0-1.8-.8-2.9-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.8 1.1 9 .8 1.1 1.6 2.3 2.8 2.2 1.1 0 1.5-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 1.9-1.1 2.7-2.2.8-1.2 1.2-2.4 1.2-2.5-.1 0-2.3-.9-2.3-3.6zM14.2 5.9c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-.9 2.8 1 0 2-.5 2.6-1.3z" /></svg>
+              <span>Download for Mac</span>
+            </a>
+            <a class="button button-secondary" data-download-windows href="https://github.com/alex-alecu/garden-desk/releases/download/v1.0.0/Garden-Desk-1.0.0-windows-x64.zip">
+              <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.6l7.3-1v7.1H3V5.6zm0 12.8l7.3 1v-7h-7.3v6zM11.3 19.6L21 21v-8.5h-9.7v7.1zM11.3 3.4v7.3H21V2l-9.7 1.4z" /></svg>
+              <span>Download for Windows</span>
             </a>
           </div>
+          <p class="download-meta">
+            Version 1.0.0 · Apple silicon, or Windows with NVIDIA ·
+            <a href="./releases/">All releases</a>
+          </p>
           <p class="open-source">
             <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.2-3.09-.12-.29-.52-1.46.11-3.04 0 0 .98-.31 3.16 1.18A11 11 0 0 1 12 6.91c.98 0 1.94.13 2.85.38 2.18-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.75.11 3.04.75.8 1.2 1.83 1.2 3.09 0 4.42-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v2.47c0 .31.21.67.79.56A11.5 11.5 0 0 0 12 .7Z" /></svg>
             <span
@@ -95,7 +93,7 @@
               <a href="https://github.com/alex-alecu/garden-desk">Read every line &#8599;</a></span
             >
           </p>
-          <p class="availability">No account, ever. Installers coming soon.</p>
+          <p class="availability">No account. No sign-up. No keys.</p>
         </div>
         <div class="garden-scene" data-scene role="img" aria-label="A wooden desk and chair in a private Amsterdam townhouse roof garden, with a stair entrance, small trees, low shrubs, gabled houses, canals, bridges, and a distant sea view">
         <svg class="garden-poster" viewBox="700 0 760 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -386,6 +384,155 @@
         </div>
       </section>
 
+      <section class="section compare-section" id="compare">
+        <div class="section-inner">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow" data-reveal>Compare</p>
+              <h2 data-reveal data-reveal-delay="70">Everything else is assembly required.</h2>
+            </div>
+            <p data-reveal data-reveal-delay="140">
+              Seven ways to get the work done. The same nine questions. Checked against public
+              documentation in September 2026.
+            </p>
+          </div>
+          <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: a horizontally scrollable table must be reachable with the keyboard -->
+          <section class="compare-scroll" data-reveal tabindex="0" aria-labelledby="compare-caption">
+            <table class="compare-table">
+              <caption class="visually-hidden" id="compare-caption">Garden Desk compared with six other ways to get AI work done</caption>
+              <colgroup>
+                <col class="compare-label" />
+                <col class="compare-ours" />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+              </colgroup>
+              <thead>
+                <tr>
+                  <td></td>
+                  <th scope="col" class="is-ours"><span>Garden Desk</span></th>
+                  <th scope="col"><span>Claude Cowork</span></th>
+                  <th scope="col"><span>Codex for Work</span></th>
+                  <th scope="col"><span>Perplexity Portable Computer</span></th>
+                  <th scope="col"><span>AnythingLLM</span></th>
+                  <th scope="col"><span>LM Studio Bionic</span></th>
+                  <th scope="col"><span>OpenCode + Ollama</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">What you install</th>
+                  <td class="is-ours">One app</td>
+                  <td>App and account</td>
+                  <td>Web and mobile</td>
+                  <td>App and account</td>
+                  <td>App and server</td>
+                  <td>App and models</td>
+                  <td>Two programs</td>
+                </tr>
+                <tr>
+                  <th scope="row">Where the model runs</th>
+                  <td class="is-ours">Local only<sup>1</sup></td>
+                  <td>Cloud only</td>
+                  <td>Cloud only</td>
+                  <td>Hybrid<sup>2</sup></td>
+                  <td>Hybrid<sup>2</sup></td>
+                  <td>Hybrid<sup>2</sup></td>
+                  <td>Local only<sup>3</sup></td>
+                </tr>
+                <tr>
+                  <th scope="row">Tuned for one model</th>
+                  <td class="is-ours">Yes<sup>4</sup></td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Works with no internet</th>
+                  <td class="is-ours">Yes</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>Partly<sup>5</sup></td>
+                  <td>Partly<sup>5</sup></td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <th scope="row">Sealed, no-network sandbox</th>
+                  <td class="is-ours">Yes<sup>6</sup></td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Your files stay read-only</th>
+                  <td class="is-ours">Yes<sup>7</sup></td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Telemetry</th>
+                  <td class="is-ours">None</td>
+                  <td>Yes<sup>8</sup></td>
+                  <td>Yes<sup>8</sup></td>
+                  <td>Yes</td>
+                  <td>On by default<sup>9</sup></td>
+                  <td>Not for local use</td>
+                  <td>No analytics<sup>10</sup></td>
+                </tr>
+                <tr>
+                  <th scope="row">Price</th>
+                  <td class="is-ours">Free</td>
+                  <td>$20 to $200 a month</td>
+                  <td>$25+ a seat<sup>11</sup></td>
+                  <td>$20 or $200 a month</td>
+                  <td>Free</td>
+                  <td>Free, or $20+<sup>12</sup></td>
+                  <td>Free</td>
+                </tr>
+                <tr>
+                  <th scope="row">Source code</th>
+                  <td class="is-ours">Open source</td>
+                  <td>Closed</td>
+                  <td>Closed</td>
+                  <td>Closed</td>
+                  <td>Open source</td>
+                  <td>Closed, partly open</td>
+                  <td>Open source</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <ol class="compare-notes">
+            <li>The model ships inside the download and runs on your computer. There is nothing to pick or install.</li>
+            <li>You choose a local or a cloud model, and you install and select it yourself.</li>
+            <li>You run a local model server and point the tool at it.</li>
+            <li>Prompts, skills, and workflows are tuned end to end for one model. A tool that accepts any model cannot tune for each one.</li>
+            <li>The model can run locally, but the app still calls vendor services.</li>
+            <li>Agent commands run inside a virtual machine that has no network interface at all. The other tools run commands on your computer or on vendor servers, with a network.</li>
+            <li>The folder you select is mounted read-only. The agent writes only to a separate workspace, so it cannot change your originals.</li>
+            <li>An account service. Your work runs on the vendor's computers.</li>
+            <li>Set <code>DISABLE_TELEMETRY=true</code> to turn it off.</li>
+            <li>Update and model-catalog checks still run until you turn them off.</li>
+            <li>ChatGPT Business is $25 for each seat each month, or $20 when you pay yearly. Premium is $125, or $100 yearly. Business needs two seats or more.</li>
+            <li>Local models are free. Bionic+ is $20 each month and Pro is $100.</li>
+          </ol>
+        </div>
+      </section>
+
       <section class="section requirements-section" id="requirements">
         <div class="section-inner">
           <div class="section-heading">
@@ -409,7 +556,7 @@
                 <small>macOS</small>
                 <h3>Apple silicon Mac</h3>
                 <p><strong>24 GB unified memory</strong> or more</p>
-                <span class="status-pill">Coming soon</span>
+                <span class="status-pill">Version 1.0.0</span>
               </div>
             </article>
             <article class="requirement-card" data-reveal data-reveal-delay="90" data-tilt>
@@ -424,14 +571,10 @@
                 <small>Windows</small>
                 <h3>PC with NVIDIA graphics</h3>
                 <p><strong>16 GB GPU VRAM</strong> or more</p>
-                <span class="status-pill">Coming soon</span>
+                <span class="status-pill">Version 1.0.0</span>
               </div>
             </article>
           </div>
-          <p class="requirements-note">
-            Downloads stay closed until signed installers and the certified configuration list are
-            ready. We’d rather be late than hand you an unsigned build.
-          </p>
         </div>
       </section>
 
@@ -463,29 +606,14 @@
         </div>
       </section>
 
-      <section class="section final-cta">
-        <div class="section-inner" data-reveal>
-          <p class="eyebrow">Nothing tracked. Nothing to configure.</p>
-          <h2>Open the demo. Judge for yourself.</h2>
-          <p>It runs in your browser on invented data. No model, no upload, nothing saved.</p>
-          <div class="section-actions">
-            <a class="button button-primary" href="./demo/">
-              <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-              <span>See Garden Desk in action</span>
-            </a>
-            <a class="button button-secondary" href="#requirements">
-              <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></svg>
-              <span>Check requirements</span>
-            </a>
-          </div>
-        </div>
-      </section>
     </main>
     <footer class="site-footer">
       <span>Garden Desk project · Local-first software in active development</span>
       <nav aria-label="Legal and project links" class="footer-links">
         <a href="#how-it-works">How it works</a>
+        <a href="#compare">Compare</a>
         <a href="#requirements">Requirements</a>
+        <a href="./releases/">Releases</a>
         <a href="./privacy/">Privacy</a>
         <a href="./terms/">Terms</a>
         <a href="./security/">Security</a>

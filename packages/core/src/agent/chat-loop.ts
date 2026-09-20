@@ -115,7 +115,7 @@ export class ChatAgentLoop {
           [
             {
               role: "system",
-              text: "Summarize only the supplied local conversation for continuation.",
+              text: input.systemPrompt("compaction"),
             },
             { role: "user", text: prompt },
           ],
@@ -126,7 +126,13 @@ export class ChatAgentLoop {
         this.record(input, generated.turnId, "accepted_compaction");
         return generated.result.text;
       },
-      { assistantTurns: keepTurns },
+      {
+        assistantTurns: keepTurns,
+        opening: {
+          create: input.systemPrompt("compaction-new"),
+          update: input.systemPrompt("compaction-update"),
+        },
+      },
     );
     return compacted.messages;
   }
@@ -211,7 +217,7 @@ export class ChatAgentLoop {
     return undefined;
   }
   async run(input: ChatAgentInput): Promise<AgentRunResult> {
-    this.clock = currentTimeContext();
+    this.clock = currentTimeContext(input.systemPrompt("current-time"));
     this.reasoning.clear();
     try {
       return await this.runTask(input);

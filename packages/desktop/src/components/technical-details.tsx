@@ -5,13 +5,14 @@ import type {
 } from "@gardendesk/shared";
 import { type CSSProperties, useEffect, useReducer, useState } from "react";
 import capabilities from "../../../workers/images/agent/capabilities.json" with { type: "json" };
-import type { DesktopApi } from "../api.js";
+import type { DesktopApi, PromptFolder } from "../api.js";
 import {
   type DebugSnapshotState,
   debugSnapshotReducer,
   initialDebugSnapshotState,
 } from "../debug-snapshot.js";
 import { showCatalogFolder, showFolder } from "../desktop-actions.js";
+import { showPromptFolder, usePromptLocations } from "../skills.js";
 import type { TimelineItem } from "../state.js";
 import type { AgentStep } from "../steps.js";
 import { DrawerResizeHandle, useDrawerResize } from "./drawer-resize.js";
@@ -23,6 +24,22 @@ import { TechnicalOverviewTable } from "./technical-overview-table.js";
 import { TranscriptCopy } from "./transcript-copy.js";
 
 export { shouldFollowLog } from "./technical-logs.js";
+
+function guestCapabilities(): string {
+  const runtimes = Object.entries(capabilities.runtimes).map(
+    ([name, version]) => `${name}: ${version}`,
+  );
+  return [
+    `Source: ${capabilities.sourceMount.path} (${capabilities.sourceMount.mode}, live)`,
+    `Workspace: ${capabilities.workspaceMount.path} (${capabilities.workspaceMount.maximumBytes} bytes)`,
+    `Temporary runtime: ${capabilities.runtimeMount.path} (${capabilities.runtimeMount.maximumBytes} bytes, ephemeral)`,
+    `Shell: ${capabilities.shell}`,
+    "Runtimes:",
+    ...runtimes,
+    "Executables:",
+    ...capabilities.executables,
+  ].join("\n");
+}
 
 interface TechnicalDetailsProps {
   api: DesktopApi;
@@ -44,22 +61,6 @@ interface TechnicalDetailsProps {
   onClose(): void;
   onSelectStep(stepId: string | undefined): void;
   setError(message: string | undefined): void;
-}
-
-function guestCapabilities(): string {
-  const runtimes = Object.entries(capabilities.runtimes).map(
-    ([name, version]) => `${name}: ${version}`,
-  );
-  return [
-    `Source: ${capabilities.sourceMount.path} (${capabilities.sourceMount.mode}, live)`,
-    `Workspace: ${capabilities.workspaceMount.path} (${capabilities.workspaceMount.maximumBytes} bytes)`,
-    `Temporary runtime: ${capabilities.runtimeMount.path} (${capabilities.runtimeMount.maximumBytes} bytes, ephemeral)`,
-    `Shell: ${capabilities.shell}`,
-    "Runtimes:",
-    ...runtimes,
-    "Executables:",
-    ...capabilities.executables,
-  ].join("\n");
 }
 
 export function DebugSnapshotPanel({
@@ -151,6 +152,7 @@ function Overview({
 }: TechnicalDetailsProps) {
   const limits = timeline.find((item) => item.eventType === "run.started")?.text;
   const nativeActions = nativeActionMessage === undefined;
+  const promptLocations = usePromptLocations(api);
   return (
     <div className="technical-details-scroll" role="tabpanel" id="technical-overview-panel">
       <article className="technical-details-item technical-overview">
@@ -165,13 +167,22 @@ function Overview({
               ? () => void showCatalogFolder(api, setError)
               : undefined
           }
+          onOpenPromptFolder={
+            nativeActions
+              ? (folder: PromptFolder) => void showPromptFolder(api, folder, setError)
+              : undefined
+          }
           onOpenSourceFolder={
             nativeActions && typeof folderId === "string"
               ? () => void showFolder(api, folderId, setError)
               : undefined
           }
+          promptLocations={promptLocations}
           sessionId={sessionId}
         />
+        <p className="technical-limits">
+          Your skills folder is yours to change. The built-in files belong to the installed app.
+        </p>
         <details>
           <summary>Show tools and runtimes</summary>
           <pre>{guestCapabilities()}</pre>

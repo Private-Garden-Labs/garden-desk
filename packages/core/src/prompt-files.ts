@@ -1,5 +1,16 @@
-import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync } from "node:fs";
-import { join } from "node:path";
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readdirSync,
+  readFileSync,
+  readSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join } from "node:path";
 
 export function readPromptFile(path: string): string {
   return readFileSync(path, "utf8");
@@ -18,6 +29,28 @@ export function readPromptPrefix(path: string, byteLength: number): string {
 
 export function promptDirectoryExists(path: string): boolean {
   return existsSync(path);
+}
+
+/** Replaces every {name} in a prompt file with the supplied value. */
+export function fillPrompt(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/gu, (match, key: string) => values[key] ?? match);
+}
+
+export function promptPathIsDirectory(path: string): boolean {
+  return statSync(path).isDirectory();
+}
+
+export function writePromptFile(path: string, content: string): void {
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, content);
+}
+
+export function removePromptDirectory(path: string): void {
+  rmSync(path, { force: true, recursive: true });
+}
+
+export function createPromptDirectory(path: string): void {
+  mkdirSync(path, { recursive: true });
 }
 
 export function readSourceFiles(directory: string): Array<{ path: string; content: string }> {
