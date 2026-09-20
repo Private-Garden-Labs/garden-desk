@@ -1,5 +1,15 @@
-import { chmod, copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { basename, join, resolve } from "node:path";
+import {
+  chmod,
+  copyFile,
+  cp,
+  mkdir,
+  readdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
+import { basename, dirname, isAbsolute, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { INFERENCE_PROFILE } from "@gardendesk/shared";
 import { signExecutable } from "./build-signing.js";
@@ -14,6 +24,7 @@ interface InferenceRuntimeManifest {
     string,
     {
       dependencies?: Array<{ files: Record<string, string> }>;
+      directories?: Record<string, string>;
       executable: string;
       files: Record<string, string>;
     }
@@ -41,6 +52,81 @@ export function runtimeResourceNames(
     throw new Error("Image inspection runtime manifest is invalid.");
   }
   return names.sort();
+}
+
+export function runtimeResourceDirectories(
+  manifest: InferenceRuntimeManifest,
+  platform: string,
+): string[] {
+  const runtime = manifest.platforms[platform];
+  if (runtime === undefined) throw new Error("Image inspection runtime platform is missing.");
+  const targets = Object.values(runtime.directories ?? {});
+  if (
+    targets.some(
+      (target) =>
+        target.length === 0 ||
+        isAbsolute(target) ||
+        normalize(target) !== target ||
+        target.split(/[\\/]/u).includes(".."),
+    )
+  ) {
+    throw new Error("Image inspection runtime manifest is invalid.");
+  }
+  return targets.sort();
+}
+
+async function hashTree(
+  sha256: HashFile,
+  root: string,
+  prefix: string,
+): Promise<Record<string, string>> {
+  const hashes: Record<string, string> = {};
+  for (const entry of await readdir(join(root, prefix), { withFileTypes: true })) {
+    const name = `${prefix}/${entry.name}`;
+    if (entry.isDirectory()) {
+      Object.assign(hashes, await hashTree(sha256, root, name));
+      continue;
+    }
+    if (!entry.isFile()) throw new Error("Inference runtime must contain files only.");
+    hashes[name] = await sha256(join(root, name));
+  }
+  return hashes;
+}
+
+async function copyRuntimePackage(
+  source: string,
+  destination: string,
+  names: string[],
+  directories: string[],
+): Promise<void> {
+  await rm(destination, { recursive: true, force: true });
+  await mkdir(destination, { recursive: true });
+  await Promise.all(names.map((name) => copyFile(join(source, name), join(destination, name))));
+  for (const directory of directories) {
+    await mkdir(dirname(join(destination, directory)), { recursive: true });
+    await cp(join(source, directory), join(destination, directory), {
+      recursive: true,
+      dereference: false,
+    });
+  }
+}
+
+async function hashRuntimePackage(
+  sha256: HashFile,
+  destination: string,
+  directoryRoots: Set<string>,
+): Promise<Record<string, string>> {
+  const hashes: Record<string, string> = {};
+  for (const entry of await readdir(destination, { withFileTypes: true })) {
+    if (entry.isDirectory() && directoryRoots.has(entry.name)) {
+      Object.assign(hashes, await hashTree(sha256, destination, entry.name));
+      continue;
+    }
+    if (!entry.isFile()) throw new Error("Inference runtime must contain files only.");
+    signRuntimeFile(join(destination, entry.name));
+    hashes[entry.name] = await sha256(join(destination, entry.name));
+  }
+  return hashes;
 }
 
 async function requireFetchedAsset(path: string, fetchCommand: string): Promise<void> {
@@ -73,17 +159,17 @@ export async function installRuntimeResources(
     await requireFetchedAsset(source, `pnpm inference:fetch --platform ${platform}`);
     const destination = join(destinationRoot, platform);
     const names = runtimeResourceNames(manifest, platform);
-    await rm(destination, { recursive: true, force: true });
-    await mkdir(destination, { recursive: true });
-    await Promise.all(names.map((name) => copyFile(join(source, name), join(destination, name))));
+    const directories = runtimeResourceDirectories(manifest, platform);
+    await copyRuntimePackage(source, destination, names, directories);
     await chmod(
       join(destination, (manifest.platforms[platform] as { executable: string }).executable),
       0o755,
     );
-    for (const entry of await readdir(destination, { withFileTypes: true })) {
-      if (!entry.isFile()) throw new Error("Inference runtime must contain files only.");
-      signRuntimeFile(join(destination, entry.name));
-      hashes[`${platform}/${entry.name}`] = await sha256(join(destination, entry.name));
+    const roots = new Set(directories.map((directory) => directory.split(/[\\/]/u)[0] as string));
+    for (const [name, hash] of Object.entries(
+      await hashRuntimePackage(sha256, destination, roots),
+    )) {
+      hashes[`${platform}/${name}`] = hash;
     }
   }
   await mkdir(join(resourcesRoot, "licenses"), { recursive: true });
@@ -92,7 +178,7 @@ export async function installRuntimeResources(
     "ternary-bonsai-2-LICENSE.txt",
     "ternary-bonsai-2-NOTICE.txt",
     "qwen3.8-LICENSE.txt",
-    ...(process.platform === "win32" ? ["cuda-EULA.html"] : []),
+    ...(process.platform === "win32" ? ["cuda-EULA.html", "rocm-LICENSE.txt"] : []),
   ];
   for (const license of licenses)
     await copyFile(

@@ -1,5 +1,6 @@
 import { setTimeout as delay } from "node:timers/promises";
 import {
+  contextCacheType,
   fittedContextTokens,
   INFERENCE_PROFILE,
   type InferenceWorkerRequest,
@@ -20,7 +21,7 @@ import {
 } from "./resident-worker.js";
 import { chatBody, completeChat } from "./server-chat.js";
 import { ServerError, serverRequest } from "./server-http.js";
-import { contextCacheType, startServer } from "./server-runtime.js";
+import { startServer } from "./server-runtime.js";
 
 export { type InferenceExecution, InferenceWorkerError } from "./resident-worker.js";
 
@@ -136,11 +137,21 @@ export class InferenceWorkerClient {
   private contextTokens(execution: InferenceExecution, request: ModelRequest) {
     if (request.contextSize !== "auto") return request.contextSize;
     if (execution.modelByteLength === undefined) return INFERENCE_PROFILE.minimumContextTokens;
-    return fittedContextTokens({
+    const fitted = fittedContextTokens({
       memoryBudgetBytes: execution.memoryBudgetBytes,
       modelByteLength: execution.modelByteLength,
-      cacheType: contextCacheType(this.launcher.gpu?.backend ?? "metal"),
+      cacheType: contextCacheType(
+        this.launcher.gpu?.backend ?? "metal",
+        execution.memoryBudgetBytes,
+      ),
     });
+    if (fitted === undefined) {
+      throw new ServerError(
+        "invalid_argument",
+        "This graphics memory cannot hold the model and the smallest supported context.",
+      );
+    }
+    return fitted;
   }
 
   private async prepare(

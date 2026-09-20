@@ -12,7 +12,7 @@ const limits: WorkerLimits = {
   wallTimeMs: 30_000,
   inputCount: 4,
   inputBytes: 8 * 1024 * 1024,
-  memoryBytes: 2 * 1024 * 1024 * 1024,
+  memoryBytes: 1024 * 1024 * 1024,
   scratchBytes: 128 * 1024 * 1024,
   outputBytes: 8 * 1024 * 1024,
   cpuCount: 2,

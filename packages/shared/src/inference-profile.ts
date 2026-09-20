@@ -14,19 +14,36 @@ export const INFERENCE_PROFILE = {
   reasoningBudgetTokens: 32_768,
   thinkingBudgetTokens: { low: 512, medium: 2_048, xhigh: 8_192 },
   memoryBudgetBytes: 16 * 1024 ** 3,
+  reducedMemoryBudgetBytes: 10 * 1024 ** 3,
   windowsDedicatedHostMemoryBytes: 20 * 1024 ** 3,
-  minimumUnifiedMemoryBytes: 24 * 1024 ** 3,
-  minimumDedicatedMemoryBytes: 16_000_000_000,
+  minimumMacMemoryBytes: 16 * 1024 ** 3,
+  fullBudgetMacMemoryBytes: 24 * 1024 ** 3,
+  windowsIntegratedMemoryBytes: 24 * 1024 ** 3,
+  minimumDedicatedMemoryBytes: 10_000_000_000,
   runtimeBuild: "llama.cpp@prism-b10709-9a9394a",
 } as const;
 
 export type ContextCacheType = keyof typeof INFERENCE_PROFILE.contextCacheBytesPerToken;
 
+/**
+ * The larger Q8 context cache fits only in the full inference budget. A smaller
+ * budget uses the Q4 cache that Windows already runs.
+ */
+export function contextCacheType(
+  backend: "metal" | "cuda" | "hip",
+  memoryBudgetBytes: number,
+): ContextCacheType {
+  return backend === "metal" && memoryBudgetBytes >= INFERENCE_PROFILE.memoryBudgetBytes
+    ? "q8_0"
+    : "q4_0";
+}
+
+/** Returns undefined when the budget cannot hold the model and the minimum context. */
 export function fittedContextTokens(input: {
   memoryBudgetBytes: number;
   modelByteLength: number;
   cacheType: ContextCacheType;
-}): number {
+}): number | undefined {
   const { minimumContextTokens, maximumContextTokens, contextStepTokens } = INFERENCE_PROFILE;
   const free =
     input.memoryBudgetBytes -
@@ -35,5 +52,6 @@ export function fittedContextTokens(input: {
     INFERENCE_PROFILE.contextReserveBytes;
   const tokens = Math.floor(free / INFERENCE_PROFILE.contextCacheBytesPerToken[input.cacheType]);
   const stepped = Math.floor(tokens / contextStepTokens) * contextStepTokens;
-  return Math.min(maximumContextTokens, Math.max(minimumContextTokens, stepped));
+  if (stepped < minimumContextTokens) return undefined;
+  return Math.min(maximumContextTokens, stepped);
 }

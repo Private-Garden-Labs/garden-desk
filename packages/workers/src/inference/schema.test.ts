@@ -93,6 +93,7 @@ it("uses the model card sampling values and the reasoning guardrail", () => {
     backend: "metal",
     modelPath: "model.gguf",
     contextTokens: 32768,
+    memoryBudgetBytes: 16 * 1024 ** 3,
     speculation: "none",
   });
   expect(args[args.indexOf("--reasoning-budget") + 1]).toBe("32768");
@@ -103,6 +104,7 @@ it("uses the Metal buffer name accepted by the pinned server", () => {
     backend: "metal",
     modelPath: "model.gguf",
     contextTokens: 32768,
+    memoryBudgetBytes: 16 * 1024 ** 3,
     speculation: "none",
   });
   expect(args[args.indexOf("--override-tensor") + 1]).toBe(".*=MTL0");
@@ -113,6 +115,7 @@ it("uses matching cache types for Metal Flash Attention", () => {
     backend: "metal",
     modelPath: "model.gguf",
     contextTokens: 32768,
+    memoryBudgetBytes: 16 * 1024 ** 3,
     speculation: "none",
   });
   expect(args[args.indexOf("--cache-type-k") + 1]).toBe(args[args.indexOf("--cache-type-v") + 1]);
@@ -122,7 +125,13 @@ it("fits the context to the memory budget between the minimum and the model maxi
   const fit = { memoryBudgetBytes: 16 * 1024 ** 3, modelByteLength: 7_206_168_928 };
   expect(fittedContextTokens({ ...fit, cacheType: "q4_0" })).toBe(262_144);
   expect(fittedContextTokens({ ...fit, cacheType: "q8_0" })).toBe(208_896);
+  expect(
+    fittedContextTokens({ ...fit, memoryBudgetBytes: 10 * 1024 ** 3, cacheType: "q4_0" }),
+  ).toBe(45_056);
+  expect(
+    fittedContextTokens({ ...fit, memoryBudgetBytes: 10 * 1024 ** 3, cacheType: "q8_0" }),
+  ).toBeUndefined();
   expect(fittedContextTokens({ ...fit, memoryBudgetBytes: 8 * 1024 ** 3, cacheType: "q4_0" })).toBe(
-    32_768,
+    undefined,
   );
 });

@@ -20,7 +20,7 @@ export interface WindowsGpuInfo {
 
 export interface WindowsRuntimeProbeResult {
   schemaVersion: 1;
-  backend: "cuda" | "vulkan";
+  backend: "cuda" | "hip";
   deviceNames: string[];
   totalMemoryBytes: number;
   availableMemoryBytes?: number;
@@ -36,11 +36,11 @@ export interface WindowsGpuProfile {
 interface Candidate {
   adapter: WindowsGpuAdapterInfo;
   cudaIndex?: number;
-  vulkanIndex?: number;
+  hipIndex?: number;
 }
 
 interface IsolatedVariant {
-  backend: "cuda" | "vulkan";
+  backend: "cuda" | "hip";
   deviceIndex: number;
   expectedName: string;
   totalMemoryBytes: number;
@@ -101,11 +101,16 @@ export function resolveIntegratedGpuBudget(
   installedMemoryBytes: number,
   detectedMemoryBytes: number,
 ): number | undefined {
-  return installedMemoryBytes >= INFERENCE_PROFILE.minimumUnifiedMemoryBytes &&
+  return installedMemoryBytes >= INFERENCE_PROFILE.windowsIntegratedMemoryBytes &&
     detectedMemoryBytes >= INFERENCE_PROFILE.memoryBudgetBytes
     ? INFERENCE_PROFILE.memoryBudgetBytes
     : undefined;
 }
+
+/**
+ * A dedicated GPU must hold at least the minimum dedicated memory, and the
+ * inference budget follows the memory the runtime reports as usable.
+ */
 export function resolveWindowsGpuMemoryProfile(
   integrated: boolean,
   detectedMemoryBytes: number,
@@ -115,7 +120,7 @@ export function resolveWindowsGpuMemoryProfile(
   const memoryBudgetBytes = integrated
     ? resolveIntegratedGpuBudget(installedMemoryBytes, availableMemoryBytes)
     : detectedMemoryBytes >= INFERENCE_PROFILE.minimumDedicatedMemoryBytes
-      ? Math.min(detectedMemoryBytes, INFERENCE_PROFILE.memoryBudgetBytes)
+      ? Math.min(availableMemoryBytes, INFERENCE_PROFILE.memoryBudgetBytes)
       : undefined;
   if (memoryBudgetBytes === undefined || detectedMemoryBytes < memoryBudgetBytes) return undefined;
   return {
@@ -158,7 +163,7 @@ function mappedCandidates(
     for (const [index, name] of inventory.deviceNames.entries()) {
       const adapter = mapRuntimeGpuName(adapters, name);
       const candidate = candidates.get(adapter.id) ?? { adapter };
-      const key = inventory.backend === "cuda" ? "cudaIndex" : "vulkanIndex";
+      const key = inventory.backend === "cuda" ? "cudaIndex" : "hipIndex";
       if (candidate[key] !== undefined) throw new Error("ambiguous_windows_gpu_identity");
       candidate[key] = index;
       candidates.set(adapter.id, candidate);
@@ -171,10 +176,10 @@ function mappedCandidates(
 
 async function isolatedVariant(
   candidate: Candidate,
-  backend: "cuda" | "vulkan",
+  backend: "cuda" | "hip",
   probe: Probe,
 ): Promise<IsolatedVariant | undefined> {
-  const deviceIndex = backend === "cuda" ? candidate.cudaIndex : candidate.vulkanIndex;
+  const deviceIndex = backend === "cuda" ? candidate.cudaIndex : candidate.hipIndex;
   if (deviceIndex === undefined) return undefined;
   const result = await probe({ backend, deviceIndex }).catch(() => undefined);
   if (result === undefined) return undefined;
@@ -197,11 +202,11 @@ async function resolveCandidate(
   installedMemoryBytes: number,
   probe: Probe,
 ): Promise<WindowsGpuProfile | undefined> {
-  const [cuda, vulkan] = await Promise.all([
+  const [cuda, hip] = await Promise.all([
     isolatedVariant(candidate, "cuda", probe),
-    isolatedVariant(candidate, "vulkan", probe),
+    isolatedVariant(candidate, "hip", probe),
   ]);
-  for (const generation of [cuda, vulkan]) {
+  for (const generation of [cuda, hip]) {
     if (generation === undefined) continue;
     const memory = resolveWindowsGpuMemoryProfile(
       candidate.adapter.integrated,

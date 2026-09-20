@@ -56,9 +56,9 @@ describe("M3 Windows image runtime", () => {
     const source = await readFile(join(process.cwd(), "assets/inference-runtime.json"), "utf8");
     const runtime = (
       JSON.parse(source) as {
-        platforms: { "windows-vulkan-x64": { dependencies: Array<{ files: object }> } };
+        platforms: { "windows-hip-x64": { dependencies: Array<{ files: object }> } };
       }
-    ).platforms["windows-vulkan-x64"];
+    ).platforms["windows-hip-x64"];
     expect(Object.keys(runtime.dependencies[0]?.files ?? {})).toEqual([
       "msvcp140.dll",
       "vcruntime140.dll",

@@ -4,6 +4,7 @@ import { createReadStream } from "node:fs";
 import {
   chmod,
   copyFile,
+  cp,
   lstat,
   mkdir,
   mkdtemp,
@@ -21,6 +22,7 @@ interface RuntimeArchive {
   archive: string;
   byteLength: number;
   files: Record<string, string>;
+  directories?: Record<string, string>;
   sha256: string;
   url: string;
 }
@@ -73,6 +75,18 @@ function targetName(path: string): string {
   return path;
 }
 
+function targetDirectory(path: string): string {
+  if (
+    path.includes("\0") ||
+    isAbsolute(path) ||
+    normalize(path) !== path ||
+    path.split(/[\\/]/u).includes("..")
+  ) {
+    throw new Error("inference_target_directory_invalid");
+  }
+  return path;
+}
+
 function extract(archive: string, destination: string, files: string[]): void {
   const result = spawnSync("tar", ["-xf", archive, "-C", destination, "--", ...files], {
     encoding: "utf8",
@@ -100,6 +114,15 @@ async function fetchArchive(asset: RuntimeArchive, destination: string): Promise
   }
 }
 
+async function stageFile(extracted: string, source: string): Promise<string> {
+  const path = join(extracted, source);
+  const fromRoot = relative(extracted, path);
+  if (isAbsolute(fromRoot) || fromRoot.startsWith("..") || !(await lstat(path)).isFile()) {
+    throw new Error("inference_archive_entry_invalid");
+  }
+  return path;
+}
+
 async function stageArchive(input: {
   asset: RuntimeArchive;
   archive: string;
@@ -111,7 +134,10 @@ async function stageArchive(input: {
   const entries = Object.entries(asset.files).map(
     ([source, target]) => [archivePath(source), targetName(target)] as const,
   );
-  for (const [, target] of entries) {
+  const trees = Object.entries(asset.directories ?? {}).map(
+    ([source, target]) => [archivePath(source), targetDirectory(target)] as const,
+  );
+  for (const [, target] of [...entries, ...trees]) {
     if (installed.has(target)) throw new Error("inference_target_name_duplicate");
     installed.add(target);
   }
@@ -119,16 +145,16 @@ async function stageArchive(input: {
   extract(
     archive,
     extracted,
-    entries.map(([source]) => source),
+    [...entries, ...trees].map(([source]) => source),
   );
   for (const [source, target] of entries) {
+    await copyFile(await stageFile(extracted, source), join(staged, target));
+  }
+  for (const [source, target] of trees) {
     const path = join(extracted, source);
-    const fromRoot = relative(extracted, path);
-    const metadata = await lstat(path);
-    if (isAbsolute(fromRoot) || fromRoot.startsWith("..") || !metadata.isFile()) {
-      throw new Error("inference_archive_entry_invalid");
-    }
-    await copyFile(path, join(staged, target));
+    if (!(await lstat(path)).isDirectory()) throw new Error("inference_archive_entry_invalid");
+    await mkdir(dirname(join(staged, target)), { recursive: true });
+    await cp(path, join(staged, target), { recursive: true, dereference: false });
   }
 }
 

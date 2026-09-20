@@ -1,23 +1,21 @@
 import { setTimeout as delay } from "node:timers/promises";
-import { type ContextCacheType, INFERENCE_PROFILE } from "@gardendesk/shared";
+import { contextCacheType, INFERENCE_PROFILE } from "@gardendesk/shared";
 import type { NativeWorkerHandle, NativeWorkerLauncher } from "../native/launcher.js";
 import { ServerError, serverFailure, serverRequest } from "./server-http.js";
 import { observeServerMemory, type ServerAllocations } from "./server-memory.js";
 
-export function contextCacheType(backend: "metal" | "cuda" | "vulkan"): ContextCacheType {
-  return backend === "metal" ? "q8_0" : "q4_0";
-}
-
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: keep the fixed runtime arguments together.
 export function serverArguments(input: {
-  backend: "metal" | "cuda" | "vulkan";
+  backend: "metal" | "cuda" | "hip";
+  memoryBudgetBytes: number;
   modelPath: string;
   contextTokens: number;
   embedding?: boolean;
   projectorPath?: string;
   speculation: "none" | "ngram-mod";
 }): string[] {
-  const device = { metal: "MTL0", cuda: "CUDA0", vulkan: "Vulkan0" }[input.backend];
+  const device = { metal: "MTL0", cuda: "CUDA0", hip: "ROCm0" }[input.backend];
+  const cacheType = contextCacheType(input.backend, input.memoryBudgetBytes);
   return [
     "--model",
     input.modelPath,
@@ -49,9 +47,9 @@ export function serverArguments(input: {
     "--ubatch-size",
     String(input.embedding ? input.contextTokens : 256),
     "--cache-type-k",
-    input.embedding ? "f16" : contextCacheType(input.backend),
+    input.embedding ? "f16" : cacheType,
     "--cache-type-v",
-    input.embedding ? "f16" : contextCacheType(input.backend),
+    input.embedding ? "f16" : cacheType,
     "--ctx-checkpoints",
     "2",
     "--checkpoint-min-step",

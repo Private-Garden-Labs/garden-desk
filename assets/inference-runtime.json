@@ -69,30 +69,30 @@
         }
       ]
     },
-    "windows-vulkan-x64": {
-      "archive": "llama-prism-b10709-9a9394a-bin-win-vulkan-x64.zip",
-      "byteLength": 29908460,
-      "sha256": "fabef609b588cbbed85b5f10b45809c46088f0a63caca7976054034e24b40836",
-      "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-win-vulkan-x64.zip",
+    "windows-hip-x64": {
+      "archive": "llama-prism-b10709-9a9394a-bin-win-hip-radeon-x64.zip",
+      "byteLength": 321932526,
+      "sha256": "86792e1590232e4ac702df2fe961fe196552ad7642658b5347834f539a1525b6",
+      "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-win-hip-radeon-x64.zip",
       "files": {
         "ggml-base.dll": "ggml-base.dll",
-        "ggml-cpu-alderlake.dll": "ggml-cpu-alderlake.dll",
-        "ggml-cpu-cannonlake.dll": "ggml-cpu-cannonlake.dll",
-        "ggml-cpu-cascadelake.dll": "ggml-cpu-cascadelake.dll",
-        "ggml-cpu-haswell.dll": "ggml-cpu-haswell.dll",
-        "ggml-cpu-icelake.dll": "ggml-cpu-icelake.dll",
-        "ggml-cpu-sandybridge.dll": "ggml-cpu-sandybridge.dll",
-        "ggml-cpu-skylakex.dll": "ggml-cpu-skylakex.dll",
-        "ggml-cpu-sse42.dll": "ggml-cpu-sse42.dll",
-        "ggml-cpu-x64.dll": "ggml-cpu-x64.dll",
-        "ggml-vulkan.dll": "ggml-vulkan.dll",
+        "ggml-cpu.dll": "ggml-cpu.dll",
+        "ggml-hip.dll": "ggml-hip.dll",
+        "ggml-rpc.dll": "ggml-rpc.dll",
         "ggml.dll": "ggml.dll",
+        "libhipblas.dll": "libhipblas.dll",
+        "libhipblaslt.dll": "libhipblaslt.dll",
         "llama-common.dll": "llama-common.dll",
         "llama-fit-params-impl.dll": "llama-fit-params-impl.dll",
         "llama-server-impl.dll": "llama-server-impl.dll",
         "llama-server.exe": "llama-server.exe",
         "llama.dll": "llama.dll",
-        "mtmd.dll": "mtmd.dll"
+        "mtmd.dll": "mtmd.dll",
+        "rocblas.dll": "rocblas.dll"
+      },
+      "directories": {
+        "hipblaslt/library": "hipblaslt/library",
+        "rocblas/library": "rocblas/library"
       },
       "executable": "llama-server.exe",
       "dependencies": [

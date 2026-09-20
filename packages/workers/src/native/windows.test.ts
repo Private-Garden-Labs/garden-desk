@@ -94,7 +94,7 @@ describe("Windows native worker launch arguments", () => {
       "/packaged/node",
       {
         gpu: {
-          backend: "vulkan",
+          backend: "hip",
           deviceIndex: 2,
           expectedName: "Integrated Graphics",
           memoryKind: "unified",
@@ -107,7 +107,7 @@ describe("Windows native worker launch arguments", () => {
     expect(arguments_).toEqual(
       expect.arrayContaining([
         "--gpu-backend",
-        "vulkan",
+        "hip",
         "--gpu-device-index",
         "2",
         "--expected-gpu-name",
@@ -124,7 +124,7 @@ describe("Windows native worker launch arguments", () => {
         { workerEntryPath: "worker.mjs", memoryBudgetBytes: 12 },
         "scratch",
         "/packaged/node",
-        { gpu: { backend: "vulkan", deviceIndex } },
+        { gpu: { backend: "hip", deviceIndex } },
       ),
     ).toThrow("invalid_windows_gpu_selection");
   });

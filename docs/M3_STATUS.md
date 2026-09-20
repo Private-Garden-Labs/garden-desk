@@ -17,6 +17,21 @@ M3 Offline Dev-Agent Desktop V1 is active. The desktop runs one general-purpose 
 ## Security Boundary
 
 - The guest VM has zero network devices, an immutable root image, a live read-only mount of the selected folder at `/source`, and a writable, persistent 128 MiB `/workspace`.
+
+## 2026-09-20 Agent Guest Memory Measurement
+
+Measured on physical Apple silicon with macOS 27.0, the committed `aarch64` agent image, and deterministic guest scripts. No model ran. Each launch read `/proc/meminfo`, ran one Python document workload (openpyxl, python-docx, ReportLab, pypdf, Pillow), ran one Node.js workload, and then filled the workspace. Host memory is the resident size that `vmmap --summary` reports for the helper process.
+
+| Configured guest RAM | Guest `MemTotal` | Guest `MemAvailable` after boot | Host resident | Bounded workload |
+| --- | --- | --- | --- | --- |
+| 512 MiB | 490 MiB | 309 MiB | not sampled | Python and Node.js pass; fails while collecting a 100 MiB workspace |
+| 768 MiB | 748 MiB | not reached | not sampled | fails while collecting a 120 MiB workspace |
+| 1024 MiB | 992 MiB | 749 MiB | 426 MiB | passes, including a 120 MiB workspace |
+| 4096 MiB (previous) | 3942 MiB | 3676 MiB | 426 MiB | passes |
+
+Two concurrent guests at 1024 MiB both passed the same workload; each used 426 MiB resident on the host.
+
+Findings. The initramfs root holds about 147 MiB of guest RAM permanently, which `Shmem` reports. Host resident memory is the same 426 MiB at 1024 MiB and at 4096 MiB configured, so the configured size is an admission ceiling, not a physical cost. Node.js failed at 512 MiB with `Fatal process out of memory: SegmentedTable::InitializeTable` because the guest set `RLIMIT_AS` from the memory of the virtual machine; V8 reserves address space it never makes resident. The guest process bound is now the separate `AGENT_GUEST_ADDRESS_SPACE_BYTES` (4 GiB, the value the guest received before), and the memory of the virtual machine is 1 GiB. A read-only Squashfs root was evaluated and not adopted: 1024 MiB already runs the bounded workload with the present initramfs, and a disk root needs a new guest image, new manifest hashes, and both native helpers. Peak use: Python 66 MiB, Node.js 65 MiB.
 - Garden Desk Core owns every host filesystem, process, and audit decision; the webview and the model never receive host authority.
 - Crash recovery marks any run left `queued` or `running` after a Core restart as failed. Session summaries and context compaction keep long conversations coherent without extending the live prompt indefinitely.
 

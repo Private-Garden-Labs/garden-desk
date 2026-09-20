@@ -24,7 +24,7 @@ function adapter(id: string, description: string, integrated: boolean): WindowsG
 }
 
 function inventory(
-  backend: "cuda" | "vulkan",
+  backend: "cuda" | "hip",
   deviceNames: string[],
   totalMemoryBytes = 1,
 ): WindowsRuntimeProbeResult {
@@ -67,12 +67,12 @@ describe("Windows dedicated GPU preference", () => {
       ]),
       [
         inventory("cuda", ["NVIDIA GPU"]),
-        inventory("vulkan", ["AMD Integrated Graphics", "NVIDIA GPU"]),
+        inventory("hip", ["AMD Integrated Graphics", "NVIDIA GPU"]),
       ],
       probe({
         "cuda:0": { name: "NVIDIA GPU", memory: 16 * GiB },
-        "vulkan:0": { name: "AMD Integrated Graphics", memory: 16 * GiB },
-        "vulkan:1": { name: "NVIDIA GPU", memory: 16 * GiB },
+        "hip:0": { name: "AMD Integrated Graphics", memory: 16 * GiB },
+        "hip:1": { name: "NVIDIA GPU", memory: 16 * GiB },
       }),
     );
     expect(selected.selection).toMatchObject({
@@ -92,14 +92,14 @@ describe("Windows GPU selection without vendor rules", () => {
         adapter("integrated", "Intel Integrated Graphics", true),
         adapter("dedicated", "Intel Arc Graphics", false),
       ]),
-      [inventory("vulkan", ["Intel Integrated Graphics", "Intel Arc Graphics"])],
+      [inventory("hip", ["Intel Integrated Graphics", "Intel Arc Graphics"])],
       probe({
-        "vulkan:0": { name: "Intel Integrated Graphics", memory: 16 * GiB },
-        "vulkan:1": { name: "Intel Arc Graphics", memory: 16 * GiB },
+        "hip:0": { name: "Intel Integrated Graphics", memory: 16 * GiB },
+        "hip:1": { name: "Intel Arc Graphics", memory: 16 * GiB },
       }),
     );
     expect(selected.selection).toMatchObject({
-      backend: "vulkan",
+      backend: "hip",
       expectedName: "Intel Arc Graphics",
       memoryKind: "dedicated",
     });
@@ -112,8 +112,8 @@ describe("Windows integrated GPU fallback", () => {
     async (name) => {
       const selected = await resolveWindowsGpuProfileFromFacts(
         facts([adapter("integrated", name, true)], 24 * GiB),
-        [inventory("vulkan", [name])],
-        probe({ "vulkan:0": { name, memory: 16 * GiB } }),
+        [inventory("hip", [name])],
+        probe({ "hip:0": { name, memory: 16 * GiB } }),
       );
       expect(selected).toMatchObject({
         memoryBudgetBytes: 16 * GiB,
@@ -129,14 +129,11 @@ describe("Windows integrated GPU fallback", () => {
         adapter("dedicated", "Dedicated GPU", false),
         adapter("integrated", "Integrated GPU", true),
       ]),
-      [
-        inventory("cuda", ["Dedicated GPU"]),
-        inventory("vulkan", ["Dedicated GPU", "Integrated GPU"]),
-      ],
+      [inventory("cuda", ["Dedicated GPU"]), inventory("hip", ["Dedicated GPU", "Integrated GPU"])],
       probe({
         "cuda:0": "failed",
-        "vulkan:0": { name: "Dedicated GPU", memory: 8 * GiB - 1 },
-        "vulkan:1": { name: "Integrated GPU", memory: 16 * GiB },
+        "hip:0": { name: "Dedicated GPU", memory: 8 * GiB - 1 },
+        "hip:1": { name: "Integrated GPU", memory: 16 * GiB },
       }),
     );
     expect(selected.selection).toMatchObject({
@@ -150,10 +147,10 @@ describe("Windows GPU candidate ranking", () => {
   it("selects the dedicated device with the largest isolated memory", async () => {
     const selected = await resolveWindowsGpuProfileFromFacts(
       facts([adapter("large", "Large GPU", false), adapter("small", "Small GPU", false)]),
-      [inventory("vulkan", ["Small GPU", "Large GPU"])],
+      [inventory("hip", ["Small GPU", "Large GPU"])],
       probe({
-        "vulkan:0": { name: "Small GPU", memory: 16 * GiB },
-        "vulkan:1": { name: "Large GPU", memory: 24 * GiB },
+        "hip:0": { name: "Small GPU", memory: 16 * GiB },
+        "hip:1": { name: "Large GPU", memory: 24 * GiB },
       }),
     );
     expect(selected.selection).toMatchObject({
@@ -162,13 +159,13 @@ describe("Windows GPU candidate ranking", () => {
     });
   });
 
-  it("uses CUDA before Vulkan for one mapped adapter", async () => {
+  it("uses CUDA before HIP for one mapped adapter", async () => {
     const selected = await resolveWindowsGpuProfileFromFacts(
       facts([adapter("gpu", "GPU", false)]),
-      [inventory("cuda", ["GPU"]), inventory("vulkan", ["GPU"])],
+      [inventory("cuda", ["GPU"]), inventory("hip", ["GPU"])],
       probe({
         "cuda:0": { name: "GPU", memory: 16 * GiB },
-        "vulkan:0": { name: "GPU", memory: 16 * GiB },
+        "hip:0": { name: "GPU", memory: 16 * GiB },
       }),
     );
     expect(selected.selection.backend).toBe("cuda");
@@ -176,17 +173,17 @@ describe("Windows GPU candidate ranking", () => {
 
   it("does not use CUDA to break an equal-memory adapter tie", async () => {
     const selected = await resolveWindowsGpuProfileFromFacts(
-      facts([adapter("a", "A Vulkan GPU", false), adapter("z", "Z CUDA GPU", false)]),
-      [inventory("cuda", ["Z CUDA GPU"]), inventory("vulkan", ["A Vulkan GPU", "Z CUDA GPU"])],
+      facts([adapter("a", "A HIP GPU", false), adapter("z", "Z CUDA GPU", false)]),
+      [inventory("cuda", ["Z CUDA GPU"]), inventory("hip", ["A HIP GPU", "Z CUDA GPU"])],
       probe({
         "cuda:0": { name: "Z CUDA GPU", memory: 16 * GiB },
-        "vulkan:0": { name: "A Vulkan GPU", memory: 16 * GiB },
-        "vulkan:1": { name: "Z CUDA GPU", memory: 16 * GiB },
+        "hip:0": { name: "A HIP GPU", memory: 16 * GiB },
+        "hip:1": { name: "Z CUDA GPU", memory: 16 * GiB },
       }),
     );
     expect(selected.selection).toMatchObject({
-      backend: "vulkan",
-      expectedName: "A Vulkan GPU",
+      backend: "hip",
+      expectedName: "A HIP GPU",
     });
   });
 });
@@ -196,26 +193,26 @@ describe("Windows GPU identity failures", () => {
     {
       name: "missing mapping",
       adapters: [adapter("gpu", "Known GPU", false)],
-      inventories: [inventory("vulkan", ["Unknown GPU"])],
+      inventories: [inventory("hip", ["Unknown GPU"])],
       isolated: {},
     },
     {
       name: "ambiguous mapping",
       adapters: [adapter("a", "Same GPU", false), adapter("b", "Same GPU", false)],
-      inventories: [inventory("vulkan", ["Same GPU"])],
+      inventories: [inventory("hip", ["Same GPU"])],
       isolated: {},
     },
     {
       name: "changed topology",
       adapters: [adapter("gpu", "GPU A", false)],
-      inventories: [inventory("vulkan", ["GPU A"])],
-      isolated: { "vulkan:0": { name: "GPU B", memory: 16 * GiB } },
+      inventories: [inventory("hip", ["GPU A"])],
+      isolated: { "hip:0": { name: "GPU B", memory: 16 * GiB } },
     },
     {
       name: "insufficient integrated capacity",
       adapters: [adapter("gpu", "Integrated GPU", true)],
-      inventories: [inventory("vulkan", ["Integrated GPU"])],
-      isolated: { "vulkan:0": { name: "Integrated GPU", memory: 8 * GiB - 1 } },
+      inventories: [inventory("hip", ["Integrated GPU"])],
+      isolated: { "hip:0": { name: "Integrated GPU", memory: 8 * GiB - 1 } },
     },
   ])("returns unsupported for $name", async ({ adapters, inventories, isolated }) => {
     await expect(
@@ -227,8 +224,8 @@ describe("Windows GPU identity failures", () => {
     await expect(
       resolveWindowsGpuProfileFromFacts(
         facts([adapter("a", "GPU A", false), adapter("b", "GPU B", false)]),
-        [inventory("vulkan", ["GPU A", "GPU B"])],
-        async () => inventory("vulkan", ["GPU A", "GPU B"]),
+        [inventory("hip", ["GPU A", "GPU B"])],
+        async () => inventory("hip", ["GPU A", "GPU B"]),
       ),
     ).rejects.toThrow("supported_gpu_required");
   });
@@ -242,8 +239,8 @@ describe("Windows GPU identity failures", () => {
 
 describe("Windows GPU adapter identity", () => {
   it("rejects a same-name adapter with a changed ID", () => {
-    const selection = { backend: "vulkan" as const, expectedName: "Same GPU" };
-    const result = inventory("vulkan", ["Same GPU"], 16 * GiB);
+    const selection = { backend: "hip" as const, expectedName: "Same GPU" };
+    const result = inventory("hip", ["Same GPU"], 16 * GiB);
     expect(
       isExpectedWindowsGpuIdentity(
         "original",

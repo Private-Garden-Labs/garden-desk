@@ -8,7 +8,7 @@ export const InferenceOperationSchema = z.enum(["generate", "chat", "embed", "pr
 export const ThinkingLevelSchema = z.enum(["none", "low", "medium", "xhigh"]);
 export const DEFAULT_THINKING_LEVEL: ThinkingLevel = "medium";
 export const GpuMemoryKindSchema = z.enum(["dedicated", "unified"]);
-export const InferenceBackendSchema = z.enum(["metal", "cuda", "vulkan"]);
+export const InferenceBackendSchema = z.enum(["metal", "cuda", "hip"]);
 export const GenerationContextLimitReasonSchema = z.enum([
   "unified_memory_at_most_32_gib",
   "unified_memory_above_32_gib",

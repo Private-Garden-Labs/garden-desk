@@ -120,20 +120,28 @@ function platformPackages(): NoticePackage[] {
           source: {
             file: "cudart-llama-bin-win-cuda-13.3-x64.zip",
             sha256: "1462a050eb4c684921ba51dcc4cc488a036674c3e73e9945ee705b854808d03e",
-            url: "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10685-7dffb15/cudart-llama-bin-win-cuda-13.3-x64.zip",
+            url: "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/cudart-llama-bin-win-cuda-13.3-x64.zip",
           },
         },
         {
-          name: "llama.cpp (PrismML fork) Vulkan",
-          version: "prism-b10685-7dffb15",
+          name: "llama.cpp (PrismML fork) HIP",
+          version: "prism-b10709-9a9394a",
           license: "MIT",
-          purpose: "packaged Windows Vulkan inference runtime",
+          purpose: "packaged Windows AMD inference runtime",
           notice: "License text: licenses/llama.cpp-LICENSE.txt",
           source: {
-            file: "llama-prism-b10685-7dffb15-bin-win-vulkan-x64.zip",
-            sha256: "f1e8090392390e5c26b184ff90f5350a5e6421bfdd74606f12c8c5de9c668b2b",
-            url: "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10685-7dffb15/llama-prism-b10685-7dffb15-bin-win-vulkan-x64.zip",
+            file: "llama-prism-b10709-9a9394a-bin-win-hip-radeon-x64.zip",
+            sha256: "86792e1590232e4ac702df2fe961fe196552ad7642658b5347834f539a1525b6",
+            url: "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-win-hip-radeon-x64.zip",
           },
+        },
+        {
+          name: "AMD ROCm math libraries (rocBLAS, hipBLAS, hipBLASLt)",
+          version: "ROCm 7, bundled in the HIP archive above",
+          license: "MIT",
+          purpose: "AMD matrix libraries and kernel data for the Windows AMD inference runtime",
+          notice:
+            "License text: licenses/rocm-LICENSE.txt. Shipped inside llama-prism-b10709-9a9394a-bin-win-hip-radeon-x64.zip. Needs amdhip64_7.dll from the AMD Adrenalin driver.",
         },
       ]
     : [];

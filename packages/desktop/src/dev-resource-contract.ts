@@ -110,13 +110,14 @@ function windowsContract(
       ),
       ...rustHelperInputs(join(desktopRoot, "native", "windows-hyper-v-setup")),
       join(repositoryRoot, "packages", "eval", ".generated", "inference", "windows-cuda-x64"),
-      join(repositoryRoot, "packages", "eval", ".generated", "inference", "windows-vulkan-x64"),
+      join(repositoryRoot, "packages", "eval", ".generated", "inference", "windows-hip-x64"),
     ],
     requiredOutputs: [
       ...commonOutputs(resourcesRoot),
       join(resourcesRoot, "licenses", "cuda-EULA.html"),
+      join(resourcesRoot, "licenses", "rocm-LICENSE.txt"),
       join(resourcesRoot, "inference", "garden-desk-appcontainer-launcher.exe"),
-      ...["windows-cuda-x64", "windows-vulkan-x64"].map((name) =>
+      ...["windows-cuda-x64", "windows-hip-x64"].map((name) =>
         join(resourcesRoot, "inference", name, "llama-server.exe"),
       ),
       join(resourcesRoot, "workers", "garden-desk-hcs-helper.exe"),

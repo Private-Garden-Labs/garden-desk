@@ -20,7 +20,11 @@ import type {
   MicroVmLaunchRequest,
   MicroVmLaunchResult,
 } from "./launcher.js";
-import { FramedAgentSession, initializeAgentGuest } from "./macos-agent-session.js";
+import {
+  agentGuestLimits,
+  FramedAgentSession,
+  initializeAgentGuest,
+} from "./macos-agent-session.js";
 import { copyBoundedInput, launchSignal } from "./staging.js";
 import { AgentWorkspaceStore } from "./workspace-store.js";
 
@@ -38,11 +42,6 @@ interface ImageManifest {
 interface LaunchBounds {
   limits: WorkerLimits;
 }
-
-type AgentLimits = Pick<
-  WorkerLimits,
-  "wallTimeMs" | "memoryBytes" | "scratchBytes" | "outputBytes"
->;
 
 const VM_BOOT_GRACE_MS = 15_000;
 const MAX_HELPER_OUTPUT_BYTES = 64 * 1024 * 1024;
@@ -154,15 +153,6 @@ function runHelper(helper: string, args: string[], signal: AbortSignal): Promise
   });
 }
 
-function agentLimits(limits: WorkerLimits): AgentLimits {
-  return {
-    wallTimeMs: limits.wallTimeMs,
-    memoryBytes: limits.memoryBytes,
-    scratchBytes: limits.scratchBytes,
-    outputBytes: limits.outputBytes,
-  };
-}
-
 export class MacOsMicroVmLauncher implements MicroVmLauncher, CodeAgentLauncher {
   private workspaceStore?: Promise<AgentWorkspaceStore>;
 
@@ -261,7 +251,7 @@ export class MacOsMicroVmLauncher implements MicroVmLauncher, CodeAgentLauncher 
     );
     try {
       await transport.ready(signal);
-      const limits = agentLimits(request.limits);
+      const limits = agentGuestLimits(request.limits);
       const store = await this.store();
       await initializeAgentGuest({
         sessionId: request.sessionId,

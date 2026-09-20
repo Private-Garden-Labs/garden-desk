@@ -2,7 +2,7 @@
 
 The current desktop target is Ternary Bonsai 2 27B with its Q8_0 image projector and the existing Qwen3 embedding encoder. [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) defines the model and runtime; [ADR 0019](adr/0019-qwen38-private-server.md) defines the fixed profile and private server transport. Bounded Windows checks are in progress; see [current status](M3_STATUS.md).
 
-The managed [catalog](../assets/models.json) pins each immutable revision, file size, and SHA-256 hash. The [runtime manifest](../assets/inference-runtime.json) pins the CUDA, Vulkan, and Metal archives and their dependencies. A changed hash fails installation.
+The managed [catalog](../assets/models.json) pins each immutable revision, file size, and SHA-256 hash. The [runtime manifest](../assets/inference-runtime.json) pins the CUDA, HIP, and Metal archives and their dependencies. A changed hash fails installation.
 
 Text uses a 32K context and one slot. Image inspection uses an 8K context after generation unload. The same server provides structured output and embeddings. The scheduler, Core authority, no-network microVM, and stored conversation formats remain in place. Reasoning stays transient.
 
