@@ -226,6 +226,7 @@ export class AgentService {
         );
       })();
       const command = this.commands.resolve(task);
+      if (command?.agent !== undefined) this.store.setRunAgent(run.id, command.agent);
       const messages = this.conversations.listMessages(run.sessionId);
       const anchored = this.summaries.load(run.sessionId);
       if (this.inference.chat === undefined) throw new Error("agent_chat_unavailable");

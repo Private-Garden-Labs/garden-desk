@@ -36,7 +36,7 @@ it("uses the parent index when loading child runs", async () => {
 });
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: one case checks the shared delegation and command boundary through reopening.
-it("shares specialist routing and preserves child identity and findings", async () => {
+it("delegates a specialist to a child and runs a command specialist in the same run", async () => {
   const requests: ChatInput[] = [];
   const description = "Inspect source structure".padEnd(1_000, ".");
   const prompt = "Inspect the selected files.".padEnd(128_000, ".");
@@ -72,10 +72,16 @@ it("shares specialist routing and preserves child identity and findings", async 
           false,
         );
         streams?.onResponseDelta?.("Partial findings.");
-        const child = service.snapshot(parentId).childRuns[0];
-        expect(child).toMatchObject({ agentId: "folder-intake", state: "running" });
-        if (child === undefined) throw new Error("Child was not recorded.");
-        expect(service.snapshot(child.id).run.response).toBe("Partial findings.");
+        const assigned = request.messages.find((message) => message.role === "user")?.text;
+        if (assigned === assignment) {
+          const child = service.snapshot(parentId).childRuns[0];
+          expect(child).toMatchObject({ agentId: "folder-intake", state: "running" });
+          if (child === undefined) throw new Error("Child was not recorded.");
+          expect(service.snapshot(child.id).run.response).toBe("Partial findings.");
+        } else {
+          expect(service.snapshot(parentId).childRuns).toHaveLength(0);
+          expect(service.snapshot(parentId).run.response).toBe("Partial findings.");
+        }
         return chatResult("Complete findings.", []);
       },
     },
@@ -108,18 +114,17 @@ it("shares specialist routing and preserves child identity and findings", async 
     });
     parentId = service.start(session.id, commandTask).id;
     const direct = await terminal(service, parentId);
-    expect(direct.run).toMatchObject({ state: "succeeded", response: "Complete findings." });
-    expect(direct.childRuns[0]).toMatchObject({
-      assignment: `${commandDescription}\n\n${commandArguments}`,
-      parentRunId: parentId,
-      parentToolCallId: `command:${parentId}`,
+    expect(direct.run).toMatchObject({
+      state: "succeeded",
+      response: "Complete findings.",
       agentId: "folder-intake",
     });
+    expect(direct.childRuns).toHaveLength(0);
     expect(requests).toHaveLength(4);
     expect(requests[1]?.messages.find((message) => message.role === "user")?.text).toBe(assignment);
-    expect(requests[3]?.messages.find((message) => message.role === "user")?.text).toBe(
-      direct.childRuns[0]?.assignment,
-    );
+    expect(requests[3]?.messages.filter((message) => message.role === "user")).toMatchObject([
+      { text: `${commandDescription}\n\n${commandArguments}` },
+    ]);
     expect(service.listRuns(session.id).map((run) => run.id)).toEqual(
       expect.arrayContaining([delegated.run.id, direct.run.id]),
     );

@@ -227,38 +227,45 @@
         <button class="garden-pause" type="button" data-garden-pause aria-pressed="false" hidden>Pause animation</button>
       </section>
 
+      <section class="section origin-section" aria-labelledby="origin-title">
+        <div class="section-inner origin">
+          <p class="eyebrow" data-reveal>Why we started</p>
+          <h2 id="origin-title" data-reveal data-reveal-delay="70">Private, or simple.<br />Never both.</h2>
+          <p class="origin-line" data-reveal data-reveal-delay="140">So we built both.</p>
+          <p class="origin-note" data-reveal data-reveal-delay="200">
+            The private tools we found were made for developers: install a runtime, pick a model,
+            wire it together. Everything simple sent the work to a cloud. Garden Desk is one
+            download that asks nothing of you.
+          </p>
+        </div>
+      </section>
+
       <section class="claims" aria-labelledby="claims-title">
         <h2 class="visually-hidden" id="claims-title">What makes Garden Desk different</h2>
         <ul class="claim-list">
           <li class="claim">
             <h3>One download</h3>
-            <p>
-              The app, the model, and everything it runs on arrive together. Nothing to assemble,
-              no keys, no service to sign up for.
-            </p>
+            <p>The app and the model, together.</p>
           </li>
           <li class="claim">
             <h3>Nothing to configure</h3>
-            <p>
-              No model to choose, no settings to tune. Open it, point it at a folder, and ask for
-              what you want.
-            </p>
+            <p>Open it. Point it at a folder.</p>
           </li>
           <li class="claim">
             <h3>Nothing tracked</h3>
-            <p>
-              No analytics, no crash reports, not even a count of which features you use. There is
-              nothing to opt out of.
-            </p>
+            <p>No analytics. No crash reports. No telemetry.</p>
           </li>
           <li class="claim">
             <h3>No way online</h3>
-            <p>
-              The agent works in a sealed workspace on your computer with no network connection at
-              all. Your files stay put because there is no route out.
-            </p>
+            <p>The model has no route to the internet.</p>
           </li>
         </ul>
+        <p class="claims-note">
+          Garden Desk makes no network calls of its own. There is no telemetry, no error report,
+          not even an update check. The agent works inside a virtual machine with no network
+          connection at all, and the folder you select is mounted read-only. The model cannot
+          reach the internet, and it cannot change your originals.
+        </p>
       </section>
 
       <section class="section process-section" id="how-it-works">
@@ -608,12 +615,13 @@
 
     </main>
     <footer class="site-footer">
-      <span>Garden Desk project · Local-first software in active development</span>
+      <span>Garden Desk project · Local-first software · Version 1.0.0</span>
       <nav aria-label="Legal and project links" class="footer-links">
         <a href="#how-it-works">How it works</a>
         <a href="#compare">Compare</a>
         <a href="#requirements">Requirements</a>
         <a href="./releases/">Releases</a>
+        <a href="./supporters/">Supporters</a>
         <a href="./privacy/">Privacy</a>
         <a href="./terms/">Terms</a>
         <a href="./security/">Security</a>

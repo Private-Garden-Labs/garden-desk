@@ -103,6 +103,16 @@ M3 Offline Dev-Agent Desktop V1 is active. What it delivers today, the security 
 
 The community software is free. Downloads are on the [releases page](https://gardendesk.ai/releases/). The macOS download is signed and notarized. The Windows download is not signed yet.
 
+## Supporters
+
+Sponsorship pays for development time, test hardware for macOS and Windows, and code-signing certificates. It unlocks nothing: every feature stays free for everyone, sponsored or not.
+
+**Company sponsors:** none yet.
+
+**Sponsors:** none yet.
+
+The [supporters page](https://gardendesk.ai/supporters/) lists company sponsors, sponsors, and backers, and explains how the lists are kept. The two tiers above appear there as well, so update both places. Entries are added by hand with each release. To support the work, see [GitHub Sponsors](https://github.com/sponsors/Private-Garden-Labs).
+
 ## Learn more
 
 Read the [product overview](docs/PRODUCT.md), [architecture](docs/ARCHITECTURE.md), and [security model](docs/SECURITY.md). Exact models and hashes live in the [model manifest](assets/models.json); pinned dependencies, guest components, versions, licenses, and purposes live in the [compliance inventory](compliance/inventory.json).

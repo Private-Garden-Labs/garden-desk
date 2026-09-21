@@ -39,6 +39,7 @@ export default defineConfig({
         privacy: resolve(siteRoot, "privacy/index.html"),
         terms: resolve(siteRoot, "terms/index.html"),
         security: resolve(siteRoot, "security/index.html"),
+        supporters: resolve(siteRoot, "supporters/index.html"),
         "404": resolve(siteRoot, "404.html"),
       },
     },
