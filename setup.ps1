@@ -67,14 +67,22 @@ function Test-WebView {
     return $false
 }
 
+function Test-GuestImage {
+    $images = 'packages\workers\images'
+    $output = (Get-Content "$images\agent\manifest.json" -Raw | ConvertFrom-Json).outputs.x86_64
+    $artifacts = "$images\.generated\agent\artifacts\x86_64"
+    return (Test-Path "$artifacts\$($output.kernelFile)") -and (Test-Path "$artifacts\$($output.initramfsFile)")
+}
+
 $needNode = (Read-Tool 'node.exe' @('--version')) -ne "v$nodeVersion"
 $needPnpm = (Read-PnpmVersion) -ne $pnpmVersion
 $needRust = -not (Test-Rust)
 $needBuildTools = -not (Test-BuildTools)
 $needWebView = -not (Test-WebView)
-$dockerOS = Read-Tool 'docker.exe' @('info', '--format', '{{.OSType}}')
-$needDocker = $dockerOS -ne 'linux' -and -not (Test-Path "$dockerRoot\Docker Desktop.exe")
-if ($dockerOS -ne 'linux') { Write-Host 'Docker must be started with Linux containers before model downloads.' }
+$needGuestImage = -not (Test-GuestImage)
+$dockerOS = if ($needGuestImage) { Read-Tool 'docker.exe' @('info', '--format', '{{.OSType}}') } else { '' }
+$needDocker = $needGuestImage -and $dockerOS -ne 'linux' -and -not (Test-Path "$dockerRoot\Docker Desktop.exe")
+if ($needGuestImage -and $dockerOS -ne 'linux') { Write-Host 'Docker must be started with Linux containers before the guest image build.' }
 Write-Host 'Tauri CLI and project packages will use the versions in the lockfile.'
 if ($needNode) { Write-Host "Install or update: Node.js $nodeVersion" }
 if ($needPnpm) { Write-Host "Install or update: pnpm $pnpmVersion" }
@@ -145,7 +153,7 @@ try {
         -not (Test-BuildTools) -or -not (Test-WebView)) {
         throw 'A required tool is not ready. Complete its installation and run setup again.'
     }
-    if ((Read-Tool 'docker.exe' @('info', '--format', '{{.OSType}}')) -ne 'linux') {
+    if ($needGuestImage -and (Read-Tool 'docker.exe' @('info', '--format', '{{.OSType}}')) -ne 'linux') {
         Confirm-Setup 'Start Docker Desktop with Linux containers?'
         Start-Process "$dockerRoot\Docker Desktop.exe"
         Read-Host 'Complete Docker setup and its license prompt, then press Enter' | Out-Null
