@@ -9,13 +9,13 @@ const DEVELOPMENT_CONTEXT_LIMIT_TOKENS = 131_072;
  * OpenRouter spreads one model across independent hosts whose speed differs by several times.
  * A development run asks for the fastest host inside today's middle price, and keeps fallbacks
  * so one busy host cannot fail the run.
+ *
+ * Without today's prices, the run asks for the cheapest host instead. An unexpected slow answer
+ * is better than an unexpected bill.
  */
 export function providerRouting(budget?: ProviderPriceBudget): Record<string, unknown> {
-  return {
-    sort: "throughput",
-    allow_fallbacks: true,
-    ...(budget === undefined ? {} : { max_price: budget }),
-  };
+  if (budget === undefined) return { sort: "price", allow_fallbacks: true };
+  return { sort: "throughput", allow_fallbacks: true, max_price: budget };
 }
 
 const REASONING_EFFORT: Record<Exclude<ThinkingLevel, "none">, string> = {
