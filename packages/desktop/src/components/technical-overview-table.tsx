@@ -74,6 +74,39 @@ function overviewRows({
   ];
 }
 
+function separatorIndex(value: string): number {
+  return Math.max(value.lastIndexOf("/"), value.lastIndexOf("\\"));
+}
+
+function splitPath(value: string): [string, string] | undefined {
+  const last = separatorIndex(value);
+  if (last <= 0) return undefined;
+  const previous = separatorIndex(value.slice(0, last));
+  const cut = previous > 0 ? previous : last;
+  return [value.slice(0, cut), value.slice(cut)];
+}
+
+function FolderLink({ onOpen, value }: { onOpen(): void; value: string }) {
+  const parts = splitPath(value);
+  return (
+    <button
+      className="technical-path-link"
+      onClick={onOpen}
+      title={parts === undefined ? "Open the folder" : value}
+      type="button"
+    >
+      {parts === undefined ? (
+        value
+      ) : (
+        <>
+          <span className="technical-path-parent">{parts[0]}</span>
+          <span className="technical-path-name">{parts[1]}</span>
+        </>
+      )}
+    </button>
+  );
+}
+
 export function TechnicalOverviewTable(props: OverviewProps) {
   return (
     <table aria-label="Session technical details" className="technical-overview-table">
@@ -81,20 +114,7 @@ export function TechnicalOverviewTable(props: OverviewProps) {
         {overviewRows(props).map(([label, value, onOpen]) => (
           <tr key={label}>
             <th scope="row">{label}</th>
-            <td>
-              {onOpen === undefined ? (
-                value
-              ) : (
-                <button
-                  className="technical-path-link"
-                  onClick={onOpen}
-                  title="Open the folder"
-                  type="button"
-                >
-                  {value}
-                </button>
-              )}
-            </td>
+            <td>{onOpen === undefined ? value : <FolderLink onOpen={onOpen} value={value} />}</td>
           </tr>
         ))}
         <TechnicalModelUsage
