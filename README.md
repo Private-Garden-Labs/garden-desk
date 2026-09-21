@@ -111,7 +111,7 @@ Sponsorship pays for development time, test hardware for macOS and Windows, and 
 
 **Sponsors:** none yet.
 
-Backers are listed on the [supporters page](https://gardendesk.ai/supporters/). To support the work, see [GitHub Sponsors](https://github.com/sponsors/Private-Garden-Labs).
+The [supporters page](https://gardendesk.ai/supporters/) lists company sponsors, sponsors, and backers, and explains how the lists are kept. The two tiers above appear there as well, so update both places. Entries are added by hand with each release. To support the work, see [GitHub Sponsors](https://github.com/sponsors/Private-Garden-Labs).
 
 ## Learn more
 
