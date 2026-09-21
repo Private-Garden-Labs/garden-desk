@@ -2,6 +2,11 @@ import { randomUUID } from "node:crypto";
 import { type AgentRunSummary, AgentRunSummarySchema } from "@gardendesk/shared";
 import type { DatabasePort } from "../workspace/database.js";
 
+/** Records the specialist that a command selected, after the run row exists. */
+export function setRunAgentRecord(database: DatabasePort, id: string, agentId: string): void {
+  database.prepare("UPDATE agent_runs SET agent_id = ? WHERE id = ?").run(agentId, id);
+}
+
 export function createRunRecord(
   database: DatabasePort,
   input: { sessionId: string; jobId: string; parentRunId: string | null } & Pick<
