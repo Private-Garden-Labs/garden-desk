@@ -1,4 +1,4 @@
-import type { AgentRunResult, AgentRunSummary } from "@gardendesk/shared";
+import type { AgentEvent, AgentRunResult, AgentRunSummary } from "@gardendesk/shared";
 import type { AuditLog } from "../audit/log.js";
 import type { ConversationStore } from "../conversations/store.js";
 import type { JobStore } from "../jobs/jobs.js";
@@ -12,6 +12,18 @@ interface RunPersistencePorts {
   database: DatabasePort;
   jobs: JobStore;
   store: AgentStore;
+}
+
+const MAX_RECORDED_TOOL_STEPS = 12;
+
+function interruptedRunRecord(summary: string, events: AgentEvent[]): string {
+  const steps = events
+    .filter((event) => event.type === "tool.completed")
+    .slice(-MAX_RECORDED_TOOL_STEPS)
+    .map((event) => `- ${event.summary}`);
+  return steps.length === 0
+    ? summary
+    : `${summary} Work done before the stop:\n${steps.join("\n")}`;
 }
 
 export function persistSuccessfulRun(
@@ -47,9 +59,11 @@ export function persistFailedRun(
   const state = cancelled ? "cancelled" : "failed";
   const detail = cancelled ? "cancelled" : agentFailureText(error);
   const event = agentFailureEvent(cancelled, detail);
+  const record = interruptedRunRecord(event.summary, ports.store.snapshot(run.id).events);
   ports.database.transaction(() => {
     ports.store.execution.failIncomplete(run.id, cancelled);
     ports.store.transitionRun(run.id, { state, error: detail });
+    ports.conversations.appendMessage(run.sessionId, "assistant", record, run.id);
     if (!cancelled) ports.jobs.transition(run.jobId, "failed");
     ports.store.appendEvent(run.id, event.type, event.summary, event.detail);
   })();
