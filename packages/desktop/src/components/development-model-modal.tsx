@@ -51,7 +51,37 @@ function useModelSearch(api: DevelopmentModelApi, query: string, apiKey: string)
   return state;
 }
 
-function SearchResults({
+function ModelRow({
+  model,
+  action,
+  disabled = false,
+  onAction,
+}: {
+  model: DevelopmentModel;
+  action: string;
+  disabled?: boolean;
+  onAction(): void;
+}) {
+  return (
+    <li className="development-model-row">
+      <span className="development-model-identity">
+        <span className="development-model-name">{model.name}</span>
+        <span className="development-model-id">{model.id}</span>
+      </span>
+      <button
+        className="development-model-action"
+        disabled={disabled}
+        onClick={onAction}
+        title={disabled ? "Already in favorites" : undefined}
+        type="button"
+      >
+        {action}
+      </button>
+    </li>
+  );
+}
+
+function SearchSection({
   search,
   saved,
   onAdd,
@@ -60,53 +90,93 @@ function SearchResults({
   saved: DevelopmentModel[];
   onAdd(model: DevelopmentModel): void;
 }) {
-  if (search.loading) return <p className="development-model-note">Searching…</p>;
-  if (search.message !== undefined)
-    return <p className="development-model-note">{search.message}</p>;
+  const note = search.loading ? "Searching…" : search.message;
   return (
-    <ul className="development-model-results">
-      {search.results.map((model) => (
-        <li className="development-model-row" key={model.id}>
-          <span>
-            <strong>{model.name}</strong>
-            <code>{model.id}</code>
-          </span>
-          <button
+    <section className="development-model-section">
+      <h3>Search results</h3>
+      {note === undefined ? null : <p className="development-model-note">{note}</p>}
+      <ul className="development-model-list">
+        {search.results.map((model) => (
+          <ModelRow
+            action="Add"
             disabled={saved.some((favorite) => favorite.id === model.id)}
-            onClick={() => onAdd(model)}
-            type="button"
-          >
-            Add
-          </button>
-        </li>
-      ))}
-    </ul>
+            key={model.id}
+            model={model}
+            onAction={() => onAdd(model)}
+          />
+        ))}
+      </ul>
+    </section>
   );
 }
 
-function Favorites({
+function FavoritesSection({
   favorites,
   onRemove,
 }: {
   favorites: DevelopmentModel[];
   onRemove(id: string): void;
 }) {
-  if (favorites.length === 0)
-    return <p className="development-model-note">No favorites saved yet.</p>;
   return (
-    <ul className="development-model-favorites">
-      {favorites.map((model) => (
-        <li className="development-model-row" key={model.id}>
-          <span>
-            <strong>{model.name}</strong>
-            <code>{model.id}</code>
-          </span>
-          <button onClick={() => onRemove(model.id)} type="button">
-            Remove
-          </button>
-        </li>
-      ))}
-    </ul>
+    <section className="development-model-section">
+      <h3>Favorites</h3>
+      {favorites.length > 0 ? null : (
+        <p className="development-model-note">No favorites saved yet.</p>
+      )}
+      <ul className="development-model-list">
+        {favorites.map((model) => (
+          <ModelRow
+            action="Remove"
+            key={model.id}
+            model={model}
+            onAction={() => onRemove(model.id)}
+          />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function DialogFields({
+  settings,
+  apiKey,
+  query,
+  onApiKey,
+  onQuery,
+}: {
+  settings: DevelopmentModelSettings;
+  apiKey: string;
+  query: string;
+  onApiKey(value: string): void;
+  onQuery(value: string): void;
+}) {
+  return (
+    <div className="development-model-fields">
+      <div className="development-model-field">
+        <label htmlFor="development-model-key">OpenRouter API key</label>
+        <input
+          autoComplete="off"
+          id="development-model-key"
+          onChange={(event) => onApiKey(event.target.value)}
+          placeholder={
+            settings.keyPresent ? `Saved key ••••${settings.keyLastFour ?? ""}` : "sk-or-…"
+          }
+          type="password"
+          value={apiKey}
+        />
+      </div>
+      <div className="development-model-field">
+        <label htmlFor="development-model-search">Search models</label>
+        <input
+          autoComplete="off"
+          id="development-model-search"
+          onChange={(event) => onQuery(event.target.value)}
+          placeholder="Model name, for example gemma"
+          type="search"
+          value={query}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -117,7 +187,6 @@ interface ModalProps {
   onSaved(settings: DevelopmentModelSettings): void;
 }
 
-// biome-ignore lint/complexity/noExcessiveLinesPerFunction: one dialog keeps the favorites edit state together.
 export function DevelopmentModelModal({ api, settings, onCancel, onSaved }: ModalProps) {
   const [favorites, setFavorites] = useState(settings.favorites);
   const [apiKey, setApiKey] = useState("");
@@ -146,38 +215,28 @@ export function DevelopmentModelModal({ api, settings, onCancel, onSaved }: Moda
       >
         <h2 id="development-model-title">Edit favorites</h2>
         <p className="development-model-disclaimer">{DISCLAIMER}</p>
-        <label htmlFor="development-model-key">OpenRouter API key</label>
-        <input
-          autoComplete="off"
-          id="development-model-key"
-          onChange={(event) => setApiKey(event.target.value)}
-          placeholder={
-            settings.keyPresent ? `Saved key ••••${settings.keyLastFour ?? ""}` : "sk-or-…"
-          }
-          type="password"
-          value={apiKey}
+        <DialogFields
+          apiKey={apiKey}
+          onApiKey={setApiKey}
+          onQuery={setQuery}
+          query={query}
+          settings={settings}
         />
-        <label htmlFor="development-model-search">Search models</label>
-        <input
-          autoComplete="off"
-          id="development-model-search"
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search OpenRouter"
-          type="search"
-          value={query}
-        />
-        <SearchResults
-          onAdd={(model) => setFavorites([...favorites, model])}
-          saved={favorites}
-          search={search}
-        />
-        <h3>Favorites</h3>
-        <Favorites
-          favorites={favorites}
-          onRemove={(id) => setFavorites(favorites.filter((model) => model.id !== id))}
-        />
+        <div className="development-model-body">
+          {query.trim().length === 0 ? null : (
+            <SearchSection
+              onAdd={(model) => setFavorites([...favorites, model])}
+              saved={favorites}
+              search={search}
+            />
+          )}
+          <FavoritesSection
+            favorites={favorites}
+            onRemove={(id) => setFavorites(favorites.filter((model) => model.id !== id))}
+          />
+        </div>
         {saveError === undefined ? null : <p className="development-model-error">{saveError}</p>}
-        <div className="confirmation-actions">
+        <div className="confirmation-actions development-model-footer">
           <button onClick={onCancel} type="button">
             Cancel
           </button>

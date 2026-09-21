@@ -4016,14 +4016,39 @@ textarea:focus-visible {
 }
 
 .development-model-dialog {
-  width: min(560px, 100%);
-  max-height: 80vh;
-  overflow-y: auto;
+  display: flex;
+  width: min(620px, 100%);
+  max-height: min(84vh, 780px);
+  flex-direction: column;
+  padding: 22px 22px 14px;
+}
+
+.development-model-dialog h2 {
+  margin: 0 0 10px;
+}
+
+.development-model-dialog .development-model-disclaimer {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.5;
+  background: var(--navigation-hover);
+}
+
+.development-model-fields {
+  display: grid;
+  margin-top: 16px;
+  gap: 10px;
+}
+
+.development-model-field {
+  display: grid;
+  gap: 5px;
 }
 
 .development-model-dialog label {
-  display: block;
-  margin: 14px 0 6px;
   color: var(--ink-soft);
   font-size: 12px;
 }
@@ -4040,59 +4065,122 @@ textarea:focus-visible {
   background: var(--reading);
 }
 
+.development-model-dialog input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.development-model-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  margin-top: 18px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
 .development-model-dialog h3 {
-  margin: 18px 0 6px;
-  font-size: 13px;
-}
-
-.development-model-disclaimer {
-  margin: 10px 0 0;
-}
-
-.app-shell .development-model-dialog .confirmation-actions .confirmation-primary {
-  color: #fff;
-}
-
-.development-model-error {
-  color: var(--ember);
-}
-
-.development-model-note {
-  margin: 8px 0 0;
+  margin: 0 0 4px;
   color: var(--ink-soft);
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.development-model-results,
-.development-model-favorites {
-  margin: 8px 0 0;
+.development-model-list {
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .development-model-row {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--border-color);
 }
 
-.development-model-results code,
-.development-model-favorites code {
-  display: block;
-  color: var(--ink-soft);
-  font-size: 11px;
+.development-model-list .development-model-row:last-child {
+  border-bottom: 0;
 }
 
-.development-model-results button,
-.development-model-favorites button {
-  min-height: 28px;
-  padding: 0 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 9px;
+.development-model-identity {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.development-model-name {
+  overflow: hidden;
   color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.development-model-id {
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.development-model-action {
+  flex-shrink: 0;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 12px;
   background: transparent;
   cursor: pointer;
+}
+
+.development-model-action:hover:not(:disabled),
+.development-model-action:focus-visible:not(:disabled) {
+  border-color: var(--accent-soft);
+  color: var(--accent-strong);
+  outline: none;
+  background: var(--navigation-hover);
+}
+
+.development-model-action:disabled {
+  color: var(--ink-soft);
+  cursor: default;
+  opacity: 0.5;
+}
+
+.development-model-dialog .development-model-note {
+  margin: 0 0 4px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.development-model-dialog .development-model-error {
+  margin: 12px 0 0;
+  color: var(--ember);
+  font-size: 12px;
+}
+
+.development-model-footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.app-shell:not([data-theme="dark"]) .development-model-badge,
+.app-shell:not([data-theme="dark"])
+  .development-model-dialog
+  .confirmation-actions
+  .confirmation-primary {
+  color: #fff;
 }
