@@ -34,7 +34,10 @@ describe("development model selector", () => {
   it("starts on Local and marks a cloud selection", () => {
     expect(control(undefined)).toContain("Model: Local");
     expect(control(undefined)).not.toContain("OpenRouter");
-    expect(control(FAVORITES[0])).toContain("OpenRouter · Development");
+    const cloud = control(FAVORITES[0]);
+    expect(cloud).toContain("OpenRouter · Development · vendor/model");
+    expect(cloud).toContain("development-model-dot");
+    expect(cloud).toContain("Vendor Model");
   });
 
   it("shows the disclaimer, the masked key, and the saved favorites", () => {

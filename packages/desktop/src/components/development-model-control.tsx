@@ -5,7 +5,14 @@ import { DevelopmentModelModal } from "./development-model-modal.js";
 import { Icon } from "./icons.js";
 
 const LOCAL_LABEL = "Local";
+const PROVIDER_LABEL = "OpenRouter · Development";
 const NO_SETTINGS: DevelopmentModelSettings = { favorites: [], keyPresent: false };
+
+/** The menu keeps the full catalog name; the compact control drops the vendor prefix. */
+function compactName(name: string): string {
+  const parts = name.split(": ");
+  return parts.length > 1 ? (parts.at(-1) as string) : name;
+}
 
 interface ControlProps {
   api: DevelopmentModelApi;
@@ -55,6 +62,9 @@ function ModelMenu({ favorites, selected, onChoose, onEdit, onClose }: MenuProps
       >
         {option(selected === undefined, LOCAL_LABEL)}
       </button>
+      {favorites.length === 0 ? null : (
+        <p className="development-model-menu-caption">{PROVIDER_LABEL}</p>
+      )}
       {favorites.map((model) => (
         <button
           aria-checked={model.id === selected?.id}
@@ -128,21 +138,31 @@ export function DevelopmentModelControl({ api, disabled, selected, onSelect }: C
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label={`Model: ${selected?.name ?? LOCAL_LABEL}`}
+        aria-label={
+          selected === undefined
+            ? `Model: ${LOCAL_LABEL}`
+            : `Model: ${selected.name}, ${PROVIDER_LABEL}`
+        }
         className="effort-control"
         disabled={disabled}
         onClick={() => setOpen(!open)}
         ref={control}
-        title="Which model answers this task"
+        title={
+          selected === undefined
+            ? "Which model answers this task"
+            : `${PROVIDER_LABEL} · ${selected.id}`
+        }
         type="button"
       >
+        {selected === undefined ? null : (
+          <span aria-hidden="true" className="development-model-dot" />
+        )}
         <span className="effort-label">Model</span>
-        <span className="effort-value">{selected?.name ?? LOCAL_LABEL}</span>
+        <span className="effort-value development-model-value">
+          {selected === undefined ? LOCAL_LABEL : compactName(selected.name)}
+        </span>
         <span aria-hidden="true" className="effort-caret" />
       </button>
-      {selected === undefined ? null : (
-        <span className="development-model-badge">OpenRouter · Development</span>
-      )}
       {editing ? (
         <DevelopmentModelModal
           api={api}
