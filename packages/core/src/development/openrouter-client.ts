@@ -1,3 +1,5 @@
+import type { IncomingMessage } from "node:http";
+import { request as httpsRequest } from "node:https";
 import { DEVELOPMENT_MODEL_SEARCH_LIMIT, type DevelopmentModel } from "@gardendesk/shared";
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
@@ -41,34 +43,55 @@ export interface OpenRouterRequest {
   signal?: AbortSignal;
 }
 
-function requestOptions(request: OpenRouterRequest): RequestInit {
+function requestOptions(request: OpenRouterRequest) {
   const headers: Record<string, string> = { authorization: `Bearer ${request.apiKey}` };
   if (request.body !== undefined) headers["content-type"] = "application/json";
   return {
     method: request.body === undefined ? "GET" : "POST",
     headers,
-    ...(request.body === undefined ? {} : { body: JSON.stringify(request.body) }),
     ...(request.signal === undefined ? {} : { signal: request.signal }),
   };
 }
 
-export async function openRouterRequest(request: OpenRouterRequest): Promise<Response> {
-  let response: Response;
+function transportFailure(error: unknown, signal?: AbortSignal): never {
+  if (signal?.aborted === true) throw signal.reason;
+  if (error instanceof DOMException) throw error;
+  throw new OpenRouterFailure("connection");
+}
+
+/** Core runs without a JIT, so Node's fetch parser is unavailable and this uses node:https. */
+async function send(request: OpenRouterRequest): Promise<IncomingMessage> {
+  return await new Promise<IncomingMessage>((resolve, reject) => {
+    const call = httpsRequest(
+      `${OPENROUTER_BASE_URL}${request.path}`,
+      requestOptions(request),
+      resolve,
+    );
+    call.once("error", reject);
+    if (request.body !== undefined) call.write(JSON.stringify(request.body));
+    call.end();
+  });
+}
+
+export async function openRouterRequest(request: OpenRouterRequest): Promise<IncomingMessage> {
+  let response: IncomingMessage;
   try {
-    response = await fetch(`${OPENROUTER_BASE_URL}${request.path}`, requestOptions(request));
+    response = await send(request);
   } catch (error) {
-    if (error instanceof DOMException) throw error;
-    throw new OpenRouterFailure("connection");
+    transportFailure(error, request.signal);
   }
-  if (response.ok) return response;
-  await response.body?.cancel();
-  throw new OpenRouterFailure(failureReason(response.status));
+  const status = response.statusCode ?? 0;
+  if (status >= 200 && status < 300) return response;
+  response.resume();
+  throw new OpenRouterFailure(failureReason(status));
 }
 
 export async function openRouterJson(request: OpenRouterRequest): Promise<Record<string, unknown>> {
   const response = await openRouterRequest(request);
+  const chunks: Buffer[] = [];
+  for await (const chunk of response) chunks.push(chunk as Buffer);
   try {
-    return asRecord(await response.json());
+    return asRecord(JSON.parse(Buffer.concat(chunks).toString("utf8")));
   } catch {
     throw new OpenRouterFailure("response");
   }

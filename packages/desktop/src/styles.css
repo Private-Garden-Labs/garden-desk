@@ -4049,6 +4049,10 @@ textarea:focus-visible {
   margin: 10px 0 0;
 }
 
+.app-shell .development-model-dialog .confirmation-actions .confirmation-primary {
+  color: #fff;
+}
+
 .development-model-error {
   color: var(--ember);
 }

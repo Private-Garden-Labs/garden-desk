@@ -1,7 +1,35 @@
+import { PassThrough, Readable } from "node:stream";
 import type { AuditEventInput, ChatMessage, DevelopmentModel } from "@gardendesk/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ChatInput } from "../runtime/inference.js";
 import { OpenRouterRuntime } from "./openrouter-runtime.js";
+
+const transport = vi.hoisted(() => ({ bodies: [] as string[], chunks: [] as string[] }));
+
+vi.mock("node:https", () => ({
+  request(
+    _url: string | URL,
+    options: { signal?: AbortSignal },
+    callback: (message: unknown) => void,
+  ) {
+    const outgoing = new PassThrough();
+    const written: Buffer[] = [];
+    outgoing.on("data", (chunk: Buffer) => written.push(chunk));
+    outgoing.on("finish", () => {
+      transport.bodies.push(Buffer.concat(written).toString("utf8"));
+      if (options.signal?.aborted === true) {
+        outgoing.emit("error", options.signal.reason);
+        return;
+      }
+      const response = Readable.from(
+        transport.chunks.map((chunk) => Buffer.from(chunk)),
+      ) as Readable & { statusCode?: number };
+      response.statusCode = 200;
+      callback(response);
+    });
+    return outgoing;
+  },
+}));
 
 const MODEL: DevelopmentModel = {
   id: "vendor/model",
@@ -52,23 +80,6 @@ const INPUT: ChatInput = {
   thinking: "medium",
 };
 
-function stubFetch(bodies: string[]): void {
-  const encoder = new TextEncoder();
-  vi.stubGlobal("fetch", async (_url: string, init: RequestInit) => {
-    init.signal?.throwIfAborted();
-    bodies.push(String(init.body));
-    return new Response(
-      new ReadableStream({
-        start(controller) {
-          for (const chunk of CHUNKS) controller.enqueue(encoder.encode(chunk));
-          controller.close();
-        },
-      }),
-      { status: 200 },
-    );
-  });
-}
-
 function runtime(audit: AuditEventInput[] = []) {
   return new OpenRouterRuntime({
     model: MODEL,
@@ -77,15 +88,18 @@ function runtime(audit: AuditEventInput[] = []) {
   });
 }
 
-afterEach(() => vi.unstubAllGlobals());
+transport.chunks = CHUNKS;
+const bodies = transport.bodies;
+
+afterEach(() => {
+  transport.bodies.length = 0;
+});
 
 describe("OpenRouter chat", () => {
   it("maps the streamed reply, tool call, usage, and audit outcome", async () => {
-    const bodies: string[] = [];
     const audit: AuditEventInput[] = [];
     const responses: string[] = [];
     const thinking: string[] = [];
-    stubFetch(bodies);
     const result = await runtime(audit).chat(INPUT, undefined, {
       reasoning: new Map(),
       onResponseDelta: (text) => responses.push(text),
@@ -112,9 +126,7 @@ describe("OpenRouter chat", () => {
 
 describe("OpenRouter requests", () => {
   it("returns the retained reasoning with the next tool-call request", async () => {
-    const bodies: string[] = [];
     const reasoning = new Map<string, string>();
-    stubFetch(bodies);
     const cloud = runtime();
     await cloud.chat(INPUT, undefined, { reasoning });
     expect(reasoning.get("call-1")).toContain("Checking. ");
@@ -144,7 +156,6 @@ describe("OpenRouter requests", () => {
   it("stops a cancelled request", async () => {
     const controller = new AbortController();
     controller.abort();
-    stubFetch([]);
     await expect(runtime().chat(INPUT, controller.signal)).rejects.toThrow();
   });
 });

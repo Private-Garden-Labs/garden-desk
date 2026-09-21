@@ -6,6 +6,15 @@ import { createDevelopmentPorts } from "../development/ports.js";
 import type { GardenDeskCore } from "../facade.js";
 import { dispatchRpc } from "./methods.js";
 
+const transport = vi.hoisted(() => ({ calls: 0 }));
+
+vi.mock("node:https", () => ({
+  request() {
+    transport.calls += 1;
+    throw new Error("network_not_expected");
+  },
+}));
+
 const DEVELOPMENT_METHODS = [
   "development.models.settings",
   "development.models.search",
@@ -25,6 +34,7 @@ function request(method: string) {
 
 afterEach(async () => {
   vi.restoreAllMocks();
+  transport.calls = 0;
   await Promise.all(roots.splice(0).map(async (root) => await rm(root, { recursive: true })));
 });
 
@@ -32,7 +42,6 @@ describe("development model methods", () => {
   it("refuses a production build even when cloud settings are present", async () => {
     const root = await mkdtemp(join(tmpdir(), "garden-desk-development-"));
     roots.push(root);
-    const requests = vi.spyOn(globalThis, "fetch");
     const development = createDevelopmentPorts(root, () => undefined);
     await development.saveModelSettings({
       favorites: [{ id: "vendor/model", name: "Vendor Model", contextTokens: 128_000 }],
@@ -49,6 +58,6 @@ describe("development model methods", () => {
         error: { code: "unsupported" },
       });
     }
-    expect(requests).not.toHaveBeenCalled();
+    expect(transport.calls).toBe(0);
   });
 });

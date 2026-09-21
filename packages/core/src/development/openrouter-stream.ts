@@ -1,6 +1,6 @@
 import type { ChatToolCall } from "@gardendesk/shared";
 import type { InferenceStreamCallbacks } from "../runtime/inference.js";
-import { asRecord, OpenRouterFailure } from "./openrouter-client.js";
+import { asRecord } from "./openrouter-client.js";
 
 interface PendingToolCall {
   id: string;
@@ -57,15 +57,11 @@ function chunkEvents(buffer: string): ChunkEvents {
   return { events, buffer: rest, done: false };
 }
 
-async function* serverEvents(response: Response): AsyncGenerator<Record<string, unknown>> {
-  const body = response.body;
-  if (body === null) throw new OpenRouterFailure("response");
-  const reader = body.pipeThrough(new TextDecoderStream()).getReader();
+async function* serverEvents(body: AsyncIterable<Buffer>): AsyncGenerator<Record<string, unknown>> {
+  const decoder = new TextDecoder();
   let buffer = "";
-  while (true) {
-    const chunk = await reader.read();
-    if (chunk.done) return;
-    const parsed = chunkEvents(buffer + chunk.value);
+  for await (const chunk of body) {
+    const parsed = chunkEvents(buffer + decoder.decode(chunk, { stream: true }));
     buffer = parsed.buffer;
     yield* parsed.events;
     if (parsed.done) return;
@@ -160,7 +156,7 @@ function completed(state: StreamState): StreamedCompletion {
 }
 
 export async function readChatStream(
-  response: Response,
+  body: AsyncIterable<Buffer>,
   streams?: InferenceStreamCallbacks,
 ): Promise<StreamedCompletion> {
   const state: StreamState = {
@@ -172,7 +168,7 @@ export async function readChatStream(
     outputTokens: 0,
     firstTokenAt: undefined,
   };
-  for await (const event of serverEvents(response)) {
+  for await (const event of serverEvents(body)) {
     applyUsage(state, event.usage);
     const choice = asRecord(Array.isArray(event.choices) ? event.choices[0] : undefined);
     applyDelta(state, asRecord(choice.delta), streams);
