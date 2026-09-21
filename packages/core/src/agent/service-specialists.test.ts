@@ -72,13 +72,14 @@ it("delegates a specialist to a child and runs a command specialist in the same 
           false,
         );
         streams?.onResponseDelta?.("Partial findings.");
-        const child = service.snapshot(parentId).childRuns[0];
-        if (requests.length === 2) {
+        const assigned = request.messages.find((message) => message.role === "user")?.text;
+        if (assigned === assignment) {
+          const child = service.snapshot(parentId).childRuns[0];
           expect(child).toMatchObject({ agentId: "folder-intake", state: "running" });
           if (child === undefined) throw new Error("Child was not recorded.");
           expect(service.snapshot(child.id).run.response).toBe("Partial findings.");
         } else {
-          expect(child).toBeUndefined();
+          expect(service.snapshot(parentId).childRuns).toHaveLength(0);
           expect(service.snapshot(parentId).run.response).toBe("Partial findings.");
         }
         return chatResult("Complete findings.", []);
