@@ -34,7 +34,7 @@ import {
   runFromRow,
 } from "./records.js";
 import { recoverInterruptedRuns } from "./recovery.js";
-import { createRunRecord } from "./run-record.js";
+import { createRunRecord, setRunAgentRecord } from "./run-record.js";
 import { AgentTraceStore, type TraceAuditAppender } from "./trace-store.js";
 
 interface RunTransition {
@@ -149,6 +149,7 @@ export class AgentStore {
       jobId,
     });
   }
+  setRunAgent = (id: string, agent: string): void => setRunAgentRecord(this.database, id, agent);
   transitionRun(id: string, transition: RunTransition): void {
     const updatedAt = new Date().toISOString();
     const update = this.database

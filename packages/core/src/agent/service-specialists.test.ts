@@ -113,7 +113,11 @@ it("delegates a specialist to a child and runs a command specialist in the same 
     });
     parentId = service.start(session.id, commandTask).id;
     const direct = await terminal(service, parentId);
-    expect(direct.run).toMatchObject({ state: "succeeded", response: "Complete findings." });
+    expect(direct.run).toMatchObject({
+      state: "succeeded",
+      response: "Complete findings.",
+      agentId: "folder-intake",
+    });
     expect(direct.childRuns).toHaveLength(0);
     expect(requests).toHaveLength(4);
     expect(requests[1]?.messages.find((message) => message.role === "user")?.text).toBe(assignment);

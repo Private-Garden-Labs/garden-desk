@@ -156,13 +156,16 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
   };
   const runAgent = (request: ChatAgentInput) =>
     new ChatAgentLoop({ chat: input.chat }).run(request);
-  if (specialist !== undefined)
+  if (specialist !== undefined) {
+    const { askQuestion, inspectImage, reviewDocument, spawnTask, subagents, ...base } = agentInput;
     return runAgent({
-      ...agentInput,
+      ...base,
+      ...(specialist.agent.tools.includes("image") ? { inspectImage } : {}),
       agent: specialistDefinition(definitions, specialist.agent, run.id, "user"),
       skills: agentSkillReader(definitions, specialist.agent),
       task: specialist.task,
     });
+  }
   return input.command === undefined
     ? runAgent(agentInput)
     : runCommand(input.command, agentInput, input.chat, runAgent);
