@@ -40,6 +40,15 @@ pnpm_version_installed() {
   (cd /; pnpm --version 2>/dev/null) || true
 }
 
+has_guest_image() {
+  local manifest=packages/workers/images/agent/manifest.json
+  local artifacts=packages/workers/images/.generated/agent/artifacts/aarch64
+  local kernel initramfs
+  kernel=$(sed -n '/"aarch64": {/,/}/s/.*"kernelFile": "\([^"]*\)".*/\1/p' "$manifest")
+  initramfs=$(sed -n '/"aarch64": {/,/}/s/.*"initramfsFile": "\([^"]*\)".*/\1/p' "$manifest")
+  [[ -n "$kernel" && -n "$initramfs" && -f "$artifacts/$kernel" && -f "$artifacts/$initramfs" ]]
+}
+
 missing=()
 need_node=false; need_pnpm=false; need_rust=false; need_build_tools=false; need_docker=false
 if [[ "$(node --version 2>/dev/null || true)" != "v$node_version" ]]; then
@@ -50,11 +59,16 @@ if [[ "$(pnpm_version_installed)" != "$pnpm_version" ]]; then
 fi
 if ! has_rust; then need_rust=true; missing+=("Rust $rust_version through rustup"); fi
 if ! has_build_tools; then need_build_tools=true; missing+=('Xcode Command Line Tools for Tauri'); fi
-docker_os=$(docker info --format '{{.OSType}}' 2>/dev/null || true)
-if [[ "$docker_os" != linux && ! -d /Applications/Docker.app ]]; then
+need_guest_image=false
+if ! has_guest_image; then need_guest_image=true; fi
+docker_os=''
+if $need_guest_image; then docker_os=$(docker info --format '{{.OSType}}' 2>/dev/null || true); fi
+if $need_guest_image && [[ "$docker_os" != linux && ! -d /Applications/Docker.app ]]; then
   need_docker=true; missing+=('Docker Desktop')
 fi
-if [[ "$docker_os" != linux ]]; then echo 'Docker must be started with Linux containers before model downloads.'; fi
+if $need_guest_image && [[ "$docker_os" != linux ]]; then
+  echo 'Docker must be started with Linux containers before the guest image build.'
+fi
 echo 'Tauri CLI and project packages will use the versions in the lockfile.'
 if [[ ${#missing[@]} -gt 0 ]]; then
   printf 'Install or update: %s\n' "${missing[@]}"
@@ -116,7 +130,7 @@ if [[ "$(node --version)" != "v$node_version" || "$(pnpm_version_installed)" != 
   echo 'A required tool is not ready. Complete its installation and run setup again.' >&2
   exit 1
 fi
-if [[ "$(docker info --format '{{.OSType}}' 2>/dev/null || true)" != linux ]]; then
+if $need_guest_image && [[ "$(docker info --format '{{.OSType}}' 2>/dev/null || true)" != linux ]]; then
   confirm 'Start Docker Desktop with Linux containers?'
   open -a Docker
   read -r -p 'Complete Docker setup and its license prompt, then press Enter. '

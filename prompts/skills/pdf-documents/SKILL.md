@@ -9,15 +9,21 @@ Use the installed `pypdf` through `python` for page work, and `reportlab` (Platy
 
 ## Recipe
 
-```python
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Table
-from reportlab.lib.styles import getSampleStyleSheet
+Choose the fonts, sizes, spacing, alignment, and margins for the reader before you write. Do not use the stock stylesheet unchanged; it is a bare default, not a finished deliverable.
 
-styles = getSampleStyleSheet()
-SimpleDocTemplate(path, pagesize=A4).build([
-    Paragraph("Title", styles["Heading1"]),
-    Paragraph("Body text.", styles["BodyText"]),
+```python
+from reportlab.lib.enums import TA_JUSTIFY
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Table
+
+base = getSampleStyleSheet()
+title = ParagraphStyle("title", parent=base["Title"], fontName="Times-Bold", fontSize=24, leading=28, spaceAfter=14)
+body = ParagraphStyle("body", parent=base["Normal"], fontName="Times-Roman", fontSize=11.5, leading=17, alignment=TA_JUSTIFY, spaceAfter=10)
+SimpleDocTemplate(path, pagesize=A4, leftMargin=inch, rightMargin=inch, topMargin=inch, bottomMargin=inch, title="Title").build([
+    Paragraph("Title", title),
+    Paragraph("Body text.", body),
     Table([["column_a", "column_b"], ["1", "2"]]),
 ])
 ```
