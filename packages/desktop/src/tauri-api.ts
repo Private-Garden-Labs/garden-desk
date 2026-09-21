@@ -21,6 +21,7 @@ import type {
   SecureWorkspaceStatus,
 } from "./api.js";
 import { invokeDesktop, withDevelopmentError } from "./development-errors.js";
+import { tauriDevelopmentModelApi } from "./tauri-development-models.js";
 import { record } from "./tauri-parse.js";
 import { tauriSkillApi } from "./tauri-skills.js";
 
@@ -90,6 +91,7 @@ function parseSecureWorkspaceSetupResult(value: unknown): SecureWorkspaceSetupRe
 }
 
 export const tauriDesktopApi: DesktopApi = {
+  ...(import.meta.env.DEV ? { developmentModels: tauriDevelopmentModelApi } : {}),
   async bootstrapDesktop() {
     return invokeDesktop("desktop_bootstrap", parseBootstrap);
   },
@@ -222,11 +224,12 @@ export const tauriDesktopApi: DesktopApi = {
       { sessionId },
     );
   },
-  async startAgent(sessionId, task, thinking) {
+  async startAgent(sessionId, task, thinking, developmentModelId) {
     return invokeDesktop("start_agent", (value) => AgentRunSummarySchema.parse(value), {
       sessionId,
       task,
       thinking,
+      ...(developmentModelId === undefined ? {} : { developmentModel: developmentModelId }),
     });
   },
   async getAgentRun(runId) {

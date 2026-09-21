@@ -1,6 +1,7 @@
 import {
   type AgentRunSummary,
   DEFAULT_THINKING_LEVEL,
+  type DevelopmentModel,
   type ThinkingLevel,
 } from "@gardendesk/shared";
 import { useEffect, useReducer, useState } from "react";
@@ -56,6 +57,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const [model, setModel] = useState(initialModelStatus);
   const [appVersion, setAppVersion] = useState<string>();
   const [thinking, setThinking] = useState<ThinkingLevel>(DEFAULT_THINKING_LEVEL);
+  const [developmentModel, setDevelopmentModel] = useState<DevelopmentModel>();
   const secureWorkspace = useSecureWorkspace(api, setConfirmation, setDesktopError);
   useDesktopBootstrap({
     api,
@@ -110,6 +112,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
       api,
       text,
       thinking,
+      ...(developmentModel === undefined ? {} : { developmentModelId: developmentModel.id }),
       activeSessionId: state.activeSessionId,
       newSessionFolderId: state.newSessionFolderId,
       dispatch,
@@ -264,6 +267,8 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
             setError={setDesktopError}
             state={state}
             thinking={thinking}
+            developmentModel={developmentModel}
+            onDevelopmentModelChange={setDevelopmentModel}
             onThinkingChange={setThinking}
           />
         </main>

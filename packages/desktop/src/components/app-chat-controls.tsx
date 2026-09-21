@@ -1,4 +1,4 @@
-import type { ThinkingLevel } from "@gardendesk/shared";
+import type { DevelopmentModel, ThinkingLevel } from "@gardendesk/shared";
 import type { DesktopApi } from "../api.js";
 import { attach, openAttachment, remove } from "../desktop-actions.js";
 import type { DropIntent } from "../desktop-drop.js";
@@ -13,12 +13,14 @@ interface AppChatControlsProps {
   childOpen: boolean;
   onBack(): void;
   disabled: boolean;
+  developmentModel: DevelopmentModel | undefined;
   dispatch(action: DesktopAction): void;
   dropIntent: DropIntent | undefined;
   nativeActionMessage: string | undefined;
   onCancel(): void;
   onChange(draft: string): void;
   onSend(text: string): void;
+  onDevelopmentModelChange(model: DevelopmentModel | undefined): void;
   onThinkingChange(level: ThinkingLevel): void;
   running: boolean;
   setConfirmation(request: ConfirmationRequest): void;
@@ -33,12 +35,14 @@ export function AppChatControls({
   childOpen,
   onBack,
   disabled,
+  developmentModel,
   dispatch,
   dropIntent,
   nativeActionMessage,
   onCancel,
   onChange,
   onSend,
+  onDevelopmentModelChange,
   onThinkingChange,
   running,
   setConfirmation,
@@ -116,7 +120,10 @@ export function AppChatControls({
         }
       }}
       onSend={onSend}
+      onDevelopmentModelChange={onDevelopmentModelChange}
       onThinkingChange={onThinkingChange}
+      developmentModel={developmentModel}
+      developmentModels={api.developmentModels}
       removableAttachmentIds={state.removableAttachmentIds}
       running={running}
       thinking={thinking}

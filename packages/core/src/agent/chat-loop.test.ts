@@ -153,7 +153,7 @@ describe("ChatAgentLoop automatic context", () => {
   it("keeps the cold auto request stable while sending the allocated context as the limit", async () => {
     const requests: Parameters<InferenceService["chat"]>[0][] = [];
     const first = generated("", [tool("list", "call-1", { path: "/source" })]);
-    first.memory.contextSizeTokens = 16_384;
+    first.contextBudgetTokens = 16_384;
     const loop = new ChatAgentLoop(model([first, generated("Done.")], requests));
 
     await loop.run(

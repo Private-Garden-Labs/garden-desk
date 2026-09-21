@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import {
   type AgentRunResult,
-  type ChatGenerationResult,
   DEFAULT_THINKING_LEVEL,
   INFERENCE_PROFILE,
   JobIdSchema,
@@ -10,7 +9,7 @@ import { currentTimeContext, withCurrentTimeContext } from "../agent/chat-curren
 import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-input.js";
 import { streamCallbacks } from "../agent/chat-streaming.js";
 import { isSuccessfulExecution } from "../agent/execution-success.js";
-import type { InferenceService } from "../runtime/inference.js";
+import type { ChatCompletion, InferenceService } from "../runtime/inference.js";
 import { inferenceFailureCode } from "../runtime/inference-errors.js";
 import type { CommandInvocation } from "./library.js";
 import { reviewExtractionSource } from "./review-extraction.js";
@@ -42,7 +41,7 @@ async function extractDocument(
   return { attachment, result };
 }
 
-function reviewResponse(result: ChatGenerationResult): string {
+function reviewResponse(result: ChatCompletion): string {
   if (result.toolCalls.length > 0) throw new Error("agent_review_tools_unavailable");
   if (result.stopReason === "maxTokens") throw new Error("agent_generation_limit");
   const response = result.text.trim();
@@ -101,7 +100,7 @@ async function generateReview(
           toolCalls: result.toolCalls,
           stopReason: result.stopReason,
         },
-        result.memory.contextSizeTokens,
+        result.contextBudgetTokens,
       );
     }
     const response = reviewResponse(result);
@@ -169,7 +168,7 @@ export async function reviewDocument(
   };
   input.onEvent?.("inference.started", "Reviewing the extracted text.");
   const { result, response } = await generateReview(input, chat, request);
-  const allocated = result.memory.contextSizeTokens;
+  const allocated = result.contextBudgetTokens;
   if (allocated !== undefined) input.onContext?.(result.contextUsedTokens, allocated, true);
   input.onResponse?.(response);
   input.onEvent?.("assistant.completed", "Review completed.");

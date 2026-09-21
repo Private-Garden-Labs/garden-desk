@@ -77,6 +77,8 @@
         "packages/core/src/runtime/inference.test.ts",
         "packages/core/src/runtime/models.ts",
         "packages/core/src/prompt-files.ts",
+        "packages/core/src/development/openrouter-settings.ts",
+        "packages/core/src/daemon/development-methods.test.ts",
         "packages/core/src/conversations/store.test.ts",
         "packages/core/src/agent/attachment-materialization.ts",
         "packages/core/src/agent/artifact-materialization.ts",

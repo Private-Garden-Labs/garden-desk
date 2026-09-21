@@ -1,6 +1,5 @@
-import type { ChatGenerationResult } from "@gardendesk/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ChatInput } from "../runtime/inference.js";
+import type { ChatCompletion, ChatInput } from "../runtime/inference.js";
 import type { DatabasePort } from "../workspace/database.js";
 import { AgentRunCapacity } from "./run-capacity.js";
 import {
@@ -220,7 +219,7 @@ describe("persisted chat agent cancellation", () => {
 
   it("persists cancellation while inference is active", async () => {
     const inference = {
-      async chat(_input: ChatInput, signal?: AbortSignal): Promise<ChatGenerationResult> {
+      async chat(_input: ChatInput, signal?: AbortSignal): Promise<ChatCompletion> {
         return await new Promise((_resolve, reject) =>
           signal?.addEventListener("abort", () => reject(signal.reason), { once: true }),
         );

@@ -4005,3 +4005,90 @@ textarea:focus-visible {
 .app-shell[data-theme="dark"] .context-meter-track {
   background: rgb(255 255 255 / 10%);
 }
+
+.development-model-badge {
+  align-self: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--shell);
+  font-size: 11px;
+  background: var(--accent);
+}
+
+.development-model-dialog {
+  width: min(560px, 100%);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.development-model-dialog label {
+  display: block;
+  margin: 14px 0 6px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.development-model-dialog input {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13px;
+  background: var(--reading);
+}
+
+.development-model-dialog h3 {
+  margin: 18px 0 6px;
+  font-size: 13px;
+}
+
+.development-model-disclaimer {
+  margin: 10px 0 0;
+}
+
+.development-model-error {
+  color: var(--ember);
+}
+
+.development-model-note {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.development-model-results,
+.development-model-favorites {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.development-model-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.development-model-results code,
+.development-model-favorites code {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.development-model-results button,
+.development-model-favorites button {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+}

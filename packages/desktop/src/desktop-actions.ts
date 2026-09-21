@@ -171,6 +171,7 @@ interface SendOptions {
   api: DesktopApi;
   text: string;
   thinking: ThinkingLevel;
+  developmentModelId?: string;
   activeSessionId: string | undefined;
   newSessionFolderId: string | null | undefined;
   dispatch: Dispatch;
@@ -189,7 +190,7 @@ export async function send(options: SendOptions) {
       activeSessionId ??
       (await startSession({ api, dispatch, folderId: newSessionFolderId ?? null, setError }));
     if (sessionId === undefined) return;
-    const run = await api.startAgent(sessionId, text, options.thinking);
+    const run = await api.startAgent(sessionId, text, options.thinking, options.developmentModelId);
     started = true;
     dispatch({ type: "agent.started", run });
     setSubmitting(false);

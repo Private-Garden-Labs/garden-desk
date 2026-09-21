@@ -90,19 +90,33 @@ export interface InferenceStreamCallbacks {
   onResponseDelta?(text: string): void;
 }
 
+/**
+ * Service results keep the context budget separate from the local memory report, so a
+ * runtime without local hardware reports the budget and omits the memory numbers.
+ */
+export type ChatCompletion = Omit<ChatGenerationResult, "memory"> & {
+  contextBudgetTokens?: number;
+  memory?: ChatGenerationResult["memory"];
+};
+
+export type StructuredCompletion = Omit<StructuredGenerationResult, "memory"> & {
+  contextBudgetTokens?: number;
+  memory?: StructuredGenerationResult["memory"];
+};
+
 export interface InferenceService {
   generate(
     input: GenerationInput,
     signal?: AbortSignal,
     onThinkingDelta?: (text: string) => void,
     identity?: GenerationRequestIdentity,
-  ): Promise<StructuredGenerationResult>;
+  ): Promise<StructuredCompletion>;
   chat(
     input: ChatInput,
     signal?: AbortSignal,
     streams?: InferenceStreamCallbacks,
     identity?: GenerationRequestIdentity,
-  ): Promise<ChatGenerationResult>;
+  ): Promise<ChatCompletion>;
   embed(input: EmbeddingInput, signal?: AbortSignal): Promise<EmbeddingResult>;
   inspectImage(input: ImageInspectionInput, signal?: AbortSignal): Promise<string>;
   modelStatus(): Promise<ModelRuntimeStatus>;

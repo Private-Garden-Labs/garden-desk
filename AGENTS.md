@@ -67,7 +67,7 @@ Documentation is for people. Write the absolute minimum amount of code comments,
 
 ## Product And Security Principles
 
-- Local and offline first. No cloud dependency, no silent cloud fallback, no telemetry. Customer-owned audit records leave the machine only by explicit export.
+- Local and offline first. No cloud dependency, no silent cloud fallback, no telemetry. Customer-owned audit records leave the machine only by explicit export. Development exception: a development build can send generation requests to an OpenRouter model that the developer selects. The compile-time development flag removes the cloud modules, settings, and selector from production builds.
 - No AI infrastructure vocabulary in the ordinary user experience. Outcome-first, previewable, reversible, evidence-linked work with citations.
 - Hardware-aware defaults, not user-managed model configuration. Qwen3.8 27B Q4 is the default generation model and Qwen3-Embedding-0.6B the managed encoder ([ADR 0019](docs/adr/0019-qwen38-private-server.md)). Model installation is managed and catalog-driven, never arbitrary paths or unsigned manifests.
 - The model never gets host authority. Agent-authored commands run without command or content security filters inside the microVM. Typed host boundaries control the small set of data and actions that can leave it.

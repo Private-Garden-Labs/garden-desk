@@ -13,6 +13,7 @@ import {
 } from "@gardendesk/shared";
 import type { GardenDeskCore } from "../facade.js";
 import { dispatchArtifactMethod } from "./artifact-methods.js";
+import { dispatchDevelopmentMethod } from "./development-methods.js";
 import { dispatchQuestionMethod } from "./question-methods.js";
 import { failure, success } from "./responses.js";
 import { createSession, deleteSession, listSessions, renameSession } from "./session-methods.js";
@@ -129,9 +130,16 @@ async function startAgent(core: GardenDeskCore, request: RpcRequest): Promise<Rp
   const sessionId = sessionIdParam(request);
   const thinking = ThinkingLevelSchema.safeParse(request.params.thinking);
   const task = typeof request.params.task === "string" ? request.params.task.trim() : "";
+  const developmentModelId =
+    typeof request.params.developmentModelId === "string"
+      ? request.params.developmentModelId
+      : undefined;
   if (task.length === 0 || !thinking.success)
     return failure(request, "invalid_request", "Invalid task.");
-  return success(request, await core.startAgent(sessionId, task, thinking.data));
+  return success(
+    request,
+    await core.startAgent(sessionId, task, thinking.data, developmentModelId),
+  );
 }
 
 async function getAgentRun(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
@@ -244,6 +252,10 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
     case "skills.remove":
     case "skills.setEnabled":
       return dispatchSkillMethod(core, request);
+    case "development.models.settings":
+    case "development.models.search":
+    case "development.models.save":
+      return dispatchDevelopmentMethod(core, request);
     default:
       return failure(request, "unsupported", `Unsupported method: ${request.method}`);
   }

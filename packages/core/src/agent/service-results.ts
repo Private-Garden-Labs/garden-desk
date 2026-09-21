@@ -15,6 +15,14 @@ export function agentHistory(messages: ConversationMessage[], summary?: AgentSes
   };
 }
 
+/** The model and inference port fixed for one run, including its development selection. */
+export interface AgentRunInference {
+  modelId: string;
+  chat: InferenceService["chat"];
+  knownContextTokens?: number;
+  modelNeedsLoad: boolean;
+}
+
 export async function inferenceRunContext(
   inference: Partial<Pick<InferenceService, "modelStatus">>,
 ): Promise<{ knownContextTokens?: number; modelNeedsLoad: boolean }> {
