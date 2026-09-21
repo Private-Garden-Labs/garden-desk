@@ -87,6 +87,14 @@ The server loaded that context in 3.4 seconds and answered. It reported 6,861.74
 
 This run started `llama-server.exe` directly, because the machine has no Rust toolchain and therefore no AppContainer launcher. Device selection through `resolveWindowsGpuProfile`, the isolated per-device probes, the guest stages, and the stress comparison stay unverified.
 
+## 2026-09-21 Windows Build Chain
+
+After installing the Visual Studio Build Tools, Rust, Python, WSL2, and Docker on the same machine, `pnpm guest:build:agent:windows` produced a byte-identical guest image: the kernel SHA-256 was `9fabee42a89b8128aa9f16dee4d43289c113f8b2aea398cabc904b6911a41dea` and the root image `a7e3558b945b09b4d437d1aa6d97cb8206c3b417e512badb84ff0deee8f33e87`, both matching the committed manifest. All four Windows native helpers built and signed.
+
+`pnpm desktop:build-sidecar` then staged the packaged resources and signed the eleven fork-built runtime files in each backend directory, leaving the NVIDIA, AMD, and Microsoft redistributables on their own signatures.
+
+Two stages stay unverified on this machine. `pnpm verify` stops in the Rust stage because Smart App Control blocks the build script that Cargo compiles for `wry`, reported as `An Application Control policy has blocked this file. (os error 4551)`; every other stage of `pnpm verify` passed, including 513 unit tests. `pnpm test:m3:windows` and the stress comparison need the Hyper-V Administrators membership that the setup step adds, and a Windows sign-out has not yet applied it to the session token.
+
 ## 2026-09-20 Windows Code Integrity Blocks The Unsigned Runtime
 
 Smart App Control was enforcing on this machine (`VerifiedAndReputablePolicyState` 1). It stopped `llama-server.exe` with exit code `0xC0E90002` and no output. CodeIntegrity events 3077 and 3033 named `mtmd.dll` as the file that did not meet the signing requirement.
