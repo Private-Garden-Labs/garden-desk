@@ -1,6 +1,7 @@
 import type { DevelopmentModel, DevelopmentModelSettings } from "@gardendesk/shared";
 import { useEffect, useRef, useState } from "react";
 import type { DevelopmentModelApi } from "../api.js";
+import { Icon } from "./icons.js";
 
 const DISCLAIMER =
   "For development only. Production builds use only the local LLM. When you select OpenRouter, prompts, conversation history, and tool results can leave this computer. API charges can apply.";
@@ -214,7 +215,10 @@ export function DevelopmentModelModal({ api, settings, onCancel, onSaved }: Moda
         role="dialog"
       >
         <h2 id="development-model-title">Edit favorites</h2>
-        <p className="development-model-disclaimer">{DISCLAIMER}</p>
+        <p className="development-model-disclaimer">
+          <Icon name="error" />
+          <span>{DISCLAIMER}</span>
+        </p>
         <DialogFields
           apiKey={apiKey}
           onApiKey={setApiKey}

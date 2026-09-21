@@ -4068,13 +4068,30 @@ textarea:focus-visible {
 }
 
 .development-model-dialog .development-model-disclaimer {
+  display: flex;
+  align-items: flex-start;
   margin: 0;
+  gap: 8px;
   padding: 10px 12px;
+  border: 1px solid rgb(176 124 22 / 24%);
   border-radius: 10px;
-  color: var(--ink-soft);
+  color: #7a5510;
   font-size: 12px;
   line-height: 1.5;
-  background: var(--navigation-hover);
+  background: #fdf3e0;
+}
+
+.development-model-disclaimer svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.app-shell[data-theme="dark"] .development-model-dialog .development-model-disclaimer {
+  border-color: rgb(230 170 60 / 26%);
+  color: #e6c184;
+  background: rgb(230 170 60 / 12%);
 }
 
 .development-model-fields {
