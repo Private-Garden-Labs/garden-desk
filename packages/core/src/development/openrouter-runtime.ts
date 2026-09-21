@@ -25,8 +25,14 @@ import {
   type OpenRouterFailureReason,
   openRouterJson,
   openRouterRequest,
+  type ProviderPriceBudget,
 } from "./openrouter-client.js";
-import { chatRequestBody, contextBudgetTokens, outputTokenLimit } from "./openrouter-messages.js";
+import {
+  chatRequestBody,
+  contextBudgetTokens,
+  outputTokenLimit,
+  providerRouting,
+} from "./openrouter-messages.js";
 import { readChatStream, type StreamedCompletion } from "./openrouter-stream.js";
 
 const FAILURE_CODES: Record<OpenRouterFailureReason, ErrorCode> = {
@@ -41,6 +47,7 @@ const FAILURE_CODES: Record<OpenRouterFailureReason, ErrorCode> = {
 export interface OpenRouterRuntimeOptions {
   model: DevelopmentModel;
   apiKey: string;
+  budget?: ProviderPriceBudget;
   audit(event: AuditEventInput): void;
 }
 
@@ -145,6 +152,7 @@ export class OpenRouterRuntime {
         body: chatRequestBody({
           model,
           input,
+          ...(this.options.budget === undefined ? {} : { budget: this.options.budget }),
           ...(streams?.reasoning === undefined ? {} : { reasoning: streams.reasoning }),
         }),
         signal: requestSignal(timeoutMs, signal),
@@ -183,6 +191,7 @@ export class OpenRouterRuntime {
           model: model.id,
           messages: [{ role: "user", content: input.prompt }],
           max_tokens: outputTokenLimit(model, input.maxTokens),
+          provider: providerRouting(this.options.budget),
           response_format: {
             type: "json_schema",
             json_schema: { name: "result", strict: true, schema: input.jsonSchema },

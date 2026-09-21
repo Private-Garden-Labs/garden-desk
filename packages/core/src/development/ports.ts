@@ -4,7 +4,7 @@ import type {
   DevelopmentModelSettings,
 } from "@gardendesk/shared";
 import type { InferenceService } from "../runtime/inference.js";
-import { searchOpenRouterModels } from "./openrouter-client.js";
+import { providerPriceBudget, searchOpenRouterModels } from "./openrouter-client.js";
 import { contextBudgetTokens } from "./openrouter-messages.js";
 import { OpenRouterRuntime } from "./openrouter-runtime.js";
 import { DevelopmentSettingsStore, developmentSettingsView } from "./openrouter-settings.js";
@@ -65,7 +65,13 @@ export function createDevelopmentPorts(
       const model = settings.favorites.find((favorite) => favorite.id === modelId);
       if (model === undefined) throw new Error("development_model_unavailable");
       if (settings.apiKey === undefined) throw new Error("development_model_key_missing");
-      const runtime = new OpenRouterRuntime({ model, apiKey: settings.apiKey, audit });
+      const budget = await providerPriceBudget({ apiKey: settings.apiKey, modelId: model.id });
+      const runtime = new OpenRouterRuntime({
+        model,
+        apiKey: settings.apiKey,
+        audit,
+        ...(budget === undefined ? {} : { budget }),
+      });
       return {
         modelId: model.id,
         contextTokens: contextBudgetTokens(model),

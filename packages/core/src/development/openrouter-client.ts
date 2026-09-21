@@ -142,3 +142,53 @@ export async function searchOpenRouterModels(options: {
     .filter((model): model is DevelopmentModel => model !== undefined)
     .slice(0, DEVELOPMENT_MODEL_SEARCH_LIMIT);
 }
+
+/** A price ceiling per million tokens, taken from what the hosts of one model charge today. */
+export interface ProviderPriceBudget {
+  prompt: number;
+  completion: number;
+}
+
+const TOKENS_PER_MILLION = 1_000_000;
+
+function endpointPrice(entry: unknown): ProviderPriceBudget | undefined {
+  const pricing = asRecord(asRecord(entry).pricing);
+  const prompt = Number(pricing.prompt) * TOKENS_PER_MILLION;
+  const completion = Number(pricing.completion) * TOKENS_PER_MILLION;
+  if (!Number.isFinite(prompt) || !Number.isFinite(completion)) return undefined;
+  return { prompt, completion };
+}
+
+/**
+ * Keeps the fastest host that still charges no more than the middle host for this model, so a
+ * throughput choice cannot land on an unusually expensive one. The figures come from OpenRouter.
+ */
+export async function providerPriceBudget(options: {
+  apiKey: string;
+  modelId: string;
+  signal?: AbortSignal;
+}): Promise<ProviderPriceBudget | undefined> {
+  let prices: ProviderPriceBudget[];
+  try {
+    const payload = await openRouterJson({
+      apiKey: options.apiKey,
+      path: `/models/${options.modelId}/endpoints`,
+      ...(options.signal === undefined ? {} : { signal: options.signal }),
+    });
+    const entries = asRecord(payload.data).endpoints;
+    prices = (Array.isArray(entries) ? entries : [])
+      .map(endpointPrice)
+      .filter((price): price is ProviderPriceBudget => price !== undefined);
+  } catch {
+    return undefined;
+  }
+  if (prices.length === 0) return undefined;
+  const ordered = [...prices].sort((left, right) => left.completion - right.completion);
+  const middle = ordered[Math.floor((ordered.length - 1) / 2)];
+  if (middle === undefined) return undefined;
+  const affordable = ordered.filter((price) => price.completion <= middle.completion);
+  return {
+    completion: middle.completion,
+    prompt: Math.max(...affordable.map((price) => price.prompt)),
+  };
+}

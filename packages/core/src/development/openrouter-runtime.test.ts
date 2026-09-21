@@ -133,6 +133,7 @@ describe("OpenRouter requests", () => {
     expect(JSON.parse(bodies[0] as string)).toMatchObject({
       model: "vendor/model",
       max_tokens: 4_096,
+      provider: { sort: "throughput", allow_fallbacks: true },
       reasoning: { effort: "medium" },
       stream: true,
     });

@@ -1,8 +1,22 @@
 import type { ChatMessage, DevelopmentModel, ThinkingLevel } from "@gardendesk/shared";
 import type { ChatInput } from "../runtime/inference.js";
+import type { ProviderPriceBudget } from "./openrouter-client.js";
 
 /** Development runs use the local hardware for nothing, so the local window does not apply. */
 const DEVELOPMENT_CONTEXT_LIMIT_TOKENS = 131_072;
+
+/**
+ * OpenRouter spreads one model across independent hosts whose speed differs by several times.
+ * A development run asks for the fastest host inside today's middle price, and keeps fallbacks
+ * so one busy host cannot fail the run.
+ */
+export function providerRouting(budget?: ProviderPriceBudget): Record<string, unknown> {
+  return {
+    sort: "throughput",
+    allow_fallbacks: true,
+    ...(budget === undefined ? {} : { max_price: budget }),
+  };
+}
 
 const REASONING_EFFORT: Record<Exclude<ThinkingLevel, "none">, string> = {
   low: "low",
@@ -83,6 +97,7 @@ export function chatRequestBody(options: {
   model: DevelopmentModel;
   input: ChatInput;
   reasoning?: Map<string, string>;
+  budget?: ProviderPriceBudget;
 }): Record<string, unknown> {
   const { input, model } = options;
   return {
@@ -91,6 +106,7 @@ export function chatRequestBody(options: {
     ...(input.tools.length === 0 ? {} : { tools: completionTools(input.tools) }),
     max_tokens: outputTokenLimit(model, input.maxTokens),
     temperature: input.temperature,
+    provider: providerRouting(options.budget),
     stream: true,
     usage: { include: true },
     ...reasoningRequest(input.thinking),
