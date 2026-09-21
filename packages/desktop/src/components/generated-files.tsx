@@ -4,7 +4,7 @@ import type { ArtifactSaveResult } from "../artifact-actions.js";
 
 type ActionState = ArtifactSaveResult | "idle" | "opening" | "saving";
 
-const codeExtensions = new Set(["py", "js", "mjs", "cjs", "sh"]);
+const codeExtensions = new Set(["py", "pyc", "js", "mjs", "cjs", "sh"]);
 
 function isCodeFile(item: AgentArtifactSummary): boolean {
   const extension = item.name.split(".").at(-1)?.toLocaleLowerCase("en-US") ?? "";
