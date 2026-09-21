@@ -4015,6 +4015,24 @@ textarea:focus-visible {
   background: var(--accent);
 }
 
+.development-model-menu {
+  min-width: 284px;
+  max-width: 360px;
+}
+
+.development-model-option-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.development-model-menu .development-model-menu-edit {
+  margin-top: 4px;
+  padding-top: 11px;
+  border-top: 1px solid var(--border-color);
+  border-radius: 0 0 9px 9px;
+}
+
 .development-model-dialog {
   display: flex;
   width: min(620px, 100%);

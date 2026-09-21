@@ -28,7 +28,7 @@ function option(selected: boolean, label: string) {
       <span aria-hidden="true" className="effort-option-check">
         {selected ? <Icon name="check" /> : null}
       </span>
-      {label}
+      <span className="development-model-option-label">{label}</span>
     </>
   );
 }
@@ -39,7 +39,7 @@ function ModelMenu({ favorites, selected, onChoose, onEdit, onClose }: MenuProps
   return (
     <div
       aria-label="Model"
-      className="effort-menu"
+      className="effort-menu development-model-menu"
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
         if (event.key === "Escape") onClose();
       }}
@@ -68,7 +68,12 @@ function ModelMenu({ favorites, selected, onChoose, onEdit, onClose }: MenuProps
           {option(model.id === selected?.id, model.name)}
         </button>
       ))}
-      <button className="effort-option" onClick={onEdit} role="menuitem" type="button">
+      <button
+        className="effort-option development-model-menu-edit"
+        onClick={onEdit}
+        role="menuitem"
+        type="button"
+      >
         {option(false, "Edit favorites…")}
       </button>
     </div>
