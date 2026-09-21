@@ -28,9 +28,9 @@ Run this in standard PowerShell:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
 ```
 
-Setup uses the Node.js version in [.node-version](.node-version), pnpm in [package.json](package.json), and Rust in [rust-toolchain.toml](rust-toolchain.toml). It also checks the [Tauri platform tools](https://v2.tauri.app/start/prerequisites/) and Docker. It lists missing tools and asks before it installs or updates them. Official installers can request administrator approval. Complete their prompts. If an installer requires a restart, restart the computer and run setup again.
+Setup uses the Node.js version in [.node-version](.node-version), pnpm in [package.json](package.json), and Rust in [rust-toolchain.toml](rust-toolchain.toml). It also checks the [Tauri platform tools](https://v2.tauri.app/start/prerequisites/), and Docker when the guest image is missing. It lists missing tools and asks before it installs or updates them. Official installers can request administrator approval. Complete their prompts. If an installer requires a restart, restart the computer and run setup again.
 
-After the tools are ready, setup asks before it installs locked project packages, downloads missing model and runtime files, builds the guest image, and starts the app. Docker must run Linux containers. The first setup needs an internet connection and can take a long time. Complete local assets are reused.
+After the tools are ready, setup asks before it installs locked project packages, downloads missing model and runtime files, builds the guest image, and starts the app. Docker must run Linux containers when setup builds the guest image. The first setup needs an internet connection and can take a long time. Complete local assets are reused.
 
 For later starts, run:
 
