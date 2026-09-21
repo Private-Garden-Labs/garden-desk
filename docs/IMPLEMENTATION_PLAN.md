@@ -62,7 +62,7 @@ The main agent can call `review({ path, prompt })` for one file under `/source`,
 
 This shared review workflow and `read` use the same fixed guest extraction. Neither adds automatic task classification or host document processing.
 
-A command can name an `agent` instead of repeating its workflow instructions. It uses the same specialist run as `task`, with the current command request and attachments. This explicit run returns findings directly and can create final files when requested. It does not require a second main-agent pass. `/review` keeps its separate fixed workflow.
+A command can name an `agent` instead of repeating its workflow instructions. The specialist runs in the main run and creates no child run. It gets the same packaged instructions, skills, tools, and working directory as the `task` specialist, with the current command request and attachments, and without the conversation history. This explicit run returns findings directly and can create final files when requested. It does not require a second main-agent pass. `/review` keeps its separate fixed workflow.
 
 ## Guest Image
 
