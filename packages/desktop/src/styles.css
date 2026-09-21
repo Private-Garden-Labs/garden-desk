@@ -2472,7 +2472,7 @@ textarea:focus-visible {
 }
 
 .technical-overview-table .technical-path-link {
-  display: block;
+  display: flex;
   width: 100%;
   padding: 0;
   border: 0;
@@ -2483,12 +2483,6 @@ textarea:focus-visible {
   text-decoration: underline;
   overflow-wrap: anywhere;
   cursor: pointer;
-}
-
-.technical-overview-table .technical-path {
-  display: flex;
-  max-width: 100%;
-  overflow-wrap: normal;
 }
 
 .technical-overview-table .technical-path-parent {

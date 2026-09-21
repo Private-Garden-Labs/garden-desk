@@ -3,12 +3,7 @@ import capabilities from "../../../workers/images/agent/capabilities.json" with 
 import type { PromptFolder } from "../api.js";
 import { TechnicalModelUsage } from "./technical-model-usage.js";
 
-interface OverviewRow {
-  label: string;
-  value: string;
-  onOpen?: (() => void) | undefined;
-  path?: boolean;
-}
+type OverviewRow = [string, string, (() => void) | undefined];
 
 interface OverviewProps {
   catalogPath: string;
@@ -23,68 +18,59 @@ interface OverviewProps {
   sessionId: string | undefined;
 }
 
-const NO_SESSION = "No session selected";
-const NOT_AVAILABLE = "Not available";
-
-function mebibytes(bytes: number): string {
-  return `${bytes / 1024 ** 2} MiB`;
-}
-
-function promptRows({ onOpenPromptFolder: onOpen, promptLocations }: OverviewProps): OverviewRow[] {
+function promptRows(
+  locations: SkillLocations | undefined,
+  onOpen: ((folder: PromptFolder) => void) | undefined,
+): OverviewRow[] {
   const entries: Array<[string, PromptFolder, string | undefined]> = [
-    ["Skills folder", "skills", promptLocations?.skillsPath],
-    ["Built-in skills", "built-in-skills", promptLocations?.builtInSkillsPath],
-    ["System prompts", "system-prompts", promptLocations?.systemPromptsPath],
+    ["Skills folder", "skills", locations?.skillsPath],
+    ["Built-in skills", "built-in-skills", locations?.builtInSkillsPath],
+    ["System prompts", "system-prompts", locations?.systemPromptsPath],
   ];
-  return entries.map(([label, folder, path]) => ({
+  return entries.map(([label, folder, path]) => [
     label,
-    value: path ?? NOT_AVAILABLE,
-    onOpen: path === undefined || onOpen === undefined ? undefined : () => onOpen(folder),
-    path: path !== undefined,
-  }));
+    path ?? "Not available",
+    path === undefined || onOpen === undefined ? undefined : () => onOpen(folder),
+  ]);
 }
 
-function guestRows({ limits, onOpenSourceFolder, sessionId }: OverviewProps): OverviewRow[] {
+function overviewRows({
+  catalogPath,
+  limits,
+  model,
+  onOpenCatalogFolder,
+  onOpenPromptFolder,
+  onOpenSourceFolder,
+  promptLocations,
+  sessionId,
+}: OverviewProps): OverviewRow[] {
   const { sourceMount, workspaceMount, runtimeMount } = capabilities;
   return [
-    {
-      label: "Session folder",
-      value:
-        sessionId === undefined
-          ? NO_SESSION
-          : `${workspaceMount.path} · read/write · ${mebibytes(workspaceMount.maximumBytes)}`,
-    },
-    {
-      label: "Source mount",
-      value: `${sourceMount.path} · ${sourceMount.mode} · live`,
-      onOpen: onOpenSourceFolder,
-    },
-    {
-      label: "Temporary storage",
-      value: `${runtimeMount.path} · ${mebibytes(runtimeMount.maximumBytes)} · temporary`,
-    },
-    { label: "Guest operating system", value: `Linux ${capabilities.runtimes.Linux}` },
-    {
-      label: "MicroVM limits",
-      value: sessionId === undefined ? NO_SESSION : (limits ?? NOT_AVAILABLE),
-    },
-    { label: "MicroVM network access", value: "false" },
-  ];
-}
-
-function overviewRows(props: OverviewProps): OverviewRow[] {
-  return [
-    { label: "Local session ID", value: props.sessionId ?? NO_SESSION },
-    {
-      label: "Catalog path",
-      value: props.catalogPath || NOT_AVAILABLE,
-      onOpen: props.onOpenCatalogFolder,
-      path: props.catalogPath !== "",
-    },
-    ...promptRows(props),
-    ...guestRows(props),
-    { label: "Model", value: props.model.name },
-    { label: "Model state", value: props.model.state },
+    ["Local session ID", sessionId ?? "No session selected", undefined],
+    ["Catalog path", catalogPath || "Not available", onOpenCatalogFolder],
+    ...promptRows(promptLocations, onOpenPromptFolder),
+    [
+      "Session folder",
+      sessionId === undefined
+        ? "No session selected"
+        : `${workspaceMount.path} · read/write · ${workspaceMount.maximumBytes / 1024 ** 2} MiB`,
+      undefined,
+    ],
+    ["Source mount", `${sourceMount.path} · ${sourceMount.mode} · live`, onOpenSourceFolder],
+    [
+      "Temporary storage",
+      `${runtimeMount.path} · ${runtimeMount.maximumBytes / 1024 ** 2} MiB · temporary`,
+      undefined,
+    ],
+    ["Guest operating system", `Linux ${capabilities.runtimes.Linux}`, undefined],
+    [
+      "MicroVM limits",
+      sessionId === undefined ? "No session selected" : (limits ?? "Not available"),
+      undefined,
+    ],
+    ["MicroVM network access", "false", undefined],
+    ["Model", model.name, undefined],
+    ["Model state", model.state, undefined],
   ];
 }
 
@@ -100,34 +86,23 @@ function splitPath(value: string): [string, string] | undefined {
   return [value.slice(0, cut), value.slice(cut)];
 }
 
-function OverviewValue({ row }: { row: OverviewRow }) {
-  const parts = row.path === true ? splitPath(row.value) : undefined;
-  const content =
-    parts === undefined ? (
-      row.value
-    ) : (
-      <>
-        <span className="technical-path-parent">{parts[0]}</span>
-        <span className="technical-path-name">{parts[1]}</span>
-      </>
-    );
-  const title = parts === undefined ? "Open the folder" : row.value;
-  if (row.onOpen === undefined) {
-    if (parts === undefined) return <>{row.value}</>;
-    return (
-      <span className="technical-path" title={title}>
-        {content}
-      </span>
-    );
-  }
+function FolderLink({ onOpen, value }: { onOpen(): void; value: string }) {
+  const parts = splitPath(value);
   return (
     <button
-      className={parts === undefined ? "technical-path-link" : "technical-path-link technical-path"}
-      onClick={row.onOpen}
-      title={title}
+      className="technical-path-link"
+      onClick={onOpen}
+      title={parts === undefined ? "Open the folder" : value}
       type="button"
     >
-      {content}
+      {parts === undefined ? (
+        value
+      ) : (
+        <>
+          <span className="technical-path-parent">{parts[0]}</span>
+          <span className="technical-path-name">{parts[1]}</span>
+        </>
+      )}
     </button>
   );
 }
@@ -136,12 +111,10 @@ export function TechnicalOverviewTable(props: OverviewProps) {
   return (
     <table aria-label="Session technical details" className="technical-overview-table">
       <tbody>
-        {overviewRows(props).map((row) => (
-          <tr key={row.label}>
-            <th scope="row">{row.label}</th>
-            <td>
-              <OverviewValue row={row} />
-            </td>
+        {overviewRows(props).map(([label, value, onOpen]) => (
+          <tr key={label}>
+            <th scope="row">{label}</th>
+            <td>{onOpen === undefined ? value : <FolderLink onOpen={onOpen} value={value} />}</td>
           </tr>
         ))}
         <TechnicalModelUsage
