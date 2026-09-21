@@ -3,10 +3,19 @@ import type {
   AgentRunResult,
   AgentSessionSummary,
   ConversationMessage,
+  ThinkingLevel,
 } from "@gardendesk/shared";
 import { commandFailureSummary } from "../commands/failures.js";
+import type { DevelopmentPorts } from "../development/ports.js";
 import type { InferenceService } from "../runtime/inference.js";
 import { inferenceFailureCode } from "../runtime/inference-errors.js";
+import { AGENT_MODEL_ID } from "./limits.js";
+
+export interface AgentRunRequest {
+  task: string;
+  thinking: ThinkingLevel;
+  developmentModelId?: string;
+}
 
 export function agentHistory(messages: ConversationMessage[], summary?: AgentSessionSummary) {
   return {
@@ -21,6 +30,30 @@ export interface AgentRunInference {
   chat: InferenceService["chat"];
   knownContextTokens?: number;
   modelNeedsLoad: boolean;
+}
+
+/** The model and credentials are fixed here, so a later selector change cannot change a run. */
+export async function resolveRunInference(
+  inference: Partial<Pick<InferenceService, "chat" | "modelStatus">>,
+  development: Pick<DevelopmentPorts, "fixModelSelection"> | undefined,
+  developmentModelId: string | undefined,
+): Promise<AgentRunInference> {
+  if (developmentModelId !== undefined) {
+    if (development === undefined) throw new Error("development_model_unavailable");
+    const selection = await development.fixModelSelection(developmentModelId);
+    return {
+      modelId: selection.modelId,
+      chat: selection.chat,
+      knownContextTokens: selection.contextTokens,
+      modelNeedsLoad: false,
+    };
+  }
+  if (inference.chat === undefined) throw new Error("agent_chat_unavailable");
+  return {
+    modelId: AGENT_MODEL_ID,
+    chat: inference.chat.bind(inference),
+    ...(await inferenceRunContext(inference)),
+  };
 }
 
 export async function inferenceRunContext(

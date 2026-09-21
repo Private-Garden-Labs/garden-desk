@@ -1,9 +1,4 @@
-import {
-  type AgentRunSummary,
-  DEFAULT_THINKING_LEVEL,
-  type DevelopmentModel,
-  type ThinkingLevel,
-} from "@gardendesk/shared";
+import type { AgentRunSummary } from "@gardendesk/shared";
 import { useEffect, useReducer, useState } from "react";
 import type { DesktopApi } from "./api.js";
 import { useAppearance } from "./appearance.js";
@@ -21,6 +16,7 @@ import { SecureWorkspaceBanner } from "./components/secure-workspace-banner.js";
 import { SkillsPage } from "./components/skills-page.js";
 import { SpecialistView } from "./components/specialist-view.js";
 import { TechnicalDetails } from "./components/technical-details.js";
+import { useComposerSettings } from "./composer-settings.js";
 import { openAttachment, send } from "./desktop-actions.js";
 import { type DropIntent, useNativeDrop } from "./desktop-drop.js";
 import { initialModelStatus, unloadModel, useModelRefresh } from "./desktop-model.js";
@@ -56,8 +52,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const [dropIntent, setDropIntent] = useState<DropIntent>();
   const [model, setModel] = useState(initialModelStatus);
   const [appVersion, setAppVersion] = useState<string>();
-  const [thinking, setThinking] = useState<ThinkingLevel>(DEFAULT_THINKING_LEVEL);
-  const [developmentModel, setDevelopmentModel] = useState<DevelopmentModel>();
+  const { developmentModel, setDevelopmentModel, setThinking, thinking } = useComposerSettings();
   const secureWorkspace = useSecureWorkspace(api, setConfirmation, setDesktopError);
   useDesktopBootstrap({
     api,
