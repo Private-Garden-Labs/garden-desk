@@ -49,6 +49,12 @@ export function loadMessages(
   messages: ConversationMessage[],
 ): DesktopState {
   if (state.activeSessionId !== sessionId) return state;
+  const activity = state.timeline.filter((item) => item.kind === "activity");
+  const interruptedRunIds = new Set(
+    activity
+      .filter((item) => item.eventType === "run.cancelled" || item.eventType === "run.failed")
+      .map((item) => item.runId),
+  );
   const title = messages
     .find((message) => message.role === "user")
     ?.content.replaceAll(/\s+/gu, " ")
@@ -56,14 +62,16 @@ export function loadMessages(
   return {
     ...state,
     timeline: [
-      ...messages.map((message) => ({
-        createdAt: message.createdAt,
-        id: message.id,
-        kind: message.role,
-        text: message.content,
-        runId: message.runId,
-      })),
-      ...state.timeline.filter((item) => item.kind === "activity"),
+      ...messages
+        .filter((message) => !interruptedRunIds.has(message.runId))
+        .map((message) => ({
+          createdAt: message.createdAt,
+          id: message.id,
+          kind: message.role,
+          text: message.content,
+          runId: message.runId,
+        })),
+      ...activity,
     ],
     globalSessions: state.globalSessions.map((session) =>
       session.id === sessionId && session.title === "New chat" && title !== undefined
@@ -86,20 +94,16 @@ export function loadSession(
   action: Extract<DesktopAction, { type: "session.loaded" }>,
 ): DesktopState {
   if (state.pendingSessionId !== action.sessionId) return state;
-  let loaded = loadMessages(
-    {
-      ...state,
-      ...emptyConversation(undefined),
-      activeSessionId: action.sessionId,
-      attachments: action.attachments,
-      removableAttachmentIds: action.removableIds,
-      draft: action.draft,
-    },
-    action.sessionId,
-    action.messages,
-  );
+  let loaded: DesktopState = {
+    ...state,
+    ...emptyConversation(undefined),
+    activeSessionId: action.sessionId,
+    attachments: action.attachments,
+    removableAttachmentIds: action.removableIds,
+    draft: action.draft,
+  };
   for (const snapshot of action.snapshots) {
     loaded = applyAgentSnapshot(loaded, snapshot);
   }
-  return loaded;
+  return loadMessages(loaded, action.sessionId, action.messages);
 }
