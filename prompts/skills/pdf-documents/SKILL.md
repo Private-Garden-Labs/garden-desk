@@ -28,11 +28,11 @@ SimpleDocTemplate(path, pagesize=A4, leftMargin=inch, rightMargin=inch, topMargi
 ])
 ```
 
-Platypus handles page breaks and margins. Put spacing in the style with `spaceAfter`; a trailing `Spacer` can create an empty last page. For page work, use `PdfReader` and `PdfWriter` from `pypdf`.
+Platypus handles page breaks and margins. For page work, use `PdfReader` and `PdfWriter` from `pypdf`.
 
 ## Verify
 
-Reopen the PDF you write with `PdfReader`. Assert its page count, the text of each page you generated, and that the last page has text.
+Reopen the PDF you write with `PdfReader` and assert its page count and the text of each page you generated.
 
 ## Gotchas
 
