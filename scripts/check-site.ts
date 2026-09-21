@@ -11,6 +11,7 @@ const routeFiles = [
   "index.html",
   "demo/index.html",
   "releases/index.html",
+  "supporters/index.html",
   "privacy/index.html",
   "terms/index.html",
   "security/index.html",
@@ -162,7 +163,15 @@ for (const download of [
 }
 
 const sitemap = await text("sitemap.xml");
-for (const route of ["/", "/demo/", "/releases/", "/privacy/", "/terms/", "/security/"]) {
+for (const route of [
+  "/",
+  "/demo/",
+  "/releases/",
+  "/supporters/",
+  "/privacy/",
+  "/terms/",
+  "/security/",
+]) {
   requireText(sitemap, new URL(route, publishedRoot).href, "sitemap");
 }
 
