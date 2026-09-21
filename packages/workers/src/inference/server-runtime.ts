@@ -22,7 +22,6 @@ export function serverArguments(input: {
     "--offline",
     "--no-ui",
     "--no-ui-mcp-proxy",
-    "--no-warmup",
     "--jinja",
     "--fit",
     "off",
