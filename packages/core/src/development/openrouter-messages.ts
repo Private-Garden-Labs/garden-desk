@@ -1,10 +1,8 @@
-import {
-  type ChatMessage,
-  type DevelopmentModel,
-  INFERENCE_PROFILE,
-  type ThinkingLevel,
-} from "@gardendesk/shared";
+import type { ChatMessage, DevelopmentModel, ThinkingLevel } from "@gardendesk/shared";
 import type { ChatInput } from "../runtime/inference.js";
+
+/** Development runs use the local hardware for nothing, so the local window does not apply. */
+const DEVELOPMENT_CONTEXT_LIMIT_TOKENS = 131_072;
 
 const REASONING_EFFORT: Record<Exclude<ThinkingLevel, "none">, string> = {
   low: "low",
@@ -12,9 +10,9 @@ const REASONING_EFFORT: Record<Exclude<ThinkingLevel, "none">, string> = {
   xhigh: "high",
 };
 
-/** The effective window is the smaller of the catalog limit and the application limit. */
+/** The effective window is the smaller of the catalog limit and the development limit. */
 export function contextBudgetTokens(model: DevelopmentModel): number {
-  return Math.min(model.contextTokens, INFERENCE_PROFILE.contextTokens);
+  return Math.min(model.contextTokens, DEVELOPMENT_CONTEXT_LIMIT_TOKENS);
 }
 
 export function outputTokenLimit(model: DevelopmentModel, requested: number): number {

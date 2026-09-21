@@ -109,7 +109,7 @@ describe("OpenRouter chat", () => {
     expect(result.toolCalls).toEqual([{ id: "call-1", name: "list", params: { path: "/source" } }]);
     expect(result.stopReason).toBe("toolCalls");
     expect(result.contextUsedTokens).toBe(150);
-    expect(result.contextBudgetTokens).toBe(32_768);
+    expect(result.contextBudgetTokens).toBe(128_000);
     expect(result.memory).toBeUndefined();
     expect(result.performance).toMatchObject({ promptTokens: 120, outputTokens: 30 });
     expect(responses).toEqual(["Listing", " files."]);
