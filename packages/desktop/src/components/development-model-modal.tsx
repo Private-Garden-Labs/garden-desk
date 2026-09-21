@@ -152,7 +152,7 @@ function DialogFields({
 }) {
   return (
     <div className="development-model-fields">
-      <div className="development-model-field">
+      <div className="development-model-form-field">
         <label htmlFor="development-model-key">OpenRouter API key</label>
         <input
           autoComplete="off"
@@ -165,7 +165,7 @@ function DialogFields({
           value={apiKey}
         />
       </div>
-      <div className="development-model-field">
+      <div className="development-model-form-field">
         <label htmlFor="development-model-search">Search models</label>
         <input
           autoComplete="off"

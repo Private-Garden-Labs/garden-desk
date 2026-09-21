@@ -1779,7 +1779,6 @@ textarea:focus-visible {
 .composer-send-group {
   display: flex;
   align-items: center;
-  gap: 10px;
   margin-left: auto;
 }
 
@@ -4013,6 +4012,15 @@ textarea:focus-visible {
   background: var(--accent);
 }
 
+/*
+ * The two controls carry side padding and the round action button does not, so the
+ * action needs the same amount again to look evenly spaced beside them.
+ */
+.development-model-field ~ .send-button,
+.development-model-field ~ .stop-button {
+  margin-left: 10px;
+}
+
 .development-model-value {
   max-width: 148px;
   overflow: hidden;
@@ -4075,7 +4083,7 @@ textarea:focus-visible {
   gap: 10px;
 }
 
-.development-model-field {
+.development-model-form-field {
   display: grid;
   gap: 5px;
 }
