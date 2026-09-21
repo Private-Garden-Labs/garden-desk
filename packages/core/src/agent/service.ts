@@ -262,6 +262,7 @@ export class AgentService {
         );
       })();
       const command = this.commands.resolve(request.task);
+      if (command?.agent !== undefined) this.store.setRunAgent(run.id, command.agent);
       const messages = this.conversations.listMessages(run.sessionId);
       const anchored = this.summaries.load(run.sessionId);
       const inference = await this.runInference(request.developmentModelId);

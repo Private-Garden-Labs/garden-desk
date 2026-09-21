@@ -23,7 +23,7 @@ import { runInternalReview } from "./review-run.js";
 import { createRunExecutor } from "./service-executor.js";
 import type { AgentSessionManager } from "./session-manager.js";
 import type { AgentStore } from "./store.js";
-import { runSubagent } from "./subagent-run.js";
+import { runSubagent, specialistDefinition } from "./subagent-run.js";
 
 interface PrimaryRunInput {
   reviewCommand(): CommandInvocation | undefined;
@@ -83,11 +83,21 @@ function thinkingCallbacks(input: PrimaryRunInput) {
   };
 }
 
+/** Resolves a command that names a specialist. The specialist runs in this run, not in a child. */
+function commandSpecialist(input: PrimaryRunInput) {
+  const command = input.command;
+  if (command?.agent === undefined) return undefined;
+  const agent = input.definitions.agent(command.agent);
+  if (agent.mode !== "subagent") throw new Error("command_agent_invalid");
+  return { agent, task: `${command.description}\n\n${command.arguments || command.description}` };
+}
+
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: keep the primary agent input mapping together.
 export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunResult> {
   const { definitions, run, store } = input;
   const thinking = thinkingCallbacks(input);
   const primary = definitions.agent("primary");
+  const specialist = commandSpecialist(input);
   const attachments = store.listAttachments(run.sessionId).map((item, index) => ({
     path: `/run/attachments/${guestAttachmentName(index, item.name)}`,
     displayName: item.name,
@@ -105,7 +115,7 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
       store,
       sessions: input.sessions,
     }),
-    history: input.history,
+    ...(specialist === undefined ? { history: input.history } : {}),
     inspectImage: input.inspectImage,
     reviewDocument: (path, prompt, toolCallId) => {
       const review = input.reviewCommand();
@@ -146,19 +156,15 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
   };
   const runAgent = (request: ChatAgentInput) =>
     new ChatAgentLoop({ chat: input.chat }).run(request);
-  if (input.command?.agent !== undefined) {
-    const agent = definitions.agent(input.command.agent);
-    if (agent.mode !== "subagent") throw new Error("command_agent_invalid");
-    return runPrimarySubagent(
-      input,
-      {
-        subagentType: agent.name,
-        description: input.command.description,
-        prompt: input.command.arguments || input.command.description,
-        parentToolCallId: `command:${run.id}`,
-      },
-      "user",
-    );
+  if (specialist !== undefined) {
+    const { askQuestion, inspectImage, reviewDocument, spawnTask, subagents, ...base } = agentInput;
+    return runAgent({
+      ...base,
+      ...(specialist.agent.tools.includes("image") ? { inspectImage } : {}),
+      agent: specialistDefinition(definitions, specialist.agent, run.id, "user"),
+      skills: agentSkillReader(definitions, specialist.agent),
+      task: specialist.task,
+    });
   }
   return input.command === undefined
     ? runAgent(agentInput)
@@ -168,7 +174,6 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
 async function runPrimarySubagent(
   input: PrimaryRunInput,
   request: Parameters<typeof runSubagent>[1],
-  outputOwner: "parent" | "user" = "parent",
 ): Promise<AgentRunResult> {
   return await runSubagent(
     {
@@ -188,14 +193,6 @@ async function runPrimarySubagent(
       signal: input.signal,
       store: input.store,
       thinking: input.thinking,
-      outputOwner,
-      ...(outputOwner === "parent"
-        ? {}
-        : {
-            onResponse: input.onResponse,
-            onContext: input.onContext,
-            modelNeedsLoad: input.modelNeedsLoad,
-          }),
     },
     request,
   );

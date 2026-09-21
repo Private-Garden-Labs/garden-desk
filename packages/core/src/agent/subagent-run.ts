@@ -28,10 +28,6 @@ interface SubagentPorts {
   signal: AbortSignal;
   store: AgentStore;
   thinking?: ThinkingLevel;
-  outputOwner?: "parent" | "user";
-  modelNeedsLoad?: boolean;
-  onResponse?(text: string | null): void;
-  onContext?(used: number, allocated: number, measured?: boolean): void;
 }
 
 function createChild(ports: SubagentPorts, request: SubagentRequest) {
@@ -46,7 +42,6 @@ function createChild(ports: SubagentPorts, request: SubagentRequest) {
     ports.jobs.transition(job.id, "running");
     ports.store.transitionRun(run.id, { state: "running" });
     ports.store.appendEvent(run.id, "run.started", request.description);
-    commandEvent(ports, run, "subagent.started", request.description);
     return { ...run, assignment };
   })();
 }
@@ -72,38 +67,25 @@ function failChild(
       cancelled ? "Task cancelled." : "Sub-agent failed.",
       { stderr: detail },
     );
-    commandEvent(
-      ports,
-      child,
-      "subagent.completed",
-      cancelled ? "Task cancelled." : "Specialist failed.",
-    );
   })();
 }
 
-function commandEvent(
-  ports: SubagentPorts,
-  child: AgentRunSummary,
-  type: "subagent.started" | "subagent.completed",
-  summary: string,
-): void {
-  if (ports.outputOwner === "user")
-    ports.store.appendEvent(ports.parentRunId, type, summary, {
-      toolName: "task",
-      toolCallId: child.parentToolCallId ?? null,
-    });
-}
-
-function childDefinition(ports: SubagentPorts, definition: AgentDefinition, childId: string) {
-  const body = agentInstructions(ports.library, definition);
+/** Adds the specialist rules, the working directory, and the output owner to a packaged agent. */
+export function specialistDefinition(
+  library: MarkdownDefinitionLibrary,
+  definition: AgentDefinition,
+  runId: string,
+  outputOwner: "parent" | "user",
+): AgentDefinition {
+  const body = agentInstructions(library, definition);
   if (["general", "explore"].includes(definition.name)) return { ...definition, body };
-  const workDirectory = `/workspace/.garden-desk-tools/${childId}`;
-  const ownership = ports.library.system(
-    ports.outputOwner === "user" ? "specialist-user-output" : "specialist-parent-output",
+  const workDirectory = `/workspace/.garden-desk-tools/${runId}`;
+  const ownership = library.system(
+    outputOwner === "user" ? "specialist-user-output" : "specialist-parent-output",
   );
   return {
     ...definition,
-    body: `${body}\n\n${ports.library.system("specialist")}\n\nWorking directory: ${workDirectory}\n${ownership}`,
+    body: `${body}\n\n${library.system("specialist")}\n\nWorking directory: ${workDirectory}\n${ownership}`,
   };
 }
 
@@ -115,7 +97,6 @@ function completeChild(ports: SubagentPorts, child: AgentRunSummary, result: Age
       performance: runPerformance(result, child.createdAt),
     });
     ports.jobs.transition(child.jobId, "succeeded");
-    commandEvent(ports, child, "subagent.completed", "Specialist completed.");
   })();
 }
 
@@ -127,7 +108,7 @@ export async function runSubagent(
   const child = createChild(ports, request);
   try {
     const result = await new ChatAgentLoop(ports.inference).run({
-      agent: childDefinition(ports, definition, child.id),
+      agent: specialistDefinition(ports.library, definition, child.id, "parent"),
       contextTokens: ports.contextTokens,
       ...(ports.knownContextTokens === undefined
         ? {}
@@ -139,7 +120,6 @@ export async function runSubagent(
         sessions: ports.sessions,
       }),
       modelId: ports.modelId,
-      ...(ports.modelNeedsLoad === undefined ? {} : { modelNeedsLoad: ports.modelNeedsLoad }),
       attachments: ports.store.listAttachments(ports.sessionId).map((item, index) => ({
         path: `/run/attachments/${guestAttachmentName(index, item.name)}`,
         displayName: item.name,
@@ -148,11 +128,9 @@ export async function runSubagent(
       onEvent: (type, summary, detail) => ports.store.appendEvent(child.id, type, summary, detail),
       onResponse: (response) => {
         ports.store.setLiveResponse(child.id, response);
-        ports.onResponse?.(response);
       },
-      onContext: (used, allocated, measured) => {
+      onContext: (used, allocated) => {
         ports.store.setContext(child.id, used, allocated);
-        ports.onContext?.(used, allocated, measured);
       },
       signal: ports.signal,
       ...(ports.thinking === undefined ? {} : { thinking: ports.thinking }),

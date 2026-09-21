@@ -78,9 +78,11 @@ async function inspectReport(
 ): Promise<void> {
   assert.equal(snapshot.run.state, "succeeded", snapshot.run.error ?? "Task did not succeed.");
   assert.ok(
-    snapshot.childRuns.some(
-      (child) => child.agentId === task.agentId && child.state === "succeeded",
-    ),
+    task.command === undefined
+      ? snapshot.childRuns.some(
+          (child) => child.agentId === task.agentId && child.state === "succeeded",
+        )
+      : snapshot.run.agentId === task.agentId,
     "Requested specialist did not complete.",
   );
   const artifact = snapshot.artifacts.find((item) => item.name === "result.md");
