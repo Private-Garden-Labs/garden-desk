@@ -47,6 +47,11 @@ describe("generated file cards", () => {
       name: "feb2025.py",
       mediaType: "application/octet-stream",
     });
+    const bytecode = AgentArtifactSummarySchema.parse({
+      ...script,
+      id: "6ad824dc-bd7a-431a-9b2a-e79cdb8a9901",
+      name: "__pycache__/inspect.cpython-314.pyc",
+    });
     const render = (artifacts: (typeof report)[]) =>
       renderToStaticMarkup(
         createElement(GeneratedFiles, {
@@ -57,9 +62,10 @@ describe("generated file cards", () => {
         }),
       );
 
-    expect(render([script])).toBe("");
-    const markup = render([script, report]);
+    expect(render([script, bytecode])).toBe("");
+    const markup = render([script, bytecode, report]);
     expect(markup).toContain("report.csv");
     expect(markup).not.toContain("feb2025.py");
+    expect(markup).not.toContain("inspect.cpython-314.pyc");
   });
 });
