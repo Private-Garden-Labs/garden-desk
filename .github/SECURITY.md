@@ -4,7 +4,7 @@
 
 Do not report suspected vulnerabilities in a public issue, discussion, pull request, or chat transcript.
 
-Use [GitHub private vulnerability reporting](https://github.com/alex-alecu/garden-desk/security/advisories/new) once it is enabled to submit:
+Use [GitHub private vulnerability reporting](https://github.com/private-garden-labs/garden-desk/security/advisories/new) once it is enabled to submit:
 
 - A concise description of the vulnerability and affected boundary.
 - Reproduction steps or a minimal proof of concept.

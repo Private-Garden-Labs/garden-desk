@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh api repos/alex-alecu/garden-desk/compare:*), Bash(gh api repos/alex-alecu/garden-desk/pulls:*), mcp__github_inline_comment__create_inline_comment
+allowed-tools: Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh api repos/private-garden-labs/garden-desk/compare:*), Bash(gh api repos/private-garden-labs/garden-desk/pulls:*), mcp__github_inline_comment__create_inline_comment
 description: Review a pull request with one agent for small changes and a full agent set for large changes
 ---
 
