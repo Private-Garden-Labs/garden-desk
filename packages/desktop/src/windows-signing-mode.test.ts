@@ -6,21 +6,24 @@ describe("Windows signing mode", () => {
     expect(windowsSigningConfiguration({})).toEqual({ mode: "development" });
   });
 
-  it("requires and normalizes the production certificate thumbprint", () => {
+  it("requires the complete production Artifact Signing configuration", () => {
     expect(
       windowsSigningConfiguration({
         GARDEN_DESK_WINDOWS_SIGNING_MODE: "production",
-        GARDEN_DESK_WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT:
-          "aa11 aa11 aa11 aa11 aa11 aa11 aa11 aa11 aa11 aa11",
-        GARDEN_DESK_WINDOWS_SIGNING_TIMESTAMP_URL: "https://timestamp.example.test",
+        GARDEN_DESK_WINDOWS_SIGNING_ENDPOINT: "https://plc.codesigning.azure.net/",
+        GARDEN_DESK_WINDOWS_SIGNING_ACCOUNT: "Beaverr",
+        GARDEN_DESK_WINDOWS_SIGNING_PROFILE: "garden-desk",
+        GARDEN_DESK_WINDOWS_SIGNING_DLIB: "C:/tools/Azure.CodeSigning.Dlib.dll",
       }),
     ).toEqual({
       mode: "production",
-      certificateThumbprint: "AA11AA11AA11AA11AA11AA11AA11AA11AA11AA11",
-      timestampUrl: "https://timestamp.example.test",
+      endpoint: "https://plc.codesigning.azure.net/",
+      account: "Beaverr",
+      certificateProfile: "garden-desk",
+      signingDlib: "C:/tools/Azure.CodeSigning.Dlib.dll",
     });
     expect(() =>
       windowsSigningConfiguration({ GARDEN_DESK_WINDOWS_SIGNING_MODE: "production" }),
-    ).toThrow("certificate thumbprint");
+    ).toThrow("Artifact Signing");
   });
 });

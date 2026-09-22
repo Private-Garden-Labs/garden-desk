@@ -139,7 +139,7 @@ describe("M3 Windows setup helper", () => {
       readFile(join(process.cwd(), "packages/desktop/windows-setup-resource.ts"), "utf8"),
     ]);
     expect(signing).toContain("windowsSigningConfiguration");
-    expect(signing).toContain("GARDEN_DESK_SIGN_THUMBPRINT");
+    expect(signing).toContain("/dlib");
     expect(setupArguments).toContain('arguments[0] != "--requester-pid"');
     expect(setup).toContain("S-1-5-32-578");
     expect(setup).toContain("NetLocalGroupAddMembers");
