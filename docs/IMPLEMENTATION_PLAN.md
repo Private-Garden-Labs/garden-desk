@@ -120,7 +120,7 @@ The cross-platform supervisor, model resolver, memory scheduler, typed inference
 
 ### M3 — Offline Dev-Agent Desktop V1 — active
 
-Stage state: current evidence and the open items still blocking launch are in [M3_STATUS.md](M3_STATUS.md).
+Stage state: current evidence and the verification status are in [M3_STATUS.md](M3_STATUS.md).
 
 Scope:
 

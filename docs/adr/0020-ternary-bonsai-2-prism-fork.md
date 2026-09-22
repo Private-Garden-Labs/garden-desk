@@ -1,6 +1,6 @@
 # ADR 0020: Ternary Bonsai 2 27B and the PrismML llama.cpp fork
 
-Status: owner-approved candidate. Bounded Windows checks are in progress; see [current status](../M3_STATUS.md). This decision replaces the generation model, the image projector, and the runtime build in [ADR 0019](0019-qwen38-private-server.md). The private socket transport, the memory profiles, the context policy, the reasoning rules, and the embedding encoder from ADR 0019 stay in effect.
+Status: owner-approved candidate. Bounded Windows checks are complete; see [current status](../M3_STATUS.md). This decision replaces the generation model, the image projector, and the runtime build in [ADR 0019](0019-qwen38-private-server.md). The private socket transport, the memory profiles, the context policy, the reasoning rules, and the embedding encoder from ADR 0019 stay in effect.
 
 Use Ternary-Bonsai-2-27B `PQ2_0` (7.21 GB, 2.13 bits per weight) and its Q8_0 image projector on both platforms. Prism ML built the model from Qwen3.8-27B, so the chat template, the tool-call format, the thinking control, and the 262,144-token training context are the same. The model is Apache-2.0. The managed catalog pins each file, revision, size, and hash. Apache-2.0 redistribution requires the license text and the notice: the package ships `licenses/ternary-bonsai-2-LICENSE.txt`, `licenses/ternary-bonsai-2-NOTICE.txt` (Prism ML copyright and attribution), and `licenses/qwen3.8-LICENSE.txt` (Alibaba Cloud copyright for the base model), and the third-party notices list both packages.
 

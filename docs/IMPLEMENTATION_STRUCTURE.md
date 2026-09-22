@@ -2,7 +2,7 @@
 
 Updated: 2026-08-26
 
-This blueprint accompanies [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). M0, M1, and M2 source exists. M3 remains active for its current macOS and Windows physical evidence, professional-skill qualification, and cross-platform launch gate; see [M3_STATUS.md](M3_STATUS.md). Paths not yet present remain authority, not evidence of implementation.
+This blueprint accompanies [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). M0, M1, and M2 source exists. M3 remains active for its cross-platform launch gate; its verification status is in [M3_STATUS.md](M3_STATUS.md). Paths not yet present remain authority, not evidence of implementation.
 
 ## Startup Working Agreement
 
