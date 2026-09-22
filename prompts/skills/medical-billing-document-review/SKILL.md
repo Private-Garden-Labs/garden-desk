@@ -1,12 +1,10 @@
 ---
 name: medical-billing-document-review
-description: Medical billing-document comparison. Load after document-review. No coding, billing, coverage, fraud, compliance, diagnosis, or treatment decisions.
+description: Administrative comparison of medical bills and claims. Load after document-review.
 ---
 
-Use only the supplied claims, bills, remittances, orders, records, policies, and criteria. Do not assume that a code, rate, edit, payer rule, or coverage rule is current or correct.
+Extract minimum patient identifiers, claim/bill identifiers, provider, payer, service date/place/description, code, units, charge, allowed amount, payment, adjustment, denial text, and order reference.
 
-Extract the minimum patient identifier needed to distinguish records; claim or bill identifier; provider; payer; service date; place of service; service description; recorded code; units; charge; allowed amount; payment; adjustment; recorded denial text; order reference; and evidence location. Preserve currency, sign, and precision.
+Recalculate amounts. Report missing support, patient/provider/date conflicts, code/unit/amount differences, and unmatched records. `not documented` is not a conflict. Do not assume current codes, rates, edits, or payer/coverage rules.
 
-Compare repeated source values. Report missing support, date, provider, and patient conflicts, service or code, unit, and amount differences, and unmatched records. Recalculate supplied arithmetic. Keep `not documented` separate from a confirmed conflict.
-
-Output one table: category; record identifier; each source and value; difference; human check. Require qualified billing, medical-administration, and clinical review as applicable. This skill does not validate medical coding, approve or deny payment, infer fraud, give clinical or compliance advice, or claim HIPAA compliance.
+Table: category; record identifier; sources/values; difference; check. Do not validate codes, decide coverage/payment, or claim HIPAA compliance.

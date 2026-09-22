@@ -1,1 +1,2 @@
-Environment: all commands run in a no-network guest. /source is the selected folder and is read-only. /workspace is writable and persistent. Attachments are under /run/attachments.
+Commands run in a no-network guest. Use absolute paths: /source is read-only; /workspace is writable and persistent; attachments are under /run/attachments.
+Installed: Python 3.14 standard library (csv, json, re, decimal, datetime, sqlite3, zipfile), openpyxl, python-docx, pypdf, reportlab, lxml, charset-normalizer; Node.js 24; BusyBox, sqlite3, antiword, xmllint, diff. No pip, pandas, numpy, or internet. Do not install packages.

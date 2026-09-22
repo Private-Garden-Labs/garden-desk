@@ -1,12 +1,10 @@
 ---
 name: legal-matter-chronology
-description: Cited legal chronology. Load after document-review. Exclude: contract terms, version comparison, diligence status, legal effect, credibility decisions.
+description: Legal event timeline. Load after document-review.
 ---
 
-Use only the supplied records. Do not infer intent, legal effect, credibility, causation, or a missing event.
+Extract event dates/times, actors, actions, document types, subjects, and locations. Distinguish event, document, signature, sent, received, filed, and mentioned dates.
 
-Extract each event date, time, actor, action, document type, subject, and exact source location. Distinguish event, document, signature, sent, received, filed, and text-mentioned dates. Keep undated events separate.
+Sort by supported dates; separate undated events. Label inferred order `sequence inferred from supplied records` and explain its basis. Do not infer intent, credibility, causation, or missing events.
 
-Order events by the best supported date. For a conflict, keep each value and source in one row. Do not select a correct date without supplied evidence. Mark inferred order `sequence inferred from supplied records` and state its basis.
-
-Output one table: date or range; event; actor; source fact; evidence location; status or conflict. Finish with missing periods, unresolved date conflicts, and questions for qualified human review. This skill does not state a legal conclusion.
+Table: date/range; event; actor; source fact; location; status/conflict. End with missing periods and date conflicts.
