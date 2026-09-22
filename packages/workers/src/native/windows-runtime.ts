@@ -24,16 +24,27 @@ interface WindowsInferenceRuntimeOptions {
 }
 
 class VerifiedWindowsWorkerLauncher implements NativeWorkerLauncher {
+  private verified = false;
+
   get gpu() {
     return this.launcher.gpu;
   }
   constructor(
     private readonly launcher: NativeWorkerLauncher,
-    private readonly verifySelection: () => Promise<void>,
+    private readonly verifySelection: () => Promise<number | undefined>,
   ) {}
 
+  /** The verification probe also reads the free memory, so the launch that follows reuses it. */
+  async availableMemoryBytes(): Promise<number | undefined> {
+    const free = await this.verifySelection();
+    this.verified = true;
+    return free;
+  }
+
   async launch(request: NativeWorkerLaunchRequest): Promise<NativeWorkerHandle> {
-    await this.verifySelection();
+    const verified = this.verified;
+    this.verified = false;
+    if (!verified) await this.verifySelection();
     return await this.launcher.launch(request);
   }
 }

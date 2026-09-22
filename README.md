@@ -58,7 +58,7 @@ Conversations, files, generated work, audit records, and diagnostic traces stay 
 
 ## How we are building it
 
-- **Generation and image model:** Ternary-Bonsai-2-27B `PQ2_0` GGUF (built from Qwen3.8-27B) and its Q8_0 projector. Bounded Windows checks are in progress; see [current status](docs/M3_STATUS.md).
+- **Generation and image model:** Ternary-Bonsai-2-27B `PQ2_0` GGUF (built from Qwen3.8-27B) and its Q8_0 projector. The macOS and Windows checks are complete; see [current status](docs/M3_STATUS.md).
 - **Retrieval encoder:** the official `Qwen3-Embedding-0.6B Q8_0` GGUF for local semantic search. Document retrieval is part of the post-V1 document-intelligence work; the encoder's local runtime path is already validated.
 - **Model runtime:** pinned PrismML `llama.cpp` fork `prism-b10709-9a9394a` for text, images, and embeddings through a private socket. Model files are Apache-2.0 licensed; llama.cpp is MIT licensed.
 - **Desktop and control plane:** a [Tauri v2](https://tauri.app/) and React interface over a TypeScript and Node.js core that owns permissions, sessions, model requests, limits, audit, and recovery.
@@ -67,7 +67,7 @@ The model uses no exposed network port. It runs in a separate, supervised proces
 
 ## Local model operation
 
-Generation uses ternary weights and a context fitted to the memory budget, up to 256K tokens. Reasoning is shown live and stays outside stored conversations, traces, and audit records. The model proposes tool calls; Core controls execution inside the no-network microVM.
+Generation uses ternary weights and a context fitted to the inference memory budget, up to 128K tokens. Reasoning is shown live and stays outside stored conversations, traces, and audit records. The model proposes tool calls; Core controls execution inside the no-network microVM.
 
 ## Public website
 
@@ -99,9 +99,9 @@ On Windows Pro and Enterprise with Hyper-V already enabled, Garden Desk uses **H
 
 ## Project status
 
-M3 Offline Dev-Agent Desktop V1 is active. What it delivers today, the security boundary, and what still needs to happen before launch — packaged Open and Save As, a dedicated standard-user Windows setup, and release signing — are in the current [M3 status](docs/M3_STATUS.md).
+M3 Offline Dev-Agent Desktop V1 is active. What it delivers today, the security boundary, and the verification status are in the current [M3 status](docs/M3_STATUS.md). M3 verification is complete.
 
-The community software is free. Downloads are on the [releases page](https://gardendesk.ai/releases/). The macOS download is signed and notarized. The Windows download is not signed yet.
+The community software is free. Downloads are on the [releases page](https://gardendesk.ai/releases/). The macOS download is signed and notarized. The Windows download is signed with Azure Artifact Signing.
 
 ## Supporters
 

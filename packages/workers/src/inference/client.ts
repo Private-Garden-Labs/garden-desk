@@ -1,6 +1,5 @@
 import { setTimeout as delay } from "node:timers/promises";
 import {
-  contextCacheType,
   fittedContextTokens,
   INFERENCE_PROFILE,
   type InferenceWorkerRequest,
@@ -134,16 +133,17 @@ export class InferenceWorkerClient {
     }
   }
 
-  private contextTokens(execution: InferenceExecution, request: ModelRequest) {
+  private async contextTokens(execution: InferenceExecution, request: ModelRequest) {
     if (request.contextSize !== "auto") return request.contextSize;
     if (execution.modelByteLength === undefined) return INFERENCE_PROFILE.minimumContextTokens;
+    const available = await this.launcher.availableMemoryBytes?.();
     const fitted = fittedContextTokens({
-      memoryBudgetBytes: execution.memoryBudgetBytes,
+      backend: this.launcher.gpu?.backend ?? "metal",
+      memoryBudgetBytes:
+        available === undefined
+          ? execution.memoryBudgetBytes
+          : Math.min(execution.memoryBudgetBytes, available),
       modelByteLength: execution.modelByteLength,
-      cacheType: contextCacheType(
-        this.launcher.gpu?.backend ?? "metal",
-        execution.memoryBudgetBytes,
-      ),
     });
     if (fitted === undefined) {
       throw new ServerError(
@@ -154,6 +154,14 @@ export class InferenceWorkerClient {
     return fitted;
   }
 
+  private reusable(resident: ResidentServer, modelPath: string, request: ModelRequest): boolean {
+    return (
+      resident.modelPath === modelPath &&
+      resident.embedding === (request.operation === "embed") &&
+      (request.contextSize === "auto" || resident.contextTokens === request.contextSize)
+    );
+  }
+
   private async prepare(
     execution: InferenceExecution,
     request: ModelRequest,
@@ -161,16 +169,10 @@ export class InferenceWorkerClient {
   ): Promise<ResidentServer> {
     const modelPath = execution.modelPath;
     if (modelPath === undefined) throw new ServerError("invalid_argument");
-    const contextTokens = this.contextTokens(execution, request);
+    if (this.resident && this.reusable(this.resident, modelPath, request)) return this.resident;
+    await this.dropResident();
     const embedding = request.operation === "embed";
-    if (
-      this.resident &&
-      (this.resident.modelPath !== modelPath ||
-        this.resident.contextTokens !== contextTokens ||
-        this.resident.embedding !== embedding)
-    )
-      await this.dropResident();
-    if (this.resident) return this.resident;
+    const contextTokens = await this.contextTokens(execution, request);
     const handle = await startServer(
       this.launcher,
       this.workerEntryPath,
