@@ -144,7 +144,7 @@ requireText(home, "data-reveal", "home scroll motion");
 requireText(home, "Ternary Bonsai 2 27B", "home model");
 requireText(home, "Qwen3.8-27B", "home model provenance");
 requireText(home, "16 GB unified memory", "home macOS requirement");
-requireText(home, "10 GB dedicated VRAM", "home Windows requirement");
+requireText(home, "12 GB dedicated VRAM", "home Windows requirement");
 requireText(home, "Open it. Point it. Ask it.", "home how it works");
 requireText(home, 'id="how-it-works"', "home how-it-works anchor");
 requireText(home, 'id="requirements"', "home requirements anchor");
