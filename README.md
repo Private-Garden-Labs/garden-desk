@@ -67,7 +67,7 @@ The model uses no exposed network port. It runs in a separate, supervised proces
 
 ## Local model operation
 
-Generation uses ternary weights and a context fitted to the free graphics memory, up to 128K tokens. Reasoning is shown live and stays outside stored conversations, traces, and audit records. The model proposes tool calls; Core controls execution inside the no-network microVM.
+Generation uses ternary weights and a context fitted to the inference memory budget, up to 128K tokens. Reasoning is shown live and stays outside stored conversations, traces, and audit records. The model proposes tool calls; Core controls execution inside the no-network microVM.
 
 ## Public website
 
