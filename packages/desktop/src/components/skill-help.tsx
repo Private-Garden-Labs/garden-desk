@@ -17,6 +17,8 @@ const SKIPPED = [
   "BusyBox",
   "DarkGarden font",
   "Bitstream Vera fonts",
+  "DejaVu fonts",
+  "WenQuanYi Zen Hei font",
   "et-xmlfile",
   "typing-extensions",
   "charset-normalizer",

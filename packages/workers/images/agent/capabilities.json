@@ -329,6 +329,8 @@
     "ReportLab": "5.0.0",
     "charset-normalizer": "3.4.9",
     "DarkGarden font": "ReportLab 5.0.0 bundle",
-    "Bitstream Vera fonts": "ReportLab 5.0.0 bundle"
+    "Bitstream Vera fonts": "ReportLab 5.0.0 bundle",
+    "DejaVu fonts": "2.37",
+    "WenQuanYi Zen Hei font": "0.9.45"
   }
 }
