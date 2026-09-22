@@ -148,3 +148,14 @@ describe("M3 Windows setup helper", () => {
     expect(setupResource).toContain("garden-desk-hyper-v-setup.exe");
   });
 });
+
+describe("M3 Windows transport helper", () => {
+  it("signs the packaged current-user transport helper", async () => {
+    const resources = await readFile(
+      join(process.cwd(), "packages/desktop/package-resources.ts"),
+      "utf8",
+    );
+    const installer = resources.slice(resources.indexOf("function installWindowsPipeGuard"));
+    expect(installer.slice(0, installer.indexOf("\n}"))).toContain("signExecutable(pipeGuard)");
+  });
+});
