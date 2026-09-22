@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { delimiter, join } from "node:path";
@@ -13,6 +13,25 @@ import {
 } from "./package-output-cleanup.js";
 
 const desktopRoot = fileURLToPath(new URL(".", import.meta.url));
+
+function notarizeMacDiskImage(tauriRoot: string): void {
+  const { version } = JSON.parse(readFileSync(join(tauriRoot, "tauri.conf.json"), "utf8"));
+  const image = join(
+    tauriRoot,
+    "target",
+    "release",
+    "bundle",
+    "dmg",
+    `Garden Desk_${version}_aarch64.dmg`,
+  );
+  for (const args of [
+    ["notarytool", "submit", image, "--keychain-profile", "garden-desk", "--wait"],
+    ["stapler", "staple", image],
+  ]) {
+    const result = spawnSync("xcrun", args, { stdio: "inherit" });
+    if (result.status !== 0) throw new Error(`xcrun ${args[0]} failed for ${image}.`);
+  }
+}
 
 function pathVariable(): string {
   return Object.keys(process.env).find((name) => name.toLowerCase() === "path") ?? "PATH";
@@ -104,5 +123,12 @@ if (result.status !== 0) {
   } catch (error) {
     await rollbackPackageBuild(packageTarget, packageBackupCreated);
     throw error;
+  }
+  if (
+    process.platform === "darwin" &&
+    packageTarget.profile === "release" &&
+    process.env.APPLE_SIGNING_IDENTITY !== undefined
+  ) {
+    notarizeMacDiskImage(packageTarget.tauriRoot);
   }
 }
