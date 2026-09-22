@@ -1,10 +1,10 @@
 ---
 name: finance-document-review
-description: Financial: annual report, audit report, controls, or management commentary. Load after document-review. Exclude record reconciliation, invoice review, budget variance work.
+description: Financial statements, audit reports, controls, and commentary. Load after document-review.
 ---
 
-Use supplied sources only; no assumed framework/tax/accounting/audit/investment rule. Record entity/period/currency/unit/framework/auditor opinion; review statement/note/policy/comparison. Check supplied changed policies or estimates; restatements; going-concern text; modified opinions; material weaknesses; related-party items; unreconciled non-standard measures; unexplained changes. `missing coverage`: part/note/period only if supplied criterion requires it. Check supplied retrospective change/reclassification opening position.
+Record entity, period, currency, unit, framework, and auditor opinion.
 
-Recalculate subtotals/cash; compare repeats; report discrepancies. Cite period/unit/currency/sign/precision/amount/opinion/locations. Source currency/rate; materiality needs supplied amount/context, never fixed percentage.
+Check changed policies/estimates, restatements, reclassifications, going-concern text, modified opinions, material weaknesses, related parties, unreconciled non-standard measures, and unexplained changes. Recalculate subtotals and cash totals; compare repeated figures. Report missing coverage against supplied criteria only. Base materiality on supplied amounts and context.
 
-Table category/sources/values/difference/location/check. Qualified finance/accounting review before report/filing/financial decision. This skill does not give an audit, assurance, tax, investment, compliance, or fraud conclusion.
+Table: category; sources/values; difference; location; check. Give no assurance or investment conclusion.

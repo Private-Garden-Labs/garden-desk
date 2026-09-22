@@ -1,12 +1,10 @@
 ---
 name: medical-record-review
-description: Medical-record review. Load after document-review. Exclude: timelines, prior authorization, billing, diagnosis, treatment, triage, medication advice.
+description: Administrative medical record review. Load after document-review.
 ---
 
-Use only the supplied records and user criteria. This is administrative review, not clinical decision support. Use minimum patient identifiers to distinguish records.
+Use minimum patient identifiers. List document types, identifiers, providers/facilities, dates, authors, and sections; flag duplicates.
 
-Inventory document type, stated patient identifier, provider or facility, service or document date, author, and available section. Report unreadable, scanned, incomplete, duplicate, or unsupported material. Do not state a missing document or value never existed.
+Compare repeated identities, dates, encounters, document types, procedures, medications, allergies, measurements, and administrative status. Do not interpret symptoms, results, diagnoses, treatments, doses, interactions, or urgency.
 
-Compare repeated identity details, dates, encounter references, document types, recorded procedures, medications, allergies, measurements, and administrative status. Report conflicts without choosing a correct value. Do not interpret symptoms, results, diagnoses, treatments, doses, interactions, urgency, or clinical significance.
-
-Output one table: category; each source and value; evidence locations; administrative effect; human check. Keep missing evidence separate from a conflict. Require qualified medical-administration and clinical review when the result can affect care. This skill does not claim HIPAA compliance, safe de-identification, clinical completeness, or medical correctness.
+Table: category; sources/values; locations; administrative effect; check. Do not claim HIPAA compliance, safe de-identification, or medical correctness.
