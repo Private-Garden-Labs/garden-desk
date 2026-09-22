@@ -9,7 +9,6 @@ import {
   assertWindowsInferenceSelection,
   type ResolveWindowsGpuProfileOptions,
   resolveWindowsGpuProfile,
-  windowsAvailableMemoryBytes,
   windowsServerPath,
 } from "./windows-gpu.js";
 
@@ -25,21 +24,27 @@ interface WindowsInferenceRuntimeOptions {
 }
 
 class VerifiedWindowsWorkerLauncher implements NativeWorkerLauncher {
+  private verified = false;
+
   get gpu() {
     return this.launcher.gpu;
   }
   constructor(
     private readonly launcher: NativeWorkerLauncher,
-    private readonly verifySelection: () => Promise<void>,
-    private readonly freeMemoryBytes: () => Promise<number | undefined>,
+    private readonly verifySelection: () => Promise<number | undefined>,
   ) {}
 
+  /** The verification probe also reads the free memory, so the launch that follows reuses it. */
   async availableMemoryBytes(): Promise<number | undefined> {
-    return await this.freeMemoryBytes();
+    const free = await this.verifySelection();
+    this.verified = true;
+    return free;
   }
 
   async launch(request: NativeWorkerLaunchRequest): Promise<NativeWorkerHandle> {
-    await this.verifySelection();
+    const verified = this.verified;
+    this.verified = false;
+    if (!verified) await this.verifySelection();
     return await this.launcher.launch(request);
   }
 }
@@ -74,7 +79,6 @@ export async function createWindowsInferenceRuntime(options: WindowsInferenceRun
       { gpu: profile.selection },
     ),
     async () => await assertWindowsInferenceSelection(resolver, profile),
-    async () => await windowsAvailableMemoryBytes(resolver, profile.selection),
   );
   return {
     hardwareProfile,
