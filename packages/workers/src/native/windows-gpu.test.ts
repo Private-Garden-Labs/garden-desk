@@ -1,9 +1,11 @@
+import { INFERENCE_PROFILE } from "@gardendesk/shared";
 import { describe, expect, it } from "vitest";
 import type { WindowsGpuLaunch } from "./windows.js";
 import { isExpectedWindowsGpuIdentity } from "./windows-gpu-identity.js";
 import {
   normalizeGpuName,
   resolveIntegratedGpuBudget,
+  resolveWindowsGpuMemoryProfile,
   resolveWindowsGpuProfileFromFacts,
   type WindowsGpuAdapterInfo,
   type WindowsGpuInfo,
@@ -56,6 +58,16 @@ describe("Windows integrated GPU budgets", () => {
       expect(resolveIntegratedGpuBudget(installed, detected)).toBe(budget);
     },
   );
+});
+
+describe("Windows dedicated GPU budget", () => {
+  it("admits a large card only while its usable memory clears the floor", () => {
+    const floor = INFERENCE_PROFILE.minimumDedicatedMemoryBytes;
+    expect(resolveWindowsGpuMemoryProfile(false, 16 * GiB, 32 * GiB, floor - 1)).toBeUndefined();
+    expect(resolveWindowsGpuMemoryProfile(false, 16 * GiB, 32 * GiB, floor)).toMatchObject({
+      memoryBudgetBytes: floor,
+    });
+  });
 });
 
 describe("Windows dedicated GPU preference", () => {

@@ -81,7 +81,7 @@ This run measures the new model alone on one machine. The Qwen3.8 27B Q4 compari
 
 One run on physical Windows 11 (build 26200) with an AMD Ryzen 9 7945HX, 33,511,849,984 bytes of installed memory, and an NVIDIA GeForce RTX 4080 Laptop GPU on driver 32.0.15.5597. The pinned fork `windows-cuda-x64` archive reported `CUDA0: NVIDIA GeForce RTX 4080 Laptop GPU (12281 MiB, 11063 MiB free)`.
 
-The memory policy and the context rule ran on those probe numbers through the product functions. Detected memory was 12,877,561,856 bytes, above the 10 GB dedicated threshold. Usable memory was 11,600,396,288 bytes, and the budget followed it rather than the total, below the 16 GiB cap. The host reservation was 20 GiB. With Q4/Q4 caches and the 7,206,168,928-byte model, the fitted context was 90,112 tokens.
+The memory policy and the context rule ran on those probe numbers through the product functions. Detected memory was 12,877,561,856 bytes. Usable memory was 11,600,396,288 bytes, above the dedicated floor, and the budget followed it rather than the total, below the 16 GiB cap. The host reservation was 20 GiB. With Q4/Q4 caches and the 7,206,168,928-byte model, the fitted context was 90,112 tokens.
 
 The server loaded that context in 3.4 seconds and answered. It reported 6,861.74 MiB of GPU weights, a 1,584.00 MiB KV cache, a 149.62 MiB recurrent-state buffer, and a 441.27 MiB compute buffer, with 49.27 MiB of host compute and 0.95 MiB of host output. GPU allocation totalled about 9,036 MiB inside the 11,063 MiB the device reported free. A short request generated 13 tokens at 31.7 tokens/s after an 81.6 tokens/s prefill. The budget that follows usable memory did not select a context that fails to load.
 

@@ -19,7 +19,8 @@ export const INFERENCE_PROFILE = {
   minimumMacMemoryBytes: 16 * 1024 ** 3,
   fullBudgetMacMemoryBytes: 24 * 1024 ** 3,
   windowsIntegratedMemoryBytes: 24 * 1024 ** 3,
-  minimumDedicatedMemoryBytes: 10_000_000_000,
+  /** Model, fixed server buffers, reserve, and the smallest context with a Q4 cache. */
+  minimumDedicatedMemoryBytes: 10_494_503_264,
   runtimeBuild: "llama.cpp@prism-b10709-9a9394a",
 } as const;
 

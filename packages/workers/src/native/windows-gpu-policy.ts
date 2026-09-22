@@ -108,8 +108,9 @@ export function resolveIntegratedGpuBudget(
 }
 
 /**
- * A dedicated GPU must hold at least the minimum dedicated memory, and the
- * inference budget follows the memory the runtime reports as usable.
+ * The inference budget follows the memory the runtime reports as usable. A
+ * dedicated GPU is supported only when that budget holds the model and the
+ * smallest supported context, so an admitted GPU can always start the server.
  */
 export function resolveWindowsGpuMemoryProfile(
   integrated: boolean,
@@ -117,10 +118,11 @@ export function resolveWindowsGpuMemoryProfile(
   installedMemoryBytes: number,
   availableMemoryBytes = detectedMemoryBytes,
 ): { hostMemoryReservationBytes: number; memoryBudgetBytes: number } | undefined {
+  const dedicatedBudgetBytes = Math.min(availableMemoryBytes, INFERENCE_PROFILE.memoryBudgetBytes);
   const memoryBudgetBytes = integrated
     ? resolveIntegratedGpuBudget(installedMemoryBytes, availableMemoryBytes)
-    : detectedMemoryBytes >= INFERENCE_PROFILE.minimumDedicatedMemoryBytes
-      ? Math.min(availableMemoryBytes, INFERENCE_PROFILE.memoryBudgetBytes)
+    : dedicatedBudgetBytes >= INFERENCE_PROFILE.minimumDedicatedMemoryBytes
+      ? dedicatedBudgetBytes
       : undefined;
   if (memoryBudgetBytes === undefined || detectedMemoryBytes < memoryBudgetBytes) return undefined;
   return {
