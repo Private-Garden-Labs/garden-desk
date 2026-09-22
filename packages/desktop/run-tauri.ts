@@ -15,9 +15,6 @@ import {
 const desktopRoot = fileURLToPath(new URL(".", import.meta.url));
 
 function notarizeMacDiskImage(tauriRoot: string): void {
-  const { APPLE_API_KEY, APPLE_API_ISSUER, APPLE_API_KEY_PATH } = process.env;
-  if (APPLE_API_KEY === undefined || APPLE_API_ISSUER === undefined) return;
-  if (APPLE_API_KEY_PATH === undefined) return;
   const { version } = JSON.parse(readFileSync(join(tauriRoot, "tauri.conf.json"), "utf8"));
   const image = join(
     tauriRoot,
@@ -27,16 +24,8 @@ function notarizeMacDiskImage(tauriRoot: string): void {
     "dmg",
     `Garden Desk_${version}_aarch64.dmg`,
   );
-  const credentials = [
-    "--key",
-    APPLE_API_KEY_PATH,
-    "--key-id",
-    APPLE_API_KEY,
-    "--issuer",
-    APPLE_API_ISSUER,
-  ];
   for (const args of [
-    ["notarytool", "submit", image, ...credentials, "--wait"],
+    ["notarytool", "submit", image, "--keychain-profile", "garden-desk", "--wait"],
     ["stapler", "staple", image],
   ]) {
     const result = spawnSync("xcrun", args, { stdio: "inherit" });
@@ -135,7 +124,11 @@ if (result.status !== 0) {
     await rollbackPackageBuild(packageTarget, packageBackupCreated);
     throw error;
   }
-  if (process.platform === "darwin" && packageTarget.profile === "release") {
+  if (
+    process.platform === "darwin" &&
+    packageTarget.profile === "release" &&
+    process.env.APPLE_SIGNING_IDENTITY !== undefined
+  ) {
     notarizeMacDiskImage(packageTarget.tauriRoot);
   }
 }

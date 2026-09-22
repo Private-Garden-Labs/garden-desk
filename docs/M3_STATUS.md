@@ -43,7 +43,7 @@ The owner checked packaged Open and Save As for generated files by hand on 2026-
 
 The owner confirmed the other items complete on 2026-09-22: Windows setup under a dedicated standard-user account, Windows release signing, the full macOS gate, `pnpm verify` on Windows, `pnpm test:m3:windows`, the stress comparison, the Windows device selection stages, the AMD HIP measurement, the MLX 2-bit measurement, and the Qwen3.8 27B Q4 comparison. The repository keeps no captured output for these items. The dated sections below record only the runs that made files or console output, and they describe the machine and the date of each run.
 
-Windows release signing uses Azure Artifact Signing and covers the sidecar, the native helpers, and the eleven fork-built runtime files. [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) gives the values the build needs. The macOS release is signed with a Developer ID certificate and notarized; set `APPLE_SIGNING_IDENTITY` and the `APPLE_API_*` variables to reproduce that build.
+Windows release signing uses Azure Artifact Signing and covers the sidecar, the native helpers, and the eleven fork-built runtime files. [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) gives the values the build needs. The macOS release is signed with a Developer ID certificate and notarized; set `APPLE_SIGNING_IDENTITY` and create the `garden-desk` notary profile to reproduce that build.
 
 [Issue #158](https://github.com/Private-Garden-Labs/garden-desk/issues/158) is complete. The profile now takes measured server memory values that follow the context size, in place of the flat 2 GiB reserve. The 2026-09-22 sections below record those measurements.
 
