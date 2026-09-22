@@ -23,6 +23,7 @@ export interface NativeWorkerLauncher {
         detectedMemoryBytes?: number;
       }
     | undefined;
+  availableMemoryBytes?(): Promise<number | undefined>;
   launch(request: NativeWorkerLaunchRequest): Promise<NativeWorkerHandle>;
 }
 

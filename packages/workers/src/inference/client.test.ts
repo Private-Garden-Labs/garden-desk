@@ -250,6 +250,7 @@ it("uses private HTTP, reuses the server, and cancels a stream before reuse", as
   await new Promise<void>((accept) => server.listen(socket, accept));
   let launches = 0;
   const launcher: NativeWorkerLauncher = {
+    availableMemoryBytes: async () => 2 ** 34 - launches * 2 ** 30,
     async launch() {
       launches++;
       const child = Object.assign(new EventEmitter(), {
@@ -268,9 +269,10 @@ it("uses private HTTP, reuses the server, and cancels a stream before reuse", as
     },
   };
   const client = new InferenceWorkerClient(launcher, "unused");
-  const common = { modelPath: "model.gguf", memoryBudgetBytes: 1024, timeoutMs: 2_000 };
+  const base = { modelPath: "m", modelByteLength: 8e9, memoryBudgetBytes: 2 ** 34, timeoutMs: 2e3 };
+  const auto = InferenceWorkerRequestSchema.parse({ ...largeGeneration, contextSize: "auto" });
   try {
-    const result = await client.execute({ ...common, request: largeGeneration });
+    const result = await client.execute({ ...base, request: auto });
     expect(result).toMatchObject({
       operation: "generate",
       value: { result: "ok" },
@@ -279,13 +281,13 @@ it("uses private HTTP, reuses the server, and cancels a stream before reuse", as
     const controller = new AbortController();
     await expect(
       client.execute({
-        ...common,
-        request: InferenceWorkerRequestSchema.parse({ ...largeGeneration, maxTokens: 1 }),
+        ...base,
+        request: InferenceWorkerRequestSchema.parse({ ...auto, maxTokens: 1 }),
         signal: controller.signal,
         onThinkingDelta: () => controller.abort(),
       }),
     ).rejects.toMatchObject({ code: "cancelled" });
-    await expect(client.execute({ ...common, request: largeGeneration })).resolves.toMatchObject({
+    await expect(client.execute({ ...base, request: auto })).resolves.toMatchObject({
       operation: "generate",
     });
     expect(launches).toBe(1);

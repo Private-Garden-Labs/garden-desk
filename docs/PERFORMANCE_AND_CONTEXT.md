@@ -8,7 +8,7 @@ Research claims in this document are research-derived until validated on target 
 
 ## Decision
 
-[ADR 0019](adr/0019-qwen38-private-server.md) and [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) define the current target for Ternary Bonsai 2 27B: a context fitted once to the memory budget, one slot, and all weights and active context state on one GPU. A 16 GiB budget gives 262,144 tokens with Q4/Q4 caches and 208,896 with Q8/Q8. Mac requires 16 GiB installed memory, with a 10 GiB budget below 24 GiB (45,056 tokens with Q4/Q4) and a 16 GiB budget at 24 GiB and above. Windows fits the context to the memory the GPU reports as usable, and supports a dedicated GPU only when that usable memory is at least 10,494,503,264 bytes: the model, the smallest supported context, and the reserve; integrated GPUs still need 16 GiB usable allocation and host memory for one microVM.
+[ADR 0019](adr/0019-qwen38-private-server.md) and [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) define the current target for Ternary Bonsai 2 27B: a context fitted once to the inference memory budget, one slot, an FP16 context cache, and all weights and active context state on one GPU. A 16 GiB budget gives the full 131,072 tokens on a dedicated card, and 122,880 tokens on Metal, where the compute buffers cost more for each token. Mac requires 16 GiB installed memory, with a 10 GiB budget below 24 GiB (32,768 tokens) and a 16 GiB budget at 24 GiB and above. Windows reads the memory the GPU reports as free at each model load, and supports a dedicated GPU only when that memory is at least 10,444,171,616 bytes: the model, the smallest supported context, and the margin; integrated GPUs still need 16 GiB usable allocation and host memory for one microVM.
 
 ## Performance Thesis
 
@@ -193,7 +193,7 @@ V1 certification sequencing is strict: real multi-step agent tasks, bounded mode
 Do not:
 
 - Use raw context stuffing as the document engine.
-- Treat a 256K context claim as a substitute for retrieval and verification.
+- Treat a large context claim as a substitute for retrieval and verification.
 - Make lower-memory systems use a smaller or lower-quality reasoning model.
 - Disable claim verification or citations to fit memory.
 - Let parser workers compete with generation for VRAM by default.
