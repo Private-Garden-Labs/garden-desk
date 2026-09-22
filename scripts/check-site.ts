@@ -160,6 +160,10 @@ for (const download of [
 ]) {
   requireText(home, download, "home download");
   requireText(releases, download, "releases download");
+  const file = download.split("/").at(-1)?.replaceAll(".", "\\.");
+  if (!new RegExp(`${file}<br ?/?>SHA-256 [0-9a-f]{64}`).test(releases)) {
+    failures.push(`releases SHA-256: missing for ${download}`);
+  }
 }
 
 const sitemap = await text("sitemap.xml");
