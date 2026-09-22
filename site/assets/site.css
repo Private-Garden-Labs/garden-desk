@@ -358,6 +358,7 @@ even mid-hide. */
   color: #ffffff;
   border-color: transparent;
   background: linear-gradient(120deg, var(--forest), #347555 70%, #599175);
+  background-origin: border-box;
   background-size: 200% 100%;
   box-shadow: 0 12px 30px rgb(15 54 35 / 22%);
 }
@@ -366,6 +367,7 @@ even mid-hide. */
   color: #ffffff;
   border-color: transparent;
   background: linear-gradient(120deg, var(--forest), #347555 70%, #599175);
+  background-origin: border-box;
   background-size: 200% 100%;
   box-shadow: 0 12px 30px rgb(15 54 35 / 22%);
 }
@@ -2436,7 +2438,9 @@ nudged by the pointer. */
 }
 
 .release-card {
-  padding: 34px;
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
   border: 1px solid var(--line);
   border-radius: 24px;
   background: var(--glass);
@@ -2446,33 +2450,56 @@ nudged by the pointer. */
 
 .release-icon {
   display: inline-flex;
+  width: 46px;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--glass-strong);
   color: var(--leaf-soft);
 }
 
 .release-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
 }
 
 .release-card h2 {
-  margin: 14px 0 6px;
+  margin: 20px 0 8px;
   color: var(--ink-strong);
   font-size: 24px;
   letter-spacing: -0.03em;
 }
 
 .release-card > p {
-  margin: 0 0 24px;
+  margin: 0 0 26px;
   color: var(--ink-soft);
   font-size: 15px;
 }
 
-.release-meta {
-  margin: 16px 0 0;
+.release-card .button {
+  min-height: 48px;
+  margin-top: auto;
+}
+
+.release-card .release-file {
+  margin: 20px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--glass-strong);
+  color: var(--ink-soft);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.release-card .release-meta {
+  margin: 10px 0 0;
   color: var(--ink-faint);
   font-size: 12px;
   line-height: 1.6;
-  overflow-wrap: anywhere;
 }
 
 .release-size {
