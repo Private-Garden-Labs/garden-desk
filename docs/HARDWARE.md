@@ -42,10 +42,10 @@ May work for technical users. No guarantee and limited support.
 Current community targets follow [ADR 0019](adr/0019-qwen38-private-server.md) and [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md).
 
 - Mac: at least 16 GiB installed memory. Below 24 GiB the inference budget is 10 GiB; at 24 GiB and above it stays 16 GiB. Reserve 4 GiB for the host and 1 GiB per microVM.
-- Windows with a dedicated GPU: at least 12 GB of GPU memory and 28 GiB installed memory. The inference budget follows the memory the runtime reports as usable on that GPU, up to 16 GiB. That usable memory must hold the model, the smallest supported context, and the reserve: 10,494,503,264 bytes. A 10 GB card keeps less than this after the Windows desktop takes its part of the memory. Reserve 20 GiB for inference, 4 GiB for the host, and 1 GiB per microVM.
+- Windows with a dedicated GPU: at least 12 GB of GPU memory and 28 GiB installed memory. The inference budget follows the memory the runtime reports as usable on that GPU, up to 16 GiB. That usable memory must hold the model, the smallest supported context, and the margin: 10,444,171,616 bytes. A 10 GB card keeps less than this after the Windows desktop takes its part of the memory. Reserve 20 GiB for inference, 4 GiB for the host, and 1 GiB per microVM.
 - Windows with an integrated GPU: unchanged. At least 16 GiB usable GPU allocation and 24 GiB installed memory. CUDA and HIP retain device identity and isolation checks.
 - Windows graphics: NVIDIA through CUDA, and AMD Radeon RDNA 2, RDNA 3, and RDNA 4 through HIP. The HIP runtime needs `amdhip64_7.dll` from a current AMD Adrenalin driver. Tested hardware is listed in [M3_STATUS.md](M3_STATUS.md); every other card is expected compatibility, not verified.
-- Generation: Ternary Bonsai 2 27B, context fitted once to the memory budget (32K to 256K tokens), all weights and context state on one GPU. No runtime fitting or CPU fallback.
+- Generation: Ternary Bonsai 2 27B, an FP16 context cache, and a context fitted once to the free graphics memory (32K to 128K tokens), all weights and context state on one GPU. No runtime fitting or CPU fallback.
 - Windows agent execution requires Pro or Enterprise with Hyper-V enabled. The setup helper only adds the requesting user to Hyper-V Administrators.
 
 macOS and Windows are verified; [M3_STATUS.md](M3_STATUS.md) records the evidence and the machines. Memory admission is not certification: a Mac or a graphics card that the status does not name is expected compatibility.

@@ -2,6 +2,7 @@ import {
   type ChatGenerationRequest,
   ChatGenerationRequestSchema,
   fittedContextTokens,
+  INFERENCE_PROFILE,
   StructuredGenerationRequestSchema,
 } from "@gardendesk/shared";
 import { describe, expect, it } from "vitest";
@@ -20,18 +21,18 @@ const request = {
 } as const;
 
 describe("generation context contract", () => {
-  it("accepts automatic context and the model maximum", () => {
+  it("accepts automatic context and the product maximum", () => {
     expect(
       StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: "auto" }).success,
     ).toBe(true);
     expect(
-      StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: 262_144 }).success,
+      StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: 131_072 }).success,
     ).toBe(true);
   });
 
-  it("rejects explicit generation context above the model maximum", () => {
+  it("rejects explicit generation context above the product maximum", () => {
     expect(
-      StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: 262_145 }).success,
+      StructuredGenerationRequestSchema.safeParse({ ...request, contextSize: 131_073 }).success,
     ).toBe(false);
   });
 });
@@ -93,7 +94,6 @@ it("uses the model card sampling values and the reasoning guardrail", () => {
     backend: "metal",
     modelPath: "model.gguf",
     contextTokens: 32768,
-    memoryBudgetBytes: 16 * 1024 ** 3,
     speculation: "none",
   });
   expect(args[args.indexOf("--reasoning-budget") + 1]).toBe("32768");
@@ -104,34 +104,27 @@ it("uses the Metal buffer name accepted by the pinned server", () => {
     backend: "metal",
     modelPath: "model.gguf",
     contextTokens: 32768,
-    memoryBudgetBytes: 16 * 1024 ** 3,
     speculation: "none",
   });
   expect(args[args.indexOf("--override-tensor") + 1]).toBe(".*=MTL0");
 });
 
-it("uses matching cache types for Metal Flash Attention", () => {
+it("uses the FP16 context cache on every backend", () => {
   const args = serverArguments({
     backend: "metal",
     modelPath: "model.gguf",
     contextTokens: 32768,
-    memoryBudgetBytes: 16 * 1024 ** 3,
     speculation: "none",
   });
-  expect(args[args.indexOf("--cache-type-k") + 1]).toBe(args[args.indexOf("--cache-type-v") + 1]);
+  expect(args[args.indexOf("--cache-type-k") + 1]).toBe("f16");
+  expect(args[args.indexOf("--cache-type-v") + 1]).toBe("f16");
 });
 
-it("fits the context to the memory budget between the minimum and the model maximum", () => {
+it("fits the context to the memory budget between the minimum and the product maximum", () => {
   const fit = { memoryBudgetBytes: 16 * 1024 ** 3, modelByteLength: 7_206_168_928 };
-  expect(fittedContextTokens({ ...fit, cacheType: "q4_0" })).toBe(262_144);
-  expect(fittedContextTokens({ ...fit, cacheType: "q8_0" })).toBe(208_896);
-  expect(
-    fittedContextTokens({ ...fit, memoryBudgetBytes: 10 * 1024 ** 3, cacheType: "q4_0" }),
-  ).toBe(45_056);
-  expect(
-    fittedContextTokens({ ...fit, memoryBudgetBytes: 10 * 1024 ** 3, cacheType: "q8_0" }),
-  ).toBeUndefined();
-  expect(fittedContextTokens({ ...fit, memoryBudgetBytes: 8 * 1024 ** 3, cacheType: "q4_0" })).toBe(
-    undefined,
-  );
+  const floor = INFERENCE_PROFILE.minimumDedicatedMemoryBytes;
+  expect(fittedContextTokens(fit)).toBe(131_072);
+  expect(fittedContextTokens({ ...fit, memoryBudgetBytes: 10 * 1024 ** 3 })).toBe(36_864);
+  expect(fittedContextTokens({ ...fit, memoryBudgetBytes: floor })).toBe(32_768);
+  expect(fittedContextTokens({ ...fit, memoryBudgetBytes: floor - 1 })).toBeUndefined();
 });

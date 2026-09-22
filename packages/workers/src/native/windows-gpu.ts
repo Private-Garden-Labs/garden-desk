@@ -191,3 +191,12 @@ export async function assertWindowsInferenceSelection(
 ): Promise<void> {
   await assertWindowsGpuSelection(input, profile, profile.selection);
 }
+
+/** The memory the selected device reports as free right now, or undefined when the probe fails. */
+export async function windowsAvailableMemoryBytes(
+  input: ResolveWindowsGpuProfileOptions,
+  selection: WindowsGpuLaunch,
+): Promise<number | undefined> {
+  const result = await runtimeProbe(resolvedOptions(input), selection).catch(() => undefined);
+  return result?.availableMemoryBytes;
+}

@@ -249,7 +249,12 @@ it("uses private HTTP, reuses the server, and cancels a stream before reuse", as
   });
   await new Promise<void>((accept) => server.listen(socket, accept));
   let launches = 0;
+  let probes = 0;
   const launcher: NativeWorkerLauncher = {
+    async availableMemoryBytes() {
+      probes += 1;
+      return 16 * 1024 ** 3 - probes * 1024 ** 3;
+    },
     async launch() {
       launches++;
       const child = Object.assign(new EventEmitter(), {
@@ -268,9 +273,15 @@ it("uses private HTTP, reuses the server, and cancels a stream before reuse", as
     },
   };
   const client = new InferenceWorkerClient(launcher, "unused");
-  const common = { modelPath: "model.gguf", memoryBudgetBytes: 1024, timeoutMs: 2_000 };
+  const common = {
+    modelPath: "model.gguf",
+    modelByteLength: 7_206_168_928,
+    memoryBudgetBytes: 16 * 1024 ** 3,
+    timeoutMs: 2_000,
+  };
+  const auto = InferenceWorkerRequestSchema.parse({ ...largeGeneration, contextSize: "auto" });
   try {
-    const result = await client.execute({ ...common, request: largeGeneration });
+    const result = await client.execute({ ...common, request: auto });
     expect(result).toMatchObject({
       operation: "generate",
       value: { result: "ok" },
@@ -280,15 +291,16 @@ it("uses private HTTP, reuses the server, and cancels a stream before reuse", as
     await expect(
       client.execute({
         ...common,
-        request: InferenceWorkerRequestSchema.parse({ ...largeGeneration, maxTokens: 1 }),
+        request: InferenceWorkerRequestSchema.parse({ ...auto, maxTokens: 1 }),
         signal: controller.signal,
         onThinkingDelta: () => controller.abort(),
       }),
     ).rejects.toMatchObject({ code: "cancelled" });
-    await expect(client.execute({ ...common, request: largeGeneration })).resolves.toMatchObject({
+    await expect(client.execute({ ...common, request: auto })).resolves.toMatchObject({
       operation: "generate",
     });
     expect(launches).toBe(1);
+    expect(probes).toBe(1);
   } finally {
     await client.unload();
     await new Promise<void>((accept) => server.close(() => accept()));

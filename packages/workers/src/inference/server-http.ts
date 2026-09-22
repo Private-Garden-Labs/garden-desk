@@ -17,7 +17,10 @@ export class ServerError extends Error {
 export function serverFailure(value: unknown): ServerError {
   const text = JSON.stringify(value);
   if (/out of memory|failed to allocate|alloc.*failed/iu.test(text))
-    return new ServerError("out_of_memory");
+    return new ServerError(
+      "out_of_memory",
+      "Graphics memory is not available. Close other applications that use the graphics card and try again.",
+    );
   if (/context.*(?:exceed|too large)|(?:exceed|larger than).*context/iu.test(text))
     return new ServerError("invalid_argument", "context_size_exceeds_hardware_cap");
   return new ServerError("worker_crash");

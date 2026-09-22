@@ -67,7 +67,7 @@ At `f6c7b6d`, bounded Mac checks passed on an M5 Pro with 48 GiB and macOS 26.6.
 
 [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) moves the generation model to Ternary-Bonsai-2-27B `PQ2_0` on the PrismML llama.cpp fork `prism-b10709-9a9394a`. One approved smoke check ran on Windows with an RTX 5070 Ti (16 GiB) and the product server arguments at 32K context with Q4/Q4 context caches. The model loaded in 7.6 seconds. The server reported 6,861.74 MiB of GPU weights, a 576 MiB KV cache, a 149.62 MiB recurrent-state buffer, and a 189.27 MiB compute buffer. A plain question answered correctly at 62.3 tokens/s. A request with a `read_file` tool returned one well-formed tool call with the right path at 888 tokens/s prefill and 62.0 tokens/s generation. A game process held GPU memory during this check, so these numbers are not the comparison. That Windows check ran on the earlier release `prism-b10685-7dffb15`.
 
-The full comparison against Qwen3.8 27B Q4 (`pnpm model:compare`, `pnpm model:compare:agent`, `pnpm model:compare:report`) was open at that date. Bonsai 2 has no dspark drafter, so the speculative comparison uses the server's n-gram self-speculation (`ngram-mod`). The MLX 2-bit release is a Mac measurement target only. The context is now fitted to the memory budget (ADR 0020): 262,144 tokens on this Windows machine and 208,896 tokens on Mac. The Windows fitted size was unverified in a real run at that date; the Mac run below loaded the fitted size.
+The full comparison against Qwen3.8 27B Q4 (`pnpm model:compare`, `pnpm model:compare:agent`, `pnpm model:compare:report`) was open at that date. Bonsai 2 has no dspark drafter, so the speculative comparison uses the server's n-gram self-speculation (`ngram-mod`). The MLX 2-bit release is a Mac measurement target only. At that date the context was fitted with quantized caches: 262,144 tokens on this Windows machine and 208,896 tokens on Mac. The 2026-09-22 section below replaces that rule and those caches.
 
 ## 2026-09-19 Ternary Bonsai 2 On Apple Silicon
 
@@ -111,6 +111,23 @@ Signing those eleven files with an Authenticode signature lets them load, includ
 ## 2026-09-20 Windows AMD HIP On An Unsupported Integrated Adapter
 
 The `windows-hip-x64` runtime started after signing and reported no devices. `ggml-hip.dll` cannot load at all: it imports `amdhip64_7.dll`, and this system has only `amdhip64.dll`. The integrated adapter is an AMD Radeon 610M, which is gfx1036 and outside the compiled list in [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md). A current Adrenalin driver could supply the missing file; the unsupported architecture stands regardless. This section measures one unsupported integrated adapter, so it gives no result for the RDNA 2, RDNA 3, and RDNA 4 cards that ADR 0020 supports. The Verification Status section above records the AMD HIP result.
+
+## 2026-09-22 FP16 Context Memory On Windows NVIDIA
+
+Measured on physical Windows 11 with an RTX 5070 Ti (16,275 MiB total, 15,037 MiB free) and the pinned CUDA runtime, with the product server arguments and FP16 context caches. Two model loads.
+
+| Context | KV cache | Compute buffer | Weights | Recurrent state |
+| --- | --- | --- | --- | --- |
+| 32,768 tokens | 2,048.00 MiB | 83.01 MiB | 6,861.74 MiB | 149.62 MiB |
+| 98,304 tokens | 6,144.00 MiB | 115.01 MiB | 6,861.74 MiB | 149.62 MiB |
+
+At 32,768 tokens `nvidia-smi` rose by 9,338 MiB while the server was resident. That is 196 MiB more than the sum of the reported buffers, and that difference is the device context.
+
+The two loads give an exact cost for each token: 65,536 bytes for the FP16 cache, and 512 bytes for the compute buffer above a fixed 67 MiB. The fixed part of the server is therefore about 414 MiB: 149.62 MiB of recurrent state, 67 MiB of compute buffer, 196 MiB of device context, and 0.95 MiB of output. The profile keeps 512 MiB for that fixed part and a further 512 MiB margin. These measurements replace the 512 MiB and 2 GiB constants in [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md), which had no recorded calculation.
+
+One product run then used the automatic context. The free-memory reading was 15,767,437,312 bytes, the rule fitted 110,592 tokens, the server allocated 14,043 MiB inside that budget, and a short request answered correctly. That request generated two tokens, so it gives no speed comparison against the earlier quantized runs.
+
+A 12 GB card is not available here. The floor of 10,444,171,616 bytes rests on the arithmetic above, not on a run.
 
 ## Running The Golden Tasks
 
