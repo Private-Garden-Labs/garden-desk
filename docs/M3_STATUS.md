@@ -139,6 +139,32 @@ Prefill is the same for the three caches. FP16 generates fastest, by 1.4 percent
 
 A 12 GB card is not available here. The floor of 10,444,171,616 bytes rests on the arithmetic above, not on a run.
 
+## 2026-09-22 FP16 Context Memory On Apple Silicon
+
+Measured on an Apple M5 Pro with 48 GiB of unified memory and macOS 27.0, with the pinned Metal runtime, the product server arguments, and FP16 context caches. Three model loads.
+
+| Context | KV cache | Compute buffer | Weights | Recurrent state |
+| --- | ---: | ---: | ---: | ---: |
+| 32,768 tokens | 2,048.00 MiB | 202.24 MiB | 6,861.73 MiB | 149.62 MiB |
+| 98,304 tokens | 6,144.00 MiB | 490.27 MiB | 6,861.73 MiB | 149.62 MiB |
+| 131,072 tokens | 8,192.00 MiB | 634.29 MiB | 6,861.73 MiB | 149.62 MiB |
+
+A host compute buffer of 21.01, 53.01, and 69.01 MiB and an output buffer of 0.95 MiB stand beside those graphics buffers. Unified memory holds both.
+
+The FP16 cache costs 65,536 bytes for each token, the same as CUDA. The compute buffers do not: Metal takes 4,608 bytes for each token above a fixed 58 MiB, and the host buffer takes a further 512 bytes above a fixed 5 MiB. Metal therefore costs 5,120 bytes for each token where CUDA costs 512, and the profile keeps one measured value for each backend. The fixed part is about 214 MiB, inside the 512 MiB the profile keeps.
+
+One product run then used the automatic context. The rule fitted 122,880 tokens, the server allocated 15,290 MiB of graphics memory and 66 MiB of host memory inside the 16 GiB budget, and a short request answered correctly.
+
+Three more loads compared the cache types at 32,768 tokens with the same prompts as the Windows comparison: one request with a 6,318-token prompt, and one request that generated 400 tokens. A warmup request ran first each time.
+
+| Cache | Load | Prefill | Generation | Graphics memory |
+| --- | ---: | ---: | ---: | ---: |
+| FP16 | 0.7 s | 355.1 tokens/s | 27.7 tokens/s | 9,261.59 MiB |
+| Q8 | 0.7 s | 354.5 tokens/s | 27.1 tokens/s | 8,307.11 MiB |
+| Q4 | 0.8 s | 351.7 tokens/s | 27.3 tokens/s | 7,795.11 MiB |
+
+The Windows result holds here: prefill is the same for the three caches, within 1 percent, and FP16 generates fastest, by 2.2 percent against Q8 and 1.5 percent against Q4. The load column is not comparable with the Windows table, because Metal maps the weights from the file instead of copying them first; the warmup request pays that cost. Decode at a deep context is not measured.
+
 ## Running The Golden Tasks
 
 `pnpm test:m3:macos` and `pnpm test:m3:windows` run the guest security probes (no network interface, read-only `/source`, cancellation, resource limits, persistence), then four golden folder tasks — XLSX extraction, DOCX extraction, PDF extraction, and a mixed-folder report — each through one real agent run, checked deterministically against known fixture values. They print `golden: N/4 passed` and exit non-zero if any task fails. There is no separate readiness record or result classification beyond that count.

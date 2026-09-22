@@ -7,8 +7,8 @@ export const INFERENCE_PROFILE = {
   contextStepTokens: 4_096,
   /** Measured on the pinned build: an FP16 cache costs 64 KiB for each token. */
   contextCacheBytesPerToken: 64 * 1024,
-  /** The compute buffer grows with the context; the rest of the server does not. */
-  computeBytesPerToken: 512,
+  /** The compute buffers grow with the context; the rest of the server does not. Metal reserves more than CUDA. */
+  computeBytesPerToken: { metal: 5 * 1024, cuda: 512, hip: 512 },
   fixedServerBytes: 512 * 1024 ** 2,
   /** Fragmentation, and memory another program takes after the free-memory reading. */
   safetyMarginBytes: 512 * 1024 ** 2,
@@ -30,6 +30,7 @@ export const INFERENCE_PROFILE = {
 
 /** Returns undefined when the budget cannot hold the model and the minimum context. */
 export function fittedContextTokens(input: {
+  backend: "metal" | "cuda" | "hip";
   memoryBudgetBytes: number;
   modelByteLength: number;
 }): number | undefined {
@@ -40,7 +41,8 @@ export function fittedContextTokens(input: {
     INFERENCE_PROFILE.fixedServerBytes -
     INFERENCE_PROFILE.safetyMarginBytes;
   const bytesPerToken =
-    INFERENCE_PROFILE.contextCacheBytesPerToken + INFERENCE_PROFILE.computeBytesPerToken;
+    INFERENCE_PROFILE.contextCacheBytesPerToken +
+    INFERENCE_PROFILE.computeBytesPerToken[input.backend];
   const tokens = Math.floor(free / bytesPerToken);
   const stepped = Math.floor(tokens / contextStepTokens) * contextStepTokens;
   if (stepped < minimumContextTokens) return undefined;

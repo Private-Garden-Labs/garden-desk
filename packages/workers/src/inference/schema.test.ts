@@ -121,10 +121,18 @@ it("uses the FP16 context cache on every backend", () => {
 });
 
 it("fits the context to the memory budget between the minimum and the product maximum", () => {
-  const fit = { memoryBudgetBytes: 16 * 1024 ** 3, modelByteLength: 7_206_168_928 };
+  const fit = {
+    backend: "cuda",
+    memoryBudgetBytes: 16 * 1024 ** 3,
+    modelByteLength: 7_206_168_928,
+  } as const;
   const floor = INFERENCE_PROFILE.minimumDedicatedMemoryBytes;
   expect(fittedContextTokens(fit)).toBe(131_072);
   expect(fittedContextTokens({ ...fit, memoryBudgetBytes: 10 * 1024 ** 3 })).toBe(36_864);
   expect(fittedContextTokens({ ...fit, memoryBudgetBytes: floor })).toBe(32_768);
   expect(fittedContextTokens({ ...fit, memoryBudgetBytes: floor - 1 })).toBeUndefined();
+  expect(fittedContextTokens({ ...fit, backend: "metal" })).toBe(122_880);
+  expect(fittedContextTokens({ ...fit, backend: "metal", memoryBudgetBytes: 10 * 1024 ** 3 })).toBe(
+    32_768,
+  );
 });

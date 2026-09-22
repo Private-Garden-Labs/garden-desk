@@ -8,7 +8,7 @@ Research claims in this document are research-derived until validated on target 
 
 ## Decision
 
-[ADR 0019](adr/0019-qwen38-private-server.md) and [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) define the current target for Ternary Bonsai 2 27B: a context fitted once to the free graphics memory, one slot, an FP16 context cache, and all weights and active context state on one GPU. A 16 GiB budget gives the full 131,072 tokens. Mac requires 16 GiB installed memory, with a 10 GiB budget below 24 GiB (36,864 tokens) and a 16 GiB budget at 24 GiB and above. Windows reads the memory the GPU reports as free at each model load, and supports a dedicated GPU only when that memory is at least 10,444,171,616 bytes: the model, the smallest supported context, and the margin; integrated GPUs still need 16 GiB usable allocation and host memory for one microVM.
+[ADR 0019](adr/0019-qwen38-private-server.md) and [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) define the current target for Ternary Bonsai 2 27B: a context fitted once to the free graphics memory, one slot, an FP16 context cache, and all weights and active context state on one GPU. A 16 GiB budget gives the full 131,072 tokens on a dedicated card, and 122,880 tokens on Metal, where the compute buffers cost more for each token. Mac requires 16 GiB installed memory, with a 10 GiB budget below 24 GiB (32,768 tokens) and a 16 GiB budget at 24 GiB and above. Windows reads the memory the GPU reports as free at each model load, and supports a dedicated GPU only when that memory is at least 10,444,171,616 bytes: the model, the smallest supported context, and the margin; integrated GPUs still need 16 GiB usable allocation and host memory for one microVM.
 
 ## Performance Thesis
 

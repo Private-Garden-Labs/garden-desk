@@ -138,6 +138,7 @@ export class InferenceWorkerClient {
     if (execution.modelByteLength === undefined) return INFERENCE_PROFILE.minimumContextTokens;
     const available = await this.launcher.availableMemoryBytes?.();
     const fitted = fittedContextTokens({
+      backend: this.launcher.gpu?.backend ?? "metal",
       memoryBudgetBytes:
         available === undefined
           ? execution.memoryBudgetBytes
