@@ -108,9 +108,9 @@ Eleven files in each Windows archive carry no signature: `llama-server.exe`, `ll
 
 Signing those eleven files with an Authenticode signature lets them load, including a self-signed certificate whose chain is not trusted. An unsigned copy of the same directory still failed, and neither copy carried a download zone marker, so the signature is what changed the outcome. Mainline llama.cpp `b10816` is equally unsigned and runs on the same machine, so reputation covers it and a fork build has none. The macOS package signs each runtime file through `signRuntimeFile`. The Windows package now signs the same files.
 
-## 2026-09-20 Windows AMD HIP Is Unsupported On This Machine
+## 2026-09-20 Windows AMD HIP On An Unsupported Integrated Adapter
 
-The `windows-hip-x64` runtime started after signing and reported no devices. `ggml-hip.dll` cannot load at all: it imports `amdhip64_7.dll`, and this system has only `amdhip64.dll`. The integrated adapter is an AMD Radeon 610M, which is gfx1036 and outside the compiled list in [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md). A current Adrenalin driver could supply the missing file; the unsupported architecture stands regardless. HIP had no measurement on this hardware at that date.
+The `windows-hip-x64` runtime started after signing and reported no devices. `ggml-hip.dll` cannot load at all: it imports `amdhip64_7.dll`, and this system has only `amdhip64.dll`. The integrated adapter is an AMD Radeon 610M, which is gfx1036 and outside the compiled list in [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md). A current Adrenalin driver could supply the missing file; the unsupported architecture stands regardless. This section measures one unsupported integrated adapter, so it gives no result for the RDNA 2, RDNA 3, and RDNA 4 cards that ADR 0020 supports. The Verification Status section above records the AMD HIP result.
 
 ## Running The Golden Tasks
 

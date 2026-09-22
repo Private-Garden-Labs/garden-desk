@@ -101,7 +101,7 @@ On Windows Pro and Enterprise with Hyper-V already enabled, Garden Desk uses **H
 
 M3 Offline Dev-Agent Desktop V1 is active. What it delivers today, the security boundary, and the verification status are in the current [M3 status](docs/M3_STATUS.md). M3 verification is complete.
 
-The community software is free. Downloads are on the [releases page](https://gardendesk.ai/releases/). The macOS download is signed and notarized. The Windows download is not signed yet.
+The community software is free. Downloads are on the [releases page](https://gardendesk.ai/releases/). The macOS download is signed and notarized. The Windows download is signed with Azure Artifact Signing.
 
 ## Supporters
 
