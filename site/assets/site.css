@@ -354,15 +354,7 @@ even mid-hide. */
   transform: scale(1.08);
 }
 
-.nav-button {
-  color: #ffffff;
-  border-color: transparent;
-  background: linear-gradient(120deg, var(--forest), #347555 70%, #599175);
-  background-origin: border-box;
-  background-size: 200% 100%;
-  box-shadow: 0 12px 30px rgb(15 54 35 / 22%);
-}
-
+.nav-button,
 .button-primary {
   color: #ffffff;
   border-color: transparent;
