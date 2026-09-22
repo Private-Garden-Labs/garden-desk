@@ -10,7 +10,11 @@ import { stagePackedAgentInputs } from "./agent-staging.js";
 import { AgentHelperTransport } from "./agent-transport.js";
 import { emitDiagnostic } from "./diagnostics.js";
 import type { CodeAgentSession, MicroVmAgentRequest } from "./launcher.js";
-import { FramedAgentSession, initializeAgentGuest } from "./macos-agent-session.js";
+import {
+  agentGuestLimits,
+  FramedAgentSession,
+  initializeAgentGuest,
+} from "./macos-agent-session.js";
 import { launchSignal } from "./staging.js";
 import { fixedVhdFooter } from "./windows.js";
 import { AgentWorkspaceStore } from "./workspace-store.js";
@@ -121,7 +125,7 @@ export class WindowsAgentLauncher {
     );
     try {
       await transport.ready(signal);
-      const limits = { ...request.limits };
+      const limits = agentGuestLimits(request.limits);
       const store = await this.store();
       await initializeAgentGuest({
         sessionId: request.sessionId,

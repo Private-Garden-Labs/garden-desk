@@ -16,7 +16,7 @@ pub(crate) struct GpuEnvironment {
 #[derive(Clone, Copy)]
 pub(crate) enum GpuBackend {
     Cuda,
-    Vulkan,
+    Hip,
 }
 
 fn wide(value: &OsStr) -> Vec<u16> {
@@ -78,8 +78,8 @@ fn environment(scratch: &Path, profile: &Path, gpu: GpuEnvironment) -> Vec<u16> 
             Some(GpuBackend::Cuda) => {
                 values.push(format!("CUDA_VISIBLE_DEVICES={device_index}"));
             }
-            Some(GpuBackend::Vulkan) => {
-                values.push(format!("GGML_VK_VISIBLE_DEVICES={device_index}"));
+            Some(GpuBackend::Hip) => {
+                values.push(format!("HIP_VISIBLE_DEVICES={device_index}"));
             }
             None => {}
         }

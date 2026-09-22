@@ -127,7 +127,7 @@ async function runtimeProbe(
   });
   const output = await collectHandle(handle);
   const devices = [
-    ...output.matchAll(/^\s*(?:CUDA|Vulkan)\d+:\s+(.+?)\s+\((\d+)\s+MiB,\s*(\d+)\s+MiB free\)/gmu),
+    ...output.matchAll(/^\s*(?:CUDA|ROCm)\d+:\s+(.+?)\s+\((\d+)\s+MiB,\s*(\d+)\s+MiB free\)/gmu),
   ];
   if (devices.length === 0) return undefined;
   return {
@@ -139,12 +139,12 @@ async function runtimeProbe(
   };
 }
 
-export function windowsServerPath(path: string | undefined, backend: "cuda" | "vulkan"): string {
+export function windowsServerPath(path: string | undefined, backend: "cuda" | "hip"): string {
   const base =
     path ?? resolve("packages/eval/.generated/inference/windows-cuda-x64/llama-server.exe");
   return backend === "cuda"
     ? base
-    : join(dirname(dirname(base)), "windows-vulkan-x64", "llama-server.exe");
+    : join(dirname(dirname(base)), "windows-hip-x64", "llama-server.exe");
 }
 
 export async function resolveWindowsGpuProfile(
@@ -157,7 +157,7 @@ export async function resolveWindowsGpuProfile(
   const info = await gpuInfo(options);
   const inventories = (
     await Promise.all(
-      (["cuda", "vulkan"] as const).map(
+      (["cuda", "hip"] as const).map(
         async (backend) => await runtimeProbe(options, { backend }).catch(() => undefined),
       ),
     )

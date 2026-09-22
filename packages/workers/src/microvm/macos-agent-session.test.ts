@@ -1,9 +1,43 @@
 import { randomUUID } from "node:crypto";
 import { AgentExecutionIdSchema } from "@gardendesk/shared";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { encodeFrame } from "../ipc.js";
 import { AgentHelperTransport } from "./agent-transport.js";
+import { FramedAgentSession } from "./macos-agent-session.js";
 import { executeRequest, fakeChild, resultFrame } from "./macos-agent-session-test-support.js";
+import type { AgentWorkspaceStore } from "./workspace-store.js";
+
+describe("agent session guest response deadline", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("fails the execution when the guest never answers", async () => {
+    vi.useFakeTimers();
+    const { child } = fakeChild();
+    const session = new FramedAgentSession({
+      sessionId: randomUUID(),
+      limits: {
+        wallTimeMs: 1_000,
+        memoryBytes: 1024 * 1024 * 1024,
+        scratchBytes: 128 * 1024 * 1024,
+        outputBytes: 1_000_000,
+      },
+      transport: new AgentHelperTransport(child),
+      store: {} as AgentWorkspaceStore,
+      temporaryRoot: "/unused",
+      lifecyclePlatform: "macos",
+    });
+    const execution = session.execute({
+      language: "python",
+      path: "steps/live.py",
+      source: "print('live')",
+    });
+    const failure = expect(execution).rejects.toThrow("agent_guest_unresponsive");
+    await vi.advanceTimersByTimeAsync(17_000);
+    await failure;
+  });
+});
 
 describe("agent helper ordered live stream", () => {
   it("delivers ordered bounded frames before the terminal result", async () => {

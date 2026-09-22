@@ -4,6 +4,7 @@ import { createReadStream } from "node:fs";
 import {
   chmod,
   copyFile,
+  cp,
   lstat,
   mkdir,
   mkdtemp,
@@ -13,7 +14,7 @@ import {
   stat,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, dirname, isAbsolute, join, normalize, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
@@ -21,6 +22,7 @@ interface RuntimeArchive {
   archive: string;
   byteLength: number;
   files: Record<string, string>;
+  directories?: Record<string, string>;
   sha256: string;
   url: string;
 }
@@ -54,15 +56,17 @@ async function sha256(path: string): Promise<string> {
   return hash.digest("hex");
 }
 
+const SAFE_PATH_SEGMENT = /^[A-Za-z0-9._-]+$/u;
+
+/** Manifest paths always use forward slashes, on every platform. */
+function isSafeRelativePath(value: string): boolean {
+  return value
+    .split("/")
+    .every((segment) => segment !== "." && segment !== ".." && SAFE_PATH_SEGMENT.test(segment));
+}
+
 function archivePath(path: string): string {
-  if (
-    path.includes("\0") ||
-    isAbsolute(path) ||
-    normalize(path) !== path ||
-    path.split(/[\\/]/u).includes("..")
-  ) {
-    throw new Error("inference_archive_path_invalid");
-  }
+  if (!isSafeRelativePath(path)) throw new Error("inference_archive_path_invalid");
   return path;
 }
 
@@ -70,6 +74,11 @@ function targetName(path: string): string {
   if (path.includes("\0") || path !== basename(path)) {
     throw new Error("inference_target_name_invalid");
   }
+  return path;
+}
+
+function targetDirectory(path: string): string {
+  if (!isSafeRelativePath(path)) throw new Error("inference_target_directory_invalid");
   return path;
 }
 
@@ -100,6 +109,15 @@ async function fetchArchive(asset: RuntimeArchive, destination: string): Promise
   }
 }
 
+async function stageFile(extracted: string, source: string): Promise<string> {
+  const path = join(extracted, source);
+  const fromRoot = relative(extracted, path);
+  if (isAbsolute(fromRoot) || fromRoot.startsWith("..") || !(await lstat(path)).isFile()) {
+    throw new Error("inference_archive_entry_invalid");
+  }
+  return path;
+}
+
 async function stageArchive(input: {
   asset: RuntimeArchive;
   archive: string;
@@ -111,7 +129,10 @@ async function stageArchive(input: {
   const entries = Object.entries(asset.files).map(
     ([source, target]) => [archivePath(source), targetName(target)] as const,
   );
-  for (const [, target] of entries) {
+  const trees = Object.entries(asset.directories ?? {}).map(
+    ([source, target]) => [archivePath(source), targetDirectory(target)] as const,
+  );
+  for (const [, target] of [...entries, ...trees]) {
     if (installed.has(target)) throw new Error("inference_target_name_duplicate");
     installed.add(target);
   }
@@ -119,16 +140,16 @@ async function stageArchive(input: {
   extract(
     archive,
     extracted,
-    entries.map(([source]) => source),
+    [...entries, ...trees].map(([source]) => source),
   );
   for (const [source, target] of entries) {
+    await copyFile(await stageFile(extracted, source), join(staged, target));
+  }
+  for (const [source, target] of trees) {
     const path = join(extracted, source);
-    const fromRoot = relative(extracted, path);
-    const metadata = await lstat(path);
-    if (isAbsolute(fromRoot) || fromRoot.startsWith("..") || !metadata.isFile()) {
-      throw new Error("inference_archive_entry_invalid");
-    }
-    await copyFile(path, join(staged, target));
+    if (!(await lstat(path)).isDirectory()) throw new Error("inference_archive_entry_invalid");
+    await mkdir(dirname(join(staged, target)), { recursive: true });
+    await cp(path, join(staged, target), { recursive: true, dereference: false });
   }
 }
 

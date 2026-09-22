@@ -1,5 +1,7 @@
 import { setTimeout as delay } from "node:timers/promises";
 import {
+  contextCacheType,
+  fittedContextTokens,
   INFERENCE_PROFILE,
   type InferenceWorkerRequest,
   type InferenceWorkerResponse,
@@ -132,6 +134,26 @@ export class InferenceWorkerClient {
     }
   }
 
+  private contextTokens(execution: InferenceExecution, request: ModelRequest) {
+    if (request.contextSize !== "auto") return request.contextSize;
+    if (execution.modelByteLength === undefined) return INFERENCE_PROFILE.minimumContextTokens;
+    const fitted = fittedContextTokens({
+      memoryBudgetBytes: execution.memoryBudgetBytes,
+      modelByteLength: execution.modelByteLength,
+      cacheType: contextCacheType(
+        this.launcher.gpu?.backend ?? "metal",
+        execution.memoryBudgetBytes,
+      ),
+    });
+    if (fitted === undefined) {
+      throw new ServerError(
+        "invalid_argument",
+        "This graphics memory cannot hold the model and the smallest supported context.",
+      );
+    }
+    return fitted;
+  }
+
   private async prepare(
     execution: InferenceExecution,
     request: ModelRequest,
@@ -139,8 +161,7 @@ export class InferenceWorkerClient {
   ): Promise<ResidentServer> {
     const modelPath = execution.modelPath;
     if (modelPath === undefined) throw new ServerError("invalid_argument");
-    const contextTokens =
-      request.contextSize === "auto" ? INFERENCE_PROFILE.contextTokens : request.contextSize;
+    const contextTokens = this.contextTokens(execution, request);
     const embedding = request.operation === "embed";
     if (
       this.resident &&
@@ -153,7 +174,13 @@ export class InferenceWorkerClient {
     const handle = await startServer(
       this.launcher,
       this.workerEntryPath,
-      { modelPath, contextTokens, embedding, memoryBudgetBytes: execution.memoryBudgetBytes },
+      {
+        modelPath,
+        contextTokens,
+        embedding,
+        memoryBudgetBytes: execution.memoryBudgetBytes,
+        speculation: embedding ? "none" : INFERENCE_PROFILE.speculation,
+      },
       signal,
     ).catch(async (error: unknown) => {
       if (
@@ -183,7 +210,7 @@ export class InferenceWorkerClient {
         ? {}
         : { detectedGpuMemoryBytes: gpu.detectedMemoryBytes }),
       contextSizeTokens: contextTokens,
-      contextLimitTokens: INFERENCE_PROFILE.contextTokens,
+      contextLimitTokens: INFERENCE_PROFILE.maximumContextTokens,
       contextLimitReason: "certified_standard",
       sequenceCount: 1,
     };

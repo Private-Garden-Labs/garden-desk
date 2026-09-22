@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { rm } from "node:fs/promises";
 import {
+  AGENT_GUEST_ADDRESS_SPACE_BYTES,
   type AgentExecutionResult,
   AgentGuestExecuteRequestSchema,
   AgentGuestHelloRequestSchema,
@@ -12,6 +13,7 @@ import {
   AgentSourcePathSchema,
   type AgentWorkspaceDelta,
   isUserArtifactWorkspacePath,
+  type WorkerLimits,
 } from "@gardendesk/shared";
 import type { AgentHelperTransport } from "./agent-transport.js";
 import type {
@@ -34,6 +36,31 @@ interface GuestInitialization {
   transport: AgentHelperTransport;
   store: AgentWorkspaceStore;
   signal: AbortSignal;
+}
+
+/**
+ * The guest bounds task processes by address space, not by the memory of the
+ * virtual machine, so it receives the fixed address-space bound.
+ */
+export function agentGuestLimits(limits: WorkerLimits): GuestInitialization["limits"] {
+  return {
+    wallTimeMs: limits.wallTimeMs,
+    memoryBytes: AGENT_GUEST_ADDRESS_SPACE_BYTES,
+    scratchBytes: limits.scratchBytes,
+    outputBytes: limits.outputBytes,
+  };
+}
+
+/** Time the guest may take beyond its own wall time before the session fails. */
+const GUEST_RESPONSE_GRACE_MS = 15_000;
+
+function guestResponseDeadline(wallTimeMs: number): { signal: AbortSignal; clear(): void } {
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(new Error("agent_guest_unresponsive")),
+    wallTimeMs + GUEST_RESPONSE_GRACE_MS,
+  );
+  return { signal: controller.signal, clear: () => clearTimeout(timer) };
 }
 
 function invalidatedArtifactPaths(
@@ -169,6 +196,7 @@ export class FramedAgentSession implements CodeAgentSession {
     const requestId = randomUUID();
     const executionId = observer?.executionId ?? randomUUID();
     this.activeRequestId = requestId;
+    const deadline = guestResponseDeadline(this.options.limits.wallTimeMs);
     const abort = () => {
       try {
         this.options.transport.write({ protocolVersion: 3, requestId, operation: "cancel" });
@@ -191,7 +219,7 @@ export class FramedAgentSession implements CodeAgentSession {
       await observer?.onPrepared?.(resolved);
       signal?.throwIfAborted();
       const result = AgentGuestResultSchema.parse(
-        await this.options.transport.exchange(frame, undefined, {
+        await this.options.transport.exchange(frame, deadline.signal, {
           executionId,
           onUpdate: observer?.onUpdate ?? (() => undefined),
         }),
@@ -207,6 +235,7 @@ export class FramedAgentSession implements CodeAgentSession {
         recoverableArtifactPaths: recoverableArtifactPaths(result.workspaceDelta, captured),
       };
     } finally {
+      deadline.clear();
       signal?.removeEventListener("abort", abort);
       this.activeRequestId = undefined;
     }

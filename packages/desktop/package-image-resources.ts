@@ -1,7 +1,19 @@
-import { chmod, copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { basename, join, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import {
+  chmod,
+  copyFile,
+  cp,
+  mkdir,
+  readdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { signExecutable } from "./build-signing.js";
+import { INFERENCE_PROFILE } from "@gardendesk/shared";
+import { signExecutable, windowsSignatureValid } from "./build-signing.js";
 import { reportDevelopmentResourceStage } from "./src/dev-resource-progress.js";
 import * as model from "./src/package-model-contract.js";
 import type { ResourceHashes } from "./src/resource-hashes.js";
@@ -13,14 +25,26 @@ interface InferenceRuntimeManifest {
     string,
     {
       dependencies?: Array<{ files: Record<string, string> }>;
+      directories?: Record<string, string>;
       executable: string;
       files: Record<string, string>;
+      stagedSha256: string;
     }
   >;
 }
 const desktopRoot = fileURLToPath(new URL(".", import.meta.url));
 const repositoryRoot = resolve(desktopRoot, "../..");
 const resourcesRoot = join(desktopRoot, "src-tauri", "resources", "core");
+
+const SAFE_PATH_SEGMENT = /^[A-Za-z0-9._-]+$/u;
+
+/** Manifest paths always use forward slashes, on every platform. */
+function isSafeRelativePath(value: string): boolean {
+  const segments = value.split("/");
+  return segments.every(
+    (segment) => segment !== "." && segment !== ".." && SAFE_PATH_SEGMENT.test(segment),
+  );
+}
 
 export function runtimeResourceNames(
   manifest: InferenceRuntimeManifest,
@@ -42,6 +66,84 @@ export function runtimeResourceNames(
   return names.sort();
 }
 
+export function runtimeResourceDirectories(
+  manifest: InferenceRuntimeManifest,
+  platform: string,
+): string[] {
+  const runtime = manifest.platforms[platform];
+  if (runtime === undefined) throw new Error("Image inspection runtime platform is missing.");
+  const targets = Object.values(runtime.directories ?? {});
+  if (targets.some((target) => !isSafeRelativePath(target))) {
+    throw new Error("Image inspection runtime manifest is invalid.");
+  }
+  return targets.sort();
+}
+
+/** The fork builds these; the vendor dependencies beside them arrive signed. */
+export function forkBuiltResourceNames(
+  manifest: InferenceRuntimeManifest,
+  platform: string,
+): string[] {
+  const runtime = manifest.platforms[platform];
+  if (runtime === undefined) throw new Error("Image inspection runtime platform is missing.");
+  return Object.values(runtime.files).sort();
+}
+
+async function hashTree(
+  sha256: HashFile,
+  root: string,
+  prefix: string,
+): Promise<Record<string, string>> {
+  const hashes: Record<string, string> = {};
+  for (const entry of await readdir(join(root, prefix), { withFileTypes: true })) {
+    const name = `${prefix}/${entry.name}`;
+    if (entry.isDirectory()) {
+      Object.assign(hashes, await hashTree(sha256, root, name));
+      continue;
+    }
+    if (!entry.isFile()) throw new Error("Inference runtime must contain files only.");
+    hashes[name] = await sha256(join(root, name));
+  }
+  return hashes;
+}
+
+async function copyRuntimePackage(
+  source: string,
+  destination: string,
+  names: string[],
+  directories: string[],
+): Promise<void> {
+  await rm(destination, { recursive: true, force: true });
+  await mkdir(destination, { recursive: true });
+  await Promise.all(names.map((name) => copyFile(join(source, name), join(destination, name))));
+  for (const directory of directories) {
+    await mkdir(dirname(join(destination, directory)), { recursive: true });
+    await cp(join(source, directory), join(destination, directory), {
+      recursive: true,
+      dereference: false,
+    });
+  }
+}
+
+async function hashRuntimePackage(
+  sha256: HashFile,
+  destination: string,
+  directoryRoots: Set<string>,
+  forkBuilt: Set<string>,
+): Promise<Record<string, string>> {
+  const hashes: Record<string, string> = {};
+  for (const entry of await readdir(destination, { withFileTypes: true })) {
+    if (entry.isDirectory() && directoryRoots.has(entry.name)) {
+      Object.assign(hashes, await hashTree(sha256, destination, entry.name));
+      continue;
+    }
+    if (!entry.isFile()) throw new Error("Inference runtime must contain files only.");
+    signRuntimeFile(join(destination, entry.name), forkBuilt.has(entry.name));
+    hashes[entry.name] = await sha256(join(destination, entry.name));
+  }
+  return hashes;
+}
+
 async function requireFetchedAsset(path: string, fetchCommand: string): Promise<void> {
   try {
     await stat(path);
@@ -52,8 +154,39 @@ async function requireFetchedAsset(path: string, fetchCommand: string): Promise<
   }
 }
 
-function signRuntimeFile(path: string): void {
+/** The build signs the staged runtime as it is, so it must match the hash pinned with the archives. */
+export async function stagedRuntimeDigest(sha256: HashFile, root: string): Promise<string> {
+  const hashes = await hashTree(sha256, root, "");
+  const lines = Object.entries(hashes).map(([name, hash]) => `${name}\n${hash}\n`);
+  return createHash("sha256").update(lines.sort().join("")).digest("hex");
+}
+
+async function requireStagedRuntime(
+  sha256: HashFile,
+  source: string,
+  manifest: InferenceRuntimeManifest,
+  platform: string,
+): Promise<void> {
+  await requireFetchedAsset(source, `pnpm inference:fetch --platform ${platform}`);
+  const expected = manifest.platforms[platform]?.stagedSha256;
+  if (expected === undefined) {
+    throw new Error(`Inference runtime hash is missing for ${platform}.`);
+  }
+  const actual = await stagedRuntimeDigest(sha256, source);
+  if (actual !== expected) {
+    throw new Error(
+      `Staged inference runtime for ${platform} does not match its pinned hash. Found ${actual}.`,
+    );
+  }
+}
+
+/** Windows code integrity refuses to load the fork's binaries while they carry no signature. */
+function signRuntimeFile(path: string, forkBuilt: boolean): void {
   if (process.platform === "darwin" && process.env.APPLE_SIGNING_IDENTITY !== undefined) {
+    signExecutable(path);
+    return;
+  }
+  if (process.platform === "win32" && forkBuilt && !windowsSignatureValid(path)) {
     signExecutable(path);
   }
 }
@@ -69,26 +202,34 @@ export async function installRuntimeResources(
   const hashes: Record<string, string> = {};
   for (const platform of nativeRuntimePackages()) {
     const source = join(repositoryRoot, "packages/eval/.generated/inference", platform);
-    await requireFetchedAsset(source, `pnpm inference:fetch --platform ${platform}`);
+    await requireStagedRuntime(sha256, source, manifest, platform);
     const destination = join(destinationRoot, platform);
     const names = runtimeResourceNames(manifest, platform);
-    await rm(destination, { recursive: true, force: true });
-    await mkdir(destination, { recursive: true });
-    await Promise.all(names.map((name) => copyFile(join(source, name), join(destination, name))));
+    const directories = runtimeResourceDirectories(manifest, platform);
+    await copyRuntimePackage(source, destination, names, directories);
     await chmod(
       join(destination, (manifest.platforms[platform] as { executable: string }).executable),
       0o755,
     );
-    for (const entry of await readdir(destination, { withFileTypes: true })) {
-      if (!entry.isFile()) throw new Error("Inference runtime must contain files only.");
-      signRuntimeFile(join(destination, entry.name));
-      hashes[`${platform}/${entry.name}`] = await sha256(join(destination, entry.name));
+    const roots = new Set(directories.map((directory) => directory.split("/")[0] as string));
+    for (const [name, hash] of Object.entries(
+      await hashRuntimePackage(
+        sha256,
+        destination,
+        roots,
+        new Set(forkBuiltResourceNames(manifest, platform)),
+      ),
+    )) {
+      hashes[`${platform}/${name}`] = hash;
     }
   }
   await mkdir(join(resourcesRoot, "licenses"), { recursive: true });
   const licenses = [
     "llama.cpp-LICENSE.txt",
-    ...(process.platform === "win32" ? ["cuda-EULA.html", "llvm-OpenMP-LICENSE.txt"] : []),
+    "ternary-bonsai-2-LICENSE.txt",
+    "ternary-bonsai-2-NOTICE.txt",
+    "qwen3.8-LICENSE.txt",
+    ...(process.platform === "win32" ? ["cuda-EULA.html", "rocm-LICENSE.txt"] : []),
   ];
   for (const license of licenses)
     await copyFile(
@@ -109,13 +250,13 @@ export async function installImageModelResources(
       modelId: model.generationModelId,
       storeKey: model.generationModelFileName,
       source: model.canonicalGenerationModelPath(repositoryRoot),
-      runtimeBuild: "llama.cpp@b10816",
+      runtimeBuild: INFERENCE_PROFILE.runtimeBuild,
     },
     {
       modelId: model.projectorModelId,
       storeKey: model.projectorModelFileName,
       source: model.canonicalProjectorModelPath(repositoryRoot),
-      runtimeBuild: "llama.cpp@b10816",
+      runtimeBuild: INFERENCE_PROFILE.runtimeBuild,
     },
   ] as const;
   for (const candidate of candidates) {

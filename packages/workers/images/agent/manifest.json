@@ -155,6 +155,20 @@
       "version": "ReportLab 5.0.0 bundle",
       "license": "Bitstream-Vera",
       "purpose": "ReportLab bundled fonts"
+    },
+    {
+      "name": "DejaVu fonts",
+      "version": "2.37",
+      "license": "Bitstream-Vera",
+      "sha256": "fa9ca4d13871dd122f61258a80d01751d603b4d3ee14095d65453b4e846e17d7",
+      "purpose": "PDF text in Latin, Cyrillic, Greek, Armenian, and Georgian scripts"
+    },
+    {
+      "name": "WenQuanYi Zen Hei font",
+      "version": "0.9.45",
+      "license": "GPL-2.0-only WITH Font-exception-2.0",
+      "sha256": "e4b7e306475bf9427d1757578f0e4528930c84c44eaa3f167d4c42f110ee75d6",
+      "purpose": "PDF text in Chinese, Japanese, and Korean"
     }
   ],
   "networkFeaturesForbidden": ["CONFIG_INET", "CONFIG_IPV6", "CONFIG_WLAN", "CONFIG_WIRELESS"],
@@ -164,13 +178,13 @@
       "kernelFile": "Image",
       "kernelSha256": "211d283fafe9e094e614629ef21f8616cdce24c5e4b43b936c4c73a3e447e7bd",
       "initramfsFile": "rootfs.cpio",
-      "initramfsSha256": "d12b451e875dd9a1c4710f435ef040e03bef814024c28685a7d1bf29587f8570"
+      "initramfsSha256": "53a685a224dfadc0989d939ececb11a89a5154df33bf5aacd020a74c81ebb5b0"
     },
     "x86_64": {
       "kernelFile": "bzImage",
       "kernelSha256": "9fabee42a89b8128aa9f16dee4d43289c113f8b2aea398cabc904b6911a41dea",
       "initramfsFile": "rootfs.cpio",
-      "initramfsSha256": "a7e3558b945b09b4d437d1aa6d97cb8206c3b417e512badb84ff0deee8f33e87"
+      "initramfsSha256": "16de238b09377a84bace6a015d2ec19cf7a4cbb3a09a53257506cd3c53e0d817"
     }
   }
 }

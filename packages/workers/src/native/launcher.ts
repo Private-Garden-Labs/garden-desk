@@ -18,7 +18,7 @@ export interface NativeWorkerHandle {
 export interface NativeWorkerLauncher {
   readonly gpu?:
     | {
-        backend: "cuda" | "vulkan" | "metal";
+        backend: "cuda" | "hip" | "metal";
         memoryKind?: "dedicated" | "unified";
         detectedMemoryBytes?: number;
       }

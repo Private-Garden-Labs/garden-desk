@@ -39,12 +39,13 @@ May work for technical users. No guarantee and limited support.
 
 ## Community Target
 
-Current community targets follow [ADR 0019](adr/0019-qwen38-private-server.md).
+Current community targets follow [ADR 0019](adr/0019-qwen38-private-server.md) and [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md).
 
-- Mac: at least 24 GiB installed memory, with a 16 GiB inference budget, 4 GiB for the host, and 4 GiB per microVM.
-- Windows with a dedicated GPU: at least 16 billion bytes of GPU memory and 28 GiB installed memory. Reserve 20 GiB for inference, 4 GiB for the host, and 4 GiB per microVM.
-- Windows with an integrated GPU: at least 16 GiB usable GPU allocation and 24 GiB installed memory. CUDA and Vulkan retain device identity and isolation checks.
-- Generation: Qwen3.8 27B Q4, fixed 32K context, all weights and context state on one GPU. No automatic fitting or CPU fallback.
+- Mac: at least 16 GiB installed memory. Below 24 GiB the inference budget is 10 GiB; at 24 GiB and above it stays 16 GiB. Reserve 4 GiB for the host and 1 GiB per microVM.
+- Windows with a dedicated GPU: at least 12 GB of GPU memory and 28 GiB installed memory. The inference budget follows the memory the runtime reports as usable on that GPU, up to 16 GiB. That usable memory must hold the model, the smallest supported context, and the reserve: 10,494,503,264 bytes. A 10 GB card keeps less than this after the Windows desktop takes its part of the memory. Reserve 20 GiB for inference, 4 GiB for the host, and 1 GiB per microVM.
+- Windows with an integrated GPU: unchanged. At least 16 GiB usable GPU allocation and 24 GiB installed memory. CUDA and HIP retain device identity and isolation checks.
+- Windows graphics: NVIDIA through CUDA, and AMD Radeon RDNA 2, RDNA 3, and RDNA 4 through HIP. The HIP runtime needs `amdhip64_7.dll` from a current AMD Adrenalin driver. Tested hardware is listed in [M3_STATUS.md](M3_STATUS.md); every other card is expected compatibility, not verified.
+- Generation: Ternary Bonsai 2 27B, context fitted once to the memory budget (32K to 256K tokens), all weights and context state on one GPU. No runtime fitting or CPU fallback.
 - Windows agent execution requires Pro or Enterprise with Hyper-V enabled. The setup helper only adds the requesting user to Hyper-V Administrators.
 
 Memory admission is not certification. [Bounded Mac checks](M3_STATUS.md) passed on an M5 Pro with 48 GiB. Other Mac configurations remain unverified.
@@ -97,8 +98,8 @@ The first office appliance should benchmark from real workflow demand, not from 
 
 Planned first-choice runtime directions:
 
-- Apple Silicon: the pinned llama.cpp server through Metal with Qwen3.8 Q4 first; MLX-family serving is a later adapter-backed optimization candidate.
-- Windows: one package contains CUDA and Vulkan. The worker probes both and uses one adapter that it can map and isolate. CUDA has priority over Vulkan only for the same adapter. The user supplies a compatible display driver, not a separate Garden Desk installation.
+- Apple Silicon: the pinned llama.cpp fork server through Metal with Ternary Bonsai 2 first; MLX-family serving is a later adapter-backed optimization candidate.
+- Windows: one package contains CUDA and HIP. The worker probes both and uses one adapter that it can map and isolate. CUDA has priority over HIP only for the same adapter. The user supplies a compatible display driver, not a separate Garden Desk installation.
 - Shared appliance or Linux server: vLLM-class serving only after the automatic desktop tiers are validated and appliance profiles are re-opened.
 - NVIDIA-specific optimization: later, after exact model support is proven.
 

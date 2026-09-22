@@ -30,6 +30,13 @@ export const WorkerLimitsSchema = z.object({
   cpuCount: z.number().int().positive().max(8),
 });
 
+/**
+ * Guest process address-space bound. A 64-bit runtime reserves much more
+ * virtual address space than it ever makes resident, so this is separate from
+ * the physical memory of the virtual machine.
+ */
+export const AGENT_GUEST_ADDRESS_SPACE_BYTES = 4 * 1024 * 1024 * 1024;
+
 export const WorkerRequestSchema = z.object({
   protocolVersion: z.literal(1),
   requestId: RequestIdSchema,
