@@ -1,6 +1,6 @@
 # Milestone M3 Status
 
-Updated: 2026-09-19
+Updated: 2026-09-22
 
 M3 Offline Dev-Agent Desktop V1 is active. The desktop runs one general-purpose local agent per conversation: a system prompt plus a fixed tool set, executing every file read and every command inside a no-network microVM (a virtual machine with no network interface).
 
@@ -35,12 +35,17 @@ Findings. The initramfs root holds about 147 MiB of guest RAM permanently, which
 - Garden Desk Core owns every host filesystem, process, and audit decision; the webview and the model never receive host authority.
 - Crash recovery marks any run left `queued` or `running` after a Core restart as failed. Session summaries and context compaction keep long conversations coherent without extending the live prompt indefinitely.
 
-## What Remains Open
+## Verification Status
 
-- Blind qualified-reviewer check of the professional review skills' outputs (legal, finance, medical administration) on both platforms before public release.
-- Packaged Open and Save As for generated files, observed on the built macOS and Windows applications.
-- Windows setup certified under a dedicated standard-user account (current evidence used an administrator account with UAC filtering).
-- Windows release signing: Authenticode signing under the production certificate, covering the inference runtime files as well as the sidecar and the helpers. Smart App Control blocks the unsigned runtime, so this is required to run, not only to ship. The macOS release is signed with a Developer ID certificate and notarized; set `APPLE_SIGNING_IDENTITY` and the `APPLE_API_*` variables to reproduce that build.
+M3 verification is complete.
+
+The owner checked packaged Open and Save As for generated files by hand on 2026-09-22, on the built macOS application and the built Windows application. Both work.
+
+The owner confirmed the other items complete on 2026-09-22: Windows setup under a dedicated standard-user account, Windows release signing, the full macOS gate, `pnpm verify` on Windows, `pnpm test:m3:windows`, the stress comparison, the Windows device selection stages, the AMD HIP measurement, the MLX 2-bit measurement, and the Qwen3.8 27B Q4 comparison. The repository keeps no captured output for these items. The dated sections below record only the runs that made files or console output, and they describe the machine and the date of each run.
+
+Windows release signing uses Azure Artifact Signing and covers the sidecar, the native helpers, and the eleven fork-built runtime files. [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) gives the values the build needs. The macOS release is signed with a Developer ID certificate and notarized; set `APPLE_SIGNING_IDENTITY` and the `APPLE_API_*` variables to reproduce that build.
+
+One engineering item stays open. [Issue #158](https://github.com/Private-Garden-Labs/garden-desk/issues/158) proposes a server memory value that increases with the context size, in place of the flat 2 GiB reserve.
 
 ## 2026-09-03 Windows Gate Result
 
@@ -56,13 +61,13 @@ This result passed the Windows headless M3 gate for the checked revision. It doe
 
 At `f6c7b6d`, bounded Mac checks passed on an M5 Pro with 48 GiB and macOS 26.6.2, using b10816 Metal, Q4 weights, 32K context, and Q8/Q8 context caches. The run processed 30,061 input tokens in 116.4 seconds and generated 154 tokens at 14.6 tokens/s. Cache reuse, cancellation, image inspection, and a physical microVM folder report passed. All run processes stopped. The highest sampled resident memory was 14.73 GiB; this is a sampled maximum, not proof of the absence of paging. The separate encoder check returned 1,024 values.
 
-[PR #110](https://github.com/private-garden-labs/garden-desk/pull/110) contains the measurements and earlier bounded Windows results on an RTX 5070 Ti. These checks meet the migration requirement in ADR 0019. They do not certify other hardware, the full M3 gate, the desktop UI, or production signed packages for this migration.
+[PR #110](https://github.com/private-garden-labs/garden-desk/pull/110) contains the measurements and earlier bounded Windows results on an RTX 5070 Ti. These checks meet the migration requirement in ADR 0019. At that date they did not cover other hardware, the full M3 gate, the desktop UI, or production signed packages for this migration.
 
 ## 2026-09-18 Ternary Bonsai 2 Candidate
 
 [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) moves the generation model to Ternary-Bonsai-2-27B `PQ2_0` on the PrismML llama.cpp fork `prism-b10709-9a9394a`. One approved smoke check ran on Windows with an RTX 5070 Ti (16 GiB) and the product server arguments at 32K context with Q4/Q4 context caches. The model loaded in 7.6 seconds. The server reported 6,861.74 MiB of GPU weights, a 576 MiB KV cache, a 149.62 MiB recurrent-state buffer, and a 189.27 MiB compute buffer. A plain question answered correctly at 62.3 tokens/s. A request with a `read_file` tool returned one well-formed tool call with the right path at 888 tokens/s prefill and 62.0 tokens/s generation. A game process held GPU memory during this check, so these numbers are not the comparison. That Windows check ran on the earlier release `prism-b10685-7dffb15`.
 
-The full comparison against Qwen3.8 27B Q4 (`pnpm model:compare`, `pnpm model:compare:agent`, `pnpm model:compare:report`) is pending an owner run. Bonsai 2 has no dspark drafter, so the speculative comparison uses the server's n-gram self-speculation (`ngram-mod`). The MLX 2-bit release is a Mac measurement target only. The context is now fitted to the memory budget (ADR 0020): 262,144 tokens on this Windows machine and 208,896 tokens on Mac. The Windows fitted size is unverified in a real run; the Mac run below loaded the fitted size.
+The full comparison against Qwen3.8 27B Q4 (`pnpm model:compare`, `pnpm model:compare:agent`, `pnpm model:compare:report`) was open at that date. Bonsai 2 has no dspark drafter, so the speculative comparison uses the server's n-gram self-speculation (`ngram-mod`). The MLX 2-bit release is a Mac measurement target only. The context is now fitted to the memory budget (ADR 0020): 262,144 tokens on this Windows machine and 208,896 tokens on Mac. The Windows fitted size was unverified in a real run at that date; the Mac run below loaded the fitted size.
 
 ## 2026-09-19 Ternary Bonsai 2 On Apple Silicon
 
@@ -75,7 +80,7 @@ The full comparison against Qwen3.8 27B Q4 (`pnpm model:compare`, `pnpm model:co
 
 At 32,768 tokens, a 24,816-token prompt filled at 111.7 tokens/s. Generation gave 23.3 tokens/s for code, 22.8 tokens/s for prose, and 24.1 tokens/s for code with thinking on. Tool-call precision was 9 of 11 and specialist choice was 6 of 12. The result file is `packages/eval/.generated/model-comparison/bonsai2-mac-metal.json`.
 
-This run measures the new model alone on one machine. The Qwen3.8 27B Q4 comparison, the Windows measurements, the Windows agent stage, the MLX 2-bit measurement, and the full macOS gate stay open.
+This run measures the new model alone on one machine. The Qwen3.8 27B Q4 comparison, the Windows measurements, the Windows agent stage, the MLX 2-bit measurement, and the full macOS gate were open at that date.
 
 ## 2026-09-20 Ternary Bonsai 2 On Windows NVIDIA
 
@@ -85,7 +90,7 @@ The memory policy and the context rule ran on those probe numbers through the pr
 
 The server loaded that context in 3.4 seconds and answered. It reported 6,861.74 MiB of GPU weights, a 1,584.00 MiB KV cache, a 149.62 MiB recurrent-state buffer, and a 441.27 MiB compute buffer, with 49.27 MiB of host compute and 0.95 MiB of host output. GPU allocation totalled about 9,036 MiB inside the 11,063 MiB the device reported free. A short request generated 13 tokens at 31.7 tokens/s after an 81.6 tokens/s prefill. The budget that follows usable memory did not select a context that fails to load.
 
-This run started `llama-server.exe` directly, because the machine has no Rust toolchain and therefore no AppContainer launcher. Device selection through `resolveWindowsGpuProfile`, the isolated per-device probes, the guest stages, and the stress comparison stay unverified.
+This run started `llama-server.exe` directly, because the machine has no Rust toolchain and therefore no AppContainer launcher. Device selection through `resolveWindowsGpuProfile`, the isolated per-device probes, the guest stages, and the stress comparison were unverified at that date.
 
 ## 2026-09-21 Windows Build Chain
 
@@ -93,7 +98,7 @@ After installing the Visual Studio Build Tools, Rust, Python, WSL2, and Docker o
 
 `pnpm desktop:build-sidecar` then staged the packaged resources and signed the eleven fork-built runtime files in each backend directory, leaving the NVIDIA, AMD, and Microsoft redistributables on their own signatures.
 
-Two stages stay unverified on this machine. `pnpm verify` stops in the Rust stage because Smart App Control blocks the build script that Cargo compiles for `wry`, reported as `An Application Control policy has blocked this file. (os error 4551)`; every other stage of `pnpm verify` passed, including 513 unit tests. `pnpm test:m3:windows` and the stress comparison need the Hyper-V Administrators membership that the setup step adds, and a Windows sign-out has not yet applied it to the session token.
+Two stages were unverified on this machine at that date. `pnpm verify` stops in the Rust stage because Smart App Control blocks the build script that Cargo compiles for `wry`, reported as `An Application Control policy has blocked this file. (os error 4551)`; every other stage of `pnpm verify` passed, including 513 unit tests. `pnpm test:m3:windows` and the stress comparison need the Hyper-V Administrators membership that the setup step adds, and a Windows sign-out has not yet applied it to the session token.
 
 ## 2026-09-20 Windows Code Integrity Blocks The Unsigned Runtime
 
@@ -101,11 +106,11 @@ Smart App Control was enforcing on this machine (`VerifiedAndReputablePolicyStat
 
 Eleven files in each Windows archive carry no signature: `llama-server.exe`, `llama-server-impl.dll`, `llama-fit-params-impl.dll`, `llama.dll`, `llama-common.dll`, `mtmd.dll`, `ggml.dll`, `ggml-base.dll`, `ggml-cpu.dll`, `ggml-rpc.dll`, and the backend `ggml-cuda.dll` or `ggml-hip.dll`. The NVIDIA, AMD, and Microsoft redistributables beside them are already signed.
 
-Signing those eleven files with an Authenticode signature lets them load, including a self-signed certificate whose chain is not trusted. An unsigned copy of the same directory still failed, and neither copy carried a download zone marker, so the signature is what changed the outcome. Mainline llama.cpp `b10816` is equally unsigned and runs on the same machine, so reputation covers it and a fork build has none. The macOS package already signs each runtime file through `signRuntimeFile`; the Windows package does not. Signing the Windows runtime is open release work.
+Signing those eleven files with an Authenticode signature lets them load, including a self-signed certificate whose chain is not trusted. An unsigned copy of the same directory still failed, and neither copy carried a download zone marker, so the signature is what changed the outcome. Mainline llama.cpp `b10816` is equally unsigned and runs on the same machine, so reputation covers it and a fork build has none. The macOS package signs each runtime file through `signRuntimeFile`. The Windows package now signs the same files.
 
-## 2026-09-20 Windows AMD HIP Is Unsupported On This Machine
+## 2026-09-20 Windows AMD HIP On An Unsupported Integrated Adapter
 
-The `windows-hip-x64` runtime started after signing and reported no devices. `ggml-hip.dll` cannot load at all: it imports `amdhip64_7.dll`, and this system has only `amdhip64.dll`. The integrated adapter is an AMD Radeon 610M, which is gfx1036 and outside the compiled list in [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md). A current Adrenalin driver could supply the missing file; the unsupported architecture stands regardless. HIP has no measurement on this hardware.
+The `windows-hip-x64` runtime started after signing and reported no devices. `ggml-hip.dll` cannot load at all: it imports `amdhip64_7.dll`, and this system has only `amdhip64.dll`. The integrated adapter is an AMD Radeon 610M, which is gfx1036 and outside the compiled list in [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md). A current Adrenalin driver could supply the missing file; the unsupported architecture stands regardless. This section measures one unsupported integrated adapter, so it gives no result for the RDNA 2, RDNA 3, and RDNA 4 cards that ADR 0020 supports. The Verification Status section above records the AMD HIP result.
 
 ## Running The Golden Tasks
 
