@@ -48,7 +48,7 @@ Current community targets follow [ADR 0019](adr/0019-qwen38-private-server.md) a
 - Generation: Ternary Bonsai 2 27B, context fitted once to the memory budget (32K to 256K tokens), all weights and context state on one GPU. No runtime fitting or CPU fallback.
 - Windows agent execution requires Pro or Enterprise with Hyper-V enabled. The setup helper only adds the requesting user to Hyper-V Administrators.
 
-Memory admission is not certification. [Bounded Mac checks](M3_STATUS.md) passed on an M5 Pro with 48 GiB. Other Mac configurations remain unverified.
+macOS and Windows are verified; [M3_STATUS.md](M3_STATUS.md) records the evidence and the machines. Memory admission is not certification: a Mac or a graphics card that the status does not name is expected compatibility.
 
 ## Personal Computer Target
 

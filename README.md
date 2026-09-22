@@ -58,7 +58,7 @@ Conversations, files, generated work, audit records, and diagnostic traces stay 
 
 ## How we are building it
 
-- **Generation and image model:** Ternary-Bonsai-2-27B `PQ2_0` GGUF (built from Qwen3.8-27B) and its Q8_0 projector. Bounded Windows checks are complete; see [current status](docs/M3_STATUS.md).
+- **Generation and image model:** Ternary-Bonsai-2-27B `PQ2_0` GGUF (built from Qwen3.8-27B) and its Q8_0 projector. The macOS and Windows checks are complete; see [current status](docs/M3_STATUS.md).
 - **Retrieval encoder:** the official `Qwen3-Embedding-0.6B Q8_0` GGUF for local semantic search. Document retrieval is part of the post-V1 document-intelligence work; the encoder's local runtime path is already validated.
 - **Model runtime:** pinned PrismML `llama.cpp` fork `prism-b10709-9a9394a` for text, images, and embeddings through a private socket. Model files are Apache-2.0 licensed; llama.cpp is MIT licensed.
 - **Desktop and control plane:** a [Tauri v2](https://tauri.app/) and React interface over a TypeScript and Node.js core that owns permissions, sessions, model requests, limits, audit, and recovery.

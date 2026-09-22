@@ -61,7 +61,7 @@ This result passed the Windows headless M3 gate for the checked revision. It doe
 
 At `f6c7b6d`, bounded Mac checks passed on an M5 Pro with 48 GiB and macOS 26.6.2, using b10816 Metal, Q4 weights, 32K context, and Q8/Q8 context caches. The run processed 30,061 input tokens in 116.4 seconds and generated 154 tokens at 14.6 tokens/s. Cache reuse, cancellation, image inspection, and a physical microVM folder report passed. All run processes stopped. The highest sampled resident memory was 14.73 GiB; this is a sampled maximum, not proof of the absence of paging. The separate encoder check returned 1,024 values.
 
-[PR #110](https://github.com/private-garden-labs/garden-desk/pull/110) contains the measurements and earlier bounded Windows results on an RTX 5070 Ti. These checks meet the migration requirement in ADR 0019. They do not certify other hardware, the full M3 gate, the desktop UI, or production signed packages for this migration.
+[PR #110](https://github.com/private-garden-labs/garden-desk/pull/110) contains the measurements and earlier bounded Windows results on an RTX 5070 Ti. These checks meet the migration requirement in ADR 0019. At that date they did not cover other hardware, the full M3 gate, the desktop UI, or production signed packages for this migration.
 
 ## 2026-09-18 Ternary Bonsai 2 Candidate
 
