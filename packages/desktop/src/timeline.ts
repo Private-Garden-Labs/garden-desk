@@ -123,6 +123,16 @@ function guestStartItem(run: AgentRunSummary, start: AgentGuestStart): TimelineI
   };
 }
 
+function openToolStart(items: TimelineItem[], index: number): number {
+  const open = new Map<string, number>();
+  items.slice(0, index).forEach((item, position) => {
+    if (item.toolCallId == null) return;
+    if (item.eventType === "tool.started") open.set(item.toolCallId, position);
+    if (item.eventType === "tool.completed") open.delete(item.toolCallId);
+  });
+  return Math.min(index, ...open.values());
+}
+
 /** Places the in-memory microVM start among the run's events by time, so the row reads in order. */
 export function withGuestStart(
   items: TimelineItem[],
@@ -131,6 +141,7 @@ export function withGuestStart(
 ): TimelineItem[] {
   if (start === null) return items;
   const item = guestStartItem(run, start);
-  const index = items.findIndex((candidate) => candidate.createdAt > item.createdAt);
-  return index === -1 ? [...items, item] : [...items.slice(0, index), item, ...items.slice(index)];
+  const later = items.findIndex((candidate) => candidate.createdAt > item.createdAt);
+  const index = openToolStart(items, later === -1 ? items.length : later);
+  return [...items.slice(0, index), item, ...items.slice(index)];
 }
