@@ -230,7 +230,7 @@ The newest-five sidebar query is ordered by last activity plus stable ID. Expans
 
 ## Guest Library Manifest
 
-One machine-readable manifest records each guest runtime/library name, exact version, source or pin, license, notice obligation, hash, and reason. The Antiword record also carries the complete Debian patch archive, its actual installed size per architecture, and its guest license-notice path. The set stays limited to the smallest reviewed combination that covers text, JSON, CSV, SQLite, PDF, DOCX, legacy DOC text reading, XLSX, and common image work; ReportLab uses its pinned pure-Python wheel for styled PDF creation, and Antiword reads legacy DOC input without creating that format.
+One machine-readable manifest records each guest runtime/library name, exact version, source or pin, license, notice obligation, hash, and reason. The Antiword record also carries the complete Debian patch archive, its actual installed size per architecture, and its guest license-notice path. The set stays limited to the smallest reviewed combination that covers text, JSON, CSV, SQLite, PDF, DOCX, legacy DOC text reading, XLSX, and common image work; ReportLab uses its pinned pure-Python wheel for styled PDF creation with the DejaVu and WenQuanYi Zen Hei fonts under `/usr/share/fonts` for text outside basic Latin, and Antiword reads legacy DOC input without creating that format.
 
 The library manifest, generated executable capabilities manifest, guest build recipe, compliance inventory, package resources, and Technical details language change together. Libraries are not added because they might be useful.
 
