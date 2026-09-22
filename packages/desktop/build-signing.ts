@@ -1,6 +1,13 @@
 import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { windowsSigningConfiguration } from "./src/windows-signing-mode.js";
+import {
+  type WindowsProductionSigning,
+  windowsSigningConfiguration,
+} from "./src/windows-signing-mode.js";
+
+const windowsTimestampUrl = "http://timestamp.acs.microsoft.com";
 
 function run(command: string, args: string[], env?: NodeJS.ProcessEnv): void {
   const result = spawnSync(command, args, { encoding: "utf8", env, stdio: "pipe" });
@@ -13,6 +20,27 @@ function windowsPowerShell(): { executable: string; modulePath: string } {
   const windowsRoot = process.env.WINDIR ?? "C:\\Windows";
   const root = join(windowsRoot, "System32", "WindowsPowerShell", "v1.0");
   return { executable: join(root, "powershell.exe"), modulePath: join(root, "Modules") };
+}
+
+/** A vendor signature already proves the file, so the build must not replace it. */
+export function windowsSignatureValid(executable: string): boolean {
+  const powerShell = windowsPowerShell();
+  const script =
+    "$s=Get-AuthenticodeSignature -LiteralPath $env:GARDEN_DESK_SIGN_PATH;if($s.Status -eq 'Valid'){exit 0};exit 1";
+  const result = spawnSync(
+    powerShell.executable,
+    ["-NoProfile", "-NonInteractive", "-Command", script],
+    {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PSModulePath: powerShell.modulePath,
+        GARDEN_DESK_SIGN_PATH: executable,
+      },
+      stdio: "pipe",
+    },
+  );
+  return result.status === 0;
 }
 
 export function stripWindowsSignature(executable: string): void {
@@ -41,33 +69,56 @@ function signWindowsDevelopment(executable: string): string {
   return "windows-ephemeral-self-signed";
 }
 
-function signWindowsProduction(
-  executable: string,
-  certificateThumbprint: string,
-  timestampUrl?: string,
-): string {
-  const powerShell = windowsPowerShell();
-  const script =
-    "$p=$env:GARDEN_DESK_SIGN_PATH;$t=$env:GARDEN_DESK_SIGN_THUMBPRINT;$c=Get-Item ('Cert:\\CurrentUser\\My\\'+$t) -ErrorAction Stop;if(-not $c.HasPrivateKey){exit 1};$a=@{FilePath=$p;Certificate=$c;HashAlgorithm='SHA256'};if(-not [string]::IsNullOrWhiteSpace($env:GARDEN_DESK_SIGN_TIMESTAMP)){$a.TimestampServer=$env:GARDEN_DESK_SIGN_TIMESTAMP};Set-AuthenticodeSignature @a | Out-Null;$s=Get-AuthenticodeSignature -FilePath $p;$actual=$s.SignerCertificate.Thumbprint.Replace(' ','').ToUpperInvariant();$ok=$actual -eq $t -and $s.Status -ne 'HashMismatch' -and $s.Status -ne 'NotSigned';if(-not $ok){exit 1}";
-  run(powerShell.executable, ["-NoProfile", "-NonInteractive", "-Command", script], {
-    ...process.env,
-    PSModulePath: powerShell.modulePath,
-    GARDEN_DESK_SIGN_PATH: executable,
-    GARDEN_DESK_SIGN_THUMBPRINT: certificateThumbprint,
-    ...(timestampUrl === undefined ? {} : { GARDEN_DESK_SIGN_TIMESTAMP: timestampUrl }),
-  });
-  return `windows-certificate-${certificateThumbprint}`;
+function windowsSignTool(): string {
+  const programFiles = process.env["ProgramFiles(x86)"];
+  if (programFiles === undefined) throw new Error("Missing 64-bit Windows SDK location.");
+  const root = join(programFiles, "Windows Kits", "10", "bin");
+  for (const version of readdirSync(root).sort().reverse()) {
+    const candidate = join(root, version, "x64", "signtool.exe");
+    if (existsSync(candidate)) return candidate;
+  }
+  throw new Error("Missing Windows SDK signtool.exe.");
+}
+
+function signWindowsProduction(executable: string, signing: WindowsProductionSigning): string {
+  const signTool = windowsSignTool();
+  const directory = mkdtempSync(join(tmpdir(), "garden-desk-signing-"));
+  try {
+    const metadata = join(directory, "metadata.json");
+    writeFileSync(
+      metadata,
+      JSON.stringify({
+        Endpoint: signing.endpoint,
+        CodeSigningAccountName: signing.account,
+        CertificateProfileName: signing.certificateProfile,
+      }),
+    );
+    run(signTool, [
+      "sign",
+      "/fd",
+      "SHA256",
+      "/tr",
+      windowsTimestampUrl,
+      "/td",
+      "SHA256",
+      "/dlib",
+      signing.signingDlib,
+      "/dmdf",
+      metadata,
+      executable,
+    ]);
+    run(signTool, ["verify", "/pa", executable]);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+  return `windows-artifact-signing-${signing.account}-${signing.certificateProfile}`;
 }
 
 function signWindows(executable: string): string {
   const configuration = windowsSigningConfiguration(process.env);
   return configuration.mode === "development"
     ? signWindowsDevelopment(executable)
-    : signWindowsProduction(
-        executable,
-        configuration.certificateThumbprint,
-        configuration.timestampUrl,
-      );
+    : signWindowsProduction(executable, configuration);
 }
 
 export function signExecutable(executable: string, entitlements?: string): string {

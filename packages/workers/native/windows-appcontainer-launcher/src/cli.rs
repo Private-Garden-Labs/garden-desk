@@ -59,8 +59,8 @@ fn gpu_arguments(values: &[(String, String)]) -> Result<GpuArguments, Box<dyn Er
     let backend_name = optional(values, "--gpu-backend");
     let backend = match backend_name.as_deref() {
         Some("cuda") => Some(process::GpuBackend::Cuda),
-        Some("vulkan") => Some(process::GpuBackend::Vulkan),
-        Some(_) => return Err("GPU backend must be cuda or vulkan.".into()),
+        Some("hip") => Some(process::GpuBackend::Hip),
+        Some(_) => return Err("GPU backend must be cuda or hip.".into()),
         None => None,
     };
     let device_index = optional(values, "--gpu-device-index")
@@ -148,6 +148,6 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
             memory_bytes: value(&values, "--memory")?.parse()?,
             gpu: gpu_arguments(&values)?,
         })),
-        _ => Err("Usage: garden-desk-appcontainer-launcher <gpu-info|prepare --read PATH...|run --executable PATH --worker PATH --scratch PATH --memory BYTES [--model PATH] [--gpu-backend cuda|vulkan --gpu-device-index INDEX]|run-server --executable PATH --scratch PATH --memory BYTES [--read PATH] [--gpu-backend cuda|vulkan --gpu-device-index INDEX] -- RUNTIME_ARGS...|connect --socket PATH>".into()),
+        _ => Err("Usage: garden-desk-appcontainer-launcher <gpu-info|prepare --read PATH...|run --executable PATH --worker PATH --scratch PATH --memory BYTES [--model PATH] [--gpu-backend cuda|hip --gpu-device-index INDEX]|run-server --executable PATH --scratch PATH --memory BYTES [--read PATH] [--gpu-backend cuda|hip --gpu-device-index INDEX] -- RUNTIME_ARGS...|connect --socket PATH>".into()),
     }
 }

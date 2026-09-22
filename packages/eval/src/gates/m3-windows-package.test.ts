@@ -42,7 +42,7 @@ describe("M3 Windows portable package", () => {
       expect(staging).toContain(value);
     }
     const cuda = JSON.parse(assets).platforms["windows-cuda-x64"];
-    expect(cuda.archive).toBe("llama-b10816-bin-win-cuda-13.3-x64.zip");
+    expect(cuda.archive).toBe("llama-prism-b10709-9a9394a-bin-win-cuda-13.3-x64.zip");
     expect(Object.values(cuda.dependencies[0].files)).toEqual([
       "cublas64_13.dll",
       "cublasLt64_13.dll",
@@ -56,9 +56,9 @@ describe("M3 Windows image runtime", () => {
     const source = await readFile(join(process.cwd(), "assets/inference-runtime.json"), "utf8");
     const runtime = (
       JSON.parse(source) as {
-        platforms: { "windows-vulkan-x64": { dependencies: Array<{ files: object }> } };
+        platforms: { "windows-hip-x64": { dependencies: Array<{ files: object }> } };
       }
-    ).platforms["windows-vulkan-x64"];
+    ).platforms["windows-hip-x64"];
     expect(Object.keys(runtime.dependencies[0]?.files ?? {})).toEqual([
       "msvcp140.dll",
       "vcruntime140.dll",
@@ -82,14 +82,14 @@ describe("M3 model package input", () => {
       bundle: { resources: Record<string, string> };
     };
     expect(base.bundle.resources).not.toHaveProperty(
-      "../../eval/.generated/models/qwen3.8-27b-ud-iq4_xs.gguf",
+      "../../eval/.generated/models/ternary-bonsai-2-27b-pq2_0.gguf",
     );
     expect(packageConfiguration.bundle.resources).toEqual({
       "resources/core/": "resources/core/",
-      "../../eval/.generated/models/qwen3.8-27b-ud-iq4_xs.gguf":
-        "resources/core/models/qwen3.8-27b-ud-iq4_xs.gguf",
-      "../../eval/.generated/models/qwen3.8-27b-mmproj-f16.gguf":
-        "resources/core/models/qwen3.8-27b-mmproj-f16.gguf",
+      "../../eval/.generated/models/ternary-bonsai-2-27b-pq2_0.gguf":
+        "resources/core/models/ternary-bonsai-2-27b-pq2_0.gguf",
+      "../../eval/.generated/models/ternary-bonsai-2-27b-mmproj-q8_0.gguf":
+        "resources/core/models/ternary-bonsai-2-27b-mmproj-q8_0.gguf",
       "../../../assets/fonts/LICENSE.txt": "assets/fonts/LICENSE.txt",
     });
     expect(launcher).toContain('tauriArguments[0] === "dev"');
@@ -139,12 +139,51 @@ describe("M3 Windows setup helper", () => {
       readFile(join(process.cwd(), "packages/desktop/windows-setup-resource.ts"), "utf8"),
     ]);
     expect(signing).toContain("windowsSigningConfiguration");
-    expect(signing).toContain("GARDEN_DESK_SIGN_THUMBPRINT");
+    expect(signing).toContain("/dlib");
     expect(setupArguments).toContain('arguments[0] != "--requester-pid"');
     expect(setup).toContain("S-1-5-32-578");
     expect(setup).toContain("NetLocalGroupAddMembers");
     expect(resources).toContain("installWindowsSetupHelper");
     expect(setupResource).toContain("windowsSetupHelperSignature");
     expect(setupResource).toContain("garden-desk-hyper-v-setup.exe");
+  });
+});
+
+describe("M3 Windows transport helper", () => {
+  it("signs the packaged current-user transport helper", async () => {
+    const resources = await readFile(
+      join(process.cwd(), "packages/desktop/package-resources.ts"),
+      "utf8",
+    );
+    const installer = resources.slice(resources.indexOf("function installWindowsPipeGuard"));
+    expect(installer.slice(0, installer.indexOf("\n}"))).toContain("signExecutable(pipeGuard)");
+  });
+});
+
+describe("M3 Windows inference runtime", () => {
+  it("verifies the staged runtime before signing and keeps vendor signatures", async () => {
+    const [source, manifest] = await Promise.all([
+      readFile(join(process.cwd(), "packages/desktop/package-image-resources.ts"), "utf8"),
+      readFile(join(process.cwd(), "assets/inference-runtime.json"), "utf8"),
+    ]);
+    expect(source).toContain("requireStagedRuntime(sha256, source, manifest, platform)");
+    expect(source).toContain("!windowsSignatureValid(path)");
+    const { platforms } = JSON.parse(manifest) as {
+      platforms: Record<string, { stagedSha256?: string }>;
+    };
+    for (const runtime of Object.values(platforms)) {
+      expect(runtime.stagedSha256).toMatch(/^[a-f0-9]{64}$/u);
+    }
+  });
+});
+
+describe("M3 inference runtime provenance", () => {
+  it("names one fork release in the packaged notice", async () => {
+    const [compliance, manifest] = await Promise.all([
+      readFile(join(process.cwd(), "packages/desktop/package-compliance.ts"), "utf8"),
+      readFile(join(process.cwd(), "assets/inference-runtime.json"), "utf8"),
+    ]);
+    const { revision } = JSON.parse(manifest) as { revision: string };
+    expect([...new Set(compliance.match(/prism-b\d+-[0-9a-f]+/gu))]).toEqual([revision]);
   });
 });

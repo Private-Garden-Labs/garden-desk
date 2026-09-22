@@ -25,7 +25,7 @@ export async function windowsInferencePaths(): Promise<WindowsInferencePaths> {
     try {
       await Promise.all([
         stat(join(root, "windows-cuda-x64", "llama-server.exe")),
-        stat(join(root, "windows-vulkan-x64", "llama-server.exe")),
+        stat(join(root, "windows-hip-x64", "llama-server.exe")),
       ]);
       return {
         workerEntryPath: "",

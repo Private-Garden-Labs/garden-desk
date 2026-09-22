@@ -6,7 +6,7 @@ import {
 
 export function isExpectedWindowsGpuIdentity(
   adapterId: string,
-  selection: { backend: "cuda" | "vulkan"; expectedName: string },
+  selection: { backend: "cuda" | "hip"; expectedName: string },
   info: WindowsGpuInfo,
   result: WindowsRuntimeProbeResult | undefined,
 ): boolean {

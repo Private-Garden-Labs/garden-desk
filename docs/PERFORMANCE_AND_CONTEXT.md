@@ -8,7 +8,7 @@ Research claims in this document are research-derived until validated on target 
 
 ## Decision
 
-[ADR 0019](adr/0019-qwen38-private-server.md) defines the current Qwen3.8 Q4 target: 32,768 context tokens, one slot, all weights and active context state on one GPU, and a 16 GiB inference budget. Mac requires 24 GiB installed memory. Windows retains the 16 billion byte dedicated-GPU threshold; integrated GPUs need 16 GiB usable allocation and host memory for one microVM.
+[ADR 0019](adr/0019-qwen38-private-server.md) and [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) define the current target for Ternary Bonsai 2 27B: a context fitted once to the memory budget, one slot, and all weights and active context state on one GPU. A 16 GiB budget gives 262,144 tokens with Q4/Q4 caches and 208,896 with Q8/Q8. Mac requires 16 GiB installed memory, with a 10 GiB budget below 24 GiB (45,056 tokens with Q4/Q4) and a 16 GiB budget at 24 GiB and above. Windows fits the context to the memory the GPU reports as usable, and supports a dedicated GPU only when that usable memory is at least 10,494,503,264 bytes: the model, the smallest supported context, and the reserve; integrated GPUs still need 16 GiB usable allocation and host memory for one microVM.
 
 ## Performance Thesis
 
@@ -33,7 +33,7 @@ Generation uses a fixed 32K context. Core keeps its existing compaction policy. 
 
 Report load time, first-token delay, evaluated prompt rate, generation rate including reasoning, and peak memory separately. Count cached input in context usage. Omit unavailable allocation measurements. Do not add CPU and GPU views of shared physical pages. Full GPU layer offload alone does not prove that all weights are in physical VRAM.
 
-The Windows target is at least 20 generated tokens per second near the context limit. Mac physical memory must remain within 16 GiB. Fixed profile changes or retries require owner approval.
+The Windows target is at least 20 generated tokens per second near the context limit. Mac physical memory must remain within the selected inference budget. Fixed profile changes or retries require owner approval.
 
 ## Runtime Optimization Policy
 

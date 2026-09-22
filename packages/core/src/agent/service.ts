@@ -222,7 +222,7 @@ export class AgentService {
         this.store.appendEvent(
           run.id,
           "run.started",
-          "Offline limits: live read-only source, 120 seconds per guest execution, 4 CPUs, 4 GiB memory, and a persistent 128 MiB workspace.",
+          "Offline limits: live read-only source, 120 seconds per guest execution, 4 CPUs, 1 GiB memory, and a persistent 128 MiB workspace.",
         );
       })();
       const command = this.commands.resolve(task);

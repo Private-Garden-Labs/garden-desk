@@ -189,6 +189,7 @@ async function installWindowsPipeGuard(): Promise<string | undefined> {
     join(coreNativeRoot, "windows-pipe-guard/.generated/garden-desk-pipe-guard.exe"),
     pipeGuard,
   );
+  signExecutable(pipeGuard);
   return await sha256(pipeGuard);
 }
 

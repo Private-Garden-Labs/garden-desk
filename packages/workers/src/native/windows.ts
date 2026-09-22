@@ -14,7 +14,7 @@ import { connectWindowsSocket, protectSocketDirectory } from "./private-socket.j
 const preparations = new Map<string, Promise<void>>();
 
 export interface WindowsGpuLaunch {
-  backend: "cuda" | "vulkan";
+  backend: "cuda" | "hip";
   deviceIndex?: number;
   detectedMemoryBytes?: number;
   expectedName?: string;
@@ -32,7 +32,7 @@ function validPositiveInteger(value: number | undefined): boolean {
 
 export function validateWindowsGpuLaunch(gpu: WindowsGpuLaunch): void {
   if (
-    (gpu.backend !== "cuda" && gpu.backend !== "vulkan") ||
+    (gpu.backend !== "cuda" && gpu.backend !== "hip") ||
     (gpu.deviceIndex !== undefined &&
       (!Number.isSafeInteger(gpu.deviceIndex) ||
         gpu.deviceIndex < 0 ||

@@ -6,7 +6,7 @@ export function nativeRuntimePackages(
     return ["macos-arm64"];
   }
   if (platform === "win32" && architecture === "x64") {
-    return ["windows-cuda-x64", "windows-vulkan-x64"];
+    return ["windows-cuda-x64", "windows-hip-x64"];
   }
   throw new Error("Unsupported Garden Desk inference runtime target.");
 }
