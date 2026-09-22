@@ -163,7 +163,7 @@ Three more loads compared the cache types at 32,768 tokens with the same prompts
 | Q8 | 0.7 s | 354.5 tokens/s | 27.1 tokens/s | 8,307.11 MiB |
 | Q4 | 0.8 s | 351.7 tokens/s | 27.3 tokens/s | 7,795.11 MiB |
 
-The Windows result holds here: prefill is the same for the three caches, within 1 percent, and FP16 generates fastest, by 2.2 percent against Q8 and 1.5 percent against Q4. The load column is not comparable with the Windows table, because Metal maps the weights from the file instead of copying them first; the warmup request pays that cost. Decode at a deep context is not measured.
+The Windows result holds here: prefill is the same for the three caches, within 1 percent, and FP16 generates fastest, by 2.2 percent against Q8 and 1.5 percent against Q4. The load column is not comparable with the Windows table: Metal maps the weights from the file instead of copying them into separate graphics memory, and the file was already in the system page cache on these runs. A first load from disk is not measured. Decode at a deep context is not measured.
 
 ## Running The Golden Tasks
 
