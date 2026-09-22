@@ -9,6 +9,7 @@
       "byteLength": 11500187,
       "sha256": "f9cdf245fb7b832f1996dd776b321d4ae1f23b6d88c380100f636742c3a980ff",
       "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-macos-arm64.tar.gz",
+      "stagedSha256": "697961b9af2db3523387221e3c7c50dc49221d52e43ff686260c38701da1e30d",
       "files": {
         "llama-prism-b10709-9a9394a/libllama-common.0.2.0.dylib": "libllama-common.0.dylib",
         "llama-prism-b10709-9a9394a/libmtmd.0.2.0.dylib": "libmtmd.0.dylib",
@@ -30,6 +31,7 @@
       "byteLength": 145031500,
       "sha256": "d656f217172c489706df40951e46bef647eb1a81eb8eeb1398c8f38bd7fa9725",
       "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-win-cuda-13.3-x64.zip",
+      "stagedSha256": "71c5593eb9c58bf4e3c6c392d0f9b4e3f1b1c8b1bc612ba208723d0cd8a37c36",
       "files": {
         "ggml-base.dll": "ggml-base.dll",
         "ggml-cpu.dll": "ggml-cpu.dll",
@@ -74,6 +76,7 @@
       "byteLength": 321932526,
       "sha256": "86792e1590232e4ac702df2fe961fe196552ad7642658b5347834f539a1525b6",
       "url": "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-win-hip-radeon-x64.zip",
+      "stagedSha256": "201543d5c556a0b1cccce9bfc8b835a7778befa0b0ee8cb8e71db614fcfe8ce8",
       "files": {
         "ggml-base.dll": "ggml-base.dll",
         "ggml-cpu.dll": "ggml-cpu.dll",

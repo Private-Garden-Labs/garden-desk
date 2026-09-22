@@ -159,3 +159,20 @@ describe("M3 Windows transport helper", () => {
     expect(installer.slice(0, installer.indexOf("\n}"))).toContain("signExecutable(pipeGuard)");
   });
 });
+
+describe("M3 Windows inference runtime", () => {
+  it("verifies the staged runtime before signing and keeps vendor signatures", async () => {
+    const [source, manifest] = await Promise.all([
+      readFile(join(process.cwd(), "packages/desktop/package-image-resources.ts"), "utf8"),
+      readFile(join(process.cwd(), "assets/inference-runtime.json"), "utf8"),
+    ]);
+    expect(source).toContain("requireStagedRuntime(sha256, source, manifest, platform)");
+    expect(source).toContain("!windowsSignatureValid(path)");
+    const { platforms } = JSON.parse(manifest) as {
+      platforms: Record<string, { stagedSha256?: string }>;
+    };
+    for (const runtime of Object.values(platforms)) {
+      expect(runtime.stagedSha256).toMatch(/^[a-f0-9]{64}$/u);
+    }
+  });
+});

@@ -22,6 +22,27 @@ function windowsPowerShell(): { executable: string; modulePath: string } {
   return { executable: join(root, "powershell.exe"), modulePath: join(root, "Modules") };
 }
 
+/** A vendor signature already proves the file, so the build must not replace it. */
+export function windowsSignatureValid(executable: string): boolean {
+  const powerShell = windowsPowerShell();
+  const script =
+    "$s=Get-AuthenticodeSignature -LiteralPath $env:GARDEN_DESK_SIGN_PATH;if($s.Status -eq 'Valid'){exit 0};exit 1";
+  const result = spawnSync(
+    powerShell.executable,
+    ["-NoProfile", "-NonInteractive", "-Command", script],
+    {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PSModulePath: powerShell.modulePath,
+        GARDEN_DESK_SIGN_PATH: executable,
+      },
+      stdio: "pipe",
+    },
+  );
+  return result.status === 0;
+}
+
 export function stripWindowsSignature(executable: string): void {
   const programFiles = process.env["ProgramFiles(x86)"];
   if (programFiles === undefined) throw new Error("Missing 64-bit Windows SDK location.");

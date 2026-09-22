@@ -31,6 +31,7 @@ describe("desktop inference runtime resources", () => {
             test: {
               executable: "runtime",
               files: { executable: "runtime", library: "../library" },
+              stagedSha256: "",
             },
           },
         },

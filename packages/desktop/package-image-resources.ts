@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   chmod,
   copyFile,
@@ -12,7 +13,7 @@ import {
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { INFERENCE_PROFILE } from "@gardendesk/shared";
-import { signExecutable } from "./build-signing.js";
+import { signExecutable, windowsSignatureValid } from "./build-signing.js";
 import { reportDevelopmentResourceStage } from "./src/dev-resource-progress.js";
 import * as model from "./src/package-model-contract.js";
 import type { ResourceHashes } from "./src/resource-hashes.js";
@@ -27,6 +28,7 @@ interface InferenceRuntimeManifest {
       directories?: Record<string, string>;
       executable: string;
       files: Record<string, string>;
+      stagedSha256: string;
     }
   >;
 }
@@ -152,13 +154,41 @@ async function requireFetchedAsset(path: string, fetchCommand: string): Promise<
   }
 }
 
+/** The build signs the staged runtime as it is, so it must match the hash pinned with the archives. */
+export async function stagedRuntimeDigest(sha256: HashFile, root: string): Promise<string> {
+  const hashes = await hashTree(sha256, root, "");
+  const lines = Object.entries(hashes).map(([name, hash]) => `${name}\n${hash}\n`);
+  return createHash("sha256").update(lines.sort().join("")).digest("hex");
+}
+
+async function requireStagedRuntime(
+  sha256: HashFile,
+  source: string,
+  manifest: InferenceRuntimeManifest,
+  platform: string,
+): Promise<void> {
+  await requireFetchedAsset(source, `pnpm inference:fetch --platform ${platform}`);
+  const expected = manifest.platforms[platform]?.stagedSha256;
+  if (expected === undefined) {
+    throw new Error(`Inference runtime hash is missing for ${platform}.`);
+  }
+  const actual = await stagedRuntimeDigest(sha256, source);
+  if (actual !== expected) {
+    throw new Error(
+      `Staged inference runtime for ${platform} does not match its pinned hash. Found ${actual}.`,
+    );
+  }
+}
+
 /** Windows code integrity refuses to load the fork's binaries while they carry no signature. */
 function signRuntimeFile(path: string, forkBuilt: boolean): void {
   if (process.platform === "darwin" && process.env.APPLE_SIGNING_IDENTITY !== undefined) {
     signExecutable(path);
     return;
   }
-  if (process.platform === "win32" && forkBuilt) signExecutable(path);
+  if (process.platform === "win32" && forkBuilt && !windowsSignatureValid(path)) {
+    signExecutable(path);
+  }
 }
 
 export async function installRuntimeResources(
@@ -172,7 +202,7 @@ export async function installRuntimeResources(
   const hashes: Record<string, string> = {};
   for (const platform of nativeRuntimePackages()) {
     const source = join(repositoryRoot, "packages/eval/.generated/inference", platform);
-    await requireFetchedAsset(source, `pnpm inference:fetch --platform ${platform}`);
+    await requireStagedRuntime(sha256, source, manifest, platform);
     const destination = join(destinationRoot, platform);
     const names = runtimeResourceNames(manifest, platform);
     const directories = runtimeResourceDirectories(manifest, platform);
