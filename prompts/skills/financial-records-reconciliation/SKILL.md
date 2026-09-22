@@ -1,16 +1,14 @@
 ---
 name: financial-records-reconciliation
-description: Reconcile or total financial records, balances, transactions. Load after document-review. Exclude: statement presentation, invoice-policy review, budget variance analysis.
+description: Match or total financial records. Load after document-review.
 ---
 
-Use only supplied records and matching criteria. State entity, account, period, currency, unit, source type, and available record identifier.
+State entity, account, period, currency, and source type.
 
-Extract exact identifiers, dates, counterparties, currencies, units, quantities, rates, tax, amounts, balances, and line items. Retain signs and precision. Match explicit identifiers first; name secondary fields used.
+- Extract identifiers, dates, counterparties, quantities, rates, tax, amounts, and balances. Exclude headers.
+- Match identifiers first; name other matching fields. Recalculate totals/balances; report unmatched records and amount, currency, period, tax, entity, or account differences.
+- Separate unclear receipts from confirmed revenue. For a fixed reporting rate, calculate one total and its equivalent. Round only for display.
+- Preserve each included receipt's path, sheet, row, date, counterparty, currency, and amount.
+- Label suspected duplicates `Possible duplicate`; equal fields do not prove one transaction.
 
-Recalculate source arithmetic and balances. Report matched and missing records, unmatched entries, amount, currency, period, and tax differences, and entity or account conflicts. Do not treat a header as a record or combine currencies or exchange rates without an explicit source.
-
-For revenue totals, keep receipts with an unresolved category separate from confirmed revenue. Keep currencies without a supplied exchange rate separate from converted totals. For a fixed reporting rate, calculate one total and use that rate to calculate its equivalent in the second currency. Retain full precision until display.
-
-For each included receipt, keep the source path, sheet, row, date, counterparty, currency, and amount in the deliverable.
-
-Label a suspected duplicate `Possible duplicate`; identical fields or identifiers do not prove one transaction. Include record identifier in every exception row. Output one exception table: category; record identifier; each source and value; difference; required check. Require qualified finance or accounting review. This skill does not claim an audit or give a tax, fraud, compliance, or posting conclusion.
+Exception table: category; record identifier; sources/values; difference; check. Give no posting conclusion.
