@@ -55,22 +55,22 @@ const hostPackages = [
   { name: "Node.js", version: "24.18.0", license: "MIT" },
   {
     name: "llama.cpp (PrismML fork)",
-    version: "prism-b10685-7dffb15",
+    version: "prism-b10709-9a9394a",
     license: "MIT",
     notice: "License text: licenses/llama.cpp-LICENSE.txt",
     source: {
       file:
         process.platform === "win32"
-          ? "llama-prism-b10685-7dffb15-bin-win-cuda-13.3-x64.zip"
-          : "llama-prism-b10685-7dffb15-bin-macos-arm64.tar.gz",
+          ? "llama-prism-b10709-9a9394a-bin-win-cuda-13.3-x64.zip"
+          : "llama-prism-b10709-9a9394a-bin-macos-arm64.tar.gz",
       sha256:
         process.platform === "win32"
-          ? "0b0e44045b0b55bb892c5afa8fd4c988194c47c02967ff1da55cd01c0c8eda69"
-          : "7fffa7a40c74f3e9bd78f3f2f9f12f9befb7b13af45d5a69c239cf3fd37b9045",
+          ? "d656f217172c489706df40951e46bef647eb1a81eb8eeb1398c8f38bd7fa9725"
+          : "f9cdf245fb7b832f1996dd776b321d4ae1f23b6d88c380100f636742c3a980ff",
       url:
         process.platform === "win32"
-          ? "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10685-7dffb15/llama-prism-b10685-7dffb15-bin-win-cuda-13.3-x64.zip"
-          : "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10685-7dffb15/llama-prism-b10685-7dffb15-bin-macos-arm64.tar.gz",
+          ? "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-win-cuda-13.3-x64.zip"
+          : "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-macos-arm64.tar.gz",
     },
   },
   {

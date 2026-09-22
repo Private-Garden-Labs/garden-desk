@@ -176,3 +176,14 @@ describe("M3 Windows inference runtime", () => {
     }
   });
 });
+
+describe("M3 inference runtime provenance", () => {
+  it("names one fork release in the packaged notice", async () => {
+    const [compliance, manifest] = await Promise.all([
+      readFile(join(process.cwd(), "packages/desktop/package-compliance.ts"), "utf8"),
+      readFile(join(process.cwd(), "assets/inference-runtime.json"), "utf8"),
+    ]);
+    const { revision } = JSON.parse(manifest) as { revision: string };
+    expect([...new Set(compliance.match(/prism-b\d+-[0-9a-f]+/gu))]).toEqual([revision]);
+  });
+});
