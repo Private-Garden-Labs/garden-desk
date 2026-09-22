@@ -133,7 +133,7 @@ if (/<iframe[^>]+data-embedded-demo[^>]+\ssrc=/u.test(home)) {
 requireText(home, "SoftwareApplication", "home");
 requireText(home, "social-card.png", "home");
 requireText(home, "data-scene", "home garden scene");
-requireText(home, "github.com/alex-alecu/garden-desk", "home source link");
+requireText(home, "github.com/private-garden-labs/garden-desk", "home source link");
 requireText(home, "open source", "home open-source claim");
 requireText(home, "One download", "home differentiation");
 requireText(home, "Nothing to configure", "home differentiation");
