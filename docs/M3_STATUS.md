@@ -125,7 +125,17 @@ At 32,768 tokens `nvidia-smi` rose by 9,338 MiB while the server was resident. T
 
 The two loads give an exact cost for each token: 65,536 bytes for the FP16 cache, and 512 bytes for the compute buffer above a fixed 67 MiB. The fixed part of the server is therefore about 414 MiB: 149.62 MiB of recurrent state, 67 MiB of compute buffer, 196 MiB of device context, and 0.95 MiB of output. The profile keeps 512 MiB for that fixed part and a further 512 MiB margin. These measurements replace the 512 MiB and 2 GiB constants in [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md), which had no recorded calculation.
 
-One product run then used the automatic context. The free-memory reading was 15,767,437,312 bytes, the rule fitted 110,592 tokens, the server allocated 14,043 MiB inside that budget, and a short request answered correctly. That request generated two tokens, so it gives no speed comparison against the earlier quantized runs.
+One product run then used the automatic context. The free-memory reading was 15,767,437,312 bytes, the rule fitted 110,592 tokens, the server allocated 14,043 MiB inside that budget, and a short request answered correctly.
+
+Three more loads compared the cache types at 32,768 tokens with the same prompts: one request with a 6,318-token prompt, and one request that generated 400 tokens.
+
+| Cache | Load | Prefill | Generation |
+| --- | ---: | ---: | ---: |
+| FP16 | 3.3 s | 1,705.5 tokens/s | 80.2 tokens/s |
+| Q8 | 3.3 s | 1,701.9 tokens/s | 79.1 tokens/s |
+| Q4 | 3.2 s | 1,701.9 tokens/s | 78.6 tokens/s |
+
+Prefill is the same for the three caches. FP16 generates fastest, by 1.4 percent against Q8 and 2.1 percent against Q4, because attention reads the cache with no decompression step. The generation request keeps a short prompt, so it measures decode near the start of the context. Decode at a deep context is not measured; there FP16 reads four times more cache bytes for each token than Q4.
 
 A 12 GB card is not available here. The floor of 10,444,171,616 bytes rests on the arithmetic above, not on a run.
 
