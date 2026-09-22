@@ -7,7 +7,13 @@ export const INFERENCE_PROFILE = {
   contextStepTokens: 4_096,
   /** Measured on the pinned build: an FP16 cache costs 64 KiB for each token. */
   contextCacheBytesPerToken: 64 * 1024,
-  /** The compute buffers grow with the context; the rest of the server does not. Metal reserves more than CUDA. */
+  /**
+   * The compute buffers grow with the context; the rest of the server does not.
+   * Both backends hold an FP16 attention mask of 2 bytes for each token of the
+   * fixed 256-token micro-batch. Metal also keeps one attention layer of the
+   * cache as scratch. These values need a new measurement if the micro-batch in
+   * `serverArguments` changes.
+   */
   computeBytesPerToken: { metal: 5 * 1024, cuda: 512, hip: 512 },
   fixedServerBytes: 512 * 1024 ** 2,
   /** Fragmentation, and memory another program takes after the free-memory reading. */
