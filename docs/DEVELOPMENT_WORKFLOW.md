@@ -77,12 +77,6 @@ Real-model reproduction is a last-resort diagnostic method, not a standard agent
 
 Raw development inference diagnostics are private and must not enter reports, product records, debug snapshots, user-interface data, or Git.
 
-After cloning, run `bash setup.sh` on Apple silicon macOS or `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` in standard Windows PowerShell. Setup checks required tools and asks before it installs missing tools through official installers. It checks Docker with Linux containers only when the guest image is missing. After approval, it installs locked project packages, runs `pnpm setup:assets` to download missing model and runtime files and build a missing guest image, then runs `pnpm start`. Complete local assets are reused. See the [README](../README.md#run-locally-with-one-command) for platform requirements and restart steps.
-
-For later starts, `pnpm start` runs `pnpm desktop:dev` with the installed packages and assets. Development preparation rebuilds local application resources when needed. Run setup again when dependencies or required assets change. Packaged applications still require no download at first launch.
-
-During `pnpm desktop:dev`, the terminal shows WebView console output, unhandled WebView errors, and Garden Desk Core process output. This development-only stream is not stored and must not include prompts, messages, tool payloads, hidden reasoning, or file contents.
-
 - With explicit approval, run `pnpm test:m3:macos` on physical Apple silicon for the canonical headless M3 gate. It verifies the pinned Ternary Bonsai 2 model, real multi-step Python tasks, artifacts, guest isolation, timeout, and output limits without the desktop UI; guest Node.js coverage is the direct-source probe only.
 - With explicit approval, run `pnpm model:compare` (raw server measurements: prefill, generation, memory by context, tool-call precision, specialist choice) and `pnpm model:compare:agent` (Windows, full agent runs on the specialist cases) for a model or runtime candidate. `pnpm model:compare:report` renders every result under `packages/eval/.generated/model-comparison` into one table.
 - For an approved task-specific daemon reproduction, create an ignored script under `packages/eval/.generated/`. Use `createGardenDeskCore` with `packages/eval/.generated/models`, the generated macOS helper, and `packages/workers/images`; start the real current-user server with `startDaemon`; then call it through `packages/cli/src/client.ts` using `folders.add`, `sessions.create`, `agent.start`, and repeated `agent.get` requests until the run is terminal.
@@ -92,6 +86,21 @@ During `pnpm desktop:dev`, the terminal shows WebView console output, unhandled 
 - After a real golden-task run, report the pass count (`golden: N/4 passed`) to the owner.
 
 Development inference diagnostics live in [packages/eval/src/gates/development-inference.ts](../packages/eval/src/gates/development-inference.ts).
+
+## Local Source Setup
+
+After cloning, run the setup command for your platform:
+
+- Apple silicon macOS: `bash setup.sh`.
+- Windows 11 x64 Pro or Enterprise with Hyper-V enabled: run `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` in standard PowerShell.
+
+Setup checks required tools and asks before it installs missing tools through official installers. It checks Docker with Linux containers only when the guest image is missing. After approval, it installs locked project packages, downloads missing model and runtime files, builds a missing guest image, and starts the app. Complete local assets are reused. The first setup needs an internet connection. If an installer requires a restart, restart and run setup again.
+
+On Windows, the helper can add the requesting account to Hyper-V Administrators. Sign out and back in after that change, then start the app again.
+
+For later starts, `pnpm start` runs `pnpm desktop:dev` with the installed packages and assets. Development preparation rebuilds local application resources when needed. Run setup again when dependencies or required assets change. Packaged applications still require no download at first launch.
+
+During `pnpm desktop:dev`, the terminal shows WebView console output, unhandled WebView errors, and Garden Desk Core process output. This development-only stream is not stored and must not include prompts, messages, tool payloads, hidden reasoning, or file contents.
 
 ## Platform Notes
 

@@ -1,6 +1,6 @@
 # Architecture
 
-Updated: 2026-08-22
+Updated: 2026-09-23
 
 Garden Desk V1 is a local desktop application with three isolated layers: a thin Tauri interface, an authoritative Node.js control plane, and session-scoped no-network agent microVMs plus a narrow host-native inference worker.
 
@@ -13,7 +13,7 @@ Garden Desk V1 is a local desktop application with three isolated layers: a thin
 └──────────────────────────┬────────────────────────────────────┘
                            │ typed commands / local RPC
 ┌──────────────────────────▼────────────────────────────────────┐
-│ Garden Desk Core                                                   │
+│ Garden Desk Core                                              │
 │ grants · sessions · jobs · policy · audit · model mediation  │
 │ limits · recovery · worker supervision                       │
 └───────────────┬──────────────────────────────┬────────────────┘
@@ -90,7 +90,9 @@ The runtime is the pinned PrismML llama.cpp fork server with a hash-verified Ter
 
 Core mediates all inference and retains tool authority. One resident server has one slot. The existing scheduler queues model turns and unloads generation before embedding or image work. Cancellation closes the request and waits at most one second for the slot to become idle; a failed server is then stopped. Shutdown stops the server and removes its private directory.
 
-Generation uses a fixed 32K context with no separate output token budget; the thinking level and compaction are the only controls on generation length (owner decision in [ADR 0019](adr/0019-qwen38-private-server.md)). Core retains compaction. Each generate or chat request aborts after 60 ms for every requested token, and after at least five minutes, so a turn that fills the 32K context keeps its full time before stall recovery runs. Reasoning stays in transient memory during one task and is cleared at completion, cancellation, or compaction. Stored messages and traces contain no reasoning. Task time stays fixed across tool turns. Context accounting includes cached input; performance counts only evaluated input tokens. Unavailable allocation measurements are omitted.
+Generation uses a context fitted to the available inference memory, from 32K to 128K tokens, with no separate output token budget ([ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md)). Core retains compaction. Each generate or chat request aborts after 60 ms for every requested token, and after at least five minutes, so a turn that fills its fitted context keeps its full time before stall recovery runs.
+
+Reasoning stays in transient memory during one task and is cleared at completion, cancellation, or compaction. Stored messages and traces contain no reasoning. Task time stays fixed across tool turns. Context accounting includes cached input; performance counts only evaluated input tokens. Unavailable allocation measurements are omitted.
 
 ## State And Recovery
 
@@ -105,7 +107,7 @@ Raw hidden model reasoning is never persisted. Supported typed thought segments 
 - The user grants a folder or explicit files; the model never chooses host paths.
 - Garden Desk Core stages inputs and rechecks path identity at use time.
 - Host inputs are read-only to the guest; scratch is guest-only and ephemeral.
-- The VM has no NIC and no general host proxy.
+- The microVM has no network device and no general host proxy.
 - Agent code cannot install dependencies or access credentials.
 - The model proposes; Garden Desk Core authorizes and mediates; the guest executes only within its job.
 - The webview has no direct product authority.

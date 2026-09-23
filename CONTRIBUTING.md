@@ -33,7 +33,7 @@ Each implementation change follows this sequence:
 1. Confirm the active milestone and allowed scope.
 2. Inspect existing contracts and research maintained solutions using primary sources.
 3. Implement the smallest clear change that passes the gate and apply the Test Rule in [AGENTS.md](AGENTS.md#test-rule): a bug fix starts with one failing reproduction test; anything else is implemented first and gets at most one focused test.
-4. Run `pnpm lint && pnpm typecheck && pnpm test`; CI runs the full `pnpm verify`. Run a milestone gate only when closing that milestone.
+4. Run the smallest checks required by the [verification table](docs/DEVELOPMENT_WORKFLOW.md#4-verify). CI runs the full `pnpm verify`. Run a milestone gate only when closing that milestone.
 5. Self-review the diff and record remaining risks or an explicit handoff.
 
 ## Commit Authorship And DCO

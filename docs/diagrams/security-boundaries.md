@@ -7,7 +7,7 @@ sequenceDiagram
     participant UI as Tauri webview
     participant Core as Garden Desk Core
     participant Model as Native inference worker
-    participant VM as No-NIC agent microVM
+    participant VM as No-network agent microVM
     participant Audit as Local audit
 
     UI->>Core: Session request with opaque folder or attachment IDs

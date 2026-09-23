@@ -15,7 +15,7 @@ The pasted text provided the product, market, business, hardware, roadmap, and p
 
 The deep research report provided the model, runtime, document pipeline, benchmark, and architecture recommendations.
 
-## Current Web Sources Reviewed
+## Web Sources Reviewed In July 2026
 
 - [Gemma core docs](https://ai.google.dev/gemma/docs/core)
 - [Gemma 4 QAT announcement](https://blog.google/innovation-and-ai/technology/developers-tools/quantization-aware-training-gemma-4/)

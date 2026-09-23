@@ -2,7 +2,7 @@
 
 Created: 2026-07-10
 
-This document defines the implementation quality constraints for Garden Desk. M0 and M1 are complete, the macOS inference foundation exists, and M3 is active under [AGENTS.md](../AGENTS.md).
+This document defines the implementation quality constraints for Garden Desk. M0, M1, and M2 are complete. M3 is active under [AGENTS.md](../AGENTS.md).
 
 The goal is the least amount of new code and the least amount of tests that delivers the active product contracts. The architecture, not layers of input checks, protects the guest boundary.
 

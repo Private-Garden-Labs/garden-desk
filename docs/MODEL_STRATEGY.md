@@ -1,10 +1,10 @@
 # Model Strategy
 
-The current desktop target is Ternary Bonsai 2 27B with its Q8_0 image projector and the existing Qwen3 embedding encoder. [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) defines the model and runtime; [ADR 0019](adr/0019-qwen38-private-server.md) defines the fixed profile and private server transport. The macOS and Windows checks are complete; see [current status](M3_STATUS.md).
+The current desktop target is Ternary Bonsai 2 27B with its Q8_0 image projector and the existing Qwen3 embedding encoder. [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) defines the model, runtime, and fitted context; [ADR 0019](adr/0019-qwen38-private-server.md) defines the private server transport. The macOS and Windows checks are complete; see [current status](M3_STATUS.md).
 
 The managed [catalog](../assets/models.json) pins each immutable revision, file size, and SHA-256 hash. The [runtime manifest](../assets/inference-runtime.json) pins the CUDA, HIP, and Metal archives and their dependencies. A changed hash fails installation.
 
-Text uses a 32K context and one slot. Image inspection uses an 8K context after generation unload. The same server provides structured output and embeddings. The scheduler, Core authority, no-network microVM, and stored conversation formats remain in place. Reasoning stays transient.
+Text uses one slot and a context fitted from 32K to 128K tokens. Image inspection uses an 8K context after generation unload. The same server provides structured output and embeddings. The scheduler, Core authority, no-network microVM, and stored conversation formats remain in place. Reasoning stays transient.
 
 Larger profiles and document-intelligence work remain research.
 
@@ -75,7 +75,6 @@ Use runtime adapters:
 - Ollama-compatible serving only when model packaging and context behavior are explicit, telemetry is absent or provably disabled, and no telemetry network path exists. Ollama's MLX backend currently has the most mature Gemma 4 MTP support on Apple Silicon.
 - MLX-family serving is a later Apple Silicon optimization candidate and must pass the same packaged workflow, citation, verification, compaction, and offline suite before certification.
 - Google LiteRT-LM as an emerging Google-first alternative to track: it ships an OpenAI-compatible local server and a JS/WASM API, added Gemma 4 12B support, and is Google's own optimized MTP test surface. MediaPipe LLM Inference is maintenance-only; do not build on it.
-- [PrismML Bonsai](https://prismml.com/news/bonsai-8b) as a research-derived post-V1 candidate to track: its low-bit model formats may suit the supported desktop budgets, but evaluation waits until the formats and required upstream runtime backends are stable in pinned releases. It must pass the same licensing, redistribution, offline packaging, cross-platform, memory, context, structured-output, agent-task, and security gates before certification; it does not change the current default.
 - vLLM-class serving for later office appliances and high-throughput profiles after Gemma 4 QAT support is verified.
 - Avoid runtime-specific features in core workflow logic.
 - Pin runtime builds. QAT, KV-cache quantization, and MTP interact per build and must be certified together.

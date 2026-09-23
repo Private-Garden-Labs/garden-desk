@@ -148,7 +148,7 @@ Garden Desk should provide stronger guarantees than "local by default":
 
 - No mandatory cloud dependency.
 - No silent cloud fallback.
-- No-NIC microVM isolation for hostile document processing and executable agent tools on certified platforms.
+- No-network microVM isolation for hostile document processing and executable agent tools on certified platforms.
 - No command, URL, domain, address, or protocol matching presented as a network-isolation guarantee.
 - No application telemetry, usage analytics, automatic crash reporting, or background metrics export.
 - Local customer-owned audit records stay on the device unless the user explicitly exports them.

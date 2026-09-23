@@ -2,7 +2,7 @@
 
 Created: 2026-07-10
 
-This document is the performance and context-management specification for the first Garden Desk implementation phase. It is planning material only and does not create implementation scaffolding.
+This document records current performance rules and later research. [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) defines the active model profile.
 
 Research claims in this document are research-derived until validated on target hardware.
 
@@ -29,7 +29,7 @@ Post-V1 document intelligence adds parsing, retrieval, evidence-pack, citation, 
 
 ## Active Context And Memory
 
-Generation uses a fixed 32K context. Core keeps its existing compaction policy. Image inspection uses an 8K context after generation unload. Embedding context and input limits stay unchanged.
+Generation uses a context fitted to the available inference memory, from 32K to 128K tokens. Core keeps its existing compaction policy. Image inspection uses an 8K context after generation unload. Embedding context and input limits stay unchanged.
 
 Report load time, first-token delay, evaluated prompt rate, generation rate including reasoning, and peak memory separately. Count cached input in context usage. Omit unavailable allocation measurements. Do not add CPU and GPU views of shared physical pages. Full GPU layer offload alone does not prove that all weights are in physical VRAM.
 
@@ -46,10 +46,10 @@ Required validation areas:
 - Ollama-compatible path only when model format and context behavior are explicit, telemetry is absent or provably disabled, and no telemetry network path exists.
 - vLLM-class serving only for later appliance or server profiles, not as a desktop assumption.
 
-Optimization candidates:
+Later optimization candidates:
 
-- Quantized weights: required for every supported desktop tier. Ship official pre-converted QAT Q4_0 GGUFs only; self-conversion destroys the QAT quality benefit.
-- KV-cache quantization: preferred if accuracy and citation precision are unchanged.
+- Quantized weights: the current desktop uses the pinned Bonsai 2 `PQ2_0` GGUF. Later model formats need their own measurements and redistribution review.
+- KV-cache quantization: a later candidate if accuracy is unchanged; the current desktop uses an FP16 cache.
 - Prompt or prefix caching: preferred for repeated folder questions and stable system/workflow prompts.
 - Chunked prefill: preferred if it improves long evidence-pack latency without changing outputs.
 - Multi-Token Prediction: allowed only if the matching drafter model (roughly 2 GB additional memory, verified 2026-07-11) fits the same profile without reducing the certified context target. Draft-and-verify output is identical to baseline decoding, so the certification risk is memory and stability, not answer quality.

@@ -2,119 +2,39 @@
 
 **Private work should stay private.**
 
-Garden Desk is a local-first desktop agent for working with private files and folders. It is built for people who want useful AI assistance without uploading their work, managing model infrastructure, or becoming an AI developer.
+Garden Desk is a free desktop agent for work with local files. Choose a folder or attach files, describe the result you need, and review what it makes. It runs on your computer with no account, telemetry, or cloud service.
 
-## Run locally with one command
+## How it works
 
-Clone the repository:
-
-```sh
-git clone git@github.com:private-garden-labs/garden-desk.git
+```text
+Desktop (Tauri and React)
+  └─ Garden Desk Core (TypeScript and Node.js)
+       ├─ Supervised local model (Ternary Bonsai 2 27B)
+       └─ No-network microVM (virtual machine with no network device)
+            /source: selected folder, read-only
+            /workspace: private working files
 ```
 
-Open a terminal in the `garden-desk` folder. Run the setup command for your platform.
+Core controls folder access, approvals, audit, and recovery. The model proposes work; Core runs file tools and code in the microVM. The selected folder stays read-only. You choose where to save results.
 
-**macOS (Apple silicon):**
+## Get Garden Desk
 
-```sh
-bash setup.sh
-```
+Download signed builds for [Apple silicon macOS or Windows 11 x64](https://gardendesk.ai/releases/). Windows needs Pro or Enterprise with Hyper-V enabled. First launch needs no download. To build from source, use the [development workflow](docs/DEVELOPMENT_WORKFLOW.md#local-source-setup).
 
-**Windows x64 Pro or Enterprise with Hyper-V enabled:**
+## Benchmark
 
-Run this in standard PowerShell:
+In a development comparison on 2026-09-23, local Bonsai 2 27B, Qwen3.8 27B, and Qwen3.8 Max each passed 18 of 18 tasks. See the [tasks, times, and tool errors](https://github.com/Private-Garden-Labs/garden-desk/issues/168). This result applies to that suite.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
-```
+## Learn more
 
-Setup uses the Node.js version in [.node-version](.node-version), pnpm in [package.json](package.json), and Rust in [rust-toolchain.toml](rust-toolchain.toml). It also checks the [Tauri platform tools](https://v2.tauri.app/start/prerequisites/), and Docker when the guest image is missing. It lists missing tools and asks before it installs or updates them. Official installers can request administrator approval. Complete their prompts. If an installer requires a restart, restart the computer and run setup again.
-
-After the tools are ready, setup asks before it installs locked project packages, downloads missing model and runtime files, builds the guest image, and starts the app. Docker must run Linux containers when setup builds the guest image. The first setup needs an internet connection and can take a long time. Complete local assets are reused.
-
-For later starts, run:
-
-```sh
-pnpm start
-```
-
-`pnpm start` uses the installed packages and assets. It rebuilds local application code when needed. Run setup again when dependencies or required assets change.
-
-On Windows, the first app launch can request administrator approval to add your account to Hyper-V Administrators. Sign out and back in after that change, then run `pnpm start` again. The desktop app runs as your normal user on both platforms.
-
-For source changes and platform notes, see the [development workflow](docs/DEVELOPMENT_WORKFLOW.md).
-
-## Why Garden Desk exists
-
-Most AI tools ask people to accept one of three compromises: use a cloud-only service, use a hybrid product that still treats the cloud as its default, or configure a local stack designed primarily for developers.
-
-Garden Desk takes a different approach. The application, models, conversations, tools, and workspaces run on your computer. You choose a folder or attach files, describe the outcome you want, and Garden Desk handles the local infrastructure automatically. Your source folder remains read-only to the agent.
-
-## Nothing leaves your device
-
-Garden Desk collects **nothing**. There is no telemetry, analytics, feature-usage tracking, automatic crash reporting, background metrics export, prompt upload, or silent cloud fallback.
-
-Conversations, files, generated work, audit records, and diagnostic traces stay on the device. They leave only when you deliberately export or share them. The V1 product requires no account and no cloud service.
-
-## How we are building it
-
-- **Generation and image model:** Ternary-Bonsai-2-27B `PQ2_0` GGUF (built from Qwen3.8-27B) and its Q8_0 projector. The macOS and Windows checks are complete; see [current status](docs/M3_STATUS.md).
-- **Retrieval encoder:** the official `Qwen3-Embedding-0.6B Q8_0` GGUF for local semantic search. Document retrieval is part of the post-V1 document-intelligence work; the encoder's local runtime path is already validated.
-- **Model runtime:** pinned PrismML `llama.cpp` fork `prism-b10709-9a9394a` for text, images, and embeddings through a private socket. Model files are Apache-2.0 licensed; llama.cpp is MIT licensed.
-- **Desktop and control plane:** a [Tauri v2](https://tauri.app/) and React interface over a TypeScript and Node.js core that owns permissions, sessions, model requests, limits, audit, and recovery.
-
-The model uses no exposed network port. It runs in a separate, supervised process. Garden Desk Core communicates with it through HTTP over a private Unix socket. Core validates each result. Windows uses a native relay for the private connection. The process keeps local GPU acceleration. It has no network access, credentials, host shell, unrestricted file access, or approval authority. The operating system reclaims its memory when it stops.
-
-## Local model operation
-
-Generation uses ternary weights and a context fitted to the inference memory budget, up to 128K tokens. Reasoning is shown live and stays outside stored conversations, traces, and audit records. The model proposes tool calls; Core controls execution inside the no-network microVM.
-
-## Public website
-
-Explore the [public website and interactive demo](https://gardendesk.ai/) or run it locally with `pnpm site:dev`.
-
-## More capable than file ingestion
-
-Garden Desk does more than place extracted text into a prompt. The agent can write and run Python, Node.js, and shell tasks inside an isolated Linux microVM, then use the results in its next step.
-
-The agent can also inspect a PNG or JPEG attachment, or an image in the selected folder. A simple question about one direct image stays in the main chat. Exact extraction and multi-image work run in a general child agent, so only the requested facts return to the main context. Image inspection is local, on demand, and has no network access.
-
-The immutable guest image includes pinned offline tools for common work with JSON, CSV, SQLite, PDF, DOCX, XLSX, and images, including Pillow, pypdf, openpyxl, python-docx, and ReportLab. The model loads product-owned format and professional review skills on demand through one generic skill tool. Legal, finance, and medical-administration review skills use supplied evidence and require qualified human review. Explicitly requested files appear beneath the matching response with Open and Save As actions; scripts, intermediates, and logs stay in Technical details. Package managers are intentionally absent: the environment is reproducible and cannot download code at runtime.
-
-## Release checks
-
-Before a release, `pnpm test:m3:macos` and `pnpm test:m3:windows` run the guest security probes (no network interface, read-only source, resource limits) plus four golden folder tasks — XLSX, DOCX, and PDF extraction, and a mixed-folder report — each checked against known fixture values. They print a pass count and fail the build if any task fails.
-
-## Isolation on macOS and Windows
-
-Every conversation uses a session-scoped microVM with no virtual network device, DNS, route, bridge, NAT, or proxy. It receives the selected folder as a live read-only mount, immutable attachments, a bounded private workspace, and one typed host/guest channel. The model can propose work; Garden Desk Core decides what is valid and the microVM performs it without unrestricted host access or any network access.
-
-### macOS
-
-On Apple silicon, Garden Desk uses Apple's **Virtualization.framework**. It provides native hardware isolation and direct control over the VM configuration, so Garden Desk can prove that no network device exists. **VirtioFS** supplies the live read-only folder, while a fixed virtio socket carries typed messages without opening a TCP port.
-
-### Windows
-
-On Windows Pro and Enterprise with Hyper-V already enabled, Garden Desk uses **HCS and Hyper-V** utility VMs. These are the platform-native isolation and lifecycle primitives. A read-only **Plan9** share exposes the selected folder, and a fixed **Hyper-V socket** carries typed messages without adding a network adapter or general network path. A signed Windows-only helper elevates once to add the requesting user to Hyper-V Administrators; the application and Garden Desk Core then run as that standard user without recurring UAC. This standing group membership gives every process under that Windows account Hyper-V management authority. Garden Desk does not enable or download Windows features.
-
-## Project status
-
-M3 Offline Dev-Agent Desktop V1 is active. What it delivers today, the security boundary, and the verification status are in the current [M3 status](docs/M3_STATUS.md). M3 verification is complete.
-
-The community software is free. Downloads are on the [releases page](https://gardendesk.ai/releases/). The macOS download is signed and notarized. The Windows download is signed with Azure Artifact Signing.
+Read the [architecture](docs/ARCHITECTURE.md), [security model](docs/SECURITY.md), [current status](docs/M3_STATUS.md), and [license](LICENSE). See the [website and demo](https://gardendesk.ai/).
 
 ## Supporters
 
-Sponsorship pays for development time, test hardware for macOS and Windows, and code-signing certificates. It unlocks nothing: every feature stays free for everyone, sponsored or not.
+Every feature stays free for everyone.
 
 **Company sponsors:** none yet.
 
 **Sponsors:** none yet.
 
-The [supporters page](https://gardendesk.ai/supporters/) lists company sponsors, sponsors, and backers, and explains how the lists are kept. The two tiers above appear there as well, so update both places. Entries are added by hand with each release. To support the work, see [GitHub Sponsors](https://github.com/sponsors/Private-Garden-Labs).
-
-## Learn more
-
-Read the [product overview](docs/PRODUCT.md), [architecture](docs/ARCHITECTURE.md), and [security model](docs/SECURITY.md). Exact models and hashes live in the [model manifest](assets/models.json); pinned dependencies, guest components, versions, licenses, and purposes live in the [compliance inventory](compliance/inventory.json).
-
-The development workflow was informed by [Everything Claude Code](https://github.com/affaan-m/ECC). Garden Desk uses original project-specific instructions and does not include that package or runtime.
+See the [supporters page](https://gardendesk.ai/supporters/) or [support the work](https://github.com/sponsors/Private-Garden-Labs).
