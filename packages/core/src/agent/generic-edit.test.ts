@@ -16,22 +16,24 @@ describe("generic write and edit", () => {
     expect(runs).toHaveLength(0);
   });
 
-  it("fails an ambiguous old match unless replace_all is set", async () => {
+  it("replaces the first match when old differs from the file only in whitespace", async () => {
     const runs: Parameters<AgentExecutor["execute"]>[0][] = [];
     await readRegistry(runs).execute("edit", {
       path: "/workspace/notes.txt",
-      old: "value",
-      new: "other",
+      old: "if ready:\n  value = 1 \n",
+      new: "if ready:\n    value = 2\n",
     });
     const program = source(runs[0] as (typeof runs)[number]);
 
-    const result = await runGuestProgram({ "notes.txt": "value\nvalue\n" }, async (guestRoot) =>
-      program.replaceAll("/workspace", guestRoot),
+    const notes = "if ready:\r\n    value = 1\r\nif ready:\r\n    value = 1\r\n";
+    const result = await runGuestProgram(
+      { "notes.txt": notes },
+      async (guestRoot) =>
+        `${program.replaceAll("/workspace", guestRoot)}\nprint(repr(path.read_bytes()))`,
     );
 
-    expect(result).toMatchObject({
-      code: 1,
-      stderr: expect.stringContaining("edit_old_not_unique"),
-    });
+    expect(result.stdout).toContain(
+      String.raw`b'if ready:\r\n    value = 2\r\nif ready:\r\n    value = 1\r\n'`,
+    );
   });
 });
