@@ -1,47 +1,25 @@
 ---
 name: xlsx-workbooks
-description: XLSX workbook work. Load for XLSX, Excel workbook, or spreadsheet deliverable.
+description: Load before reading or writing XLSX.
 ---
 
-## Library
-
-Use the installed `openpyxl` through `python`. Do not install packages, and do not use `pandas`.
-
-## Find The Files
-
-Search `/source` recursively for files whose name ends in `.xlsx`, case-insensitive.
-
-## Recipe
-
-Read with `data_only=True` so formulas resolve to their last calculated values. Never pass `read_only=True`; some exports return empty cells under it.
+Use `openpyxl`.
 
 ```python
-from openpyxl import load_workbook
-workbook = load_workbook(path, data_only=True)
-for row in workbook["Sheet1"].iter_rows(values_only=True):
+from openpyxl import Workbook, load_workbook
+
+book = load_workbook(path, data_only=True)
+for number, row in enumerate(book["Sheet1"].iter_rows(values_only=True), 1):
     ...
+
+out = Workbook()
+out.active.append(["column_a", "column_b"])
+out.save("/workspace/result.xlsx")
 ```
 
-Write a new sheet with `Workbook()`, or open an existing file with `data_only=False` to edit and resave it.
-
-```python
-from openpyxl import Workbook
-
-workbook = Workbook()
-workbook.active.append(["column_a", "column_b"])
-workbook.save(path)
-```
-
-## Verify
-
-Reopen every workbook you write and assert its row count matches what you intended to write. Print the count as evidence before you report the deliverable done.
-
-Check reported totals against the source rows and calculation rules. Use those rows to verify names and descriptions in the final answer. A matching row count does not verify the values.
-
-## Gotchas
-
-- Check `len(row)` before indexing into it; a short row raises `IndexError`.
-- Find the real header row by its content; it is often below a preamble of title or note rows, not row 1.
-- Catch the specific error you expect, never a bare `except`; report which file and row failed.
-- Cite results by path, sheet name, and row number.
-- A large workbook takes real time to load; that is normal, not a failure.
+- Avoid `read_only=True`; some exports return empty cells.
+- `data_only=True` reads cached formula values, which can be absent or stale. Edit with `data_only=False` to preserve formulas.
+- openpyxl does not calculate formulas. Write calculated values when numbers are required.
+- Find headers by content; check row length before indexing.
+- Cite path, sheet, and row.
+- Reopen output; compare values and totals with source rows, not just counts. Return after a successful check.

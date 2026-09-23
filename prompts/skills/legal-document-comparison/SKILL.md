@@ -1,12 +1,12 @@
 ---
 name: legal-document-comparison
-description: Compare versions or related legal documents and agreements. Load after document-review. Do not use for one-document review, broad diligence, or a matter chronology.
+description: Compare legal document versions. Load after document-review.
 ---
 
-Use only supplied documents and playbook. Do not assume current law, jurisdiction, market standards, or represented party.
+List files, version markers, dates, and relationships. Match sections by meaning.
 
-State each file, version marker, date, and relationship. Match sections by subject and meaning, not number only. Compare parties, dates, definitions, scope, duties, prices, payment, service levels, confidentiality, data protection, intellectual property, liability, indemnity, insurance, assignment, termination, disputes, notices, signatures, schedules, and precedence rules.
+Compare parties, dates, definitions, scope, duties, prices, payment, service levels, confidentiality, data, intellectual property, liability, indemnity, insurance, assignment, termination, disputes, notices, signatures, schedules, and precedence.
 
-Classify each result `added`, `removed`, `changed`, `conflicting`, `moved`, or `format only`. Do not classify a completed blank or changed identifier, amount, date, or obligation as `format only`. Put each changed field in one row. Report all distinct values when more than two documents differ.
+Labels: `added`, `removed`, `changed`, `conflicting`, `moved`, `format only`. Changed blanks, identifiers, amounts, dates, or duties are never `format only`. Do not invent motives; identify the controlling version only with evidence.
 
-Output one table: subject; earlier and later source and value; change; possible effect; required check. Cite all compared locations. Do not invent a reason for change or say which version controls unless supplied documents establish it. Require qualified human review for legal decisions. This skill does not determine which version is authoritative or give legal advice.
+Table, one changed field per row: subject; earlier/later sources and values; label; possible effect; check.

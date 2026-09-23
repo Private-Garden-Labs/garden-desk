@@ -1,12 +1,10 @@
 ---
 name: legal-document-review
-description: One-contract legal review. Load after document-review. Exclude: version comparison, diligence, chronologies.
+description: Internal inconsistencies in one contract. Load after document-review.
 ---
 
-# Legal Document Review
+Ask which party is represented only if it changes finding order. Check parties, signers, dates, economics, terms, duties, confidentiality, data, intellectual property, liability, indemnity, insurance, assignment, change, termination, disputes, and references.
 
-Use supplied contract, parts, and playbook only. Do not assume jurisdiction, law, market standard, represented party, or missing value; ask party only if rank/negotiation changes. Check all parts for identity/signers, dates, economics, terms/duties, confidentiality/data/IP, liability/indemnity/insurance, assignment/change/termination/disputes, and references.
+Labels: `identity mismatch`, `value mismatch`, `date conflict`, `defined-term drift`, `clause conflict`, `broken reference`, `missing repeated detail`. The last includes blank repeated signer names, titles, authority, parties, or dates. Aliases need evidence. For omissions, cite the expected location and checked sections.
 
-Internal inconsistencies first; one field/row: `identity mismatch`, `value mismatch`, `date conflict`, `defined-term drift`, `clause conflict`, `broken reference`, or `missing repeated detail`. A blank repeated signer name/title/authority/party/date is missing repeated detail. Report distinct values; aliases need source support.
-
-Table: field, both sources/values, conflict, reason, and check. Cite both locations; absence cites expected place/checked parts. Never invent correction; separate fact, interpretation, missing information, and human decision; rank only with known party/goal. Do not edit unless requested. Qualified human review is required for legal decisions. This skill does not say a contract is valid, enforceable, compliant, or safe.
+Table, one field per row: field; sources/values; label; reason; check. Do not invent corrections; edit only on request. Give no validity, enforceability, compliance, or safety conclusion.

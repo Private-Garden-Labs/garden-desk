@@ -33,13 +33,6 @@ function bodyText(params: Record<string, unknown>, name: string, maximum: number
   return item;
 }
 
-function replaceAllParam(params: Record<string, unknown>): boolean {
-  const item = params.replace_all;
-  if (item === undefined) return false;
-  if (typeof item !== "boolean") throw new Error("invalid_replace_all: use true or false");
-  return item;
-}
-
 function base64(text: string): string {
   return Buffer.from(text, "utf8").toString("base64");
 }
@@ -86,7 +79,6 @@ function editParams(value: unknown) {
     path: workspacePath(params),
     old: textParam(params, "old", MAX_TEXT_CHARS),
     new: bodyText(params, "new", MAX_TEXT_CHARS),
-    replace_all: replaceAllParam(params),
   };
 }
 
@@ -95,13 +87,12 @@ function editTool(): ToolSpec {
     definition: {
       name: "edit",
       description:
-        "Replace exact text in a /workspace file; old must match once unless replace_all.",
+        "Replace the first match of old text in a /workspace file; whitespace differences are ignored.",
       params: objectSchema(
         {
           path: { type: "string" },
           old: { type: "string" },
           new: { type: "string" },
-          replace_all: { type: "boolean" },
         },
         ["path", "old", "new"],
       ),
@@ -115,7 +106,6 @@ function editTool(): ToolSpec {
           path: params.path,
           old: base64(params.old),
           new: base64(params.new),
-          replace_all: params.replace_all,
         }),
         false,
       );
