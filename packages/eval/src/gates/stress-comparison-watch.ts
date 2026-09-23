@@ -1,5 +1,7 @@
+import { readFile } from "node:fs/promises";
 import type { GardenDeskCore } from "@gardendesk/core";
 import type { AgentRunSnapshot, ModelRuntimeStatus } from "@gardendesk/shared";
+import { deliverableMatches } from "./stress-comparison-tasks.js";
 
 const HIDDEN_EVENTS = new Set([
   "run.started",
@@ -10,6 +12,28 @@ const HIDDEN_EVENTS = new Set([
 
 export function visibleSteps(events: { type: string }[]): number {
   return events.filter((event) => !HIDDEN_EVENTS.has(event.type)).length;
+}
+
+export async function deliverableBytes(
+  core: GardenDeskCore,
+  deliverable: string,
+  snapshot: AgentRunSnapshot,
+): Promise<Buffer> {
+  const artifact = snapshot.artifacts.find((item) => deliverableMatches(deliverable, item.name));
+  if (artifact === undefined) return Buffer.alloc(0);
+  try {
+    return await readFile(await core.materializeArtifact(snapshot.run.sessionId, artifact.id));
+  } catch {
+    return Buffer.alloc(0);
+  }
+}
+
+export function loadedSkills(events: AgentRunSnapshot["events"]): string[] {
+  return events.flatMap((event) => {
+    const loaded = event.type === "tool.completed" && event.toolName === "skill";
+    const name = loaded ? /^Loaded (.+) skill\.$/u.exec(event.summary)?.[1] : undefined;
+    return name === undefined ? [] : [name];
+  });
 }
 
 export function allocatedMemory(status: ModelRuntimeStatus | undefined): number {
