@@ -2,11 +2,11 @@
 
 Created: 2026-07-15
 
-This is the implementation and contribution workflow for Garden Desk. [AGENTS.md](../AGENTS.md) is authoritative, followed by accepted ADRs, [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), and this document. M3 Offline Dev-Agent Desktop V1 is active; see [M3_STATUS.md](M3_STATUS.md) for current evidence.
+This is the implementation and contribution workflow for Garden Desk. [AGENTS.md](../AGENTS.md) is authoritative, followed by accepted ADRs, [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), and this document. M3 is complete, and Community Desktop V1 is released; see [M3_STATUS.md](M3_STATUS.md) for release evidence.
 
 ## Operating Principles
 
-- Work only inside the active milestone and accepted issue scope. Roadmap presence is not authorization.
+- Work only inside an active milestone or a direct owner request and accepted issue scope. Roadmap presence is not authorization.
 - Search the repository and maintained dependencies before writing custom infrastructure.
 - Prefer deterministic checks and primary-source evidence.
 - Report commands and results exactly; never imply that an unrun check passed.
@@ -16,7 +16,7 @@ There is no coverage percentage, no test-driven development except for bug fixes
 
 ## 1. Confirm The Scope
 
-Before changing a file, read the current phase in [AGENTS.md](../AGENTS.md), find the active milestone gate in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), and read the ADRs and folder rules in [IMPLEMENTATION_STRUCTURE.md](IMPLEMENTATION_STRUCTURE.md) that the change touches. Stop if the work belongs to an inactive milestone and offer an issue, design note, or plan instead. The `garden-desk-plan-change` skill produces the short change brief.
+Before changing a file, read the current phase in [AGENTS.md](../AGENTS.md), check for an active milestone gate in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), and read the ADRs and folder rules in [IMPLEMENTATION_STRUCTURE.md](IMPLEMENTATION_STRUCTURE.md) that the change touches. Stop if the work belongs to an inactive milestone without a direct owner request. The `garden-desk-plan-change` skill produces the short change brief.
 
 ## 2. Research First
 
@@ -69,7 +69,7 @@ Use the `garden-desk-review-change` skill for a review and the `garden-desk-hand
 
 ## Pull Request Gate
 
-A pull request is ready for review when it links the active milestone and issue, contains no unrelated cleanup or speculative scaffolding, preserves product and security boundaries, states verification results exactly, documents dependency and redistribution impact, updates contracts and authoritative documentation when behavior changes, and is authored only by its human owner. Reviewers may ask for a split when a pull request spans unrelated responsibilities.
+A pull request is ready for review when it links the milestone or owner request and accepted issue when applicable, contains no unrelated cleanup or speculative scaffolding, preserves product and security boundaries, states verification results exactly, documents dependency and redistribution impact, updates contracts and authoritative documentation when behavior changes, and is authored only by its human owner. Reviewers may ask for a split when a pull request spans unrelated responsibilities.
 
 ## Real-Model Reproduction
 
@@ -131,7 +131,7 @@ The workflow review was informed by [Everything Claude Code](https://github.com/
 
 ## Contribution Activation
 
-External implementation contributions stay closed through the M3 V1 launch unless the owner activates them separately. Pull-request CI runs on pull request activity; direct pushes to `main` do not run it. Activation is described in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md#v1-launch-and-contribution-activation). Private vulnerability reporting may be enabled before v1.
+External implementation contributions remain closed until the owner activates them. Pull-request CI runs on pull request activity; direct pushes to `main` do not run it. Activation is described in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md#v1-launch-and-contribution-activation).
 
 ## Commands
 

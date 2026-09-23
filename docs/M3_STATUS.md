@@ -1,8 +1,8 @@
 # Milestone M3 Status
 
-Updated: 2026-09-22
+Updated: 2026-09-23
 
-M3 Offline Dev-Agent Desktop V1 is active. The desktop runs one general-purpose local agent per conversation: a system prompt plus a fixed tool set, executing every file read and every command inside a no-network microVM (a virtual machine with no network interface).
+M3 Offline Dev-Agent Desktop V1 is complete. Community Desktop V1.0.0 is released. The desktop runs one general-purpose local agent per conversation: a system prompt plus a fixed tool set, executing every file read and every command inside a no-network microVM (a virtual machine with no network interface).
 
 ## What M3 Delivers Today
 
@@ -40,7 +40,7 @@ Findings. The initramfs root holds about 147 MiB of guest RAM permanently, which
 
 ## Verification Status
 
-M3 verification is complete.
+M3 verification and the V1 release gate are complete. The owner confirmed that the production macOS and Windows packages are published on the [releases page](https://gardendesk.ai/releases/). On 2026-09-23, the page and both download URLs returned HTTP 200 to header requests. This availability check did not download or hash the packages.
 
 The owner checked packaged Open and Save As for generated files by hand on 2026-09-22, on the built macOS application and the built Windows application. Both work.
 

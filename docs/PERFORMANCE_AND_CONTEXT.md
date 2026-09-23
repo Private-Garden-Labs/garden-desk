@@ -100,7 +100,7 @@ The model should never be the only holder of important state.
 
 M3 uses one model-written anchored summary when the live context reaches its limit. It does not implement structured compaction records.
 
-The following records are post-V1 research ideas. They are not active M3 requirements:
+The following records are post-V1 research ideas. They are not part of released V1:
 
 - Session summary: user goal, decisions made, constraints, and current status.
 - Task ledger: active workflow, pending steps, completed steps, blockers, approvals, and next action.
@@ -113,14 +113,14 @@ Do not carry forward hidden chain-of-thought or model-private reasoning. Only st
 
 ## Compaction Triggers
 
-M3 uses the worker's reported allocation and used context. Used context is the total token position in the active model sequence. The performance prompt-token count measures only input tokens evaluated for the latest request, so cache reuse can make that value decrease while used context grows.
+V1 uses the worker's reported allocation and used context. Used context is the total token position in the active model sequence. The performance prompt-token count measures only input tokens evaluated for the latest request, so cache reuse can make that value decrease while used context grows.
 
 - At 80 percent used context, add one no-tool summarization turn.
 - Replace the older conversation head with the anchored summary.
 - Keep the current user request and the last two assistant/tool turns verbatim.
 - Keep durable messages, executions, traces, artifacts, approvals, and audit records outside compaction.
 
-A manual compact command is not part of the active M3 desktop contract. If added later, it must use the same ledgers and must not discard citations, pending work, or approvals.
+A manual compact command is not part of released V1. If added later, it must use the same ledgers and must not discard citations, pending work, or approvals.
 
 ### Current M3 Session Summary
 
@@ -132,7 +132,7 @@ Golden-task results are separate from platform certification and do not make an 
 
 ## Post-V1 Long-Running Session Research
 
-The following scenario is not an active M3 gate:
+The following scenario was not part of the M3 gate:
 
 Before implementation can claim reliable compaction, the product must pass this scenario on every supported memory tier:
 

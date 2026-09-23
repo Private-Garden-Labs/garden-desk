@@ -55,4 +55,4 @@ The evidence below records the completed M2 implementation. [ADR 0019](adr/0019-
 - These are M2 loading, grammar, memory-cap, authority, and shutdown canaries. They are not final product certification; M3 still requires the complete agent, recovery, packaging, and desktop suite on both platforms.
 - macOS and Windows implement the same typed inference contract and prove equivalent authority denials through their platform-native boundaries.
 
-Conclusion: ready; cross-platform M2 is complete. Active M3 product evidence is recorded in [M3_STATUS.md](M3_STATUS.md).
+Conclusion: ready; cross-platform M2 is complete. M3 release evidence is recorded in [M3_STATUS.md](M3_STATUS.md).

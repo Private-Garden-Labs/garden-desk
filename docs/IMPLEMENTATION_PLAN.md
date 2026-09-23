@@ -1,15 +1,15 @@
 # Implementation Plan
 
-Updated: 2026-08-28
+Updated: 2026-09-23
 
-This is the authoritative implementation sequence for the first Garden Desk release. M0, cross-platform M1, and cross-platform M2 are complete. The repository owner activated M3 on 2026-07-20 as the first full product milestone. Current M3 evidence, what remains open, and how to run the golden tasks are in [M3_STATUS.md](M3_STATUS.md).
+This is the authoritative implementation sequence for the first Garden Desk release. M0, cross-platform M1, cross-platform M2, and M3 are complete. Community Desktop V1 is released. M3 evidence and golden-task commands are in [M3_STATUS.md](M3_STATUS.md).
 
 The shortest path to V1 is a generic offline desktop agent, not a format-specific document pipeline. The agent may write and run Python or Node.js programs and installed guest commands inside a session-scoped no-network microVM. It sees the selected folder live and read-only at `/source` and works in a persistent bounded `/workspace`. It cannot write to the selected host folder, install packages, reach a network, inherit credentials, or call an unrestricted host service.
 
 ## Change Brief
 
 - Goal: ship a functional macOS and Windows desktop application with a generic local coding agent inspired by the interaction model of OpenCode and the desktop structure of the Codex app.
-- Active milestone: M3 — Offline Dev-Agent Desktop V1.
+- Completed milestone: M3 — Offline Dev-Agent Desktop V1.
 - Allowed scope: Tauri/React desktop, native folder and file selection, grouped persistent sessions, local daemon APIs, host-native text and image model mediation, a session-scoped code-agent microVM, fixed offline runtimes and tools, typed execution results, audit, cancellation, packaging, platform evidence, and the owner-approved 14-skill prompt-only professional review set. Owner-approved fixed specialists and explicit command workflows are also in scope. A person may also add, edit, or turn off skill files in the workspace skills folder; Core validates their frontmatter and leaves the packaged tree unchanged. The review skills are prompt-only; they may not add domain routing, domain policy, or domain parsing to Core. Core has one fixed guest text extraction for DOC, DOCX, and PDF, used by `read` and by the review workflow; it adds no other format handling.
 - Product boundaries: the webview has no direct filesystem, process, shell, environment, or network authority. Garden Desk Core owns grants, sessions, policy, audit, inference mediation, workspace manifests, worker limits, and lifecycle. The guest receives only the live read-only folder, immutable attachments, and its bounded writable workspace.
 - Risks: guest-image size and reproducibility, Windows/macOS packaging differences, multi-step agent-loop correctness, local-model latency, recovery, and accidental host authority.
@@ -118,7 +118,7 @@ M1 delivered workspace state, scoped files, atomic artifacts, audit, jobs, curre
 
 The cross-platform supervisor, model resolver, memory scheduler, typed inference worker, grammar generation, embeddings, platform-native confinement, and real-model canaries are implemented. M3 reuses this completed foundation and integrates it into the packaged desktop product. [M2_STATUS.md](M2_STATUS.md) records the completed milestone evidence.
 
-### M3 — Offline Dev-Agent Desktop V1 — active
+### M3 — Offline Dev-Agent Desktop V1 — complete
 
 Stage state: current evidence and the verification status are in [M3_STATUS.md](M3_STATUS.md).
 
@@ -150,7 +150,7 @@ Gate:
 - Packaged application checks cover install, first launch with zero downloads, sidecar and helper identity, restart, upgrade, uninstall, and preservation of user workspace state.
 - Required notices, SBOMs, artifact manifests, hashes, signatures, and unsupported-hardware messages are present and accurate.
 
-M3 closes when this gate passes on physical macOS and Windows and the open items in [M3_STATUS.md](M3_STATUS.md) are resolved. Closing M3 is the Community Desktop V1 launch gate.
+M3 closed after this gate passed on physical macOS and Windows and the open items in [M3_STATUS.md](M3_STATUS.md) were resolved. This was the Community Desktop V1 launch gate.
 
 ## Post-V1 Follow-up: Document Intelligence
 
@@ -174,7 +174,7 @@ The generic agent remains available for novel tasks, but supported deterministic
 
 ## V1 Launch And Contribution Activation
 
-The V1 launch follows M3 certification. Until then, the repository owner remains the sole commit author and develops each implementation stage through short-lived branches and pull requests. At launch, contribution activation remains a separate owner decision; it is not required to ship the desktop app.
+V1 launched after M3 certification. External contribution activation remains a separate owner decision. Until activation, the repository owner remains the sole implementation commit author and develops changes through short-lived branches and pull requests.
 
 AI assistants, models, coding agents, and tools are never commit authors or co-authors.
 

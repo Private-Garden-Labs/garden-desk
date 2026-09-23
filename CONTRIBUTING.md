@@ -4,20 +4,20 @@ Thank you for helping build Garden Desk. Contributions must preserve the project
 
 ## Current Contribution Status
 
-Garden Desk does not invite external implementation pull requests before its v1 launch. Beginning with M1, the repository owner develops each implementation stage on a short-lived branch and merges it through a pull request. External contributions open when v1 ships and the contribution workflow in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) is activated.
+Community Desktop V1 is released. External implementation pull requests remain closed until the owner activates the contribution workflow in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). The repository owner develops each implementation stage on a short-lived branch and merges it through a pull request.
 
-Until the v1 launch:
+Until that workflow is active:
 
 - Open an issue to propose an implementation, architecture change, or documentation correction.
 - Do not submit application code, manifests, build configuration, scripts, generated assets, or dependency changes.
 - Do not treat an unassigned milestone or roadmap item as authorization to implement it.
 
-After the v1 launch, implementation issues will be advertised with the `ready-for-contribution` label. Work only from one of those issues or from an issue that a maintainer has explicitly accepted.
+When the workflow is active, implementation issues will use the `ready-for-contribution` label. Work only from one of those issues or from an issue that a maintainer has explicitly accepted.
 
 ## Before Starting
 
 1. Read [AGENTS.md](AGENTS.md), which is the authoritative repository instruction file.
-2. Read the active milestone in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
+2. Read the current phase and any active milestone in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
 3. Read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md) and the architecture decision records relevant to the change.
 4. Confirm that the issue names the product contract, allowed scope, and acceptance evidence.
 5. Search the repository and maintained dependencies before proposing new infrastructure.
@@ -30,7 +30,7 @@ Use a short-lived, focused branch and open a pull request for every implementati
 
 Each implementation change follows this sequence:
 
-1. Confirm the active milestone and allowed scope.
+1. Confirm the owner request or active milestone and allowed scope.
 2. Inspect existing contracts and research maintained solutions using primary sources.
 3. Implement the smallest clear change that passes the gate and apply the Test Rule in [AGENTS.md](AGENTS.md#test-rule): a bug fix starts with one failing reproduction test; anything else is implemented first and gets at most one focused test.
 4. Run the smallest checks required by the [verification table](docs/DEVELOPMENT_WORKFLOW.md#4-verify). CI runs the full `pnpm verify`. Run a milestone gate only when closing that milestone.
@@ -38,7 +38,7 @@ Each implementation change follows this sequence:
 
 ## Commit Authorship And DCO
 
-When contributions open at the v1 launch, every commit must be authored by the human contributor and certified under the [Developer Certificate of Origin 1.1](https://developercertificate.org/). Add a matching sign-off with:
+When external contributions open, every commit must be authored by the human contributor and certified under the [Developer Certificate of Origin 1.1](https://developercertificate.org/). Add a matching sign-off with:
 
 ```text
 git commit -s
@@ -83,7 +83,7 @@ Never contribute customer documents, confidential data, employer-owned work, pri
 
 ## Pull Requests
 
-Keep each pull request tied to one accepted issue and one independently verifiable stage within the active milestone. Do not begin the next stage until the current pull request is merged or explicitly closed. The pull request body states:
+Keep each pull request tied to one accepted issue or direct owner request and one independently verifiable stage. Do not begin the next stage until the current pull request is merged or explicitly closed. The pull request body states:
 
 - What changed and what was intentionally left out.
 - The exact verification commands and their results, and what was not run and why.

@@ -4,7 +4,7 @@
 
 ## Milestone And Issue
 
-- Active milestone:
+- Milestone or owner request:
 - Implementation stage:
 - Linked accepted issue:
 - `ready-for-contribution` issue: yes / no / maintainer-authored
@@ -39,7 +39,7 @@
 
 ## Author Checklist
 
-- [ ] The change is inside the active milestone and accepted issue scope.
+- [ ] The change follows the active milestone or a direct owner request and the accepted issue scope.
 - [ ] The diff contains no unrelated cleanup or speculative scaffolding.
 - [ ] Checks required by the verification table were run, and unrun checks are reported above.
 - [ ] Security, privacy, evidence, approval, audit, and recovery effects were reviewed.

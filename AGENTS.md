@@ -17,7 +17,7 @@ A real run is any command or script that loads a real model or starts a physical
 
 ## Current Phase
 
-M0, M1, and M2 are complete. M3 Offline Dev-Agent Desktop V1 is active, including the owner-approved prompt-only professional review skills, fixed local specialists, explicit Markdown commands, and the skill files a person adds, edits, or turns off in the workspace skills folder. Current status lives in [docs/M3_STATUS.md](docs/M3_STATUS.md). Do not start post-V1 work (document intelligence and later) without a new explicit owner request. Preserve the completed M1 and M2 contracts, security primitives, transports, native helpers, guest images, and evidence.
+M0, M1, M2, and M3 are complete. Community Desktop V1 is released, including the owner-approved prompt-only professional review skills, fixed local specialists, explicit Markdown commands, and the skill files a person adds, edits, or turns off in the workspace skills folder. Release evidence lives in [docs/M3_STATUS.md](docs/M3_STATUS.md). No post-V1 milestone is active. Do not start post-V1 work (document intelligence and later) without a new explicit owner request. Preserve the completed M1, M2, and M3 contracts, security primitives, transports, native helpers, guest images, and evidence.
 
 ## Test Rule
 

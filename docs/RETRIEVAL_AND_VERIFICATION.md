@@ -1,6 +1,6 @@
 # Retrieval And Verification
 
-Status: post-V1 follow-up design; not part of the active M3 implementation scope.
+Status: post-V1 follow-up design; not part of released V1.
 
 Created: 2026-07-10
 
