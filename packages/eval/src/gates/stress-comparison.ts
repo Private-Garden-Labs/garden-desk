@@ -1,4 +1,4 @@
-import { appendFile, mkdir, mkdtemp, readFile } from "node:fs/promises";
+import { appendFile, copyFile, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { createGardenDeskCore, type GardenDeskCore } from "@gardendesk/core";
 import {
@@ -19,7 +19,10 @@ function argument(name: string): string | undefined {
 
 const repository = process.cwd();
 const macos = process.platform === "darwin";
-const label = argument("--label") ?? INFERENCE_PROFILE.modelId;
+const developmentModel = argument("--development-model");
+const developmentSettings = argument("--development-settings");
+const label =
+  argument("--label") ?? developmentModel?.replace("/", "-") ?? INFERENCE_PROFILE.modelId;
 const runtimeDirectory =
   argument("--runtime") ??
   join(
@@ -215,12 +218,22 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
   await mkdir(source, { recursive: true });
   await task.prepare(source);
   const core = await openCore(root);
+  const settingsCopy = join(root, "state", ".garden-desk", "dev-openrouter.json");
+  if (developmentSettings !== undefined) {
+    await mkdir(join(root, "state", ".garden-desk"), { recursive: true });
+    await copyFile(developmentSettings, settingsCopy);
+  }
   const began = Date.now();
   try {
     const folder = await core.addFolder(source);
     await task.afterGrant(source);
     const session = await core.createSession(folder.id);
-    const started = await core.startAgent(session.id, task.prompt, DEFAULT_THINKING_LEVEL);
+    const started = await core.startAgent(
+      session.id,
+      task.prompt,
+      DEFAULT_THINKING_LEVEL,
+      developmentModel,
+    );
     const watched = await watch({
       core,
       taskId: task.id,
@@ -236,6 +249,7 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
     return resultRow({ task, watched, report, durationMs, totals, childSteps });
   } finally {
     await core.close();
+    await rm(settingsCopy, { force: true });
   }
 }
 
@@ -245,7 +259,7 @@ console.log(
   JSON.stringify({
     stage: "plan",
     label,
-    model: INFERENCE_PROFILE.modelId,
+    model: developmentModel ?? INFERENCE_PROFILE.modelId,
     runtime: runtimeDirectory,
     tasks: tasks.map((task) => task.id),
     caseLimitMs,
