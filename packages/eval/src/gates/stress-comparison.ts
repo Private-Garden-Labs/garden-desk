@@ -182,6 +182,7 @@ function resultRow(input: {
     specialistCorrect: task.agentId === null ? null : chosen[0] === task.agentId,
     state: snapshot.run.state,
     stop: watched.stop,
+    loopCall: watched.loopCall,
     succeeded,
     deliverableFound: report !== "",
     factCoverage: scores.facts,
