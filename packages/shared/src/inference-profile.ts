@@ -22,7 +22,6 @@ export const INFERENCE_PROFILE = {
   imageTokens: 2_048,
   speculation: "none",
   reasoningBudgetTokens: 32_768,
-  thinkingBudgetTokens: { low: 512, medium: 2_048, xhigh: 8_192 },
   memoryBudgetBytes: 16 * 1024 ** 3,
   reducedMemoryBudgetBytes: 10 * 1024 ** 3,
   windowsDedicatedHostMemoryBytes: 20 * 1024 ** 3,
