@@ -3,6 +3,7 @@
 Created: 2026-07-10
 
 This repository was initialized from supplied local materials rather than live web research.
+The July research and validation backlog below are historical. [ADR 0019](adr/0019-qwen38-private-server.md) and [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) record the later model decisions.
 
 ## Supplied Materials
 
@@ -15,7 +16,7 @@ The pasted text provided the product, market, business, hardware, roadmap, and p
 
 The deep research report provided the model, runtime, document pipeline, benchmark, and architecture recommendations.
 
-## Current Web Sources Reviewed
+## Web Sources Reviewed In July 2026
 
 - [Gemma core docs](https://ai.google.dev/gemma/docs/core)
 - [Gemma 4 QAT announcement](https://blog.google/innovation-and-ai/technology/developers-tools/quantization-aware-training-gemma-4/)
@@ -44,6 +45,12 @@ The deep research report provided the model, runtime, document pipeline, benchma
 - [Developer Certificate of Origin 1.1](https://developercertificate.org/)
 - [DCO GitHub App](https://github.com/apps/dco)
 - [GitHub commit sign-off policy](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-the-commit-signoff-policy-for-your-repository)
+
+## September 2026 Model Sources
+
+- [Qwen3.8-27B model card](https://huggingface.co/Qwen/Qwen3.8-27B) — the former generation model from ADR 0019 and the base for Bonsai 2.
+- [Ternary Bonsai 2 27B GGUF model card](https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf) — the V1 generation model, built from Qwen3.8-27B, selected in ADR 0020.
+- [PrismML llama.cpp release](https://github.com/PrismML-Eng/llama.cpp/releases/tag/prism-b10709-9a9394a) — the runtime release pinned in ADR 0020.
 
 ## 2026-07-11 Live Revalidation
 
@@ -99,9 +106,9 @@ Still research-derived and unverified:
 - Mark unvalidated market or vendor claims as research-derived.
 - Revalidate time-sensitive claims before business use.
 
-## Validation Backlog
+## Historical Validation Backlog (July 2026)
 
-Before code or public claims:
+This list records proposed checks from July 2026. [M3_STATUS.md](M3_STATUS.md) records the V1 release evidence.
 
 - Confirm exact model licensing.
 - Confirm allowed model redistribution terms.

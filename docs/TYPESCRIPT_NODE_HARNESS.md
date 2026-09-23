@@ -2,7 +2,7 @@
 
 Created: 2026-07-10
 
-This document defines the implementation direction. M0 now contains only the workspace and validation scaffolding authorized by [AGENTS.md](../AGENTS.md).
+Status: original implementation plan. For current code boundaries, see [Implementation Structure](IMPLEMENTATION_STRUCTURE.md) and [M3 Status](M3_STATUS.md).
 
 Garden Desk Core and the local orchestration layer are TypeScript running on Node.js. The Tauri v2 desktop host is the narrow exception: it contains only the minimum Rust needed for the native shell and sidecar boundary.
 

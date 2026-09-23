@@ -1,10 +1,12 @@
 # Offline Knowledge Bundles
 
+Status: post-V1 design; not part of released V1.
+
 Created: 2026-07-12
 
 Garden Desk should support installable, domain-scoped libraries that remain fully useful without internet access.
 
-This document records a research-derived architecture proposal. The boundary is recommended now; exact serialization, archive transport, and maintained TypeScript libraries must be validated during M0 before an ADR makes the format stable.
+This document records a research-derived architecture proposal. The format, archive transport, and TypeScript libraries need validation before an ADR makes them stable.
 
 ## Product Definition
 

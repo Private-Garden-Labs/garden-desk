@@ -1,6 +1,6 @@
 # Document Pipeline Diagram
 
-Status: post-V1 follow-up design; not part of active M3.
+Status: post-V1 follow-up design; not part of released V1.
 
 Created: 2026-07-10
 

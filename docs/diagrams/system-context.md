@@ -1,5 +1,7 @@
 # System Context Diagram
 
+Status: V1 desktop and later product ideas. Office administration, external connections, remote support, and hosted model use are not part of V1.
+
 Created: 2026-07-10
 
 ```mermaid

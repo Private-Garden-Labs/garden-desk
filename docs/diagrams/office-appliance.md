@@ -1,5 +1,7 @@
 # Office Appliance Diagram
 
+Status: future product design; not part of V1.
+
 Created: 2026-07-10
 
 ```mermaid
@@ -18,9 +20,9 @@ flowchart LR
     ApplianceAPI --> Backup["Backup and restore"]
     ApplianceAPI --> Scheduler["Workflow scheduler"]
 
-    Scheduler --> DocumentWorkers["No-NIC microVM document workers"]
+    Scheduler --> DocumentWorkers["No-network microVM document workers"]
     Scheduler --> Inference["Central local inference"]
-    Scheduler --> ToolSandbox["No-NIC microVM tool and code sandbox"]
+    Scheduler --> ToolSandbox["No-network microVM tool and code sandbox"]
     Scheduler --> NetworkBroker["Typed external-connection broker"]
 
     Storage["Appliance or NAS storage"] --> Staging["Job-scoped read-only staging"]

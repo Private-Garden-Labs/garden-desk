@@ -1,8 +1,8 @@
 # Milestone M3 Status
 
-Updated: 2026-09-22
+Updated: 2026-09-23
 
-M3 Offline Dev-Agent Desktop V1 is active. The desktop runs one general-purpose local agent per conversation: a system prompt plus a fixed tool set, executing every file read and every command inside a no-network microVM (a virtual machine with no network interface).
+M3 Offline Dev-Agent Desktop V1 is complete. Community Desktop V1.0.0 is released. The desktop runs one general-purpose local agent per conversation: a system prompt plus a fixed tool set, executing every file read and every command inside a no-network microVM (a virtual machine with no network interface).
 
 ## What M3 Delivers Today
 
@@ -17,6 +17,11 @@ M3 Offline Dev-Agent Desktop V1 is active. The desktop runs one general-purpose 
 ## Security Boundary
 
 - The guest VM has zero network devices, an immutable root image, a live read-only mount of the selected folder at `/source`, and a writable, persistent 128 MiB `/workspace`.
+- Garden Desk Core owns every host filesystem, process, and audit decision; the webview and the model never receive host authority.
+
+## State And Recovery
+
+Crash recovery marks any run left `queued` or `running` after a Core restart as failed. Session summaries and context compaction keep long conversations coherent without extending the live prompt indefinitely.
 
 ## 2026-09-20 Agent Guest Memory Measurement
 
@@ -32,12 +37,10 @@ Measured on physical Apple silicon with macOS 27.0, the committed `aarch64` agen
 Two concurrent guests at 1024 MiB both passed the same workload; each used 426 MiB resident on the host.
 
 Findings. The initramfs root holds about 147 MiB of guest RAM permanently, which `Shmem` reports. Host resident memory is the same 426 MiB at 1024 MiB and at 4096 MiB configured, so the configured size is an admission ceiling, not a physical cost. Node.js failed at 512 MiB with `Fatal process out of memory: SegmentedTable::InitializeTable` because the guest set `RLIMIT_AS` from the memory of the virtual machine; V8 reserves address space it never makes resident. The guest process bound is now the separate `AGENT_GUEST_ADDRESS_SPACE_BYTES` (4 GiB, the value the guest received before), and the memory of the virtual machine is 1 GiB. A read-only Squashfs root was evaluated and not adopted: 1024 MiB already runs the bounded workload with the present initramfs, and a disk root needs a new guest image, new manifest hashes, and both native helpers. Peak use: Python 66 MiB, Node.js 65 MiB.
-- Garden Desk Core owns every host filesystem, process, and audit decision; the webview and the model never receive host authority.
-- Crash recovery marks any run left `queued` or `running` after a Core restart as failed. Session summaries and context compaction keep long conversations coherent without extending the live prompt indefinitely.
 
 ## Verification Status
 
-M3 verification is complete.
+M3 verification and the V1 release gate are complete. The owner confirmed that the production macOS and Windows packages are published on the [releases page](https://gardendesk.ai/releases/). On 2026-09-23, the page and both download URLs returned HTTP 200 to header requests. This availability check did not download or hash the packages.
 
 The owner checked packaged Open and Save As for generated files by hand on 2026-09-22, on the built macOS application and the built Windows application. Both work.
 

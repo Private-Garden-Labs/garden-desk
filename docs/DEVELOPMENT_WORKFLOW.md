@@ -2,11 +2,11 @@
 
 Created: 2026-07-15
 
-This is the implementation and contribution workflow for Garden Desk. [AGENTS.md](../AGENTS.md) is authoritative, followed by accepted ADRs, [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), and this document. M3 Offline Dev-Agent Desktop V1 is active; see [M3_STATUS.md](M3_STATUS.md) for current evidence.
+This is the implementation and contribution workflow for Garden Desk. [AGENTS.md](../AGENTS.md) is authoritative, followed by accepted ADRs, [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), and this document. M3 is complete, and Community Desktop V1 is released; see [M3_STATUS.md](M3_STATUS.md) for release evidence.
 
 ## Operating Principles
 
-- Work only inside the active milestone and accepted issue scope. Roadmap presence is not authorization.
+- Work only inside an active milestone or a direct owner request and accepted issue scope. Roadmap presence is not authorization.
 - Search the repository and maintained dependencies before writing custom infrastructure.
 - Prefer deterministic checks and primary-source evidence.
 - Report commands and results exactly; never imply that an unrun check passed.
@@ -16,7 +16,7 @@ There is no coverage percentage, no test-driven development except for bug fixes
 
 ## 1. Confirm The Scope
 
-Before changing a file, read the current phase in [AGENTS.md](../AGENTS.md), find the active milestone gate in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), and read the ADRs and folder rules in [IMPLEMENTATION_STRUCTURE.md](IMPLEMENTATION_STRUCTURE.md) that the change touches. Stop if the work belongs to an inactive milestone and offer an issue, design note, or plan instead. The `garden-desk-plan-change` skill produces the short change brief.
+Before changing a file, read the current phase in [AGENTS.md](../AGENTS.md), check for an active milestone gate in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), and read the ADRs and folder rules in [IMPLEMENTATION_STRUCTURE.md](IMPLEMENTATION_STRUCTURE.md) that the change touches. Stop if the work belongs to an inactive milestone without a direct owner request. The `garden-desk-plan-change` skill produces the short change brief.
 
 ## 2. Research First
 
@@ -69,19 +69,13 @@ Use the `garden-desk-review-change` skill for a review and the `garden-desk-hand
 
 ## Pull Request Gate
 
-A pull request is ready for review when it links the active milestone and issue, contains no unrelated cleanup or speculative scaffolding, preserves product and security boundaries, states verification results exactly, documents dependency and redistribution impact, updates contracts and authoritative documentation when behavior changes, and is authored only by its human owner. Reviewers may ask for a split when a pull request spans unrelated responsibilities.
+A pull request is ready for review when it links the milestone or owner request and accepted issue when applicable, contains no unrelated cleanup or speculative scaffolding, preserves product and security boundaries, states verification results exactly, documents dependency and redistribution impact, updates contracts and authoritative documentation when behavior changes, and is authored only by its human owner. Reviewers may ask for a split when a pull request spans unrelated responsibilities.
 
 ## Real-Model Reproduction
 
 Real-model reproduction is a last-resort diagnostic method, not a standard agent-loop check. First use source inspection, existing evidence, and focused deterministic tests. If those methods cannot answer an important question, state the unresolved question, why cheaper evidence cannot answer it, the exact command or workload, and the number of planned invocations. Ask the owner before the run. A direct owner request for that workload is approval. Approval covers only the named commands and invocation count; a failed, interrupted, or additional run needs new approval. A general request to fix, verify, commit, push, or open a pull request is not approval.
 
 Raw development inference diagnostics are private and must not enter reports, product records, debug snapshots, user-interface data, or Git.
-
-After cloning, run `bash setup.sh` on Apple silicon macOS or `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` in standard Windows PowerShell. Setup checks required tools and asks before it installs missing tools through official installers. It checks Docker with Linux containers only when the guest image is missing. After approval, it installs locked project packages, runs `pnpm setup:assets` to download missing model and runtime files and build a missing guest image, then runs `pnpm start`. Complete local assets are reused. See the [README](../README.md#run-locally-with-one-command) for platform requirements and restart steps.
-
-For later starts, `pnpm start` runs `pnpm desktop:dev` with the installed packages and assets. Development preparation rebuilds local application resources when needed. Run setup again when dependencies or required assets change. Packaged applications still require no download at first launch.
-
-During `pnpm desktop:dev`, the terminal shows WebView console output, unhandled WebView errors, and Garden Desk Core process output. This development-only stream is not stored and must not include prompts, messages, tool payloads, hidden reasoning, or file contents.
 
 - With explicit approval, run `pnpm test:m3:macos` on physical Apple silicon for the canonical headless M3 gate. It verifies the pinned Ternary Bonsai 2 model, real multi-step Python tasks, artifacts, guest isolation, timeout, and output limits without the desktop UI; guest Node.js coverage is the direct-source probe only.
 - With explicit approval, run `pnpm model:compare` (raw server measurements: prefill, generation, memory by context, tool-call precision, specialist choice) and `pnpm model:compare:agent` (Windows, full agent runs on the specialist cases) for a model or runtime candidate. `pnpm model:compare:report` renders every result under `packages/eval/.generated/model-comparison` into one table.
@@ -92,6 +86,21 @@ During `pnpm desktop:dev`, the terminal shows WebView console output, unhandled 
 - After a real golden-task run, report the pass count (`golden: N/4 passed`) to the owner.
 
 Development inference diagnostics live in [packages/eval/src/gates/development-inference.ts](../packages/eval/src/gates/development-inference.ts).
+
+## Local Source Setup
+
+After cloning, run the setup command for your platform:
+
+- Apple silicon macOS: `bash setup.sh`.
+- Windows 11 x64 Pro or Enterprise with Hyper-V enabled: run `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` in standard PowerShell.
+
+Setup checks required tools and asks before it installs missing tools through official installers. It checks Docker with Linux containers only when the guest image is missing. After approval, it installs locked project packages, downloads missing model and runtime files, builds a missing guest image, and starts the app. Complete local assets are reused. The first setup needs an internet connection. If an installer requires a restart, restart and run setup again.
+
+On Windows, the helper can add the requesting account to Hyper-V Administrators. Sign out and back in after that change, then start the app again.
+
+For later starts, `pnpm start` runs `pnpm desktop:dev` with the installed packages and assets. Development preparation rebuilds local application resources when needed. Run setup again when dependencies or required assets change. Packaged applications still require no download at first launch.
+
+During `pnpm desktop:dev`, the terminal shows WebView console output, unhandled WebView errors, and Garden Desk Core process output. This development-only stream is not stored and must not include prompts, messages, tool payloads, hidden reasoning, or file contents.
 
 ## Platform Notes
 
@@ -122,7 +131,7 @@ The workflow review was informed by [Everything Claude Code](https://github.com/
 
 ## Contribution Activation
 
-External implementation contributions stay closed through the M3 V1 launch unless the owner activates them separately. Pull-request CI runs on pull request activity; direct pushes to `main` do not run it. Activation is described in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md#v1-launch-and-contribution-activation). Private vulnerability reporting may be enabled before v1.
+External implementation contributions remain closed until the owner activates them. Pull-request CI runs on pull request activity; direct pushes to `main` do not run it. Activation is described in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md#v1-launch-and-contribution-activation).
 
 ## Commands
 

@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated: 2026-07-23
+Updated: 2026-09-23
 
 ## Completed Foundations
 
@@ -9,9 +9,9 @@ Updated: 2026-07-23
 - Certified no-network microVM launchers on macOS and Windows.
 - macOS host-native supervised inference with grammar generation, embeddings, memory scheduling, and containment evidence.
 
-## Current: Community Desktop V1
+## Completed: Community Desktop V1
 
-Ship the first useful product as quickly as the security boundary permits:
+V1 shipped with:
 
 - Tauri v2 and React desktop application for macOS and Windows.
 - Sidebar with New chat and folder groups.
@@ -26,9 +26,9 @@ Ship the first useful product as quickly as the security boundary permits:
 - Typed host-mediated local inference; no generic model endpoint in the guest.
 - Self-contained packages with zero-download first launch on supported macOS and Windows hardware.
 
-The complete gate is [M3 in the implementation plan](IMPLEMENTATION_PLAN.md#m3--offline-dev-agent-desktop-v1--active).
+The completed gate is [M3 in the implementation plan](IMPLEMENTATION_PLAN.md#m3--offline-dev-agent-desktop-v1--complete).
 
-## Post-V1: Document Intelligence
+## Post-V1: Document Intelligence (Not Active)
 
 One combined follow-up may add:
 

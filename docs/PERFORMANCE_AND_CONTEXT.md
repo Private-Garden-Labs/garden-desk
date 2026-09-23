@@ -2,7 +2,7 @@
 
 Created: 2026-07-10
 
-This document is the performance and context-management specification for the first Garden Desk implementation phase. It is planning material only and does not create implementation scaffolding.
+This document records current performance rules and later research. [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md) defines the active model profile.
 
 Research claims in this document are research-derived until validated on target hardware.
 
@@ -29,7 +29,7 @@ Post-V1 document intelligence adds parsing, retrieval, evidence-pack, citation, 
 
 ## Active Context And Memory
 
-Generation uses a fixed 32K context. Core keeps its existing compaction policy. Image inspection uses an 8K context after generation unload. Embedding context and input limits stay unchanged.
+Generation uses a context fitted to the available inference memory, from 32K to 128K tokens. Core keeps its existing compaction policy. Image inspection uses an 8K context after generation unload. Embedding context and input limits stay unchanged.
 
 Report load time, first-token delay, evaluated prompt rate, generation rate including reasoning, and peak memory separately. Count cached input in context usage. Omit unavailable allocation measurements. Do not add CPU and GPU views of shared physical pages. Full GPU layer offload alone does not prove that all weights are in physical VRAM.
 
@@ -46,10 +46,10 @@ Required validation areas:
 - Ollama-compatible path only when model format and context behavior are explicit, telemetry is absent or provably disabled, and no telemetry network path exists.
 - vLLM-class serving only for later appliance or server profiles, not as a desktop assumption.
 
-Optimization candidates:
+Later optimization candidates:
 
-- Quantized weights: required for every supported desktop tier. Ship official pre-converted QAT Q4_0 GGUFs only; self-conversion destroys the QAT quality benefit.
-- KV-cache quantization: preferred if accuracy and citation precision are unchanged.
+- Quantized weights: the current desktop uses the pinned Bonsai 2 `PQ2_0` GGUF. Later model formats need their own measurements and redistribution review.
+- KV-cache quantization: a later candidate if accuracy is unchanged; the current desktop uses an FP16 cache.
 - Prompt or prefix caching: preferred for repeated folder questions and stable system/workflow prompts.
 - Chunked prefill: preferred if it improves long evidence-pack latency without changing outputs.
 - Multi-Token Prediction: allowed only if the matching drafter model (roughly 2 GB additional memory, verified 2026-07-11) fits the same profile without reducing the certified context target. Draft-and-verify output is identical to baseline decoding, so the certification risk is memory and stability, not answer quality.
@@ -100,7 +100,7 @@ The model should never be the only holder of important state.
 
 M3 uses one model-written anchored summary when the live context reaches its limit. It does not implement structured compaction records.
 
-The following records are post-V1 research ideas. They are not active M3 requirements:
+The following records are post-V1 research ideas. They are not part of released V1:
 
 - Session summary: user goal, decisions made, constraints, and current status.
 - Task ledger: active workflow, pending steps, completed steps, blockers, approvals, and next action.
@@ -113,14 +113,14 @@ Do not carry forward hidden chain-of-thought or model-private reasoning. Only st
 
 ## Compaction Triggers
 
-M3 uses the worker's reported allocation and used context. Used context is the total token position in the active model sequence. The performance prompt-token count measures only input tokens evaluated for the latest request, so cache reuse can make that value decrease while used context grows.
+V1 uses the worker's reported allocation and used context. Used context is the total token position in the active model sequence. The performance prompt-token count measures only input tokens evaluated for the latest request, so cache reuse can make that value decrease while used context grows.
 
 - At 80 percent used context, add one no-tool summarization turn.
 - Replace the older conversation head with the anchored summary.
 - Keep the current user request and the last two assistant/tool turns verbatim.
 - Keep durable messages, executions, traces, artifacts, approvals, and audit records outside compaction.
 
-A manual compact command is not part of the active M3 desktop contract. If added later, it must use the same ledgers and must not discard citations, pending work, or approvals.
+A manual compact command is not part of released V1. If added later, it must use the same ledgers and must not discard citations, pending work, or approvals.
 
 ### Current M3 Session Summary
 
@@ -132,7 +132,7 @@ Golden-task results are separate from platform certification and do not make an 
 
 ## Post-V1 Long-Running Session Research
 
-The following scenario is not an active M3 gate:
+The following scenario was not part of the M3 gate:
 
 Before implementation can claim reliable compaction, the product must pass this scenario on every supported memory tier:
 
