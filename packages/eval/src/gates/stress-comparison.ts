@@ -1,4 +1,4 @@
-import { appendFile, copyFile, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { appendFile, copyFile, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { createGardenDeskCore, type GardenDeskCore } from "@gardendesk/core";
 import {
@@ -9,8 +9,15 @@ import {
 } from "@gardendesk/shared";
 import { prepareAgentModelStore } from "./agent-model-store.js";
 import { developmentInferenceWorkerEntryPath } from "./development-inference-path.js";
-import { type StressTask, stressTasks } from "./stress-comparison-tasks.js";
-import { allocatedMemory, visibleSteps, type Watched, watch } from "./stress-comparison-watch.js";
+import { type Deliverable, type StressTask, stressTasks } from "./stress-comparison-tasks.js";
+import {
+  allocatedMemory,
+  deliverableBytes,
+  loadedSkills,
+  visibleSteps,
+  type Watched,
+  watch,
+} from "./stress-comparison-watch.js";
 
 function argument(name: string): string | undefined {
   const index = process.argv.indexOf(name);
@@ -74,23 +81,6 @@ async function openCore(root: string): Promise<GardenDeskCore> {
   });
 }
 
-async function deliverableText(
-  core: GardenDeskCore,
-  task: StressTask,
-  snapshot: AgentRunSnapshot,
-): Promise<string> {
-  const artifact = snapshot.artifacts.find((item) => item.name === task.deliverable);
-  if (artifact === undefined) return "";
-  try {
-    return await readFile(
-      await core.materializeArtifact(snapshot.run.sessionId, artifact.id),
-      "utf8",
-    );
-  } catch {
-    return "";
-  }
-}
-
 interface Totals {
   promptTokens: number;
   outputTokens: number;
@@ -123,7 +113,7 @@ function addPerformance(
 async function collectTotals(
   core: GardenDeskCore,
   snapshot: AgentRunSnapshot,
-): Promise<{ totals: Totals; childSteps: number }> {
+): Promise<{ totals: Totals; childSteps: number; skills: string[] }> {
   const totals: Totals = {
     promptTokens: 0,
     outputTokens: 0,
@@ -133,12 +123,15 @@ async function collectTotals(
   };
   addPerformance(totals, snapshot.run.performance);
   let childSteps = 0;
+  const skills = loadedSkills(snapshot.events);
   for (const child of snapshot.childRuns) {
     addPerformance(totals, child.performance);
     const childSnapshot = await core.getAgentRun(child.id).catch(() => undefined);
-    if (childSnapshot !== undefined) childSteps += visibleSteps(childSnapshot.events);
+    if (childSnapshot === undefined) continue;
+    childSteps += visibleSteps(childSnapshot.events);
+    skills.push(...loadedSkills(childSnapshot.events));
   }
-  return { totals, childSteps };
+  return { totals, childSteps, skills };
 }
 
 function modelFields(status: ModelRuntimeStatus | undefined): Record<string, unknown> {
@@ -165,15 +158,15 @@ function throughput(totals: Totals): Record<string, number | null> {
 function resultRow(input: {
   task: StressTask;
   watched: Watched;
-  report: string;
+  output: Deliverable;
   durationMs: number;
   totals: Totals;
   childSteps: number;
 }): Record<string, unknown> {
-  const { task, watched, report, durationMs, totals, childSteps } = input;
+  const { task, watched, output, durationMs, totals, childSteps } = input;
   const snapshot = watched.snapshot;
   const status = watched.status;
-  const scores = task.check(report);
+  const scores = task.check(output);
   const chosen = snapshot.childRuns.map((child) => child.agentId ?? "");
   const succeeded = snapshot.run.state === "succeeded";
   return {
@@ -187,7 +180,8 @@ function resultRow(input: {
     stop: watched.stop,
     loopCall: watched.loopCall,
     succeeded,
-    deliverableFound: report !== "",
+    deliverableFound: output.bytes.length > 0,
+    skills: output.skills,
     factCoverage: scores.facts,
     sourceCoverage: scores.sources,
     taskSuccess: succeeded && watched.stop === "terminal" && scores.facts === 1,
@@ -208,7 +202,7 @@ function resultRow(input: {
     ...modelFields(status),
     error: snapshot.run.error,
     expectation: task.expectation,
-    report: report.slice(0, 4_000),
+    report: (scores.note ?? output.text).slice(0, 4_000),
   };
 }
 
@@ -244,9 +238,10 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
       stepStallMs,
     });
     const durationMs = Date.now() - began;
-    const report = await deliverableText(core, task, watched.snapshot);
-    const { totals, childSteps } = await collectTotals(core, watched.snapshot);
-    return resultRow({ task, watched, report, durationMs, totals, childSteps });
+    const bytes = await deliverableBytes(core, task.deliverable, watched.snapshot);
+    const { totals, childSteps, skills } = await collectTotals(core, watched.snapshot);
+    const output = { bytes, text: bytes.toString("utf8"), skills };
+    return resultRow({ task, watched, output, durationMs, totals, childSteps });
   } finally {
     await core.close();
     await rm(settingsCopy, { force: true });

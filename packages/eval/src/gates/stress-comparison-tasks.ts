@@ -7,6 +7,7 @@ import {
   WORD_PAGE_TARGET,
   XLSX_TARGET,
 } from "../stress/document-fixtures.js";
+import { type FileCheck, salaryWorkbook, storyDocx, storyPdf } from "../stress/generated-files.js";
 import { cases as obligations } from "../stress/specialist-contract-obligations.js";
 import { cases as comparison } from "../stress/specialist-document-comparison.js";
 import { cases as brief } from "../stress/specialist-evidence-brief.js";
@@ -22,14 +23,28 @@ const SPECIALIST_SUFFIX =
 
 export interface StressTask {
   id: string;
-  suite: "golden" | "specialist";
+  suite: "golden" | "specialist" | "generation";
   agentId: string | null;
   deliverable: string;
   expectation: string;
   prompt: string;
   prepare(sourceDir: string): Promise<unknown>;
   afterGrant(sourceDir: string): Promise<unknown>;
-  check(text: string): { facts: number; sources: number };
+  check(output: Deliverable): { facts: number; sources: number; note?: string };
+}
+
+export interface Deliverable {
+  bytes: Buffer;
+  text: string;
+  skills: string[];
+}
+
+/** A task whose deliverable is the first artifact with this extension. */
+export function deliverableMatches(deliverable: string, name: string): boolean {
+  return (
+    name === deliverable ||
+    (deliverable.startsWith(".") && name.toLowerCase().endsWith(deliverable))
+  );
 }
 
 function coverage(report: string, values: string[]): number {
@@ -48,7 +63,7 @@ const goldenTasks: StressTask[] = [
       "Read the spreadsheet in /source and write a short plain-text summary to /workspace/summary.txt with the note and the amount on the row marked as a priority review.",
     prepare: (sourceDir) => createXlsxCorpus(sourceDir, { files: 1, sheets: 1, rowsPerSheet: 8 }),
     afterGrant: async () => undefined,
-    check: (text) => ({
+    check: ({ text }) => ({
       facts: coverage(text, [XLSX_TARGET, "1001"]),
       sources: 1,
     }),
@@ -63,7 +78,7 @@ const goldenTasks: StressTask[] = [
       "Read the Word document in /source and write a short plain-text summary to /workspace/summary.txt with the total page count and the exact text of the last page.",
     prepare: (sourceDir) => createDocxCorpus(sourceDir, { files: 1, pagesPerFile: 3 }),
     afterGrant: async () => undefined,
-    check: (text) => ({
+    check: ({ text }) => ({
       facts: coverage(text, [WORD_PAGE_TARGET, "checksum=1003"]),
       sources: 1,
     }),
@@ -78,7 +93,7 @@ const goldenTasks: StressTask[] = [
       "Read the PDF in /source and write a short plain-text summary to /workspace/summary.txt with the total page count and the exact text on the last page.",
     prepare: (sourceDir) => createPdf(join(sourceDir, "policy-brief.pdf"), 3),
     afterGrant: async () => undefined,
-    check: (text) => ({
+    check: ({ text }) => ({
       facts: text.startsWith("%PDF") ? 0 : coverage(text, [PDF_PAGE_TARGET, "checksum=51"]),
       sources: 1,
     }),
@@ -97,7 +112,7 @@ const goldenTasks: StressTask[] = [
       await createPdf(join(sourceDir, "policy-brief.pdf"), 1);
     },
     afterGrant: async () => undefined,
-    check: (text) => ({
+    check: ({ text }) => ({
       facts: coverage(text, ["workbook-001.xlsx", "document-001.docx", "policy-brief.pdf"]),
       sources: 1,
     }),
@@ -124,14 +139,71 @@ const specialistTasks: StressTask[] = specialistCases.map((task) => ({
   prompt: `${task.request}${SPECIALIST_SUFFIX}`,
   prepare: (sourceDir) => prepareSpecialistFiles(sourceDir, task.files),
   afterGrant: (sourceDir) => prepareSpecialistFiles(sourceDir, task.addedAfterGrant ?? {}),
-  check: (text) => ({
+  check: ({ text }) => ({
     facts: coverage(text, Object.values(task.expected).map(String)),
     sources: coverage(text, task.sources),
   }),
 }));
 
+function generationTask(input: {
+  id: string;
+  prompt: string;
+  skill: string;
+  extension: string;
+  content: string;
+  inspect(bytes: Buffer): FileCheck;
+}): StressTask {
+  return {
+    id: input.id,
+    suite: "generation",
+    agentId: null,
+    deliverable: input.extension,
+    expectation: `loads ${input.skill}, writes a ${input.extension} file, ${input.content}`,
+    prompt: input.prompt,
+    prepare: async () => undefined,
+    afterGrant: async () => undefined,
+    check: ({ bytes, skills }) => {
+      const file = input.inspect(bytes);
+      const checks = [skills.includes(input.skill), file.type, file.content];
+      return {
+        facts: checks.filter(Boolean).length / checks.length,
+        sources: 1,
+        note: `skills: ${skills.join(", ") || "none"}; ${file.note}`,
+      };
+    },
+  };
+}
+
+const generationTasks: StressTask[] = [
+  generationTask({
+    id: "pdf-story",
+    prompt: "Generate a pdf with a nice story about a cat and a mouse",
+    skill: "pdf-documents",
+    extension: ".pdf",
+    content: "with at least 600 letters of story text",
+    inspect: storyPdf,
+  }),
+  generationTask({
+    id: "docx-story",
+    prompt: "Generate a document with a nice story about the golden fish",
+    skill: "word-documents",
+    extension: ".docx",
+    content: "with at least 3 story paragraphs of 40 or more letters",
+    inspect: storyDocx,
+  }),
+  generationTask({
+    id: "xlsx-salaries",
+    prompt:
+      "Generate an excel with 5 columns and 12 rows. Each column is the name of a person and the rows are their monthly salary from January to December. Salaries are in USD and range from 2000 to 10000.",
+    skill: "xlsx-workbooks",
+    extension: ".xlsx",
+    content: "with 5 name headers over 12 rows of 5 salaries from 2000 to 10000",
+    inspect: salaryWorkbook,
+  }),
+];
+
 export function stressTasks(filter: { suite?: string; ids?: string[] }): StressTask[] {
-  return [...goldenTasks, ...specialistTasks].filter(
+  return [...goldenTasks, ...specialistTasks, ...generationTasks].filter(
     (task) =>
       (filter.suite === undefined || task.suite === filter.suite) &&
       (filter.ids === undefined || filter.ids.includes(task.id)),
