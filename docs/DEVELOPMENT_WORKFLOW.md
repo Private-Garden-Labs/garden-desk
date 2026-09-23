@@ -101,6 +101,17 @@ Development inference diagnostics live in [packages/eval/src/gates/development-i
 - The packaged inference runtime is verified before it is signed. `assets/inference-runtime.json` pins a `stagedSha256` for each platform, and packaging stops when the staged files do not match it. A file that already carries a valid vendor signature keeps that signature.
 - macOS development builds sign ad-hoc. A public production build runs on the owner's Mac with `APPLE_SIGNING_IDENTITY` set to the Developer ID Application identity in the login keychain; the sidecar, the inference runtime, and the VZ helper are then signed with the hardened runtime and a timestamp before Tauri signs the app. The build then notarizes and staples the DMG with the `garden-desk` notary profile in the login keychain. Create that profile once with `xcrun notarytool store-credentials garden-desk --key <AuthKey_ID.p8> --key-id <key ID> --issuer <issuer ID>`, using an App Store Connect API key. The DMG step asks macOS to let the terminal control Finder for the window layout; allow it, or set `CI=true` to build the DMG without the layout.
 
+## Publish A Release
+
+Do these steps in this order. A download link must not go live before its file and its SHA-256 exist.
+
+1. Build and sign each file on its platform (see Platform Notes). Rename the files to `Garden-Desk-<version>-macos-arm64.dmg` and `Garden-Desk-<version>-windows-x64.zip`, and record the SHA-256 of each file.
+2. Upload each file to the Cloudflare R2 bucket `garden-desk-releases` with the key `v<version>/<file name>`, the header `Content-Disposition: attachment; filename="<file name>"`, and the custom metadata `sha256`. Files larger than 5 GiB need a multipart upload: use the R2 S3-compatible API with an R2 API token, or a temporary Worker with an R2 binding that accepts parts of at most 100 MB. Delete the Worker after the upload.
+3. Do not open a download address before its upload. Cloudflare keeps the `404` for up to 4 hours. If this occurs, purge only that URL in the `gardendesk.ai` zone.
+4. Make sure that `https://downloads.gardendesk.ai/v<version>/<file name>` returns `200` and that a full download from it has the recorded SHA-256.
+5. In one pull request, change each link in the home page hero (`site/index.html`), each link and SHA-256 on `site/releases/index.html`, and the links in `scripts/check-site.ts`. Run `pnpm site:check`.
+6. After the merge, the "Deploy public website" workflow publishes the site. GitHub Pages lets browsers keep a page for 10 minutes, so a page that was open before the deploy can show the old links. Check the live page with `curl -s https://gardendesk.ai/ | rg data-download` or reload it with Command-Shift-R.
+
 ## Agent Skills
 
 The skills under [.agents/skills](../.agents/skills) package this workflow for Codex and Claude Code. See [.agents/skills/README.md](../.agents/skills/README.md).

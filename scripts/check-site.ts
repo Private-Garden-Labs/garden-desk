@@ -155,11 +155,15 @@ requireText(home, 'href="./releases/"', "home releases link");
 
 const releases = await text("releases/index.html");
 for (const download of [
-  "releases/download/v1.0.0/Garden-Desk-1.0.0-macos-arm64.dmg",
-  "releases/download/v1.0.0/Garden-Desk-1.0.0-windows-x64.zip",
+  "https://downloads.gardendesk.ai/v1.0.0/Garden-Desk-1.0.0-macos-arm64.dmg",
+  "https://downloads.gardendesk.ai/v1.0.0/Garden-Desk-1.0.0-windows-x64.zip",
 ]) {
   requireText(home, download, "home download");
   requireText(releases, download, "releases download");
+  const file = download.split("/").at(-1)?.replaceAll(".", "\\.");
+  if (!new RegExp(`${file}<br ?/?>SHA-256 [0-9a-f]{64}`).test(releases)) {
+    failures.push(`releases SHA-256: missing for ${download}`);
+  }
 }
 
 const sitemap = await text("sitemap.xml");

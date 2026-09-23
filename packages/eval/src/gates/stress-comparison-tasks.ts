@@ -52,6 +52,24 @@ function coverage(report: string, values: string[]): number {
   return values.filter((value) => report.includes(value)).length / values.length;
 }
 
+/** A fact matches when its list items appear in order; thousands separators are ignored. */
+function factCoverage(report: string, expected: Record<string, unknown>): number {
+  const text = report.replace(/(\d),(?=\d{3}\b)/gu, "$1");
+  const facts = Object.values(expected).map((value) =>
+    (Array.isArray(value) ? value : [value]).map(String),
+  );
+  if (facts.length === 0) return 1;
+  const found = facts.filter((items) => {
+    let position = 0;
+    return items.every((item) => {
+      const index = text.indexOf(item, position);
+      position = index + item.length;
+      return index >= 0;
+    });
+  });
+  return found.length / facts.length;
+}
+
 const goldenTasks: StressTask[] = [
   {
     id: "xlsx-extraction",
@@ -140,7 +158,7 @@ const specialistTasks: StressTask[] = specialistCases.map((task) => ({
   prepare: (sourceDir) => prepareSpecialistFiles(sourceDir, task.files),
   afterGrant: (sourceDir) => prepareSpecialistFiles(sourceDir, task.addedAfterGrant ?? {}),
   check: ({ text }) => ({
-    facts: coverage(text, Object.values(task.expected).map(String)),
+    facts: factCoverage(text, task.expected),
     sources: coverage(text, task.sources),
   }),
 }));
@@ -180,7 +198,7 @@ const generationTasks: StressTask[] = [
     prompt: "Generate a pdf with a nice story about a cat and a mouse",
     skill: "pdf-documents",
     extension: ".pdf",
-    content: "with at least 600 letters of story text",
+    content: "with at least 750 characters of story text",
     inspect: storyPdf,
   }),
   generationTask({

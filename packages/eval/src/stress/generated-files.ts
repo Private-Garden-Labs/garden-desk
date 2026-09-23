@@ -8,7 +8,7 @@ export interface FileCheck {
 
 const STORY_PARAGRAPHS = 3;
 const PARAGRAPH_LETTERS = 40;
-const PDF_STORY_LETTERS = STORY_PARAGRAPHS * 200;
+const PDF_STORY_CHARACTERS = STORY_PARAGRAPHS * 250;
 const SALARY_ROWS = 12;
 const SALARY_COLUMNS = 5;
 
@@ -73,12 +73,14 @@ function streamContent(raw: Buffer): string {
 }
 
 function shownText(content: string): string[] {
+  if (content.includes("\0")) return [];
   return [...content.matchAll(/BT([\s\S]*?)ET/gu)].flatMap((block) =>
     [...(block[1] ?? "").matchAll(/\(((?:\\[\s\S]|[^\\)])*)\)/gu)].map((text) => text[1] ?? ""),
   );
 }
 
-function pdfText(bytes: Buffer): string {
+/** Counts shown characters, because embedded font subsets show numeric codes, not letters. */
+function pdfCharacters(bytes: Buffer): number {
   const source = bytes.toString("latin1");
   const strings: string[] = [];
   for (const match of source.matchAll(/(?<!end)stream\r?\n/gu)) {
@@ -87,17 +89,16 @@ function pdfText(bytes: Buffer): string {
       ...shownText(streamContent(bytes.subarray(start, source.indexOf("endstream", start)))),
     );
   }
-  return strings.join(" ");
+  return strings.join("").replace(/\\(?:[0-7]{1,3}|[\s\S])/gu, "x").length;
 }
 
 export function storyPdf(bytes: Buffer): FileCheck {
   const type = bytes.subarray(0, 5).toString("latin1") === "%PDF-";
-  const text = type ? pdfText(bytes) : "";
-  const count = letters(text);
+  const count = type ? pdfCharacters(bytes) : 0;
   return {
     type,
-    content: count >= PDF_STORY_LETTERS,
-    note: `${count} letters of PDF text: ${text.slice(0, 3_000)}`,
+    content: count >= PDF_STORY_CHARACTERS,
+    note: `${count} characters of PDF text`,
   };
 }
 
