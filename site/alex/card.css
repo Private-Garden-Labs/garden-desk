@@ -1,0 +1,232 @@
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../assets/fonts/IBMPlexSans-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../../assets/fonts/IBMPlexSans-Medium.woff2") format("woff2");
+}
+
+:root {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-synthesis: none;
+  color: #193c2a;
+  background: #e5ebe3;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 56px 24px;
+}
+
+main {
+  width: min(100%, 760px);
+}
+
+a {
+  color: inherit;
+}
+
+a:focus-visible {
+  outline: 3px solid #9b741b;
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+
+.card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 40px 48px;
+  border: 1px solid #355641;
+  border-radius: 20px;
+  color: #f0f2e9;
+  background: linear-gradient(120deg, #234a33, #12301f 72%);
+  box-shadow:
+    0 32px 64px -32px #12301f80,
+    inset 0 1px #ffffff12;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.identity {
+  margin: 64px 0 28px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(44px, 7vw, 68px);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 1.1;
+}
+
+.role {
+  margin: 10px 0 0;
+  color: #b7cbbb;
+  font-size: 20px;
+}
+
+.address {
+  display: inline-block;
+  padding: 10px 0;
+  font-size: 18px;
+  text-decoration-color: #769682;
+  text-underline-offset: 5px;
+  overflow-wrap: anywhere;
+}
+
+.promise {
+  margin: 34px 0 0;
+  color: #b7cbbb;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.garden-mark {
+  position: absolute;
+  right: 38px;
+  bottom: 38px;
+  z-index: -1;
+  width: 158px;
+  stroke: #72957b;
+  stroke-width: 1;
+  opacity: 0.55;
+}
+
+.garden-mark .mark-base {
+  stroke: #dfc98d;
+  stroke-width: 3;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 14px 20px;
+  border: 1px solid #b5c4b7;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.button svg {
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.button-primary {
+  background: #193c2a;
+  color: #f0f2e9;
+  border-color: #193c2a;
+}
+.button-primary:hover {
+  background: #2d543b;
+}
+.button-email:hover {
+  background: #d5dfd3;
+}
+.brand:hover,
+.address:hover {
+  color: #dfc98d;
+}
+
+.website {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin-left: auto;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.website:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.website span {
+  font-size: 20px;
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 32px 20px;
+  }
+  .card {
+    padding: 30px 28px;
+  }
+  .identity {
+    margin-top: 58px;
+  }
+  .address {
+    font-size: 16px;
+  }
+  .garden-mark {
+    width: 92px;
+    right: 24px;
+    bottom: 28px;
+    opacity: 0.4;
+  }
+  .actions {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .button {
+    flex: 1;
+    padding: 14px 12px;
+    white-space: nowrap;
+  }
+  .website {
+    justify-content: center;
+    width: 100%;
+    margin: 2px 0 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .card {
+    padding-inline: 22px;
+  }
+  .button {
+    flex-basis: 100%;
+  }
+}

@@ -9,6 +9,7 @@ const deploymentAssetPattern = /-[A-Za-z0-9_-]{8}\.(?:css|js|png|svg|woff2)$/u;
 const localAssetPattern = /(?:href|src)=["']([^"']+\.(?:css|js|png|svg|woff2))["']/giu;
 const routeFiles = [
   "index.html",
+  "alex/index.html",
   "demo/index.html",
   "releases/index.html",
   "supporters/index.html",

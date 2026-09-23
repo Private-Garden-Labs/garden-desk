@@ -34,6 +34,7 @@ export default defineConfig({
       },
       input: {
         home: resolve(siteRoot, "index.html"),
+        alex: resolve(siteRoot, "alex/index.html"),
         demo: resolve(siteRoot, "demo/index.html"),
         releases: resolve(siteRoot, "releases/index.html"),
         privacy: resolve(siteRoot, "privacy/index.html"),
