@@ -17,6 +17,53 @@ export function allocatedMemory(status: ModelRuntimeStatus | undefined): number 
   return (status.cpuRamBytes ?? 0) + (status.gpuMemoryBytes ?? 0);
 }
 
+const LOOP_WINDOW = 10;
+const LOOP_REPEATS = 4;
+
+function callKeys(events: AgentRunSnapshot["events"]): string[] {
+  const started = new Map<string, string>();
+  const keys: string[] = [];
+  for (const event of events) {
+    if (event.toolCallId === null) continue;
+    if (event.type === "tool.started") {
+      started.set(
+        event.toolCallId,
+        [event.toolName, event.command, event.source, event.path].join("|"),
+      );
+    }
+    if (event.type === "tool.completed") {
+      keys.push(`${started.get(event.toolCallId) ?? event.toolName}|${event.stdout ?? ""}`);
+    }
+  }
+  return keys;
+}
+
+/** A tool call with the same input and the same result, repeated inside the recent calls. */
+function repeatedCall(events: AgentRunSnapshot["events"]): string | undefined {
+  const counts = new Map<string, number>();
+  for (const key of callKeys(events).slice(-LOOP_WINDOW)) {
+    const count = (counts.get(key) ?? 0) + 1;
+    counts.set(key, count);
+    if (count >= LOOP_REPEATS) return key;
+  }
+  return undefined;
+}
+
+async function loopingCall(
+  core: GardenDeskCore,
+  snapshot: AgentRunSnapshot,
+): Promise<string | undefined> {
+  const own = repeatedCall(snapshot.events);
+  if (own !== undefined) return own;
+  for (const child of snapshot.childRuns) {
+    if (child.state !== "running") continue;
+    const childSnapshot = await core.getAgentRun(child.id).catch(() => undefined);
+    const key = childSnapshot === undefined ? undefined : repeatedCall(childSnapshot.events);
+    if (key !== undefined) return key;
+  }
+  return undefined;
+}
+
 /** Liveness across the whole run tree, so an active specialist child is never read as a stall. */
 function progressSignature(snapshot: AgentRunSnapshot, steps: number): string {
   const children = snapshot.childRuns
@@ -65,7 +112,8 @@ function logProgress(input: {
 
 export interface Watched {
   snapshot: AgentRunSnapshot;
-  stop: "terminal" | "stalled" | "timeout";
+  stop: "terminal" | "stalled" | "timeout" | "loop";
+  loopCall: string | null;
   questions: number;
   status: ModelRuntimeStatus | undefined;
   steps: number;
@@ -162,11 +210,18 @@ export async function watch(options: WatchOptions): Promise<Watched> {
     best: undefined,
   };
   let stop: Watched["stop"] = "terminal";
+  let loopCall: string | null = null;
   let snapshot = await core.getAgentRun(runId);
   for (;;) {
     snapshot = await core.getAgentRun(runId);
     await poll(options, state, snapshot);
     if (snapshot.run.state !== "queued" && snapshot.run.state !== "running") break;
+    const looping = await loopingCall(core, snapshot);
+    if (looping !== undefined) {
+      stop = "loop";
+      loopCall = looping.slice(0, 500);
+      break;
+    }
     const reason = stopReason(Date.now(), began, state.lastStepChange, options);
     if (reason !== undefined) {
       stop = reason;
@@ -175,8 +230,15 @@ export async function watch(options: WatchOptions): Promise<Watched> {
     await sleep(1_000);
   }
   if (stop !== "terminal") {
-    console.log(JSON.stringify({ stage: "killing", case: taskId, reason: stop }));
+    console.log(JSON.stringify({ stage: "killing", case: taskId, reason: stop, loopCall }));
     snapshot = await settle({ core, taskId, runId, jobId });
   }
-  return { snapshot, stop, questions: state.questions, status: state.best, steps: state.steps };
+  return {
+    snapshot,
+    stop,
+    loopCall,
+    questions: state.questions,
+    status: state.best,
+    steps: state.steps,
+  };
 }
