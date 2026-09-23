@@ -180,7 +180,7 @@ const generationTasks: StressTask[] = [
     prompt: "Generate a pdf with a nice story about a cat and a mouse",
     skill: "pdf-documents",
     extension: ".pdf",
-    content: "with at least 600 letters of story text",
+    content: "with at least 750 characters of story text",
     inspect: storyPdf,
   }),
   generationTask({
