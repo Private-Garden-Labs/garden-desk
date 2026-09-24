@@ -23,7 +23,7 @@ export const cases: SpecialistCase[] = [
       "receipt.pdf": "Delivery receipt\nThe delivery occurred on 2026-02-05.",
     },
     request:
-      "Report disputedDeliveryDates (sorted), undatedEventCount, and replacementRequestDate (null if not stated). Do not resolve the conflict.",
+      "Build the matter timeline without resolving the date conflict. Report disputedDeliveryDates (sorted), undatedEventCount, and replacementRequestDate (null if not stated).",
     expected: {
       disputedDeliveryDates: ["2026-02-03", "2026-02-05"],
       undatedEventCount: 1,
