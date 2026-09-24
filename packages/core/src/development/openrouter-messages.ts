@@ -14,8 +14,9 @@ const DEVELOPMENT_CONTEXT_LIMIT_TOKENS = 131_072;
  * is better than an unexpected bill.
  */
 export function providerRouting(budget?: ProviderPriceBudget): Record<string, unknown> {
-  if (budget === undefined) return { sort: "price", allow_fallbacks: true };
-  return { sort: "throughput", allow_fallbacks: true, max_price: budget };
+  if (budget === undefined)
+    return { sort: "price", allow_fallbacks: true, require_parameters: true };
+  return { sort: "throughput", allow_fallbacks: true, require_parameters: true, max_price: budget };
 }
 
 const REASONING_EFFORT: Record<Exclude<ThinkingLevel, "none">, string> = {
@@ -39,6 +40,13 @@ function reasoningRequest(thinking: ThinkingLevel) {
   return thinking === "none"
     ? { reasoning: { enabled: false } }
     : { reasoning: { effort: REASONING_EFFORT[thinking] } };
+}
+
+/** The model card sampling that the local server sends. min_p 0 and no repetition penalty are the defaults. */
+function sampling(input: ChatInput) {
+  if (input.thinking === "none")
+    return { temperature: 0.7, top_p: 0.8, top_k: 20, presence_penalty: 1.5 };
+  return { temperature: input.temperature, top_p: 0.95, top_k: 20, presence_penalty: 0 };
 }
 
 function retainedReasoning(
@@ -105,7 +113,7 @@ export function chatRequestBody(options: {
     messages: completionMessages(input.messages, options.reasoning),
     ...(input.tools.length === 0 ? {} : { tools: completionTools(input.tools) }),
     max_tokens: outputTokenLimit(model, input.maxTokens),
-    temperature: input.temperature,
+    ...sampling(input),
     provider: providerRouting(options.budget),
     stream: true,
     usage: { include: true },

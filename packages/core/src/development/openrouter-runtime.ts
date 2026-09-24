@@ -191,6 +191,7 @@ export class OpenRouterRuntime {
           model: model.id,
           messages: [{ role: "user", content: input.prompt }],
           max_tokens: outputTokenLimit(model, input.maxTokens),
+          temperature: 0,
           provider: providerRouting(this.options.budget),
           response_format: {
             type: "json_schema",
