@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { constants, createReadStream } from "node:fs";
-import { copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/promises";
+import { copyFile, cp, lstat, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { SPLASH_MODEL } from "@gardendesk/shared";
 import {
   canonicalModelPath,
   packagedModelFiles,
@@ -174,6 +175,10 @@ export async function prepareDevelopmentModelOutput(
       }
     }),
   );
+  const splash = join(outputRoot, SPLASH_MODEL.directory);
+  const splashSource = canonicalModelPath(repositoryRoot, SPLASH_MODEL.directory);
+  if ((await exists(splashSource)) && !(await exists(splash)))
+    await cp(splashSource, splash, { recursive: true, mode: constants.COPYFILE_FICLONE });
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: all platform copy locations stay explicit.

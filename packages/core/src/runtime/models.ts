@@ -13,7 +13,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { isAbsolute, join, relative, resolve } from "node:path";
-import { InstalledModelStoreSchema } from "@gardendesk/shared";
+import { INFERENCE_PROFILE, InstalledModelStoreSchema, SPLASH_MODEL } from "@gardendesk/shared";
 
 export interface StagedModel {
   path: string;
@@ -57,9 +57,11 @@ export class ModelResolver {
   private constructor(
     private readonly root: string,
     private readonly store: ReturnType<typeof InstalledModelStoreSchema.parse>,
+    private readonly splash: boolean,
   ) {}
 
-  static async open(root: string): Promise<ModelResolver> {
+  /** With `splash`, the generation and image models are the Splash model folder in the store. */
+  static async open(root: string, splash = false): Promise<ModelResolver> {
     const resolvedRoot = await realpath(resolve(root));
     const manifestPath = join(resolvedRoot, "installed-models.json");
     const manifestState = await lstat(manifestPath);
@@ -67,10 +69,26 @@ export class ModelResolver {
       throw new Error("model_store_manifest_unsafe");
     }
     const store = InstalledModelStoreSchema.parse(JSON.parse(await readFile(manifestPath, "utf8")));
-    return new ModelResolver(resolvedRoot, store);
+    return new ModelResolver(resolvedRoot, store, splash);
+  }
+
+  private async splashModel(): Promise<StagedModel> {
+    const path = join(this.root, SPLASH_MODEL.directory);
+    const state = await lstat(path).catch(() => undefined);
+    if (state === undefined || !state.isDirectory()) throw new Error("missing_model");
+    return { path, byteLength: 0, async dispose() {} };
   }
 
   async resolve(modelId: string, signal?: AbortSignal): Promise<StagedModel> {
+    if (
+      this.splash &&
+      (modelId === INFERENCE_PROFILE.modelId || modelId === INFERENCE_PROFILE.projectorId)
+    )
+      return await this.splashModel();
+    return await this.resolveStored(modelId, signal);
+  }
+
+  private async resolveStored(modelId: string, signal?: AbortSignal): Promise<StagedModel> {
     signal?.throwIfAborted();
     const model = this.store.models.find((candidate) => candidate.modelId === modelId);
     if (model === undefined) throw new Error("missing_model");

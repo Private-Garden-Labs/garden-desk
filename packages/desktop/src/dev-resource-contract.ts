@@ -138,10 +138,12 @@ function macContract(
       ...commonInputs(desktopRoot, repositoryRoot),
       ...macHelperInputs(join(repositoryRoot, "packages", "workers", "native", "macos-vz-helper")),
       join(repositoryRoot, "packages", "eval", ".generated", "inference", "macos-arm64"),
+      join(repositoryRoot, "packages", "eval", ".generated", "inference", "macos-arm64-splash"),
     ],
     requiredOutputs: [
       ...commonOutputs(resourcesRoot),
       join(resourcesRoot, "inference", "macos-arm64", "llama-server"),
+      join(resourcesRoot, "inference", "macos-arm64-splash", "engine", "splash"),
       join(resourcesRoot, "workers", "garden-desk-vz-helper"),
       ...guestOutputs(resourcesRoot, "aarch64", "Image"),
       join(desktopRoot, "src-tauri", "binaries", "garden-desk-core-aarch64-apple-darwin"),
