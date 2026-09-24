@@ -7,6 +7,7 @@ export interface NativeWorkerLaunchRequest {
   memoryBudgetBytes: number;
   serverArguments?: string[];
   readPaths?: string[];
+  splash?: boolean;
 }
 
 export interface NativeWorkerHandle {
@@ -16,6 +17,7 @@ export interface NativeWorkerHandle {
 }
 
 export interface NativeWorkerLauncher {
+  readonly splash?: boolean;
   readonly gpu?:
     | {
         backend: "cuda" | "hip" | "metal";

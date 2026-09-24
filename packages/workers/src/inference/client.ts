@@ -135,6 +135,7 @@ export class InferenceWorkerClient {
 
   private async contextTokens(execution: InferenceExecution, request: ModelRequest) {
     if (request.contextSize !== "auto") return request.contextSize;
+    if (this.launcher.splash === true && request.operation !== "embed") return "auto";
     if (execution.modelByteLength === undefined) return INFERENCE_PROFILE.minimumContextTokens;
     const available = await this.launcher.availableMemoryBytes?.();
     const fitted = fittedContextTokens({
@@ -172,13 +173,12 @@ export class InferenceWorkerClient {
     if (this.resident && this.reusable(this.resident, modelPath, request)) return this.resident;
     await this.dropResident();
     const embedding = request.operation === "embed";
-    const contextTokens = await this.contextTokens(execution, request);
     const handle = await startServer(
       this.launcher,
       this.workerEntryPath,
       {
         modelPath,
-        contextTokens,
+        contextTokens: await this.contextTokens(execution, request),
         embedding,
         memoryBudgetBytes: execution.memoryBudgetBytes,
         speculation: embedding ? "none" : INFERENCE_PROFILE.speculation,
@@ -197,7 +197,7 @@ export class InferenceWorkerClient {
         );
       throw new InferenceWorkerError("worker_crash", "Inference worker stopped.");
     });
-    this.resident = { handle, modelPath, contextTokens, embedding };
+    this.resident = { handle, modelPath, contextTokens: handle.contextTokens, embedding };
     return this.resident;
   }
 
@@ -250,7 +250,8 @@ export class InferenceWorkerClient {
   }
 
   private async cancel(): Promise<void> {
-    if (this.resident === undefined) return;
+    // Splash cancels a request when its connection closes and queues the next one.
+    if (this.resident === undefined || this.resident.handle.splash) return;
     const handle = this.resident.handle;
     const signal = AbortSignal.timeout(1_000);
     try {

@@ -7,6 +7,6 @@ describe("M3 Windows package contract", () => {
   });
 
   it("preserves the certified Apple silicon Metal package", () => {
-    expect(nativeRuntimePackages("darwin", "arm64")).toEqual(["macos-arm64"]);
+    expect(nativeRuntimePackages("darwin", "arm64")).toEqual(["macos-arm64", "macos-arm64-splash"]);
   });
 });

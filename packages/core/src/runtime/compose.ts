@@ -118,7 +118,10 @@ export async function createInferenceService(
   );
   if (agentSessionCapacity === 0)
     return unavailableResult("This computer does not have enough memory to run Garden Desk.");
-  const modelResolver = await ModelResolver.open(options.modelStoreDir);
+  const modelResolver = await ModelResolver.open(
+    options.modelStoreDir,
+    selectedWindowsRuntime === undefined,
+  );
   const workerEntryPath =
     selectedWindowsRuntime?.workerEntryPath ??
     options.workerEntryPath ??
