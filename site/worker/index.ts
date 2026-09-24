@@ -66,7 +66,8 @@ async function serveDownload(
 async function servePage(request: Request, env: Env, context: Context): Promise<Response> {
   const response = await env.ASSETS.fetch(request);
   const page = response.headers.get("content-type")?.startsWith("text/html") === true;
-  if (counted(request) && page && response.status === 200) {
+  const framed = request.headers.get("sec-fetch-dest") === "iframe";
+  if (counted(request) && page && !framed && response.status === 200) {
     context.waitUntil(
       count(env, "visit", visitorPlatform(request.headers.get("user-agent") ?? "")),
     );
@@ -154,7 +155,7 @@ tfoot td{font-weight:600}
 .bar{display:inline-block;height:.6rem;background:#4f8a5f;border-radius:2px;margin-right:.5rem;vertical-align:middle}
 </style>
 <h1>Garden Desk stats</h1>
-<p>Last 90 days. Days are in UTC. A visit is one page view. A download is one started file download.</p>
+<p>Last 90 days. Days are in UTC. A visit is one full page load. A download is one started file download.</p>
 ${table(
   "Visits",
   results.filter((row) => row.kind === "visit"),
