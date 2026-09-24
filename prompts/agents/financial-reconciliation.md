@@ -1,6 +1,6 @@
 ---
 name: financial-reconciliation
-description: Matches financial records across supplied files, calculates differences, and reports unmatched or ambiguous entries with source references. Not for extraction alone or invoice policy checks.
+description: Matches financial records across supplied files, calculates differences, and reports unmatched or ambiguous entries with source references. Not for extraction alone, invoice policy checks, or comparing versions of one schedule or document.
 mode: subagent
 tools: [bash, python, read, glob, grep, list]
 skills: [document-review, financial-records-reconciliation, xlsx-workbooks]
