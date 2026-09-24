@@ -119,7 +119,7 @@ Do these steps in this order. A download link must not go live before its file a
 3. Do not open a download address before its upload. Cloudflare keeps the `404` for up to 4 hours. If this occurs, purge only that URL in the `gardendesk.ai` zone.
 4. Make sure that `https://downloads.gardendesk.ai/v<version>/<file name>` returns `200` and that a full download from it has the recorded SHA-256.
 5. In one pull request, change each link in the home page hero (`site/index.html`), each link and SHA-256 on `site/releases/index.html`, and the links in `scripts/check-site.ts`. Run `pnpm site:check`.
-6. After the merge, the "Deploy public website" workflow publishes the site. GitHub Pages lets browsers keep a page for 10 minutes, so a page that was open before the deploy can show the old links. Check the live page with `curl -s https://gardendesk.ai/ | rg data-download` or reload it with Command-Shift-R.
+6. After the merge, the "Deploy public website" workflow publishes the site to Cloudflare. A page that was open before the deploy can show the old links. Check the live page with `curl -s https://gardendesk.ai/ | rg data-download` or reload it with Command-Shift-R.
 
 ## Agent Skills
 

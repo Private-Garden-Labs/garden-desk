@@ -2,6 +2,7 @@
 node_modules/
 .pnpm-store/
 dist/
+.wrangler/
 coverage/
 target/
 .generated/
