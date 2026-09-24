@@ -1,0 +1,31 @@
+{
+  "name": "garden-desk-site",
+  "account_id": "dbc78a7c1e83dd70ce705031775b5f6d",
+  "main": "index.ts",
+  "compatibility_date": "2026-09-24",
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "../dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/*", "!/assets/*"]
+  },
+  "routes": [
+    { "pattern": "gardendesk.ai", "custom_domain": true },
+    { "pattern": "www.gardendesk.ai", "custom_domain": true },
+    { "pattern": "downloads.gardendesk.ai/*", "zone_name": "gardendesk.ai" }
+  ],
+  "d1_databases": [
+    {
+      "binding": "STATS",
+      "database_name": "garden-desk-stats",
+      "database_id": "d169bada-a1cc-465a-ba80-a4e4376b025e",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "https://garden-desk.cloudflareaccess.com",
+    "ACCESS_AUD": "817b628e7d1f66c136e13a31a3d6457e119c1ec3f6762fd013db1bcbd22545ba"
+  }
+}
