@@ -7,10 +7,14 @@ function systemText(input: ChatAgentInput): string {
     .metadata()
     .map((skill) => `- ${skill.name}: ${skill.description}`)
     .join("\n");
+  const specialists = (input.subagents ?? [])
+    .map((agent) => `- ${agent.name}: ${agent.description}`)
+    .join("\n");
   return [
     input.agent.body,
     input.systemPrompt("environment"),
     ...(skills ? [fillPrompt(input.systemPrompt("skills"), { skills })] : []),
+    ...(specialists ? [fillPrompt(input.systemPrompt("specialists"), { specialists })] : []),
   ].join("\n\n");
 }
 
