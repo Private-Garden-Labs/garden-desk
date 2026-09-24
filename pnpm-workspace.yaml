@@ -5,6 +5,3 @@ allowBuilds:
   better-sqlite3: true
   esbuild: true
   workerd: false
-
-minimumReleaseAgeExclude:
-  - wrangler@4.137.0
