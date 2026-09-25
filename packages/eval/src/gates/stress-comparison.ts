@@ -1,4 +1,4 @@
-import { appendFile, mkdir, mkdtemp } from "node:fs/promises";
+import { appendFile, cp, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { createGardenDeskCore, type GardenDeskCore } from "@gardendesk/core";
 import {
@@ -40,10 +40,30 @@ const caseLimitMs = Number(argument("--case-timeout") ?? 15 * 60_000);
 const stepStallMs = Number(argument("--step-stall") ?? 8 * 60_000);
 const selected = argument("--cases")?.split(",");
 const suiteFilter = argument("--suite");
+const withoutSpecialists = process.argv.includes("--without-specialists");
 const tasks = stressTasks({
   ...(suiteFilter === undefined ? {} : { suite: suiteFilter }),
   ...(selected === undefined ? {} : { ids: selected }),
 });
+
+/** With --without-specialists, Core loads a prompt copy without the specialists and their commands. */
+async function preparePrompts(): Promise<string> {
+  const source = join(repository, "prompts");
+  if (!withoutSpecialists) return source;
+  const copy = join(outputDirectory, `${label}-prompts`);
+  await rm(copy, { recursive: true, force: true });
+  await cp(source, copy, { recursive: true });
+  for (const name of [
+    "matter-chronology",
+    "contract-obligations",
+    "document-comparison",
+    "financial-review",
+  ])
+    await rm(join(copy, "agents", `${name}.md`));
+  for (const name of ["obligations", "reconcile", "expenses"])
+    await rm(join(copy, "commands", `${name}.md`));
+  return copy;
+}
 
 async function openCore(root: string): Promise<GardenDeskCore> {
   const modelStoreDir = join(repository, "packages/eval/.generated/models");
@@ -57,7 +77,7 @@ async function openCore(root: string): Promise<GardenDeskCore> {
     modelStoreDir,
     profile: "auto",
     migrationDirectory: join(repository, "packages/core/src/workspace/migrations"),
-    promptDirectory: join(repository, "prompts"),
+    promptDirectory,
     workerEntryPath: macos ? developmentInferenceWorkerEntryPath() : "",
     ...(macos
       ? {}
@@ -235,6 +255,7 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
 }
 
 await mkdir(outputDirectory, { recursive: true });
+const promptDirectory = await preparePrompts();
 const resultsPath = join(outputDirectory, `${label}.jsonl`);
 console.log(
   JSON.stringify({
@@ -242,6 +263,7 @@ console.log(
     label,
     model: INFERENCE_PROFILE.modelId,
     runtime: runtimeDirectory,
+    withoutSpecialists,
     tasks: tasks.map((task) => task.id),
     caseLimitMs,
     stepStallMs,
