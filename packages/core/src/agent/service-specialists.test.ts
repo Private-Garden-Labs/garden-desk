@@ -36,7 +36,7 @@ it("uses the parent index when loading child runs", async () => {
 });
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: one case checks the shared delegation and command boundary through reopening.
-it("delegates a specialist to a child and runs a command specialist in the same run", async () => {
+it("returns a good enough child answer unchanged and runs a command specialist in the same run", async () => {
   const requests: ChatInput[] = [];
   const description = "Inspect source structure".padEnd(1_000, ".");
   const prompt = "Inspect the selected files.".padEnd(128_000, ".");
@@ -67,7 +67,10 @@ it("delegates a specialist to a child and runs a command specialist in the same 
             },
           ]);
         }
-        if (requests.length === 3) return chatResult("Parent findings.", []);
+        if (requests.length === 3) {
+          expect(request.tools).toEqual([]);
+          return chatResult("yes", []);
+        }
         expect(request.tools.some((tool) => tool.name === "task" || tool.name === "question")).toBe(
           false,
         );
@@ -104,7 +107,11 @@ it("delegates a specialist to a child and runs a command specialist in the same 
     const session = conversations.createSession(null);
     parentId = service.start(session.id, "Inspect source structure.").id;
     const delegated = await terminal(service, parentId);
-    expect(delegated.run).toMatchObject({ state: "succeeded", error: null });
+    expect(delegated.run).toMatchObject({
+      state: "succeeded",
+      error: null,
+      response: "Complete findings.",
+    });
     expect(delegated.childRuns[0]?.assignment).toHaveLength(assignment.length);
     expect(delegated.childRuns[0]).toMatchObject({
       assignment,
