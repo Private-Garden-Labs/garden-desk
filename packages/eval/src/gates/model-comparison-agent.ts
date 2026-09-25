@@ -8,9 +8,8 @@ import {
 } from "@gardendesk/shared";
 import { cases as obligations } from "../stress/specialist-contract-obligations.js";
 import { cases as comparison } from "../stress/specialist-document-comparison.js";
-import { cases as reconciliation } from "../stress/specialist-financial-reconciliation.js";
+import { cases as financial } from "../stress/specialist-financial-review.js";
 import { prepareSpecialistFiles, type SpecialistCase } from "../stress/specialist-fixtures.js";
-import { cases as expenses } from "../stress/specialist-invoice-expense-review.js";
 import { cases as chronology } from "../stress/specialist-matter-chronology.js";
 import { prepareAgentModelStore } from "./agent-model-store.js";
 import { developmentInferenceWorkerEntryPath } from "./development-inference-path.js";
@@ -27,7 +26,7 @@ const runtimeDirectory =
   );
 const imageRoot = argument("--images") ?? join(repository, "packages/workers/images");
 const selected = argument("--cases")?.split(",");
-const cases = [...chronology, ...obligations, ...comparison, ...reconciliation, ...expenses].filter(
+const cases = [...chronology, ...obligations, ...comparison, ...financial].filter(
   (item) => item.command === undefined && (selected === undefined || selected.includes(item.id)),
 );
 

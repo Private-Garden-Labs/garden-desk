@@ -3,16 +3,7 @@ import { Icon } from "./icons.js";
 
 const identities = {
   "document-review": { name: "Document review", icon: "read", color: "neutral" },
-  "invoice-expense-review": {
-    name: "Invoice and expense review",
-    icon: "receipt",
-    color: "orange",
-  },
-  "financial-reconciliation": {
-    name: "Financial reconciliation",
-    icon: "reconcile",
-    color: "teal",
-  },
+  "financial-review": { name: "Financial review", icon: "reconcile", color: "teal" },
   "matter-chronology": { name: "Matter chronology", icon: "timeline", color: "gold" },
   "contract-obligations": { name: "Contract obligations", icon: "document-check", color: "violet" },
   "document-comparison": { name: "Document comparison", icon: "compare", color: "rose" },

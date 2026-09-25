@@ -37,8 +37,8 @@ const cases: SpecialistFirstActionCase[] = [
       "Identify the duties, monthly fee, payment period, and non-renewal notice in /source/services-agreement.txt. Cite the source.",
   },
   {
-    id: "financial-reconciliation",
-    agentId: "financial-reconciliation",
+    id: "financial-review",
+    agentId: "financial-review",
     toolName: "task",
     files: {
       "invoices.csv": "invoice,amount,currency\nA,100,EUR\nB,200,EUR\nC,50,EUR\n",

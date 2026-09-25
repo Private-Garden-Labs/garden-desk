@@ -92,18 +92,18 @@ export const choiceCases: ChoiceCase[] = [
     expectedSubagent: "document-comparison",
   },
   {
-    id: "choose-financial-reconciliation",
+    id: "choose-financial-review-reconciliation",
     request:
       "Match the ledger in /source/ledger.xlsx against the bank statement in /source/bank.pdf and report every difference.",
     expectedTool: "task",
-    expectedSubagent: "financial-reconciliation",
+    expectedSubagent: "financial-review",
   },
   {
-    id: "choose-invoice-expense-review",
+    id: "choose-financial-review-expenses",
     request:
       "Check the expense claims in /source/expenses for duplicates and for breaches of the travel policy in /source/policy.pdf.",
     expectedTool: "task",
-    expectedSubagent: "invoice-expense-review",
+    expectedSubagent: "financial-review",
   },
   {
     id: "choose-general",

@@ -11,9 +11,8 @@ import {
 import { type FileCheck, salaryWorkbook, storyDocx, storyPdf } from "../stress/generated-files.js";
 import { cases as obligations } from "../stress/specialist-contract-obligations.js";
 import { cases as comparison } from "../stress/specialist-document-comparison.js";
-import { cases as reconciliation } from "../stress/specialist-financial-reconciliation.js";
+import { cases as financial } from "../stress/specialist-financial-review.js";
 import { prepareSpecialistFiles, type SpecialistCase } from "../stress/specialist-fixtures.js";
-import { cases as expenses } from "../stress/specialist-invoice-expense-review.js";
 import { cases as chronology } from "../stress/specialist-matter-chronology.js";
 
 const SPECIALIST_SUFFIX =
@@ -140,8 +139,7 @@ const specialistCases: SpecialistCase[] = [
   ...chronology,
   ...obligations,
   ...comparison,
-  ...reconciliation,
-  ...expenses,
+  ...financial,
 ].filter((item) => item.command === undefined);
 
 const specialistTasks: StressTask[] = specialistCases.map((task) => ({
