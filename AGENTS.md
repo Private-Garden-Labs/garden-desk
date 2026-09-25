@@ -78,7 +78,7 @@ Documentation is for people. Write the absolute minimum amount of code comments,
 
 ## Agent Skills
 
-The skills under [.agents/skills](.agents/skills) (also exposed at `.claude/skills`) package this workflow for Codex and Claude Code: plan a change, fix a bug, verify, review, review a dependency, hand off. They do not override this file, ADRs, or the active milestone. The GitHub pull request review runs the command in [.claude/commands/garden-desk-code-review.md](.claude/commands/garden-desk-code-review.md), which reads [REVIEW.md](REVIEW.md) first and this file as secondary context, and may only read the pull request and post review comments.
+The skills under [.agents/skills](.agents/skills) (also exposed at `.claude/skills`) package this workflow for Codex and Claude Code: plan a change, fix a bug, verify, review, review a dependency, hand off, apply the design rules. They do not override this file, ADRs, or the active milestone. The GitHub pull request review runs the command in [.claude/commands/garden-desk-code-review.md](.claude/commands/garden-desk-code-review.md), which reads [REVIEW.md](REVIEW.md) first and this file as secondary context, and may only read the pull request and post review comments.
 
 ## Where To Look
 
