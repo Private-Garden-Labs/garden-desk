@@ -1,4 +1,4 @@
-import { appendFile, cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, mkdtemp } from "node:fs/promises";
 import { join } from "node:path";
 import { createGardenDeskCore, type GardenDeskCore } from "@gardendesk/core";
 import {
@@ -10,11 +10,13 @@ import {
 } from "@gardendesk/shared";
 import { prepareAgentModelStore } from "./agent-model-store.js";
 import { developmentInferenceWorkerEntryPath } from "./development-inference-path.js";
+import { preparePrompts } from "./stress-comparison-prompts.js";
 import { type Deliverable, type StressTask, stressTasks } from "./stress-comparison-tasks.js";
 import {
   allocatedMemory,
   deliverableBytes,
   loadedSkills,
+  responseBytes,
   visibleSteps,
   type Watched,
   watch,
@@ -49,37 +51,6 @@ const tasks = stressTasks({
   ...(suiteFilter === undefined ? {} : { suite: suiteFilter }),
   ...(selected === undefined ? {} : { ids: selected }),
 });
-
-/** With --without-specialists or --without-review, Core loads a prompt copy without those workflows. */
-async function preparePrompts(): Promise<string> {
-  const source = join(repository, "prompts");
-  if (!withoutSpecialists && !withoutReview) return source;
-  const copy = join(outputDirectory, `${label}-prompts`);
-  await rm(copy, { recursive: true, force: true });
-  await cp(source, copy, { recursive: true });
-  if (withoutSpecialists) {
-    for (const name of [
-      "matter-chronology",
-      "contract-obligations",
-      "document-comparison",
-      "financial-review",
-    ])
-      await rm(join(copy, "agents", `${name}.md`));
-    for (const name of ["obligations", "reconcile", "expenses"])
-      await rm(join(copy, "commands", `${name}.md`));
-  }
-  if (withoutReview) await removeReview(copy);
-  return copy;
-}
-
-async function removeReview(copy: string): Promise<void> {
-  await rm(join(copy, "commands", "review.md"));
-  const primary = join(copy, "agents", "primary.md");
-  const text = await readFile(primary, "utf8");
-  if (!text.includes(", review]") || !/^1\. `review`:.*$/mu.test(text))
-    throw new Error("review_route_missing");
-  await writeFile(primary, text.replace(", review]", "]").replace(/^1\. `review`:.*\r?\n/mu, ""));
-}
 
 async function openCore(root: string): Promise<GardenDeskCore> {
   const modelStoreDir = join(repository, "packages/eval/.generated/models");
@@ -239,19 +210,6 @@ function resultRow(input: {
   };
 }
 
-/** The final chat response followed by every text file that the run saved. */
-async function responseBytes(core: GardenDeskCore, snapshot: AgentRunSnapshot): Promise<Buffer> {
-  const parts = [snapshot.run.response ?? ""];
-  for (const artifact of snapshot.artifacts.filter((item) => /\.(md|txt|csv)$/iu.test(item.name)))
-    parts.push(
-      await core
-        .materializeArtifact(snapshot.run.sessionId, artifact.id)
-        .then((path) => readFile(path, "utf8"))
-        .catch(() => ""),
-    );
-  return Buffer.from(parts.join("\n"));
-}
-
 async function runTask(task: StressTask): Promise<Record<string, unknown>> {
   const root = await mkdtemp(join(outputDirectory, `${label}-${task.id}-`));
   const source = join(root, "source");
@@ -291,7 +249,11 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
 }
 
 await mkdir(outputDirectory, { recursive: true });
-const promptDirectory = await preparePrompts();
+const promptDirectory = await preparePrompts(
+  join(repository, "prompts"),
+  join(outputDirectory, `${label}-prompts`),
+  { withoutSpecialists, withoutReview },
+);
 const resultsPath = join(outputDirectory, `${label}.jsonl`);
 console.log(
   JSON.stringify({

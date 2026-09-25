@@ -28,6 +28,22 @@ export async function deliverableBytes(
   }
 }
 
+/** The final chat response followed by every text file that the run saved. */
+export async function responseBytes(
+  core: GardenDeskCore,
+  snapshot: AgentRunSnapshot,
+): Promise<Buffer> {
+  const parts = [snapshot.run.response ?? ""];
+  for (const artifact of snapshot.artifacts.filter((item) => /\.(md|txt|csv)$/iu.test(item.name)))
+    parts.push(
+      await core
+        .materializeArtifact(snapshot.run.sessionId, artifact.id)
+        .then((path) => readFile(path, "utf8"))
+        .catch(() => ""),
+    );
+  return Buffer.from(parts.join("\n"));
+}
+
 export function loadedSkills(events: AgentRunSnapshot["events"]): string[] {
   return events.flatMap((event) => {
     const loaded = event.type === "tool.completed" && event.toolName === "skill";
