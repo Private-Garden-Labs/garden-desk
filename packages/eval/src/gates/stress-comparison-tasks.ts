@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { cases as direct } from "../stress/direct-work-cases.js";
 import {
   createDocxCorpus,
   createPdf,
@@ -10,11 +11,8 @@ import {
 import { type FileCheck, salaryWorkbook, storyDocx, storyPdf } from "../stress/generated-files.js";
 import { cases as obligations } from "../stress/specialist-contract-obligations.js";
 import { cases as comparison } from "../stress/specialist-document-comparison.js";
-import { cases as brief } from "../stress/specialist-evidence-brief.js";
 import { cases as reconciliation } from "../stress/specialist-financial-reconciliation.js";
-import { cases as extraction } from "../stress/specialist-financial-record-extraction.js";
 import { prepareSpecialistFiles, type SpecialistCase } from "../stress/specialist-fixtures.js";
-import { cases as intake } from "../stress/specialist-folder-intake.js";
 import { cases as expenses } from "../stress/specialist-invoice-expense-review.js";
 import { cases as chronology } from "../stress/specialist-matter-chronology.js";
 
@@ -138,14 +136,12 @@ const goldenTasks: StressTask[] = [
 ];
 
 const specialistCases: SpecialistCase[] = [
-  ...intake,
+  ...direct,
   ...chronology,
   ...obligations,
   ...comparison,
-  ...extraction,
   ...reconciliation,
   ...expenses,
-  ...brief,
 ].filter((item) => item.command === undefined);
 
 const specialistTasks: StressTask[] = specialistCases.map((task) => ({

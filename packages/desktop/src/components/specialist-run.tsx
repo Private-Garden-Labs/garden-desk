@@ -3,7 +3,6 @@ import { Icon } from "./icons.js";
 
 const identities = {
   "document-review": { name: "Document review", icon: "read", color: "neutral" },
-  "evidence-brief": { name: "Evidence brief", icon: "evidence", color: "indigo" },
   "invoice-expense-review": {
     name: "Invoice and expense review",
     icon: "receipt",
@@ -14,15 +13,9 @@ const identities = {
     icon: "reconcile",
     color: "teal",
   },
-  "folder-intake": { name: "Folder intake", icon: "folder-tree", color: "blue" },
   "matter-chronology": { name: "Matter chronology", icon: "timeline", color: "gold" },
   "contract-obligations": { name: "Contract obligations", icon: "document-check", color: "violet" },
   "document-comparison": { name: "Document comparison", icon: "compare", color: "rose" },
-  "financial-record-extraction": {
-    name: "Financial record extraction",
-    icon: "table-extract",
-    color: "cyan",
-  },
 } as const;
 
 export function specialistIdentity(agentId: string | null | undefined) {

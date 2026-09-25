@@ -36,6 +36,6 @@ Coverage: the lease (clause 5.2 is cited in the letter) is not in the folder, so
 
 ## Prompt 2
 
-Select the folder. Prompt: `/brief When did the landlord first know about the leak, according to each record?`
+Select the folder. Prompt: `When did the landlord first know about the leak, according to each record?`
 
 Expected: three answers with citations (2 March per the claim letter, 3 March 08:12 per the email and the log, 4 March per the landlord's email), stated as a conflict, with no decision on which is true.
