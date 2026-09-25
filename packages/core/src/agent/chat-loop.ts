@@ -242,11 +242,8 @@ export class ChatAgentLoop {
       throw error;
     }
     this.record(input, generated.turnId, "accepted_tool_calls");
-    const childResponse = state.childResponse;
-    if (
-      childResponse !== undefined &&
-      (await this.childCompletedRequest(input, state, performance))
-    )
+    const childResponse = state.childResponses.join("\n\n");
+    if (childResponse !== "" && (await this.childCompletedRequest(input, state, performance)))
       return this.complete(input, state, performance, childResponse);
     await this.recoverContext(input, state, performance, generated.result.contextUsedTokens);
     return undefined;
