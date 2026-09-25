@@ -18,6 +18,40 @@ import { AgentStore } from "./store.js";
 
 afterEach(cleanServiceFixtures);
 
+it("returns every child answer from one turn after the completion check", async () => {
+  const answers = ["", "First answer.", "Second answer.", "yes"];
+  let turn = 0;
+  const { catalog, conversations, service } = await fixture(
+    {
+      async chat() {
+        turn += 1;
+        if (turn > 1) return chatResult(answers[turn - 1] ?? "", []);
+        return chatResult(
+          "",
+          [1, 2].map((part) => ({
+            id: `part-${part}`,
+            name: "task",
+            params: {
+              subagent_type: "matter-chronology",
+              description: `Part ${part}`,
+              prompt: `Do part ${part}.`,
+            },
+          })),
+        );
+      },
+    },
+    artifactExecution,
+  );
+  try {
+    const run = service.start(conversations.createSession(null).id, "Do both parts.");
+    expect((await terminal(service, run.id)).run.response).toBe("First answer.\n\nSecond answer.");
+    expect(turn).toBe(4);
+  } finally {
+    await service.close();
+    catalog.close();
+  }
+});
+
 it("uses the parent index when loading child runs", async () => {
   const { catalog, service } = await fixture({}, artifactExecution);
   try {
