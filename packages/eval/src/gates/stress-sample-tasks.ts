@@ -207,6 +207,23 @@ const tasks: SampleTask[] = [
     ],
   },
   {
+    id: "sample-compare-then-obligations",
+    agentId: "document-comparison",
+    attachments: [agreement, amendment],
+    prompt:
+      "Compare the amendment against the original agreement and list every change. Then list the Supplier's obligations as they apply from 1 June 2026.",
+    checks: [
+      /350 ?kg/iu,
+      /9\.85/u,
+      /120 days/iu,
+      /30 ?kg/iu,
+      /(10|ten) business days/iu,
+      /(15|fifteen) business days/iu,
+      /1000000|1 million/iu,
+      /14 days/iu,
+    ],
+  },
+  {
     id: "sample-invoice-expenses",
     agentId: "financial-review",
     attachments: [invoice],

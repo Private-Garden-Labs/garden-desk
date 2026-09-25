@@ -178,8 +178,8 @@ export class ChatAgentLoop {
       thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     });
   }
-  /** One short model decision after a child run: a good enough child answer goes to the user unchanged. */
-  private async childResultIsEnough(
+  /** One short model decision after a child run: a child answer that completes the request goes to the user unchanged. */
+  private async childCompletedRequest(
     input: ChatAgentInput,
     state: ChatToolState,
     performance: ReturnType<typeof emptyPerformance>,
@@ -243,7 +243,10 @@ export class ChatAgentLoop {
     }
     this.record(input, generated.turnId, "accepted_tool_calls");
     const childResponse = state.childResponse;
-    if (childResponse !== undefined && (await this.childResultIsEnough(input, state, performance)))
+    if (
+      childResponse !== undefined &&
+      (await this.childCompletedRequest(input, state, performance))
+    )
       return this.complete(input, state, performance, childResponse);
     await this.recoverContext(input, state, performance, generated.result.contextUsedTokens);
     return undefined;
