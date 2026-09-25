@@ -14,17 +14,20 @@ import { cases as comparison } from "../stress/specialist-document-comparison.js
 import { cases as financial } from "../stress/specialist-financial-review.js";
 import { prepareSpecialistFiles, type SpecialistCase } from "../stress/specialist-fixtures.js";
 import { cases as chronology } from "../stress/specialist-matter-chronology.js";
+import { sampleTasks } from "./stress-sample-tasks.js";
 
 const SPECIALIST_SUFFIX =
   "\nUse the source files in /source. Write a concise final report to /workspace/result.md with the facts requested and source file references with page, paragraph, or row locations. Return a short summary. Do not change the source files.";
 
 export interface StressTask {
   id: string;
-  suite: "golden" | "specialist" | "generation";
+  suite: "golden" | "specialist" | "generation" | "sample";
   agentId: string | null;
   deliverable: string;
   expectation: string;
   prompt: string;
+  command?: string;
+  attachments?: string[];
   prepare(sourceDir: string): Promise<unknown>;
   afterGrant(sourceDir: string): Promise<unknown>;
   check(output: Deliverable): { facts: number; sources: number; note?: string };
@@ -214,10 +217,13 @@ const generationTasks: StressTask[] = [
   }),
 ];
 
+/** The sample suite runs only when selected with --suite sample or --cases. */
 export function stressTasks(filter: { suite?: string; ids?: string[] }): StressTask[] {
-  return [...goldenTasks, ...specialistTasks, ...generationTasks].filter(
+  return [...goldenTasks, ...specialistTasks, ...generationTasks, ...sampleTasks].filter(
     (task) =>
-      (filter.suite === undefined || task.suite === filter.suite) &&
+      (filter.suite === undefined
+        ? task.suite !== "sample" || filter.ids !== undefined
+        : task.suite === filter.suite) &&
       (filter.ids === undefined || filter.ids.includes(task.id)),
   );
 }
