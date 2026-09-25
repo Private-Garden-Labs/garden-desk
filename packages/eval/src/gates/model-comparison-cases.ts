@@ -72,13 +72,6 @@ export const toolCases: ToolCase[] = [
 
 export const choiceCases: ChoiceCase[] = [
   {
-    id: "choose-folder-intake",
-    request:
-      "A client sent this folder with about 80 files and I do not know what is inside. Tell me what is there before we begin any work.",
-    expectedTool: "task",
-    expectedSubagent: "folder-intake",
-  },
-  {
     id: "choose-matter-chronology",
     request:
       "Build a dated timeline of what happened in this matter from the emails and letters in /source.",
@@ -99,13 +92,6 @@ export const choiceCases: ChoiceCase[] = [
     expectedSubagent: "document-comparison",
   },
   {
-    id: "choose-financial-record-extraction",
-    request:
-      "Pull every transaction with its date, amount, and counterparty out of the bank statements in /source/statements into a table.",
-    expectedTool: "task",
-    expectedSubagent: "financial-record-extraction",
-  },
-  {
     id: "choose-financial-reconciliation",
     request:
       "Match the ledger in /source/ledger.xlsx against the bank statement in /source/bank.pdf and report every difference.",
@@ -118,13 +104,6 @@ export const choiceCases: ChoiceCase[] = [
       "Check the expense claims in /source/expenses for duplicates and for breaches of the travel policy in /source/policy.pdf.",
     expectedTool: "task",
     expectedSubagent: "invoice-expense-review",
-  },
-  {
-    id: "choose-evidence-brief",
-    request:
-      "Using the records in /source/case, answer one question with citations: was the delivery late, and by how many days?",
-    expectedTool: "task",
-    expectedSubagent: "evidence-brief",
   },
   {
     id: "choose-general",

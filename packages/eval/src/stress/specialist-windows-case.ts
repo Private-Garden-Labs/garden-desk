@@ -6,24 +6,12 @@ import { type AgentRunSnapshot, DEFAULT_THINKING_LEVEL } from "@gardendesk/share
 import { prepareAgentModelStore } from "../gates/agent-model-store.js";
 import { cases as obligations } from "./specialist-contract-obligations.js";
 import { cases as comparison } from "./specialist-document-comparison.js";
-import { cases as brief } from "./specialist-evidence-brief.js";
 import { cases as reconciliation } from "./specialist-financial-reconciliation.js";
-import { cases as extraction } from "./specialist-financial-record-extraction.js";
 import { prepareSpecialistFiles, type SpecialistCase } from "./specialist-fixtures.js";
-import { cases as intake } from "./specialist-folder-intake.js";
 import { cases as expenses } from "./specialist-invoice-expense-review.js";
 import { cases as chronology } from "./specialist-matter-chronology.js";
 
-const cases = [
-  ...intake,
-  ...chronology,
-  ...obligations,
-  ...comparison,
-  ...extraction,
-  ...reconciliation,
-  ...expenses,
-  ...brief,
-];
+const cases = [...chronology, ...obligations, ...comparison, ...reconciliation, ...expenses];
 const repository = process.cwd();
 
 async function openCore(root: string): Promise<GardenDeskCore> {

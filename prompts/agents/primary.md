@@ -24,7 +24,7 @@ Answer from context when possible. Otherwise, take the first match:
 
 When a specialist matches the request, call `task` first. Do not list or read the source files yourself; the specialist does that, even for a small folder.
 
-Use `folder-intake` for an unknown collection. Give each child the objective, paths, needed findings, output, and limits. Children run sequentially, see only your request, and cannot ask the user. Combine results and report limits without repeating their work. You own the final answer and files.
+Give each child the objective, paths, needed findings, output, and limits. Children run sequentially, see only your request, and cannot ask the user. Combine results and report limits without repeating their work. You own the final answer and files.
 
 ## Work
 

@@ -53,14 +53,14 @@ it("delegates a specialist to a child and runs a command specialist in the same 
           const task = request.tools.find((tool) => tool.name === "task");
           expect(task?.params.properties).toHaveProperty(
             "subagent_type.enum",
-            expect.arrayContaining(["folder-intake"]),
+            expect.arrayContaining(["matter-chronology"]),
           );
           return chatResult("", [
             {
               id: "intake-call",
               name: "task",
               params: {
-                subagent_type: "folder-intake",
+                subagent_type: "matter-chronology",
                 description,
                 prompt,
               },
@@ -75,7 +75,7 @@ it("delegates a specialist to a child and runs a command specialist in the same 
         const assigned = request.messages.find((message) => message.role === "user")?.text;
         if (assigned === assignment) {
           const child = service.snapshot(parentId).childRuns[0];
-          expect(child).toMatchObject({ agentId: "folder-intake", state: "running" });
+          expect(child).toMatchObject({ agentId: "matter-chronology", state: "running" });
           if (child === undefined) throw new Error("Child was not recorded.");
           expect(service.snapshot(child.id).run.response).toBe("Partial findings.");
         } else {
@@ -93,7 +93,7 @@ it("delegates a specialist to a child and runs a command specialist in the same 
   await mkdir(commandRoot);
   await writeFile(
     join(commandRoot, "intake.md"),
-    `---\ndescription: ${commandDescription}\nagent: folder-intake\n---\n`,
+    `---\ndescription: ${commandDescription}\nagent: matter-chronology\n---\n`,
   );
   const command = new CommandLibrary(commandRoot).resolve(commandTask);
   const resolveCommand = vi
@@ -117,7 +117,7 @@ it("delegates a specialist to a child and runs a command specialist in the same 
     expect(direct.run).toMatchObject({
       state: "succeeded",
       response: "Complete findings.",
-      agentId: "folder-intake",
+      agentId: "matter-chronology",
     });
     expect(direct.childRuns).toHaveLength(0);
     expect(requests).toHaveLength(4);

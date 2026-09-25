@@ -3,7 +3,7 @@ import type { SpecialistCase } from "./specialist-fixtures.js";
 export const cases: SpecialistCase[] = [
   {
     id: "intake-mixed",
-    agentId: "folder-intake",
+    agentId: null,
     files: {
       "register.xlsx": {
         sheet: "Invoices",
@@ -27,7 +27,7 @@ export const cases: SpecialistCase[] = [
   },
   {
     id: "intake-live-header",
-    agentId: "folder-intake",
+    agentId: null,
     files: {
       "register.xlsx": {
         sheet: "Export",
@@ -43,5 +43,46 @@ export const cases: SpecialistCase[] = [
       csvHeaders: ["invoice", "gross", "currency"],
     },
     sources: ["register.xlsx", "late.csv"],
+  },
+  {
+    id: "extraction-currencies",
+    agentId: null,
+    files: {
+      "invoice-eur.pdf":
+        "Invoice E-10\nIssue date: 2026-08-01. Currency: EUR. Net: 100. Tax: 19. Total: 119.",
+      "invoice-usd.pdf":
+        "Invoice U-20\nIssue date: 2026-08-02. Currency: USD. Net: 100. Tax: 0. Total: 100.",
+    },
+    request:
+      "Extract both invoice records without currency conversion. Report invoiceIds (sorted), eurGrossTotal, and usdGrossTotal.",
+    expected: { invoiceIds: ["E-10", "U-20"], eurGrossTotal: 119, usdGrossTotal: 100 },
+    sources: ["invoice-eur.pdf", "invoice-usd.pdf"],
+  },
+  {
+    id: "brief-board",
+    agentId: null,
+    files: {
+      "minutes.docx":
+        "Board decision dated 2026-08-10\nApprove EUR 5000 for project Cedar. Owner: Maya. Deadline: 2026-09-30.",
+      "ledger.xlsx": {
+        sheet: "Spend",
+        rows: [
+          ["Project", "Spent", "Currency"],
+          ["Cedar", 3200, "EUR"],
+        ],
+      },
+      "status.pdf": "Project Cedar status\nOne supplier quote remains pending.",
+    },
+    request:
+      "Build the evidence brief for project Cedar. Report approvedBudget, spent, remainingBudget, owner, deadline, and pendingQuoteCount.",
+    expected: {
+      approvedBudget: 5000,
+      spent: 3200,
+      remainingBudget: 1800,
+      owner: "Maya",
+      deadline: "2026-09-30",
+      pendingQuoteCount: 1,
+    },
+    sources: ["minutes.docx", "ledger.xlsx", "status.pdf"],
   },
 ];

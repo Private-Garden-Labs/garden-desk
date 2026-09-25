@@ -17,10 +17,8 @@ interface IconProps {
     | "drag"
     | "document-check"
     | "error"
-    | "evidence"
     | "external"
     | "folder"
-    | "folder-tree"
     | "glob"
     | "list"
     | "message"
@@ -35,7 +33,6 @@ interface IconProps {
     | "skill"
     | "subagent"
     | "terminal"
-    | "table-extract"
     | "thinking"
     | "timeline"
     | "trash"
@@ -61,10 +58,8 @@ const paths: Record<IconProps["name"], string> = {
   drag: "M7 7h10M7 12h10M7 17h10",
   "document-check": "M5 3h9l5 5v13H5zM14 3v5h5M8 14l3 3 5-6",
   error: "M12 3l9 16H3zM12 10v4m0 3v.5",
-  evidence: "M6 3h13v16H6zM3 7v15h12M9 7h7M9 11h7M9 15h4",
   external: "M12 5H5v14h14v-7M14 4h6v6M20 4l-9 9",
   folder: "M3 7h6l2 2h10v10H3z",
-  "folder-tree": "M3 3h5l2 2h11v7H3zM6 12v8h4m-4-4h4m3-1h8v3h-8zM13 20h8v2h-8z",
   glob: "M5 6h14M5 12h14M5 18h9",
   list: "M4 6h16M4 12h16M4 18h16",
   message: "M4 5h16v11H8l-4 4z",
@@ -79,7 +74,6 @@ const paths: Record<IconProps["name"], string> = {
   skill: "M12 3l2.3 5.5 5.9.5-4.5 3.8 1.4 5.7L12 15.8 6.5 18.5l1.4-5.7L3.4 9l5.9-.5z",
   subagent: "M6 4v6a4 4 0 0 0 4 4h8m0 0-3-3m3 3-3 3",
   terminal: "M4 5h16v14H4zM7 9l3 3-3 3M13 15h4",
-  "table-extract": "M3 4h18v9H3zM3 8h18M9 4v9M12 15v6m-3-3 3 3 3-3",
   thinking:
     "M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.6.6-1 1.4-1 2.5H9c0-1.1-.4-1.9-1-2.5A6 6 0 0 1 12 3z",
   timeline: "M6 3v18M4 5h4v4H4zM4 15h4v4H4zM11 7h9M11 17h9",
