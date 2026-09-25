@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { FolderSummarySchema, SessionSummarySchema } from "@gardendesk/shared";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -70,6 +71,19 @@ describe("sidebar rows", () => {
     expect(markup.match(/sidebar-item-deletable/gu) ?? []).toHaveLength(2);
     expect(markup).toContain('aria-label="Working"');
     expect(markup).not.toContain('aria-label="Delete Folder chat"');
+  });
+
+  it("keeps disabled delete buttons hidden so they do not cover row titles", () => {
+    const styles = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
+    const hiddenSelectors = [...styles.matchAll(/([^{}]+)\{[^}]*opacity:\s*0;/gu)]
+      .flatMap((match) => (match[1] ?? "").split(","))
+      .map((selector) => selector.trim())
+      .filter((selector) => selector.endsWith(".sidebar-item-delete"));
+    const classLevel = (selector: string) => selector.match(/[.:[]/gu)?.length ?? 0;
+
+    expect(Math.max(0, ...hiddenSelectors.map(classLevel))).toBeGreaterThan(
+      classLevel("button:disabled"),
+    );
   });
 });
 

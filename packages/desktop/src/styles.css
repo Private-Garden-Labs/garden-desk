@@ -656,7 +656,7 @@ textarea:focus-visible {
   justify-self: center;
 }
 
-.sidebar-item-delete {
+.sidebar-item-row .sidebar-item-delete {
   opacity: 0;
 }
 
@@ -814,7 +814,8 @@ textarea:focus-visible {
   font-size: 12px;
   transition:
     border-color 160ms ease,
-    background 160ms ease;
+    background 160ms ease,
+    transform 160ms ease;
 }
 
 .guided-examples button:hover:not(:disabled) {
@@ -2242,6 +2243,13 @@ textarea:focus-visible {
 .send-button:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 9px 20px rgb(7 31 37 / 24%);
+}
+
+.icon-button:active:not(:disabled),
+.send-button:active:not(:disabled),
+.suggestions button:active:not(:disabled),
+.guided-examples button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .stop-button {

@@ -37,16 +37,6 @@ body.embedded-demo {
   gap: 9px;
 }
 
-.demo-frame span::before {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #d2b45e;
-  box-shadow: 0 0 0 0 rgb(210 180 94 / 35%);
-  animation: demo-status-pulse 2.4s ease-out infinite;
-  content: "";
-}
-
 .demo-frame a {
   padding: 6px 10px;
   border: 1px solid rgb(255 255 255 / 13%);
@@ -56,7 +46,7 @@ body.embedded-demo {
   transition:
     border-color 180ms ease,
     background 180ms ease,
-    transform 180ms ease;
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .demo-frame a::before {
@@ -65,9 +55,12 @@ body.embedded-demo {
 }
 
 .demo-frame a:hover {
-  transform: translateX(-2px);
   border-color: rgb(121 180 147 / 50%);
   background: rgb(255 255 255 / 7%);
+}
+
+.demo-frame a:active {
+  transform: scale(0.97);
 }
 
 .demo-frame a:focus-visible {
@@ -84,22 +77,7 @@ body.embedded-demo {
   display: none;
 }
 
-@keyframes demo-status-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgb(210 180 94 / 35%);
-  }
-
-  70%,
-  100% {
-    box-shadow: 0 0 0 8px rgb(210 180 94 / 0%);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .demo-frame span::before {
-    animation: none;
-  }
-
   .demo-frame a {
     transition: none;
   }
