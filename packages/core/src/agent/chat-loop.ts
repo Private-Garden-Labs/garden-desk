@@ -48,7 +48,11 @@ export class ChatAgentLoop {
     input: ChatAgentInput,
     messages: ChatMessage[],
     tools: ReturnType<GenericToolRegistry["definitions"]>,
-    turn: { phase: "chat" | "compaction"; temperature: number },
+    turn: {
+      phase: "chat" | "compaction" | "decision";
+      temperature: number;
+      thinking?: ChatAgentInput["thinking"];
+    },
   ): Promise<{ result: ChatGenerationResult; turnId?: string }> {
     const { phase, temperature } = turn;
     const identity = {
@@ -63,7 +67,7 @@ export class ChatAgentLoop {
       contextSize: this.requestedContextSize,
       maxTokens: this.contextTokens,
       temperature,
-      thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
+      thinking: turn.thinking ?? input.thinking ?? DEFAULT_THINKING_LEVEL,
     } as const;
     const turnId = await input.trace?.store.begin(input.trace.runId, phase, {
       input: request,
@@ -74,7 +78,7 @@ export class ChatAgentLoop {
         request,
         input.signal,
         {
-          ...streamCallbacks(input, phase),
+          ...streamCallbacks(input, phase === "chat" ? "chat" : "compaction"),
           ...(phase === "chat" ? { reasoning: this.reasoning } : {}),
         },
         identity,
@@ -155,6 +159,14 @@ export class ChatAgentLoop {
       throw new Error("agent_empty_response");
     }
     this.record(input, generated.turnId, "accepted_response");
+    return this.complete(input, state, performance, response);
+  }
+  private complete(
+    input: ChatAgentInput,
+    state: ChatToolState,
+    performance: ReturnType<typeof emptyPerformance>,
+    response: string,
+  ): AgentRunResult {
     input.onResponse?.(response);
     input.onEvent?.("assistant.completed", "Response completed.");
     return AgentRunResultSchema.parse({
@@ -165,6 +177,23 @@ export class ChatAgentLoop {
       inference: performance,
       thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     });
+  }
+  /** One short model decision after a child run: a good enough child answer goes to the user unchanged. */
+  private async childResultIsEnough(
+    input: ChatAgentInput,
+    state: ChatToolState,
+    performance: ReturnType<typeof emptyPerformance>,
+  ): Promise<boolean> {
+    input.onEvent?.("inference.started", "Checking the specialist result.");
+    const generated = await this.generate(
+      input,
+      [...state.messages, { role: "user", text: input.systemPrompt("child-result-check") }],
+      [],
+      { phase: "decision", temperature: input.agent.temperature, thinking: "none" },
+    );
+    addPerformance(performance, generated.result.performance);
+    this.record(input, generated.turnId, "accepted_response");
+    return /^\W*yes\b/iu.test(generated.result.text);
   }
   private async recoverContext(
     input: ChatAgentInput,
@@ -213,6 +242,9 @@ export class ChatAgentLoop {
       throw error;
     }
     this.record(input, generated.turnId, "accepted_tool_calls");
+    const childResponse = state.childResponse;
+    if (childResponse !== undefined && (await this.childResultIsEnough(input, state, performance)))
+      return this.complete(input, state, performance, childResponse);
     await this.recoverContext(input, state, performance, generated.result.contextUsedTokens);
     return undefined;
   }

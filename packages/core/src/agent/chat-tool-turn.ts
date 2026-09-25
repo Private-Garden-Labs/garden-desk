@@ -21,6 +21,7 @@ const CODE_TOOLS = new Set(["bash", "python", "node"]);
 
 export interface ChatToolState {
   artifactExecutions: ArtifactExecutionEvidence[];
+  childResponse?: string;
   executions: AgentExecutionResult[];
   guestExecutionsStarted: number;
   messages: ChatMessage[];
@@ -46,6 +47,8 @@ function beforeExecution(input: ToolTurnInput, call: ChatToolCall, executable: b
 function finalizeToolCall(input: ToolTurnInput, call: ChatToolCall, result: AgentToolResult): void {
   retainWorkspaceEvidence(input.state, result);
   recordCompletedExecution(input.state, input.onEvent, call, result);
+  if (!result.failed && result.childResponse !== undefined)
+    input.state.childResponse = result.childResponse;
   input.state.messages.push({
     role: "tool",
     toolCallId: call.id,
@@ -80,6 +83,7 @@ export async function executeToolCalls(
   input: Omit<ToolTurnInput, "state"> & { state: ChatToolState },
   calls: readonly ChatToolCall[],
 ): Promise<void> {
+  delete input.state.childResponse;
   for (const call of calls) {
     await executeToolCall(input, call);
   }

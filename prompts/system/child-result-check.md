@@ -1,0 +1,1 @@
+Is the child result above good enough to give to the user as the answer? About 80 percent of the request is enough. Answer no only if a main part of the request or a file that the user asked for is missing. Do not answer no to check, correct, or rewrite the result. Answer with one word: yes or no.
