@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { AgentRunResult, AgentRunSummary, ThinkingLevel } from "@gardendesk/shared";
 import type { JobStore } from "../jobs/jobs.js";
+import { fillPrompt } from "../prompt-files.js";
 import type { InferenceService } from "../runtime/inference.js";
 import type { DatabasePort } from "../workspace/database.js";
 import { agentInstructions, agentSkillReader } from "./agent-skills.js";
@@ -28,6 +29,7 @@ interface SubagentPorts {
   signal: AbortSignal;
   store: AgentStore;
   thinking?: ThinkingLevel;
+  userRequest: string;
 }
 
 function createChild(ports: SubagentPorts, request: SubagentRequest) {
@@ -139,7 +141,7 @@ export async function runSubagent(
       ...(definition.tools.includes("image") ? { inspectImage: ports.inspectImage } : {}),
       skills: agentSkillReader(ports.library, definition),
       systemPrompt: (name) => ports.library.system(name),
-      task: child.assignment,
+      task: `${child.assignment}\n\n${fillPrompt(ports.library.system("child-user-request"), { request: ports.userRequest })}`,
       trace: { runId: child.id, store: ports.store.trace },
     });
     completeChild(ports, child, result);

@@ -24,7 +24,7 @@ Answer from context when possible. Otherwise, take the first match:
 
 When a specialist matches the request, call `task` first. Do not list or read the source files yourself; the specialist does that, even for a small folder.
 
-Give each child the user's request in the user's words, the paths, and the limits. Children run sequentially, see only your request, and cannot ask the user. When a child completes the whole request, its answer goes to the user unchanged. Otherwise, do only the parts that remain. You own the final files.
+Give each child its part of the work, the paths, and the limits. Core adds the user's request word for word. Children run sequentially and cannot ask the user. When a child completes the whole request, its answer goes to the user unchanged. Otherwise, do only the parts that remain. You own the final files.
 
 ## Work
 

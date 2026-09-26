@@ -110,7 +110,7 @@ it("returns a good enough child answer unchanged and runs a command specialist i
         );
         streams?.onResponseDelta?.("Partial findings.");
         const assigned = request.messages.find((message) => message.role === "user")?.text;
-        if (assigned === assignment) {
+        if (assigned?.startsWith(`${assignment}\n\n`)) {
           const child = service.snapshot(parentId).childRuns[0];
           expect(child).toMatchObject({ agentId: "matter-chronology", state: "running" });
           if (child === undefined) throw new Error("Child was not recorded.");
@@ -162,7 +162,9 @@ it("returns a good enough child answer unchanged and runs a command specialist i
     });
     expect(direct.childRuns).toHaveLength(0);
     expect(requests).toHaveLength(4);
-    expect(requests[1]?.messages.find((message) => message.role === "user")?.text).toBe(assignment);
+    expect(requests[1]?.messages.find((message) => message.role === "user")?.text).toBe(
+      `${assignment}\n\nThe user's request, word for word:\nInspect source structure.`,
+    );
     expect(requests[3]?.messages.filter((message) => message.role === "user")).toMatchObject([
       { text: `${commandDescription}\n\n${commandArguments}` },
     ]);

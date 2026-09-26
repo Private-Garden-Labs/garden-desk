@@ -193,6 +193,7 @@ async function runPrimarySubagent(
       signal: input.signal,
       store: input.store,
       thinking: input.thinking,
+      userRequest: input.task,
     },
     request,
   );
