@@ -54,9 +54,10 @@ it("returns every child answer from one turn when no work remains", async () => 
   }
 });
 
-async function execution(request: AgentSessionExecution, shells: string[] = []) {
+async function execution(request: AgentSessionExecution, directories = new Set<string>()) {
   if (request.language !== "shell") return await artifactExecution(request);
-  shells.push(request.command);
+  const created = /^mkdir -p (\S+)$/u.exec(request.command)?.[1];
+  if (created !== undefined) directories.add(created);
   return {
     language: "shell" as const,
     path: null,
@@ -72,12 +73,19 @@ async function execution(request: AgentSessionExecution, shells: string[] = []) 
 }
 
 it("creates the specialist working directory before the child starts", async () => {
-  const steps: string[] = [];
+  const directories = new Set<string>();
+  let foundAtChildStart = false;
+  let turn = 0;
   const { catalog, conversations, service } = await fixture(
     {
-      async chat() {
-        steps.push(`model ${steps.filter((step) => step.startsWith("model")).length + 1}`);
-        if (steps.length > 1) return chatResult("Done.", []);
+      async chat(request: ChatInput) {
+        turn += 1;
+        if (turn === 2) {
+          const system = request.messages.find((message) => message.role === "system")?.text;
+          const workDirectory = /Working directory: (\S+)/u.exec(system ?? "")?.[1];
+          foundAtChildStart = workDirectory !== undefined && directories.has(workDirectory);
+        }
+        if (turn > 1) return chatResult("Done.", []);
         return chatResult("", [
           {
             id: "call",
@@ -92,16 +100,12 @@ it("creates the specialist working directory before the child starts", async () 
         ]);
       },
     },
-    async (request) => await execution(request, steps),
+    async (request) => await execution(request, directories),
   );
   try {
     const run = service.start(conversations.createSession(null).id, "Build the timeline.");
-    const child = (await terminal(service, run.id)).childRuns[0];
-    expect(steps.slice(0, 3)).toEqual([
-      "model 1",
-      `mkdir -p /workspace/.garden-desk-tools/${child?.id}`,
-      "model 2",
-    ]);
+    await terminal(service, run.id);
+    expect(foundAtChildStart).toBe(true);
   } finally {
     await service.close();
     catalog.close();
