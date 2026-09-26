@@ -18,8 +18,8 @@ import { AgentStore } from "./store.js";
 
 afterEach(cleanServiceFixtures);
 
-it("returns every child answer from one turn after the completion check", async () => {
-  const answers = ["", "First answer.", "Second answer.", "yes"];
+it("returns every child answer from one turn when no work remains", async () => {
+  const answers = ["", "First answer.", "Second answer."];
   let turn = 0;
   const { catalog, conversations, service } = await fixture(
     {
@@ -35,6 +35,7 @@ it("returns every child answer from one turn after the completion check", async 
               subagent_type: "matter-chronology",
               description: `Part ${part}`,
               prompt: `Do part ${part}.`,
+              remaining: "",
             },
           })),
         );
@@ -45,7 +46,7 @@ it("returns every child answer from one turn after the completion check", async 
   try {
     const run = service.start(conversations.createSession(null).id, "Do both parts.");
     expect((await terminal(service, run.id)).run.response).toBe("First answer.\n\nSecond answer.");
-    expect(turn).toBe(4);
+    expect(turn).toBe(3);
   } finally {
     await service.close();
     catalog.close();
@@ -70,7 +71,7 @@ it("uses the parent index when loading child runs", async () => {
 });
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: one case checks the shared delegation and command boundary through reopening.
-it("returns a good enough child answer unchanged and runs a command specialist in the same run", async () => {
+it("returns a complete child answer unchanged and runs a command specialist in the same run", async () => {
   const requests: ChatInput[] = [];
   const description = "Inspect source structure".padEnd(1_000, ".");
   const prompt = "Inspect the selected files.".padEnd(128_000, ".");
@@ -97,13 +98,10 @@ it("returns a good enough child answer unchanged and runs a command specialist i
                 subagent_type: "matter-chronology",
                 description,
                 prompt,
+                remaining: "",
               },
             },
           ]);
-        }
-        if (requests.length === 3) {
-          expect(request.tools).toEqual([]);
-          return chatResult("yes", []);
         }
         expect(request.tools.some((tool) => tool.name === "task" || tool.name === "question")).toBe(
           false,
@@ -161,11 +159,11 @@ it("returns a good enough child answer unchanged and runs a command specialist i
       agentId: "matter-chronology",
     });
     expect(direct.childRuns).toHaveLength(0);
-    expect(requests).toHaveLength(4);
+    expect(requests).toHaveLength(3);
     expect(requests[1]?.messages.find((message) => message.role === "user")?.text).toBe(
       `${assignment}\n\nThe user's request, word for word:\nInspect source structure.`,
     );
-    expect(requests[3]?.messages.filter((message) => message.role === "user")).toMatchObject([
+    expect(requests[2]?.messages.filter((message) => message.role === "user")).toMatchObject([
       { text: `${commandDescription}\n\n${commandArguments}` },
     ]);
     expect(service.listRuns(session.id).map((run) => run.id)).toEqual(

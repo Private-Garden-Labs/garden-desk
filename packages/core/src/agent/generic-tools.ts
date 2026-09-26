@@ -5,6 +5,8 @@ import {
   type AgentToolResult,
   object,
   objectSchema,
+  remainingParam,
+  remainingSchema,
   runExecution,
   type SkillReader,
   scriptPath,
@@ -128,6 +130,7 @@ function taskParams(
 ): {
   description: string;
   prompt: string;
+  remaining: string;
   subagent_type: string;
 } {
   const params = object(value);
@@ -138,6 +141,7 @@ function taskParams(
   return {
     description: textParam(params, "description", 1_000),
     prompt: textParam(params, "prompt"),
+    remaining: remainingParam(params),
     subagent_type: subagentType,
   };
 }
@@ -158,8 +162,9 @@ function taskTool(agents: readonly { name: string; description: string }[]): Too
             enum: names,
             description: agents.map((agent) => `${agent.name}: ${agent.description}`).join("\n"),
           },
+          remaining: remainingSchema,
         },
-        ["description", "prompt", "subagent_type"],
+        ["description", "prompt", "subagent_type", "remaining"],
       ),
     },
     parse: (value) => taskParams(value, names),
@@ -177,6 +182,7 @@ function taskTool(agents: readonly { name: string; description: string }[]): Too
       return {
         content: `<task_result>\n${result.response}\n</task_result>`,
         childResponse: result.response,
+        remainingWork: params.remaining,
         failed: false,
         artifactExecutions: result.executions,
       };
