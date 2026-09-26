@@ -1,6 +1,7 @@
 // biome-ignore lint/style/noRestrictedImports: the routing test uses a temporary command definition.
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import type { AgentSessionExecution } from "@gardendesk/workers";
 import { afterEach, expect, it, vi } from "vitest";
 import { CommandLibrary } from "../commands/library.js";
 import type { ChatInput } from "../runtime/inference.js";
@@ -41,12 +42,66 @@ it("returns every child answer from one turn when no work remains", async () => 
         );
       },
     },
-    artifactExecution,
+    execution,
   );
   try {
     const run = service.start(conversations.createSession(null).id, "Do both parts.");
     expect((await terminal(service, run.id)).run.response).toBe("First answer.\n\nSecond answer.");
     expect(turn).toBe(3);
+  } finally {
+    await service.close();
+    catalog.close();
+  }
+});
+
+async function execution(request: AgentSessionExecution, shells: string[] = []) {
+  if (request.language !== "shell") return await artifactExecution(request);
+  shells.push(request.command);
+  return {
+    language: "shell" as const,
+    path: null,
+    source: null,
+    command: request.command,
+    exitCode: 0,
+    stdout: "",
+    stderr: "",
+    durationMs: 1,
+    termination: "completed" as const,
+    artifacts: [],
+  };
+}
+
+it("creates the specialist working directory before the child starts", async () => {
+  const steps: string[] = [];
+  const { catalog, conversations, service } = await fixture(
+    {
+      async chat() {
+        steps.push(`model ${steps.filter((step) => step.startsWith("model")).length + 1}`);
+        if (steps.length > 1) return chatResult("Done.", []);
+        return chatResult("", [
+          {
+            id: "call",
+            name: "task",
+            params: {
+              subagent_type: "matter-chronology",
+              description: "Build the timeline.",
+              prompt: "Build the timeline.",
+              remaining: "",
+            },
+          },
+        ]);
+      },
+    },
+    async (request) => await execution(request, steps),
+  );
+  try {
+    const run = service.start(conversations.createSession(null).id, "Build the timeline.");
+    const child = (await terminal(service, run.id)).childRuns[0];
+    expect(steps.slice(0, 3)).toEqual([
+      "model 1",
+      `mkdir -p /workspace/.garden-desk-tools/${child?.id}`,
+      "model 2",
+    ]);
   } finally {
     await service.close();
     catalog.close();
@@ -120,7 +175,7 @@ it("returns a complete child answer unchanged and runs a command specialist in t
         return chatResult("Complete findings.", []);
       },
     },
-    artifactExecution,
+    execution,
   );
   const row = catalog.database.prepare("PRAGMA database_list").get() as { file: string };
   const root = dirname(dirname(row.file));
