@@ -44,7 +44,7 @@ These invented terms are presented for human review and are not legal advice.`,
 No diagnosis, treatment interpretation, or clinical recommendation was made. A staff member should verify the source records.`,
   [prompts.cv]: `## Standardized experience
 
-**Mara Ionescu — Operations coordinator**
+**Mara Ionescu, Operations coordinator**
 
 - Consolidated inventory updates from three regional teams.
 - Prepared weekly status summaries and maintained supplier records.
