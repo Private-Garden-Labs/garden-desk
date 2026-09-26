@@ -3,6 +3,7 @@ import type { AgentRunResult, AgentRunSummary, ThinkingLevel } from "@gardendesk
 import type { JobStore } from "../jobs/jobs.js";
 import type { InferenceService } from "../runtime/inference.js";
 import type { DatabasePort } from "../workspace/database.js";
+import type { AgentExecutor } from "./agent-executor.js";
 import { agentInstructions, agentSkillReader } from "./agent-skills.js";
 import { ChatAgentLoop } from "./chat-loop.js";
 import type { SubagentRequest } from "./generic-tools.js";
@@ -70,6 +71,22 @@ function failChild(
   })();
 }
 
+const specialistDirectory = (runId: string) => `/workspace/.garden-desk-tools/${runId}`;
+
+/** Creates the working directory that a specialist's instructions name, before its first step. */
+export async function prepareSpecialistDirectory(
+  definition: AgentDefinition,
+  executor: AgentExecutor,
+  runId: string,
+  signal?: AbortSignal,
+): Promise<void> {
+  if (["general", "explore"].includes(definition.name)) return;
+  await (executor.inspect ?? executor.execute)(
+    { language: "shell", command: `mkdir -p ${specialistDirectory(runId)}` },
+    signal,
+  );
+}
+
 /** Adds the specialist rules, the working directory, and the output owner to a packaged agent. */
 export function specialistDefinition(
   library: MarkdownDefinitionLibrary,
@@ -79,7 +96,7 @@ export function specialistDefinition(
 ): AgentDefinition {
   const body = agentInstructions(library, definition);
   if (["general", "explore"].includes(definition.name)) return { ...definition, body };
-  const workDirectory = `/workspace/.garden-desk-tools/${runId}`;
+  const workDirectory = specialistDirectory(runId);
   const ownership = library.system(
     outputOwner === "user" ? "specialist-user-output" : "specialist-parent-output",
   );
@@ -107,18 +124,20 @@ export async function runSubagent(
   const definition = ports.library.agent(request.subagentType);
   const child = createChild(ports, request);
   try {
+    const executor = createRunExecutor({
+      runId: child.id,
+      sessionId: ports.sessionId,
+      store: ports.store,
+      sessions: ports.sessions,
+    });
+    await prepareSpecialistDirectory(definition, executor, child.id, ports.signal);
     const result = await new ChatAgentLoop(ports.inference).run({
       agent: specialistDefinition(ports.library, definition, child.id, "parent"),
       contextTokens: ports.contextTokens,
       ...(ports.knownContextTokens === undefined
         ? {}
         : { knownContextTokens: ports.knownContextTokens }),
-      executor: createRunExecutor({
-        runId: child.id,
-        sessionId: ports.sessionId,
-        store: ports.store,
-        sessions: ports.sessions,
-      }),
+      executor,
       modelId: ports.modelId,
       attachments: ports.store.listAttachments(ports.sessionId).map((item, index) => ({
         path: `/run/attachments/${guestAttachmentName(index, item.name)}`,
