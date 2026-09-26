@@ -12,7 +12,7 @@ export function reviewTool(): ToolSpec {
     definition: {
       name: "review",
       description:
-        "Review one DOC, DOCX, text PDF, TXT, or MD document for the requested purpose, by default its internal inconsistencies. Extracts the file itself, including binary DOC; call it before any skill or extraction. Returns findings and a numbered text path. No calculations or image inspection.",
+        "Review or proofread one DOC, DOCX, text PDF, TXT, or MD document for errors or inconsistencies. Not for questions about a document or for checks that need calculations, such as invoice or expense totals. Extracts the file itself, including binary DOC; call it before any skill or extraction. Returns findings and a numbered text path. No calculations or image inspection.",
       params: objectSchema(
         {
           path: {
