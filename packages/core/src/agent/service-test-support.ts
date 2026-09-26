@@ -12,7 +12,7 @@ import type {
 import { AuditLog } from "../audit/log.js";
 import { ConversationStore } from "../conversations/store.js";
 import { JobStore } from "../jobs/jobs.js";
-import type { ChatInput, InferenceService } from "../runtime/inference.js";
+import type { ChatCompletion, ChatInput, InferenceService } from "../runtime/inference.js";
 import { ArtifactStore } from "../workspace/artifacts.js";
 import { openWorkspaceCatalog } from "../workspace/catalog.js";
 import { WorkspaceScope } from "../workspace/scope.js";
@@ -25,7 +25,7 @@ const roots: string[] = [];
 export function chatResult(
   text: string,
   toolCalls: ChatGenerationResult["toolCalls"],
-): ChatGenerationResult {
+): ChatCompletion {
   return {
     protocolVersion: 2,
     requestId: "agent-test",
@@ -35,6 +35,7 @@ export function chatResult(
     toolCalls,
     stopReason: toolCalls.length > 0 ? "toolCalls" : "text",
     contextUsedTokens: 10,
+    contextBudgetTokens: 16_384,
     memory: memoryReport({ budgetBytes: 2, contextSizeTokens: 16_384 }),
     performance: {
       promptTokens: 10,

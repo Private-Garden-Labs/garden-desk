@@ -18,12 +18,12 @@ Expected: the folder intake specialist reports three workbooks with the same `St
 
 ## Prompt 2
 
-Select the folder. Prompt: `/extract total money in, total money out, and closing balance for each month, then the quarter`
+Select the folder. Prompt: `Give total money in, total money out, and closing balance for each month, then the quarter`
 
 Expected: the table above, plus quarter totals 62,478.00 in, 58,283.35 out, closing 28,375.20. Each figure cites its file. A recalculated balance check should pass (opening plus in minus out equals closing for every file).
 
 ## Prompt 3
 
-Select the folder. Prompt: `/brief How much did we pay Finca Alta Trading this quarter, and when?`
+Select the folder. Prompt: `How much did we pay Finca Alta Trading this quarter, and when?`
 
 Expected: three payments, 12,596.00 in total: 9 January 4,512.00 (FA-2025-0331), 11 February 3,948.00 (FA-2026-0012), 10 March 4,136.00 (FA-2026-0027), each with file and row.

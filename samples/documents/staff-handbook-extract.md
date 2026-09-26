@@ -16,6 +16,6 @@ The review should state the DOC extraction limit (no layout or embedded content)
 
 ## Prompt 2
 
-Attach the file. Prompt: `/brief How much notice does an employee with six years of service have to give?`
+Attach the file. Prompt: `How much notice does an employee with six years of service have to give?`
 
 Expected: two months (clause 6.1: one month, rising to two months after five years of service). During probation the notice is one week (clause 2.2). The brief should note that the probation length is stated inconsistently.

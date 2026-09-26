@@ -152,6 +152,8 @@ Defaults:
 - Office appliances should support offline update packages.
 - Remote support should require time-limited, explicit authorization.
 
+Development exception: a development build can send generation requests to an OpenRouter model that the developer selects, and the selection is never the default. Embeddings, image inspection, and guest execution stay local. The compile-time development flag removes the cloud modules, the settings, and the selector from production builds, and the release desktop commands refuse development operations. The unencrypted development key is stored with owner-only permissions in Garden Desk Core's private state folder.
+
 ## Audit Log
 
 Audit records should capture:

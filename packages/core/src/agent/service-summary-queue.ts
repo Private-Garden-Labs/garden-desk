@@ -4,6 +4,7 @@ import type { ConversationStore } from "../conversations/store.js";
 import type { InferenceService } from "../runtime/inference.js";
 import { AGENT_MODEL_ID } from "./limits.js";
 import type { MarkdownDefinitionLibrary } from "./markdown-definition-library.js";
+import type { AgentRunInference } from "./service-results.js";
 import { refreshSessionSummary } from "./session-summary.js";
 import type { SessionSummaryStore } from "./session-summary-store.js";
 import type { AgentStore } from "./store.js";
@@ -23,12 +24,17 @@ export class SessionSummaryQueue {
     private readonly summaries: SessionSummaryStore,
   ) {}
 
-  enqueue(run: AgentRunSummary, signal: AbortSignal, measuredContextTokens?: number): void {
+  enqueue(
+    run: AgentRunSummary,
+    signal: AbortSignal,
+    measuredContextTokens?: number,
+    inference?: AgentRunInference,
+  ): void {
     if (measuredContextTokens === undefined) return;
     const sessionLifecycle = this.sessionLifecycle(run.sessionId);
     const refreshSignal = AbortSignal.any([signal, this.lifecycle.signal, sessionLifecycle.signal]);
     const work = (this.tails.get(run.sessionId) ?? Promise.resolve())
-      .then(async () => await this.refresh(run, refreshSignal, measuredContextTokens))
+      .then(async () => await this.refresh(run, refreshSignal, measuredContextTokens, inference))
       .catch(() => {
         if (!refreshSignal.aborted) this.recordFailure(run);
       });
@@ -78,16 +84,18 @@ export class SessionSummaryQueue {
     run: AgentRunSummary,
     signal: AbortSignal,
     measuredContextTokens: number,
+    inference?: AgentRunInference,
   ): Promise<void> {
-    if (this.inference.chat === undefined) throw new Error("agent_chat_unavailable");
+    const chat = inference?.chat ?? this.inference.chat?.bind(this.inference);
+    if (chat === undefined) throw new Error("agent_chat_unavailable");
     await refreshSessionSummary(
-      { chat: this.inference.chat.bind(this.inference) },
+      { chat },
       {
         sessionId: run.sessionId,
         runId: run.id,
         contextTokens: measuredContextTokens,
         loadMessages: () => this.conversations.listMessages(run.sessionId),
-        modelId: AGENT_MODEL_ID,
+        modelId: inference?.modelId ?? AGENT_MODEL_ID,
         library: this.library,
         store: this.summaries,
         signal,

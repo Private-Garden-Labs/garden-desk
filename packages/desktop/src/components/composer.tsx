@@ -1,7 +1,14 @@
-import type { AttachmentSummary, CommandSummary, ThinkingLevel } from "@gardendesk/shared";
+import type {
+  AttachmentSummary,
+  CommandSummary,
+  DevelopmentModel,
+  ThinkingLevel,
+} from "@gardendesk/shared";
 import { type FormEvent, type KeyboardEvent, useEffect, useLayoutEffect, useRef } from "react";
+import type { DevelopmentModelApi } from "../api.js";
 import { AttachmentChip } from "./attachment-chip.js";
 import { CommandMenu, useCommandMenu } from "./command-menu.js";
+import { DevelopmentModelControl } from "./development-model-control.js";
 import { EffortControl } from "./effort-control.js";
 import { Icon } from "./icons.js";
 
@@ -9,6 +16,8 @@ interface ComposerProps {
   commands: CommandSummary[];
   attachments: AttachmentSummary[];
   disabled: boolean;
+  developmentModel?: DevelopmentModel | undefined;
+  developmentModels?: DevelopmentModelApi | undefined;
   dropActive?: boolean;
   draft: string;
   nativeActionMessage?: string | undefined;
@@ -21,6 +30,7 @@ interface ComposerProps {
   onOpenAttachment(attachmentId: string): void;
   onRemoveAttachment(attachmentId: string): void;
   onSend(text: string): void;
+  onDevelopmentModelChange(model: DevelopmentModel | undefined): void;
   onThinkingChange(level: ThinkingLevel): void;
 }
 
@@ -87,11 +97,35 @@ function AttachmentList({
   );
 }
 
+function ModelControl({
+  api,
+  developmentModel,
+  disabled,
+  onChange,
+}: {
+  api: DevelopmentModelApi | undefined;
+  developmentModel: DevelopmentModel | undefined;
+  disabled: boolean;
+  onChange(model: DevelopmentModel | undefined): void;
+}) {
+  if (!import.meta.env.DEV || api === undefined) return null;
+  return (
+    <DevelopmentModelControl
+      api={api}
+      disabled={disabled}
+      onSelect={onChange}
+      selected={developmentModel}
+    />
+  );
+}
+
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: one compact form keeps composer state and accessibility relationships visible.
 export function Composer({
   commands,
   attachments,
   disabled,
+  developmentModel,
+  developmentModels,
   dropActive = false,
   draft,
   nativeActionMessage,
@@ -104,6 +138,7 @@ export function Composer({
   onOpenAttachment,
   onRemoveAttachment,
   onSend,
+  onDevelopmentModelChange,
   onThinkingChange,
 }: ComposerProps) {
   const textarea = useRef<HTMLTextAreaElement>(null);
@@ -180,6 +215,12 @@ export function Composer({
           <Icon name="add" />
         </button>
         <div className="composer-send-group">
+          <ModelControl
+            api={developmentModels}
+            developmentModel={developmentModel}
+            disabled={disabled || running}
+            onChange={onDevelopmentModelChange}
+          />
           <EffortControl
             disabled={disabled || running}
             onThinkingChange={onThinkingChange}

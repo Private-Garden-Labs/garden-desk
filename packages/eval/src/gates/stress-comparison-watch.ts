@@ -89,10 +89,19 @@ async function loopingCall(
 }
 
 /** Liveness across the whole run tree, so an active specialist child is never read as a stall. */
-function progressSignature(snapshot: AgentRunSnapshot, steps: number): string {
-  const children = snapshot.childRuns
-    .map((child) => `${child.id}:${child.state}:${child.updatedAt}`)
-    .join(",");
+async function progressSignature(
+  core: GardenDeskCore,
+  snapshot: AgentRunSnapshot,
+  steps: number,
+): Promise<string> {
+  const children: string[] = [];
+  for (const child of snapshot.childRuns) {
+    const events =
+      child.state === "running"
+        ? ((await core.getAgentRun(child.id).catch(() => undefined))?.events.length ?? 0)
+        : 0;
+    children.push(`${child.id}:${child.state}:${events}`);
+  }
   return `${steps}|${snapshot.executions.length}|${snapshot.contextUsedTokens ?? 0}|${children}`;
 }
 
@@ -203,7 +212,7 @@ async function poll(
   const { core, runId, taskId, began } = options;
   state.questions += await dismissPendingQuestion(core, runId, snapshot);
   state.steps = visibleSteps(snapshot.events);
-  const signature = progressSignature(snapshot, state.steps);
+  const signature = await progressSignature(core, snapshot, state.steps);
   if (signature !== state.signature) {
     state.signature = signature;
     state.lastStepChange = Date.now();

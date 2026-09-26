@@ -8,7 +8,7 @@ export type SpecialistFiles = Record<
 >;
 export interface SpecialistCase {
   id: string;
-  agentId: string;
+  agentId: string | null;
   command?: string;
   files: SpecialistFiles;
   addedAfterGrant?: SpecialistFiles;

@@ -12,7 +12,7 @@ Quarter: 60 invoices, gross 67,482.00; 48 paid (54,984.00), 12 open (12,498.00).
 
 ## Prompt 1
 
-Select this folder only. Prompt: `/extract a list of open invoices with customer, issue date, and gross amount`
+Select this folder only. Prompt: `List the open invoices with customer, issue date, and gross amount`
 
 Expected: 12 invoices, total 12,498.00: INV-2026-0139 from the February file and INV-2026-0148, 0150, 0152 to 0160 from the March file. Each row cites file and row.
 

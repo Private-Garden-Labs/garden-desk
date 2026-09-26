@@ -15,6 +15,7 @@ import type {
   ThinkingLevel,
   WorkspaceStatus,
 } from "@gardendesk/shared";
+import type { DevelopmentPorts } from "./development/ports.js";
 import type {
   ChatInput,
   EmbeddingInput,
@@ -24,6 +25,8 @@ import type {
 } from "./runtime/inference.js";
 
 export interface GardenDeskCorePorts extends InferenceService {
+  /** Present only in development builds. */
+  development?: DevelopmentPorts;
   status(): Promise<WorkspaceStatus>;
   listCommands(): Promise<CommandSummary[]>;
   addFolder(rootPath: string): Promise<FolderSummary>;
@@ -54,7 +57,12 @@ export interface GardenDeskCorePorts extends InferenceService {
   ): Promise<void>;
   exportArtifact(sessionId: string, artifactId: string, destination: string): Promise<void>;
   removeAttachment(sessionId: string, attachmentId: string): Promise<boolean>;
-  startAgent(sessionId: string, task: string, thinking: ThinkingLevel): Promise<AgentRunSummary>;
+  startAgent(
+    sessionId: string,
+    task: string,
+    thinking: ThinkingLevel,
+    developmentModelId?: string,
+  ): Promise<AgentRunSummary>;
   listAgentRuns(sessionId: string): Promise<AgentRunSummary[]>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;
@@ -143,7 +151,9 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
       ports.materializeAttachment(sessionId, attachmentId),
     ...artifactPorts(ports),
     removeAttachment: (sessionId, attachmentId) => ports.removeAttachment(sessionId, attachmentId),
-    startAgent: (sessionId, task, thinking) => ports.startAgent(sessionId, task, thinking),
+    ...(ports.development === undefined ? {} : { development: ports.development }),
+    startAgent: (sessionId, task, thinking, developmentModelId) =>
+      ports.startAgent(sessionId, task, thinking, developmentModelId),
     listAgentRuns: (sessionId) => ports.listAgentRuns(sessionId),
     getAgentRun: (runId) => ports.getAgentRun(runId),
     getAgentTrace: (runId) => ports.getAgentTrace(runId),

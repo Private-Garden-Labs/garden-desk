@@ -1773,7 +1773,6 @@ textarea:focus-visible {
 .composer-send-group {
   display: flex;
   align-items: center;
-  gap: 10px;
   margin-left: auto;
 }
 
@@ -4007,4 +4006,240 @@ textarea:focus-visible {
 
 .app-shell[data-theme="dark"] .context-meter-track {
   background: rgb(255 255 255 / 10%);
+}
+
+.development-model-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/*
+ * The two controls carry side padding and the round action button does not, so the
+ * action needs the same amount again to look evenly spaced beside them.
+ */
+.development-model-field ~ .send-button,
+.development-model-field ~ .stop-button {
+  margin-left: 10px;
+}
+
+.development-model-value {
+  max-width: 148px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.development-model-menu-caption {
+  margin: 6px 0 2px;
+  padding: 7px 10px 0;
+  border-top: 1px solid var(--border-color);
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.development-model-menu {
+  min-width: 284px;
+  max-width: 360px;
+}
+
+.development-model-option-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.development-model-menu .development-model-menu-edit {
+  margin-top: 4px;
+  padding-top: 11px;
+  border-top: 1px solid var(--border-color);
+  border-radius: 0 0 9px 9px;
+}
+
+.development-model-dialog {
+  display: flex;
+  width: min(620px, 100%);
+  max-height: min(84vh, 780px);
+  flex-direction: column;
+  padding: 22px 22px 14px;
+}
+
+.development-model-dialog h2 {
+  margin: 0 0 10px;
+}
+
+.development-model-dialog .development-model-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  margin: 0;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgb(176 124 22 / 24%);
+  border-radius: 10px;
+  color: #7a5510;
+  font-size: 12px;
+  line-height: 1.5;
+  background: #fdf3e0;
+}
+
+.development-model-disclaimer svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.app-shell[data-theme="dark"] .development-model-dialog .development-model-disclaimer {
+  border-color: rgb(230 170 60 / 26%);
+  color: #e6c184;
+  background: rgb(230 170 60 / 12%);
+}
+
+.development-model-fields {
+  display: grid;
+  margin-top: 16px;
+  gap: 10px;
+}
+
+.development-model-form-field {
+  display: grid;
+  gap: 5px;
+}
+
+.development-model-dialog label {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.development-model-dialog input {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13px;
+  background: var(--reading);
+}
+
+.development-model-dialog input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.development-model-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  margin-top: 18px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.development-model-dialog h3 {
+  margin: 0 0 4px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.development-model-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.development-model-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.development-model-list .development-model-row:last-child {
+  border-bottom: 0;
+}
+
+.development-model-identity {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.development-model-name {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.development-model-id {
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.development-model-action {
+  flex-shrink: 0;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 12px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.development-model-action:hover:not(:disabled),
+.development-model-action:focus-visible:not(:disabled) {
+  border-color: var(--accent-soft);
+  color: var(--accent-strong);
+  outline: none;
+  background: var(--navigation-hover);
+}
+
+.development-model-action:disabled {
+  color: var(--ink-soft);
+  cursor: default;
+  opacity: 0.5;
+}
+
+.development-model-dialog .development-model-note {
+  margin: 0 0 4px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.development-model-dialog .development-model-error {
+  margin: 12px 0 0;
+  color: var(--ember);
+  font-size: 12px;
+}
+
+.development-model-footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.app-shell:not([data-theme="dark"])
+  .development-model-dialog
+  .confirmation-actions
+  .confirmation-primary {
+  color: #fff;
 }

@@ -5,6 +5,8 @@ import type {
   AttachmentSummary,
   CommandSummary,
   ConversationMessage,
+  DevelopmentModel,
+  DevelopmentModelSettings,
   FolderSummary,
   ModelRuntimeStatus,
   SessionDraft,
@@ -49,6 +51,13 @@ export type SecureWorkspaceState =
 
 export type PromptFolder = "skills" | "built-in-skills" | "system-prompts";
 
+/** Development builds only. Production builds leave `developmentModels` absent. */
+export interface DevelopmentModelApi {
+  settings(): Promise<DevelopmentModelSettings>;
+  search(query: string, apiKey?: string): Promise<DevelopmentModel[]>;
+  save(favorites: DevelopmentModel[], apiKey?: string): Promise<DevelopmentModelSettings>;
+}
+
 export interface SecureWorkspaceStatus {
   state: SecureWorkspaceState;
 }
@@ -86,7 +95,12 @@ export interface DesktopApi {
   removeAttachment(sessionId: string, attachmentId: string): Promise<boolean>;
   saveDraft(sessionId: string, content: string): Promise<SessionDraft>;
   loadDraft(sessionId: string): Promise<SessionDraft | undefined>;
-  startAgent(sessionId: string, task: string, thinking: ThinkingLevel): Promise<AgentRunSummary>;
+  startAgent(
+    sessionId: string,
+    task: string,
+    thinking: ThinkingLevel,
+    developmentModelId?: string,
+  ): Promise<AgentRunSummary>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;
   listAgentRuns(sessionId: string): Promise<AgentRunSummary[]>;
@@ -105,5 +119,6 @@ export interface DesktopApi {
   setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
   skillLocations(): Promise<SkillLocations>;
   openPromptFolder(folder: PromptFolder): Promise<void>;
+  developmentModels?: DevelopmentModelApi;
   listenForDroppedPaths?(listener: (event: NativeDropEvent) => void): Promise<() => void>;
 }

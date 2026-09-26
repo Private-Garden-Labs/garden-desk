@@ -148,7 +148,7 @@ function taskTool(agents: readonly { name: string; description: string }[]): Too
     definition: {
       name: "task",
       description:
-        "Delegate a separate body of work to the matching specialist before processing files yourself. Give the request, exact source paths, expected findings, and known limits. Children run one at a time.",
+        "Delegate a separate body of work to the matching specialist before processing files yourself. Give the user's request in the user's words, the exact source paths, and known limits. Its answer can go to the user unchanged. Children run one at a time.",
       params: objectSchema(
         {
           description: { type: "string" },
@@ -176,6 +176,7 @@ function taskTool(agents: readonly { name: string; description: string }[]): Too
       });
       return {
         content: `<task_result>\n${result.response}\n</task_result>`,
+        childResponse: result.response,
         failed: false,
         artifactExecutions: result.executions,
       };
