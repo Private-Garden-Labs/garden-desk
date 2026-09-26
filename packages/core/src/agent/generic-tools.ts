@@ -5,8 +5,6 @@ import {
   type AgentToolResult,
   object,
   objectSchema,
-  remainingParam,
-  remainingSchema,
   runExecution,
   type SkillReader,
   scriptPath,
@@ -17,7 +15,7 @@ import {
   textParam,
 } from "./generic-tool-support.js";
 import { questionTool } from "./question-tool.js";
-import { reviewTool } from "./review-tool.js";
+import { remainingParam, remainingSchema, reviewTool } from "./review-tool.js";
 import { boundedToolOutput } from "./tool-output.js";
 
 function errorText(error: unknown): string {

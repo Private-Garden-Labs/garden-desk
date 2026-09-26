@@ -1,11 +1,19 @@
-import {
-  object,
-  objectSchema,
-  remainingParam,
-  remainingSchema,
-  type ToolSpec,
-  textParam,
-} from "./generic-tool-support.js";
+import { object, objectSchema, type ToolSpec, textParam } from "./generic-tool-support.js";
+
+/** Work from the user's request that the main agent still does after this turn; empty when none. */
+export const remainingSchema = {
+  type: "string",
+  description:
+    "Work from the user's request that you will still do after the calls of this turn finish. Use an empty string when the answers of this turn complete the whole request; they then go to the user unchanged.",
+};
+
+export function remainingParam(value: Record<string, unknown>): string {
+  const item = value.remaining;
+  if (typeof item !== "string" || item.length > 4_096) {
+    throw new Error("invalid_remaining: use text with at most 4096 characters, or an empty string");
+  }
+  return item;
+}
 
 export function reviewTool(): ToolSpec {
   return {
