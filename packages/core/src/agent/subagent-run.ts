@@ -74,6 +74,8 @@ function failChild(
 }
 
 const specialistDirectory = (runId: string) => `/workspace/.garden-desk-tools/${runId}`;
+const hasWorkDirectory = (definition: AgentDefinition) =>
+  !["general", "explore"].includes(definition.name);
 
 /** Creates the working directory that a specialist's instructions name, before its first step. */
 export async function prepareSpecialistDirectory(
@@ -82,7 +84,7 @@ export async function prepareSpecialistDirectory(
   runId: string,
   signal?: AbortSignal,
 ): Promise<void> {
-  if (["general", "explore"].includes(definition.name)) return;
+  if (!hasWorkDirectory(definition)) return;
   await (executor.inspect ?? executor.execute)(
     { language: "shell", command: `mkdir -p ${specialistDirectory(runId)}` },
     signal,
@@ -97,7 +99,7 @@ export function specialistDefinition(
   outputOwner: "parent" | "user",
 ): AgentDefinition {
   const body = agentInstructions(library, definition);
-  if (["general", "explore"].includes(definition.name)) return { ...definition, body };
+  if (!hasWorkDirectory(definition)) return { ...definition, body };
   const workDirectory = specialistDirectory(runId);
   const ownership = library.system(
     outputOwner === "user" ? "specialist-user-output" : "specialist-parent-output",
