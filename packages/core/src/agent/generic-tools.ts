@@ -15,7 +15,7 @@ import {
   textParam,
 } from "./generic-tool-support.js";
 import { questionTool } from "./question-tool.js";
-import { reviewTool } from "./review-tool.js";
+import { remainingParam, remainingSchema, reviewTool } from "./review-tool.js";
 import { boundedToolOutput } from "./tool-output.js";
 
 function errorText(error: unknown): string {
@@ -128,6 +128,7 @@ function taskParams(
 ): {
   description: string;
   prompt: string;
+  remaining: string;
   subagent_type: string;
 } {
   const params = object(value);
@@ -138,6 +139,7 @@ function taskParams(
   return {
     description: textParam(params, "description", 1_000),
     prompt: textParam(params, "prompt"),
+    remaining: remainingParam(params),
     subagent_type: subagentType,
   };
 }
@@ -148,7 +150,7 @@ function taskTool(agents: readonly { name: string; description: string }[]): Too
     definition: {
       name: "task",
       description:
-        "Delegate a separate body of work to the matching specialist before processing files yourself. Give the user's request in the user's words, the exact source paths, and known limits. Its answer can go to the user unchanged. Children run one at a time.",
+        "Delegate a separate body of work to the matching specialist before processing files yourself. Give its part of the work, the exact source paths, and known limits; the child also receives the user's request word for word. Its answer can go to the user unchanged. Children run one at a time.",
       params: objectSchema(
         {
           description: { type: "string" },
@@ -158,8 +160,9 @@ function taskTool(agents: readonly { name: string; description: string }[]): Too
             enum: names,
             description: agents.map((agent) => `${agent.name}: ${agent.description}`).join("\n"),
           },
+          remaining: remainingSchema,
         },
-        ["description", "prompt", "subagent_type"],
+        ["description", "prompt", "subagent_type", "remaining"],
       ),
     },
     parse: (value) => taskParams(value, names),
@@ -177,6 +180,7 @@ function taskTool(agents: readonly { name: string; description: string }[]): Too
       return {
         content: `<task_result>\n${result.response}\n</task_result>`,
         childResponse: result.response,
+        remainingWork: params.remaining,
         failed: false,
         artifactExecutions: result.executions,
       };

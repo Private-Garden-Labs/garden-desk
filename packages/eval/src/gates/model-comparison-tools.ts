@@ -24,6 +24,11 @@ async function agentTools() {
 }
 
 const path = { type: "string" };
+const remaining = {
+  type: "string",
+  description:
+    "Work from the user's request that you will still do after the calls of this turn finish. Use an empty string when the answers of this turn complete the whole request; they then go to the user unchanged.",
+};
 
 export function inspectionTools() {
   return [
@@ -83,8 +88,12 @@ export function actionTools() {
     ),
     tool(
       "review",
-      "Review one DOC, DOCX, text PDF, TXT, or MD document for the requested purpose, by default its internal inconsistencies. Extracts the file itself, including binary DOC; call it before any skill or extraction. Returns findings and a numbered text path. No calculations or image inspection.",
-      objectSchema({ path, prompt: { type: "string" } }, ["path", "prompt"]),
+      "Review or proofread one DOC, DOCX, text PDF, TXT, or MD document for errors or inconsistencies. Not for questions about a document or for checks that need calculations, such as invoice or expense totals. Extracts the file itself, including binary DOC; call it before any skill or extraction. Returns findings and a numbered text path. No calculations or image inspection.",
+      objectSchema({ path, prompt: { type: "string" }, remaining }, [
+        "path",
+        "prompt",
+        "remaining",
+      ]),
     ),
   ];
 }
@@ -93,7 +102,7 @@ export async function taskTool() {
   const agents = await agentTools();
   return tool(
     "task",
-    "Delegate a separate body of work to the matching specialist before processing files yourself. Give the request, exact source paths, expected findings, and known limits. Children run one at a time.",
+    "Delegate a separate body of work to the matching specialist before processing files yourself. Give its part of the work, the exact source paths, and known limits; the child also receives the user's request word for word. Its answer can go to the user unchanged. Children run one at a time.",
     objectSchema(
       {
         description: { type: "string" },
@@ -103,8 +112,9 @@ export async function taskTool() {
           enum: agents.map((agent) => agent.name),
           description: agents.map((agent) => `${agent.name}: ${agent.description}`).join("\n"),
         },
+        remaining,
       },
-      ["description", "prompt", "subagent_type"],
+      ["description", "prompt", "subagent_type", "remaining"],
     ),
   );
 }
