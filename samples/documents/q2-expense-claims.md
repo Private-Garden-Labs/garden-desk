@@ -27,6 +27,6 @@ Mileage rows CL-0203, CL-0212, and CL-0222 have no receipt and are over 10.00. T
 
 ## Prompt 2
 
-Attach the file. Prompt: `/extract all claims by Priya Shah with date, category, and amount`
+Attach the file. Prompt: `List all claims by Priya Shah with date, category, and amount`
 
 Expected: 8 rows (CL-0201, 0202, 0209, 0211, 0216, 0217, 0221, 0225, and no others), total 504.30, each with its row reference. No policy judgement.

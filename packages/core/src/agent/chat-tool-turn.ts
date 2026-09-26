@@ -21,6 +21,7 @@ const CODE_TOOLS = new Set(["bash", "python", "node"]);
 
 export interface ChatToolState {
   artifactExecutions: ArtifactExecutionEvidence[];
+  childResponses: string[];
   executions: AgentExecutionResult[];
   guestExecutionsStarted: number;
   messages: ChatMessage[];
@@ -46,6 +47,8 @@ function beforeExecution(input: ToolTurnInput, call: ChatToolCall, executable: b
 function finalizeToolCall(input: ToolTurnInput, call: ChatToolCall, result: AgentToolResult): void {
   retainWorkspaceEvidence(input.state, result);
   recordCompletedExecution(input.state, input.onEvent, call, result);
+  if (!result.failed && result.childResponse !== undefined)
+    input.state.childResponses.push(result.childResponse);
   input.state.messages.push({
     role: "tool",
     toolCallId: call.id,
@@ -56,7 +59,13 @@ function finalizeToolCall(input: ToolTurnInput, call: ChatToolCall, result: Agen
 }
 
 export function initialToolState(messages: ChatMessage[]): ChatToolState {
-  return { artifactExecutions: [], executions: [], guestExecutionsStarted: 0, messages };
+  return {
+    artifactExecutions: [],
+    childResponses: [],
+    executions: [],
+    guestExecutionsStarted: 0,
+    messages,
+  };
 }
 
 async function executeToolCall(input: ToolTurnInput, call: ChatToolCall): Promise<void> {
@@ -80,6 +89,7 @@ export async function executeToolCalls(
   input: Omit<ToolTurnInput, "state"> & { state: ChatToolState },
   calls: readonly ChatToolCall[],
 ): Promise<void> {
+  input.state.childResponses = [];
   for (const call of calls) {
     await executeToolCall(input, call);
   }

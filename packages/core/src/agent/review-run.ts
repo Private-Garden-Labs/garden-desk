@@ -137,6 +137,7 @@ export async function runInternalReview(request: {
       { attachment: { path, displayName: path }, directory },
     );
     completeReviewChild(ports, child, result);
+    output.childResponse = result.response;
     output.content = JSON.stringify({
       source: path,
       extractedTextPath: `/workspace/${directory}/review-extracted.txt`,

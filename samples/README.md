@@ -14,7 +14,7 @@ Realistic files for a person to test Garden Desk in the real app. All files desc
 ## How to test
 
 1. Open Garden Desk and select the file, or the folder, named in the test file.
-2. Type the prompt as written. Commands start with `/` (`/review`, `/obligations`, `/expenses`, `/extract`, `/reconcile`, `/brief`). Prompts without a command go to the general agent, which selects a specialist.
+2. Type the prompt as written. Commands start with `/` (`/review`, `/obligations`, `/expenses`, `/reconcile`). Prompts without a command go to the general agent, which selects a specialist.
 3. Compare the answer with the expected result. The model can use different words. Check that the facts, the amounts, and the citations are correct.
 
 Folder test files are stored next to their folder, not inside it, so the answers are not visible to the model. The `.md` files in `documents/` are visible if you select that whole folder; select single files there.

@@ -40,6 +40,6 @@ The table should keep the signature date conflict as an open question, not decid
 
 ## Prompt 3
 
-Attach the file. Prompt: `/brief What happens if the Buyer wants to stop buying at the end of the first year?`
+Attach the file. Prompt: `What happens if the Buyer wants to stop buying at the end of the first year?`
 
 Expected: a short brief. Non-renewal needs written notice at least 90 days before the end of the initial 12-month term (clause 1.2); termination for convenience needs 60 days' notice (clause 7.1); confidentiality continues 3 years (clause 8.1). It should note the 1 February versus 1 March date conflict as an open question about when the term ends.

@@ -26,18 +26,6 @@ interface SpecialistFirstActionCase {
 
 const cases: SpecialistFirstActionCase[] = [
   {
-    id: "folder-intake",
-    agentId: "folder-intake",
-    toolName: "task",
-    files: {
-      "invoices.csv": "invoice,amount,currency\nINV-7,120,EUR\n",
-      "payment-terms.txt": "Invoices are due 30 days after receipt.\n",
-      "receipt.txt": "Receipt INV-7. Amount received: EUR 120.\n",
-    },
-    request:
-      "I will do invoice batch work with this unfamiliar folder. First map the current files by kind and describe their main structures, including the table headers.",
-  },
-  {
     id: "contract-obligations",
     agentId: "contract-obligations",
     toolName: "task",
@@ -49,8 +37,8 @@ const cases: SpecialistFirstActionCase[] = [
       "Identify the duties, monthly fee, payment period, and non-renewal notice in /source/services-agreement.txt. Cite the source.",
   },
   {
-    id: "financial-reconciliation",
-    agentId: "financial-reconciliation",
+    id: "financial-review",
+    agentId: "financial-review",
     toolName: "task",
     files: {
       "invoices.csv": "invoice,amount,currency\nA,100,EUR\nB,200,EUR\nC,50,EUR\n",

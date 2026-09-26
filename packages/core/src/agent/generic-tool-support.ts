@@ -30,6 +30,7 @@ export type AgentQuestionOutcome = { dismissed: false; answers: string[][] } | {
 export interface AgentToolResult {
   content: string;
   failed: boolean;
+  childResponse?: string;
   invalidInput?: boolean;
   execution?: AgentExecutionResult;
   artifactExecution?: AgentExecutionResult;

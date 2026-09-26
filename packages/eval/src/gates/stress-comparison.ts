@@ -6,14 +6,17 @@ import {
   DEFAULT_THINKING_LEVEL,
   INFERENCE_PROFILE,
   type ModelRuntimeStatus,
+  ThinkingLevelSchema,
 } from "@gardendesk/shared";
 import { prepareAgentModelStore } from "./agent-model-store.js";
 import { developmentInferenceWorkerEntryPath } from "./development-inference-path.js";
+import { preparePrompts } from "./stress-comparison-prompts.js";
 import { type Deliverable, type StressTask, stressTasks } from "./stress-comparison-tasks.js";
 import {
   allocatedMemory,
   deliverableBytes,
   loadedSkills,
+  responseBytes,
   visibleSteps,
   type Watched,
   watch,
@@ -40,6 +43,10 @@ const caseLimitMs = Number(argument("--case-timeout") ?? 15 * 60_000);
 const stepStallMs = Number(argument("--step-stall") ?? 8 * 60_000);
 const selected = argument("--cases")?.split(",");
 const suiteFilter = argument("--suite");
+const withoutSpecialists = process.argv.includes("--without-specialists");
+const withoutReview = process.argv.includes("--without-review");
+const plainPrompts = process.argv.includes("--plain");
+const thinking = ThinkingLevelSchema.parse(argument("--thinking") ?? DEFAULT_THINKING_LEVEL);
 const tasks = stressTasks({
   ...(suiteFilter === undefined ? {} : { suite: suiteFilter }),
   ...(selected === undefined ? {} : { ids: selected }),
@@ -57,7 +64,7 @@ async function openCore(root: string): Promise<GardenDeskCore> {
     modelStoreDir,
     profile: "auto",
     migrationDirectory: join(repository, "packages/core/src/workspace/migrations"),
-    promptDirectory: join(repository, "prompts"),
+    promptDirectory,
     workerEntryPath: macos ? developmentInferenceWorkerEntryPath() : "",
     ...(macos
       ? {}
@@ -211,10 +218,14 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
   const core = await openCore(root);
   const began = Date.now();
   try {
-    const folder = await core.addFolder(source);
+    const attachments = task.attachments ?? [];
+    const folder = attachments.length === 0 ? await core.addFolder(source) : undefined;
     await task.afterGrant(source);
-    const session = await core.createSession(folder.id);
-    const started = await core.startAgent(session.id, task.prompt, DEFAULT_THINKING_LEVEL);
+    const session = await core.createSession(folder?.id ?? null);
+    for (const name of attachments) await core.addAttachment(session.id, join(source, name));
+    const prompt =
+      task.command === undefined || plainPrompts ? task.prompt : `/${task.command} ${task.prompt}`;
+    const started = await core.startAgent(session.id, prompt, thinking);
     const watched = await watch({
       core,
       taskId: task.id,
@@ -225,7 +236,10 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
       stepStallMs,
     });
     const durationMs = Date.now() - began;
-    const bytes = await deliverableBytes(core, task.deliverable, watched.snapshot);
+    const bytes =
+      task.deliverable === "response"
+        ? await responseBytes(core, watched.snapshot)
+        : await deliverableBytes(core, task.deliverable, watched.snapshot);
     const { totals, childSteps, skills } = await collectTotals(core, watched.snapshot);
     const output = { bytes, text: bytes.toString("utf8"), skills };
     return resultRow({ task, watched, output, durationMs, totals, childSteps });
@@ -235,6 +249,11 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
 }
 
 await mkdir(outputDirectory, { recursive: true });
+const promptDirectory = await preparePrompts(
+  join(repository, "prompts"),
+  join(outputDirectory, `${label}-prompts`),
+  { withoutSpecialists, withoutReview },
+);
 const resultsPath = join(outputDirectory, `${label}.jsonl`);
 console.log(
   JSON.stringify({
@@ -242,6 +261,10 @@ console.log(
     label,
     model: INFERENCE_PROFILE.modelId,
     runtime: runtimeDirectory,
+    withoutSpecialists,
+    withoutReview,
+    plainPrompts,
+    thinking,
     tasks: tasks.map((task) => task.id),
     caseLimitMs,
     stepStallMs,

@@ -18,6 +18,40 @@ import { AgentStore } from "./store.js";
 
 afterEach(cleanServiceFixtures);
 
+it("returns every child answer from one turn after the completion check", async () => {
+  const answers = ["", "First answer.", "Second answer.", "yes"];
+  let turn = 0;
+  const { catalog, conversations, service } = await fixture(
+    {
+      async chat() {
+        turn += 1;
+        if (turn > 1) return chatResult(answers[turn - 1] ?? "", []);
+        return chatResult(
+          "",
+          [1, 2].map((part) => ({
+            id: `part-${part}`,
+            name: "task",
+            params: {
+              subagent_type: "matter-chronology",
+              description: `Part ${part}`,
+              prompt: `Do part ${part}.`,
+            },
+          })),
+        );
+      },
+    },
+    artifactExecution,
+  );
+  try {
+    const run = service.start(conversations.createSession(null).id, "Do both parts.");
+    expect((await terminal(service, run.id)).run.response).toBe("First answer.\n\nSecond answer.");
+    expect(turn).toBe(4);
+  } finally {
+    await service.close();
+    catalog.close();
+  }
+});
+
 it("uses the parent index when loading child runs", async () => {
   const { catalog, service } = await fixture({}, artifactExecution);
   try {
@@ -36,7 +70,7 @@ it("uses the parent index when loading child runs", async () => {
 });
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: one case checks the shared delegation and command boundary through reopening.
-it("delegates a specialist to a child and runs a command specialist in the same run", async () => {
+it("returns a good enough child answer unchanged and runs a command specialist in the same run", async () => {
   const requests: ChatInput[] = [];
   const description = "Inspect source structure".padEnd(1_000, ".");
   const prompt = "Inspect the selected files.".padEnd(128_000, ".");
@@ -53,21 +87,24 @@ it("delegates a specialist to a child and runs a command specialist in the same 
           const task = request.tools.find((tool) => tool.name === "task");
           expect(task?.params.properties).toHaveProperty(
             "subagent_type.enum",
-            expect.arrayContaining(["folder-intake"]),
+            expect.arrayContaining(["matter-chronology"]),
           );
           return chatResult("", [
             {
               id: "intake-call",
               name: "task",
               params: {
-                subagent_type: "folder-intake",
+                subagent_type: "matter-chronology",
                 description,
                 prompt,
               },
             },
           ]);
         }
-        if (requests.length === 3) return chatResult("Parent findings.", []);
+        if (requests.length === 3) {
+          expect(request.tools).toEqual([]);
+          return chatResult("yes", []);
+        }
         expect(request.tools.some((tool) => tool.name === "task" || tool.name === "question")).toBe(
           false,
         );
@@ -75,7 +112,7 @@ it("delegates a specialist to a child and runs a command specialist in the same 
         const assigned = request.messages.find((message) => message.role === "user")?.text;
         if (assigned === assignment) {
           const child = service.snapshot(parentId).childRuns[0];
-          expect(child).toMatchObject({ agentId: "folder-intake", state: "running" });
+          expect(child).toMatchObject({ agentId: "matter-chronology", state: "running" });
           if (child === undefined) throw new Error("Child was not recorded.");
           expect(service.snapshot(child.id).run.response).toBe("Partial findings.");
         } else {
@@ -93,7 +130,7 @@ it("delegates a specialist to a child and runs a command specialist in the same 
   await mkdir(commandRoot);
   await writeFile(
     join(commandRoot, "intake.md"),
-    `---\ndescription: ${commandDescription}\nagent: folder-intake\n---\n`,
+    `---\ndescription: ${commandDescription}\nagent: matter-chronology\n---\n`,
   );
   const command = new CommandLibrary(commandRoot).resolve(commandTask);
   const resolveCommand = vi
@@ -104,7 +141,11 @@ it("delegates a specialist to a child and runs a command specialist in the same 
     const session = conversations.createSession(null);
     parentId = service.start(session.id, "Inspect source structure.").id;
     const delegated = await terminal(service, parentId);
-    expect(delegated.run).toMatchObject({ state: "succeeded", error: null });
+    expect(delegated.run).toMatchObject({
+      state: "succeeded",
+      error: null,
+      response: "Complete findings.",
+    });
     expect(delegated.childRuns[0]?.assignment).toHaveLength(assignment.length);
     expect(delegated.childRuns[0]).toMatchObject({
       assignment,
@@ -117,7 +158,7 @@ it("delegates a specialist to a child and runs a command specialist in the same 
     expect(direct.run).toMatchObject({
       state: "succeeded",
       response: "Complete findings.",
-      agentId: "folder-intake",
+      agentId: "matter-chronology",
     });
     expect(direct.childRuns).toHaveLength(0);
     expect(requests).toHaveLength(4);
