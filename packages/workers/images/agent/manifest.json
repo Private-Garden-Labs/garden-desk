@@ -178,7 +178,7 @@
       "kernelFile": "Image",
       "kernelSha256": "211d283fafe9e094e614629ef21f8616cdce24c5e4b43b936c4c73a3e447e7bd",
       "initramfsFile": "rootfs.cpio",
-      "initramfsSha256": "53a685a224dfadc0989d939ececb11a89a5154df33bf5aacd020a74c81ebb5b0"
+      "initramfsSha256": "af1c338a952a8ba5a3edff574f3f89cae717d4f1efac1c87c16f810532d281c8"
     },
     "x86_64": {
       "kernelFile": "bzImage",
