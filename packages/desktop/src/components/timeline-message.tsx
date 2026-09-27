@@ -22,7 +22,7 @@ function formatDuration(milliseconds: number): string {
 }
 function ResponseMetrics({ performance }: { performance: AgentRunPerformance }) {
   return (
-    <footer className="response-metrics">
+    <div className="response-metrics">
       <span>
         <strong>{performance.promptTokensPerSecond.toFixed(1)}</strong> prompt tok/s
       </span>
@@ -37,7 +37,7 @@ function ResponseMetrics({ performance }: { performance: AgentRunPerformance }) 
           <strong>{THINKING_LABELS[performance.thinking]}</strong> effort
         </span>
       )}
-    </footer>
+    </div>
   );
 }
 
@@ -97,12 +97,16 @@ function ResponseCopyButton({ text }: { text: string }) {
   };
   const label = copyState === "copied" ? "Copied" : copyState === "failed" ? "Copy failed" : "Copy";
   return (
-    <div className="response-actions">
-      <button aria-label={`${label} response`} onClick={copy} title={label} type="button">
-        <Icon name={copyState === "copied" ? "copy-check" : "copy"} />
-        <span aria-live="polite">{copyState === "idle" ? "" : label}</span>
-      </button>
-    </div>
+    <button
+      aria-label={`${label} response`}
+      className="response-copy"
+      onClick={copy}
+      title={label}
+      type="button"
+    >
+      <Icon name={copyState === "copied" ? "copy-check" : "copy"} />
+      <span aria-live="polite">{copyState === "idle" ? "" : label}</span>
+    </button>
   );
 }
 
@@ -132,6 +136,8 @@ export function TimelineMessage({
       <UserMessage attachments={attachments} item={item} onOpenAttachment={onOpenAttachment} />
     );
   }
+  const copyable = item.kind === "assistant" && item.streaming !== true;
+  const metrics = showMetrics && performance !== null;
   return (
     <article className={`timeline-item timeline-${item.kind}`}>
       <AssistantResponse streaming={item.streaming === true}>{item.text}</AssistantResponse>
@@ -141,10 +147,12 @@ export function TimelineMessage({
         onOpen={onOpenArtifact}
         onSave={onSaveArtifact}
       />
-      {item.kind === "assistant" && item.streaming !== true ? (
-        <ResponseCopyButton text={item.text} />
+      {copyable || metrics ? (
+        <footer className="response-footer">
+          {copyable ? <ResponseCopyButton text={item.text} /> : null}
+          {metrics ? <ResponseMetrics performance={performance} /> : null}
+        </footer>
       ) : null}
-      {showMetrics && performance !== null ? <ResponseMetrics performance={performance} /> : null}
     </article>
   );
 }
