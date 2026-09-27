@@ -24,7 +24,11 @@ it("returns an internal review to the main agent without changing its title", as
         turn += 1;
         if (turn === 1) {
           return chatResult("", [
-            { id: "review-call", name: "review", params: { path, prompt: "Check amounts." } },
+            {
+              id: "review-call",
+              name: "review",
+              params: { path, prompt: "Check amounts.", remaining: "Answer the user." },
+            },
           ]);
         }
         if (turn === 2) {
@@ -68,7 +72,11 @@ it("records an internal review as a child run with its own steps", async () => {
         turn += 1;
         if (turn === 1) {
           return chatResult("", [
-            { id: "review-call", name: "review", params: { path, prompt: "Check amounts." } },
+            {
+              id: "review-call",
+              name: "review",
+              params: { path, prompt: "Check amounts.", remaining: "Answer the user." },
+            },
           ]);
         }
         if (turn === 2) return chatResult("# Review Amounts\n\nAmounts differ.", []);

@@ -1,6 +1,7 @@
 // biome-ignore lint/style/noRestrictedImports: the routing test uses a temporary command definition.
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import type { AgentSessionExecution } from "@gardendesk/workers";
 import { afterEach, expect, it, vi } from "vitest";
 import { CommandLibrary } from "../commands/library.js";
 import type { ChatInput } from "../runtime/inference.js";
@@ -18,8 +19,8 @@ import { AgentStore } from "./store.js";
 
 afterEach(cleanServiceFixtures);
 
-it("returns every child answer from one turn after the completion check", async () => {
-  const answers = ["", "First answer.", "Second answer.", "yes"];
+it("returns every child answer from one turn when no work remains", async () => {
+  const answers = ["", "First answer.", "Second answer."];
   let turn = 0;
   const { catalog, conversations, service } = await fixture(
     {
@@ -35,17 +36,76 @@ it("returns every child answer from one turn after the completion check", async 
               subagent_type: "matter-chronology",
               description: `Part ${part}`,
               prompt: `Do part ${part}.`,
+              remaining: "",
             },
           })),
         );
       },
     },
-    artifactExecution,
+    execution,
   );
   try {
     const run = service.start(conversations.createSession(null).id, "Do both parts.");
     expect((await terminal(service, run.id)).run.response).toBe("First answer.\n\nSecond answer.");
-    expect(turn).toBe(4);
+    expect(turn).toBe(3);
+  } finally {
+    await service.close();
+    catalog.close();
+  }
+});
+
+async function execution(request: AgentSessionExecution, directories = new Set<string>()) {
+  if (request.language !== "shell") return await artifactExecution(request);
+  const created = /^mkdir -p (\S+)$/u.exec(request.command)?.[1];
+  if (created !== undefined) directories.add(created);
+  return {
+    language: "shell" as const,
+    path: null,
+    source: null,
+    command: request.command,
+    exitCode: 0,
+    stdout: "",
+    stderr: "",
+    durationMs: 1,
+    termination: "completed" as const,
+    artifacts: [],
+  };
+}
+
+it("creates the specialist working directory before the child starts", async () => {
+  const directories = new Set<string>();
+  let foundAtChildStart = false;
+  let turn = 0;
+  const { catalog, conversations, service } = await fixture(
+    {
+      async chat(request: ChatInput) {
+        turn += 1;
+        if (turn === 2) {
+          const system = request.messages.find((message) => message.role === "system")?.text;
+          const workDirectory = /Working directory: (\S+)/u.exec(system ?? "")?.[1];
+          foundAtChildStart = workDirectory !== undefined && directories.has(workDirectory);
+        }
+        if (turn > 1) return chatResult("Done.", []);
+        return chatResult("", [
+          {
+            id: "call",
+            name: "task",
+            params: {
+              subagent_type: "matter-chronology",
+              description: "Build the timeline.",
+              prompt: "Build the timeline.",
+              remaining: "",
+            },
+          },
+        ]);
+      },
+    },
+    async (request) => await execution(request, directories),
+  );
+  try {
+    const run = service.start(conversations.createSession(null).id, "Build the timeline.");
+    await terminal(service, run.id);
+    expect(foundAtChildStart).toBe(true);
   } finally {
     await service.close();
     catalog.close();
@@ -70,7 +130,7 @@ it("uses the parent index when loading child runs", async () => {
 });
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: one case checks the shared delegation and command boundary through reopening.
-it("returns a good enough child answer unchanged and runs a command specialist in the same run", async () => {
+it("returns a complete child answer unchanged and runs a command specialist in the same run", async () => {
   const requests: ChatInput[] = [];
   const description = "Inspect source structure".padEnd(1_000, ".");
   const prompt = "Inspect the selected files.".padEnd(128_000, ".");
@@ -97,20 +157,17 @@ it("returns a good enough child answer unchanged and runs a command specialist i
                 subagent_type: "matter-chronology",
                 description,
                 prompt,
+                remaining: "",
               },
             },
           ]);
-        }
-        if (requests.length === 3) {
-          expect(request.tools).toEqual([]);
-          return chatResult("yes", []);
         }
         expect(request.tools.some((tool) => tool.name === "task" || tool.name === "question")).toBe(
           false,
         );
         streams?.onResponseDelta?.("Partial findings.");
         const assigned = request.messages.find((message) => message.role === "user")?.text;
-        if (assigned === assignment) {
+        if (assigned?.startsWith(`${assignment}\n\n`)) {
           const child = service.snapshot(parentId).childRuns[0];
           expect(child).toMatchObject({ agentId: "matter-chronology", state: "running" });
           if (child === undefined) throw new Error("Child was not recorded.");
@@ -122,7 +179,7 @@ it("returns a good enough child answer unchanged and runs a command specialist i
         return chatResult("Complete findings.", []);
       },
     },
-    artifactExecution,
+    execution,
   );
   const row = catalog.database.prepare("PRAGMA database_list").get() as { file: string };
   const root = dirname(dirname(row.file));
@@ -161,9 +218,11 @@ it("returns a good enough child answer unchanged and runs a command specialist i
       agentId: "matter-chronology",
     });
     expect(direct.childRuns).toHaveLength(0);
-    expect(requests).toHaveLength(4);
-    expect(requests[1]?.messages.find((message) => message.role === "user")?.text).toBe(assignment);
-    expect(requests[3]?.messages.filter((message) => message.role === "user")).toMatchObject([
+    expect(requests).toHaveLength(3);
+    expect(requests[1]?.messages.find((message) => message.role === "user")?.text).toBe(
+      `${assignment}\n\nThe user's request, word for word:\nInspect source structure.`,
+    );
+    expect(requests[2]?.messages.filter((message) => message.role === "user")).toMatchObject([
       { text: `${commandDescription}\n\n${commandArguments}` },
     ]);
     expect(service.listRuns(session.id).map((run) => run.id)).toEqual(

@@ -31,6 +31,7 @@ export interface AgentToolResult {
   content: string;
   failed: boolean;
   childResponse?: string;
+  remainingWork?: string;
   invalidInput?: boolean;
   execution?: AgentExecutionResult;
   artifactExecution?: AgentExecutionResult;

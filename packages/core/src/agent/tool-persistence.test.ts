@@ -183,6 +183,7 @@ async function subagentLibrary(root: string): Promise<MarkdownDefinitionLibrary>
     writeFile(join(prompts, "system", "general.md"), "Test system prompt."),
     writeFile(join(prompts, "system", "environment.md"), "Test environment."),
     writeFile(join(prompts, "system", "current-time.md"), "Test clock guidance."),
+    writeFile(join(prompts, "system", "child-user-request.md"), "Request: {request}"),
   ]);
   return new MarkdownDefinitionLibrary(prompts);
 }
@@ -242,6 +243,7 @@ async function crashChild(
         sessions: {} as AgentSessionManager,
         signal: new AbortController().signal,
         store: input.store,
+        userRequest: "Test request.",
       },
       { description: "Test containment.", prompt: "Test containment.", subagentType: "general" },
     );
