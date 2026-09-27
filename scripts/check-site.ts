@@ -157,7 +157,7 @@ requireText(home, 'href="./releases/"', "home releases link");
 const releases = await text("releases/index.html");
 for (const download of [
   "https://downloads.gardendesk.ai/v1.1.0/Garden-Desk-1.1.0-macos-arm64.dmg",
-  "https://downloads.gardendesk.ai/v1.0.0/Garden-Desk-1.0.0-windows-x64.zip",
+  "https://downloads.gardendesk.ai/v1.1.0/Garden-Desk-1.1.0-windows-x64.zip",
 ]) {
   requireText(home, download, "home download");
   requireText(releases, download, "releases download");
