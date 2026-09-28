@@ -23,6 +23,7 @@ interface RuntimeArchive {
   byteLength: number;
   files: Record<string, string>;
   directories?: Record<string, string>;
+  exclude?: string[];
   sha256: string;
   url: string;
 }
@@ -82,13 +83,18 @@ function targetDirectory(path: string): string {
   return path;
 }
 
-function extract(archive: string, destination: string, files: string[]): void {
-  const result = spawnSync("tar", ["-xf", archive, "-C", destination, "--", ...files], {
-    encoding: "utf8",
-    stdio: "pipe",
-    windowsHide: true,
-    timeout: 60_000,
-  });
+function extract(archive: string, destination: string, files: string[], exclude: string[]): void {
+  const excluded = exclude.flatMap((pattern) => ["--exclude", pattern]);
+  const result = spawnSync(
+    "tar",
+    ["-xf", archive, "-C", destination, ...excluded, "--", ...files],
+    {
+      encoding: "utf8",
+      stdio: "pipe",
+      windowsHide: true,
+      timeout: 60_000,
+    },
+  );
   if (result.status !== 0) throw new Error(result.stderr || "inference_archive_extract_failed");
 }
 
@@ -141,6 +147,7 @@ async function stageArchive(input: {
     archive,
     extracted,
     [...entries, ...trees].map(([source]) => source),
+    asset.exclude ?? [],
   );
   for (const [source, target] of entries) {
     await copyFile(await stageFile(extracted, source), join(staged, target));

@@ -33,6 +33,13 @@ export const INFERENCE_PROFILE = {
   runtimeBuild: "llama.cpp@prism-b10709-9a9394a",
 } as const;
 
+/** macOS generation and image model, served by the Splash runtime from one folder in the model store. */
+export const SPLASH_MODEL = {
+  directory: "qwen3.8-27b-splash",
+  repository: "incoai/Qwen3.8-27B-Splash",
+  runtimeBuild: "splash@1.0.2",
+} as const;
+
 /** Returns undefined when the budget cannot hold the model and the minimum context. */
 export function fittedContextTokens(input: {
   backend: "metal" | "cuda" | "hip";

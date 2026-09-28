@@ -3,7 +3,7 @@ export function nativeRuntimePackages(
   architecture: string = process.arch,
 ): string[] {
   if (platform === "darwin" && architecture === "arm64") {
-    return ["macos-arm64"];
+    return ["macos-arm64", "macos-arm64-splash"];
   }
   if (platform === "win32" && architecture === "x64") {
     return ["windows-cuda-x64", "windows-hip-x64"];
