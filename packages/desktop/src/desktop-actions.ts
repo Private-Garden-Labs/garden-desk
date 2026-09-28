@@ -133,37 +133,38 @@ export async function selectSession(
   }
 }
 
-export async function deleteConversation(
-  api: DesktopApi,
-  sessionId: string,
-  dispatch: Dispatch,
-  setError: SetError,
-) {
-  setError(undefined);
-  try {
-    if (await api.deleteSession(sessionId)) dispatch({ type: "session.deleted", sessionId });
-  } catch {
-    setError("Stop the conversation if it is running, then try deleting it again.");
-  }
-}
-
 interface ShowMoreOptions {
   api: DesktopApi;
-  folderId: string;
-  folders: Array<{ id: string; nextCursor: string | null }>;
+  folderId: string | null;
+  cursor: string | null;
   dispatch: Dispatch;
   setError: SetError;
 }
 
 export async function showMore(options: ShowMoreOptions) {
-  const { api, folderId, folders, dispatch, setError } = options;
-  const cursor = folders.find((folder) => folder.id === folderId)?.nextCursor ?? null;
+  const { api, folderId, cursor, dispatch, setError } = options;
   if (cursor === null) return;
   try {
     const page = await api.listSessions(folderId, cursor);
-    dispatch({ type: "folder.page", folderId, page });
+    dispatch(
+      folderId === null ? { type: "global.page", page } : { type: "folder.page", folderId, page },
+    );
   } catch {
     setError("More conversations could not be loaded.");
+  }
+}
+
+export async function showLess(options: Omit<ShowMoreOptions, "cursor">) {
+  const { api, folderId, dispatch, setError } = options;
+  try {
+    const page = await api.listSessions(folderId);
+    dispatch(
+      folderId === null
+        ? { type: "global.refresh", page }
+        : { type: "folder.refresh", folderId, page },
+    );
+  } catch {
+    setError("The conversation list could not be refreshed.");
   }
 }
 

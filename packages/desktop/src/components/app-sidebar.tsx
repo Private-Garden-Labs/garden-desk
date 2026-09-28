@@ -6,6 +6,7 @@ import {
   reorderFolders,
   selectSession,
   showFolder,
+  showLess,
   showMore,
 } from "../desktop-actions.js";
 import type { DropIntent } from "../desktop-drop.js";
@@ -48,6 +49,7 @@ export function AppSidebar({
       dispatch={dispatch}
       folders={state.folders}
       globalSessions={state.globalSessions}
+      globalNextCursor={state.globalNextCursor}
       workingSessionIds={state.workingSessionIds}
       nativeActionMessage={nativeActionMessage}
       onAddFolder={() => void addFolder(api, dispatch, setError)}
@@ -64,6 +66,11 @@ export function AppSidebar({
             api,
             dispatch,
             session,
+            visibleCount:
+              session.folderId === null
+                ? state.globalSessions.length
+                : (state.folders.find((folder) => folder.id === session.folderId)?.sessions
+                    .length ?? 0),
             setError: setError,
           }),
         )
@@ -89,11 +96,15 @@ export function AppSidebar({
         void showMore({
           api,
           folderId,
+          cursor:
+            folderId === null
+              ? state.globalNextCursor
+              : (state.folders.find((folder) => folder.id === folderId)?.nextCursor ?? null),
           dispatch,
           setError: setError,
-          folders: state.folders,
         })
       }
+      onShowLess={(folderId) => void showLess({ api, folderId, dispatch, setError })}
     />
   );
 }

@@ -1,4 +1,4 @@
-import type { ConversationMessage, SessionSummary } from "@gardendesk/shared";
+import type { ConversationMessage, SessionPage, SessionSummary } from "@gardendesk/shared";
 import { applyAgentSnapshot } from "./agent-state.js";
 import type { DesktopAction, DesktopState } from "./state.js";
 import { emptyConversation } from "./state-initial.js";
@@ -40,6 +40,25 @@ export function deleteSession(state: DesktopState, sessionId: string): DesktopSt
     ),
     ...(activeDeleted ? emptyConversation(null) : {}),
     ...(state.pendingSessionId === sessionId ? { pendingSessionId: undefined } : {}),
+  };
+}
+
+export function globalSessionPage(
+  state: DesktopState,
+  page: SessionPage,
+  replace: boolean,
+): DesktopState {
+  return {
+    ...state,
+    globalSessions: replace
+      ? page.items
+      : [
+          ...state.globalSessions,
+          ...page.items.filter(
+            (item) => !state.globalSessions.some((session) => session.id === item.id),
+          ),
+        ],
+    globalNextCursor: page.nextCursor,
   };
 }
 

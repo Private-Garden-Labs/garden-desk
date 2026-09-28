@@ -408,6 +408,7 @@ textarea:focus-visible {
   min-height: 0;
   padding-right: 12px;
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .folder-scroll {
@@ -734,6 +735,36 @@ textarea:focus-visible {
 
 .show-more {
   color: var(--ink-soft);
+}
+
+.session-page-controls {
+  display: flex;
+  align-items: center;
+}
+
+.session-page-controls .show-more {
+  flex: 1 1 auto;
+}
+
+.show-less {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--ink-soft);
+  background: transparent;
+  cursor: pointer;
+}
+
+.show-less:hover {
+  color: var(--accent-strong);
+  background: var(--navigation-hover);
+}
+
+.show-less:active {
+  transform: scale(0.97);
 }
 
 .workspace {
@@ -3270,7 +3301,8 @@ textarea:focus-visible {
 
 .app-shell[data-theme="dark"] .sidebar-item-select,
 .app-shell[data-theme="dark"] .new-folder-session,
-.app-shell[data-theme="dark"] .show-more {
+.app-shell[data-theme="dark"] .show-more,
+.app-shell[data-theme="dark"] .show-less {
   color: #d0cfca;
 }
 

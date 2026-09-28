@@ -9,7 +9,7 @@ import {
 } from "react";
 import type { DesktopAction, FolderGroup } from "../state.js";
 import { Icon } from "./icons.js";
-import { SessionList } from "./session-list.js";
+import { GlobalSessionList, SessionList } from "./session-list.js";
 import { SidebarItemRow } from "./sidebar-item-row.js";
 import { SidebarSettings } from "./sidebar-settings.js";
 
@@ -21,6 +21,7 @@ interface SidebarProps {
   dispatch: Dispatch<DesktopAction>;
   folders: FolderGroup[];
   globalSessions: SessionSummary[];
+  globalNextCursor: string | null;
   workingSessionIds: string[];
   nativeActionMessage?: string | undefined;
   onAddFolder(): void;
@@ -32,7 +33,8 @@ interface SidebarProps {
   onRevokeFolder(folderId: string): void;
   onReorderFolders(folderIds: string[]): void;
   onSelectSession(sessionId: string): void;
-  onShowMore(folderId: string): void;
+  onShowMore(folderId: string | null): void;
+  onShowLess(folderId: string | null): void;
   settingsActive?: boolean | undefined;
 }
 
@@ -219,6 +221,7 @@ function FolderSection(props: SidebarProps) {
                 onDeleteSession={props.onDeleteSession}
                 onSelectSession={props.onSelectSession}
                 onShowMore={props.onShowMore}
+                onShowLess={props.onShowLess}
               />
             ) : null}
           </li>
@@ -249,21 +252,7 @@ export function Sidebar(props: SidebarProps) {
           <Icon name="message" />
           New chat
         </button>
-        <div className="session-list global-session-list">
-          {props.globalSessions.map((session) => (
-            <SidebarItemRow
-              active={session.id === props.activeSessionId}
-              deleteLabel={`Delete ${session.title}`}
-              disabled={props.disabled}
-              key={session.id}
-              label={session.title}
-              working={props.workingSessionIds.includes(session.id)}
-              nativeActionMessage={props.nativeActionMessage}
-              onDelete={() => props.onDeleteSession(session)}
-              onSelect={() => props.onSelectSession(session.id)}
-            />
-          ))}
-        </div>
+        <GlobalSessionList {...props} />
         <h2 className="sidebar-label">Folders</h2>
         <button
           className="nav-action"
