@@ -48,7 +48,7 @@ const sidebarRowProps = {
   onShowLess: () => undefined,
 };
 
-it("shows the collapse icon beside page controls only for expanded chat lists", () => {
+it("keeps Show more beside Show less after the final chat page", () => {
   const globalSessions = Array.from({ length: 6 }, (_, index) =>
     SessionSummarySchema.parse({
       ...globalSession,
@@ -69,7 +69,8 @@ it("shows the collapse icon beside page controls only for expanded chat lists", 
     }),
   );
   expect(expanded.match(/aria-label="Show less"/gu)).toHaveLength(2);
-  expect(expanded.match(/class="show-more"/gu)).toHaveLength(1);
+  expect(expanded.match(/class="show-more"/gu)).toHaveLength(2);
+  expect(expanded.match(/class="show-more" disabled=""/gu)).toHaveLength(1);
   expect(expanded.match(/icon-chevron-up/gu)).toHaveLength(2);
 
   const collapsed = renderToStaticMarkup(createElement(Sidebar, sidebarRowProps));

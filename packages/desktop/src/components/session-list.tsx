@@ -39,16 +39,14 @@ function SessionPageControls(props: {
   if (!props.hasMore && !props.expanded) return null;
   return (
     <div className="session-page-controls">
-      {props.hasMore ? (
-        <button
-          className="show-more"
-          disabled={props.disabled}
-          onClick={props.onShowMore}
-          type="button"
-        >
-          Show more
-        </button>
-      ) : null}
+      <button
+        className="show-more"
+        disabled={props.disabled || !props.hasMore}
+        onClick={props.onShowMore}
+        type="button"
+      >
+        Show more
+      </button>
       {props.expanded ? (
         <button
           aria-label="Show less"
