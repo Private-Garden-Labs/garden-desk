@@ -32,7 +32,7 @@ The first desktop uses Tauri v2 with React and TypeScript. The Rust host owns on
 
 The webview receives no generic shell, process launcher, environment reader, network client, local-endpoint selector, or unrestricted filesystem API. It works with opaque folder, session, attachment, job, and artifact identifiers through narrow typed commands.
 
-The sidebar's Chats section begins with New chat and then the newest five global sessions, with Show more for older sessions. Its Folders section begins with Add folder and then folder groups. Each folder group exposes its newest five sessions, cursor-based expansion, and a folder icon that asks the native shell to open the active Core-resolved grant in Finder or Explorer. The main pane restores conversation and observable agent activity. Its header exposes the approved model's human-readable identity, residency state, and manual unload control. The composer remains anchored at the bottom.
+The sidebar's Chats section begins with New chat and then the newest five global sessions, with Show more for older sessions. Its Folders section begins with Add folder and then folder groups. Each folder group exposes its newest five sessions, cursor-based expansion, and a folder icon that asks the native shell to open the active Core-resolved grant in Finder or Explorer. Both chat lists show a Show less icon after expansion to return to the newest five. The main pane restores conversation and observable agent activity. Its header exposes the approved model's human-readable identity, residency state, and manual unload control. The composer remains anchored at the bottom.
 
 ## Garden Desk Core
 

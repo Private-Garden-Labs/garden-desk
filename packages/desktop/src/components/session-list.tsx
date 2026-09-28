@@ -13,6 +13,7 @@ interface SessionListProps {
   onDeleteSession(session: SessionSummary): void;
   onSelectSession(sessionId: string): void;
   onShowMore(folderId: string): void;
+  onShowLess(folderId: string): void;
 }
 
 interface GlobalSessionListProps {
@@ -25,6 +26,43 @@ interface GlobalSessionListProps {
   onDeleteSession(session: SessionSummary): void;
   onSelectSession(sessionId: string): void;
   onShowMore(folderId: string | null): void;
+  onShowLess(folderId: string | null): void;
+}
+
+function SessionPageControls(props: {
+  disabled: boolean;
+  hasMore: boolean;
+  expanded: boolean;
+  onShowMore(): void;
+  onShowLess(): void;
+}) {
+  if (!props.hasMore && !props.expanded) return null;
+  return (
+    <div className="session-page-controls">
+      {props.hasMore ? (
+        <button
+          className="show-more"
+          disabled={props.disabled}
+          onClick={props.onShowMore}
+          type="button"
+        >
+          Show more
+        </button>
+      ) : null}
+      {props.expanded ? (
+        <button
+          aria-label="Show less"
+          className="show-less"
+          disabled={props.disabled}
+          onClick={props.onShowLess}
+          title="Show less"
+          type="button"
+        >
+          <Icon name="chevron-up" />
+        </button>
+      ) : null}
+    </div>
+  );
 }
 
 export function GlobalSessionList(props: GlobalSessionListProps) {
@@ -43,16 +81,13 @@ export function GlobalSessionList(props: GlobalSessionListProps) {
           onSelect={() => props.onSelectSession(session.id)}
         />
       ))}
-      {props.globalNextCursor === null ? null : (
-        <button
-          className="show-more"
-          disabled={props.disabled}
-          onClick={() => props.onShowMore(null)}
-          type="button"
-        >
-          Show more
-        </button>
-      )}
+      <SessionPageControls
+        disabled={props.disabled}
+        hasMore={props.globalNextCursor !== null}
+        expanded={props.globalSessions.length > 5}
+        onShowMore={() => props.onShowMore(null)}
+        onShowLess={() => props.onShowLess(null)}
+      />
     </div>
   );
 }
@@ -82,16 +117,13 @@ export function SessionList(props: SessionListProps) {
           onSelect={() => props.onSelectSession(session.id)}
         />
       ))}
-      {props.folder.nextCursor === null ? null : (
-        <button
-          className="show-more"
-          disabled={props.disabled}
-          onClick={() => props.onShowMore(props.folder.id)}
-          type="button"
-        >
-          Show more
-        </button>
-      )}
+      <SessionPageControls
+        disabled={props.disabled}
+        hasMore={props.folder.nextCursor !== null}
+        expanded={props.folder.sessions.length > 5}
+        onShowMore={() => props.onShowMore(props.folder.id)}
+        onShowLess={() => props.onShowLess(props.folder.id)}
+      />
     </div>
   );
 }

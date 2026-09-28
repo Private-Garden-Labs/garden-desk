@@ -45,7 +45,36 @@ const sidebarRowProps = {
   onReorderFolders: () => undefined,
   onSelectSession: () => undefined,
   onShowMore: () => undefined,
+  onShowLess: () => undefined,
 };
+
+it("shows the collapse icon beside page controls only for expanded chat lists", () => {
+  const globalSessions = Array.from({ length: 6 }, (_, index) =>
+    SessionSummarySchema.parse({
+      ...globalSession,
+      id: `${globalSession.id.slice(0, -1)}${index}`,
+    }),
+  );
+  const folderSessions = Array.from({ length: 6 }, (_, index) =>
+    SessionSummarySchema.parse({
+      ...folderSession,
+      id: `${folderSession.id.slice(0, -1)}${index}`,
+    }),
+  );
+  const expanded = renderToStaticMarkup(
+    createElement(Sidebar, {
+      ...sidebarRowProps,
+      globalSessions,
+      folders: [{ ...folder, expanded: true, nextCursor: null, sessions: folderSessions }],
+    }),
+  );
+  expect(expanded.match(/aria-label="Show less"/gu)).toHaveLength(2);
+  expect(expanded.match(/class="show-more"/gu)).toHaveLength(1);
+  expect(expanded.match(/icon-chevron-up/gu)).toHaveLength(2);
+
+  const collapsed = renderToStaticMarkup(createElement(Sidebar, sidebarRowProps));
+  expect(collapsed).not.toContain('aria-label="Show less"');
+});
 
 describe("sidebar rows", () => {
   it("uses the same row controls for chats and folders, with an icon only on folders", () => {

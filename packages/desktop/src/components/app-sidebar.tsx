@@ -6,6 +6,7 @@ import {
   reorderFolders,
   selectSession,
   showFolder,
+  showLess,
   showMore,
 } from "../desktop-actions.js";
 import type { DropIntent } from "../desktop-drop.js";
@@ -103,6 +104,7 @@ export function AppSidebar({
           setError: setError,
         })
       }
+      onShowLess={(folderId) => void showLess({ api, folderId, dispatch, setError })}
     />
   );
 }

@@ -34,6 +34,7 @@ interface SidebarProps {
   onReorderFolders(folderIds: string[]): void;
   onSelectSession(sessionId: string): void;
   onShowMore(folderId: string | null): void;
+  onShowLess(folderId: string | null): void;
   settingsActive?: boolean | undefined;
 }
 
@@ -220,6 +221,7 @@ function FolderSection(props: SidebarProps) {
                 onDeleteSession={props.onDeleteSession}
                 onSelectSession={props.onSelectSession}
                 onShowMore={props.onShowMore}
+                onShowLess={props.onShowLess}
               />
             ) : null}
           </li>

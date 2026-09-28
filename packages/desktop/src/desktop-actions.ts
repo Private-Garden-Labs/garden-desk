@@ -154,6 +154,20 @@ export async function showMore(options: ShowMoreOptions) {
   }
 }
 
+export async function showLess(options: Omit<ShowMoreOptions, "cursor">) {
+  const { api, folderId, dispatch, setError } = options;
+  try {
+    const page = await api.listSessions(folderId);
+    dispatch(
+      folderId === null
+        ? { type: "global.refresh", page }
+        : { type: "folder.refresh", folderId, page },
+    );
+  } catch {
+    setError("The conversation list could not be refreshed.");
+  }
+}
+
 interface SendOptions {
   api: DesktopApi;
   text: string;
