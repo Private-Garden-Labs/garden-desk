@@ -14,6 +14,7 @@ import type { DatabasePort } from "../workspace/database.js";
 import { inspectFolderGrant } from "../workspace/folder-grants.js";
 import { reorderFolderRows } from "./folder-order.js";
 import { unavailableFolderAfterDriveChange } from "./folder-relink.js";
+import { canDeleteConversationSession } from "./session-delete.js";
 
 interface FolderRow {
   id: string;
@@ -197,12 +198,7 @@ export class ConversationStore {
   }
 
   deleteSession(sessionId: string): boolean {
-    const running = this.database
-      .prepare(
-        "SELECT 1 FROM agent_runs WHERE session_id = ? AND state IN ('queued', 'running') LIMIT 1",
-      )
-      .get(sessionId);
-    if (running !== undefined) throw new Error("session_busy");
+    if (!canDeleteConversationSession(this.database, sessionId)) return false;
     return this.database.prepare("DELETE FROM sessions WHERE id = ?").run(sessionId).changes === 1;
   }
 

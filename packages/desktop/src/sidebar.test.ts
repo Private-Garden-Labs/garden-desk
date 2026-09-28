@@ -33,6 +33,7 @@ const sidebarRowProps = {
   dispatch: () => undefined,
   folders: [{ ...folder, expanded: true, nextCursor: null, sessions: [folderSession] }],
   globalSessions: [globalSession],
+  globalNextCursor: "next",
   workingSessionIds: [folderSession.id],
   onAddFolder: () => undefined,
   onNewSession: () => undefined,
@@ -63,6 +64,7 @@ describe("sidebar rows", () => {
     expect(markup.match(/icon-trash/gu)).toHaveLength(1);
     expect(markup.match(/icon-unmount/gu)).toHaveLength(1);
     expect(markup).toContain("Add folder");
+    expect(markup).toContain("Show more");
     expect(markup).toContain('aria-label="Open Project folder"');
     expect(markup).toContain('aria-label="Unmount Project"');
     expect(markup).toContain('class="sidebar-item-delete sidebar-item-unmount"');

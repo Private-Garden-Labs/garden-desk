@@ -15,6 +15,48 @@ interface SessionListProps {
   onShowMore(folderId: string): void;
 }
 
+interface GlobalSessionListProps {
+  activeSessionId: string | undefined;
+  disabled: boolean;
+  globalSessions: SessionSummary[];
+  globalNextCursor: string | null;
+  workingSessionIds: string[];
+  nativeActionMessage?: string | undefined;
+  onDeleteSession(session: SessionSummary): void;
+  onSelectSession(sessionId: string): void;
+  onShowMore(folderId: string | null): void;
+}
+
+export function GlobalSessionList(props: GlobalSessionListProps) {
+  return (
+    <div className="session-list global-session-list">
+      {props.globalSessions.map((session) => (
+        <SidebarItemRow
+          active={session.id === props.activeSessionId}
+          deleteLabel={`Delete ${session.title}`}
+          disabled={props.disabled}
+          key={session.id}
+          label={session.title}
+          working={props.workingSessionIds.includes(session.id)}
+          nativeActionMessage={props.nativeActionMessage}
+          onDelete={() => props.onDeleteSession(session)}
+          onSelect={() => props.onSelectSession(session.id)}
+        />
+      ))}
+      {props.globalNextCursor === null ? null : (
+        <button
+          className="show-more"
+          disabled={props.disabled}
+          onClick={() => props.onShowMore(null)}
+          type="button"
+        >
+          Show more
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function SessionList(props: SessionListProps) {
   return (
     <div className="session-list">
