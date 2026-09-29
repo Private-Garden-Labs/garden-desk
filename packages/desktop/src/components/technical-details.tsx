@@ -12,6 +12,7 @@ import {
   initialDebugSnapshotState,
 } from "../debug-snapshot.js";
 import { showCatalogFolder, showFolder } from "../desktop-actions.js";
+import { desktopPlatform } from "../platform.js";
 import { showPromptFolder, usePromptLocations } from "../skills.js";
 import type { TimelineItem } from "../state.js";
 import type { AgentStep } from "../steps.js";
@@ -20,7 +21,7 @@ import { Icon } from "./icons.js";
 import { StepList } from "./step-list.js";
 import { selectAdjacentTab } from "./tab-keyboard.js";
 import { sessionTitle } from "./technical-details-title.js";
-import { TechnicalOverviewTable } from "./technical-overview-table.js";
+import { splitPath, TechnicalOverviewTable } from "./technical-overview-table.js";
 import { TranscriptCopy } from "./transcript-copy.js";
 
 export { shouldFollowLog } from "./technical-logs.js";
@@ -63,6 +64,26 @@ interface TechnicalDetailsProps {
   setError(message: string | undefined): void;
 }
 
+function SnapshotPath({ path }: { path: string }) {
+  const parts = splitPath(path);
+  return (
+    <span className="debug-snapshot-path" title={path}>
+      {parts === undefined ? (
+        path
+      ) : (
+        <>
+          <span className="technical-path-parent">{parts[0]}</span>
+          <span className="technical-path-name">{parts[1]}</span>
+        </>
+      )}
+    </span>
+  );
+}
+
+function errorCode(error: unknown): string {
+  return typeof error === "string" ? error : "unknown";
+}
+
 export function DebugSnapshotPanel({
   onCreate,
   onReveal,
@@ -75,15 +96,19 @@ export function DebugSnapshotPanel({
   return (
     <div className="debug-snapshot-controls">
       <button disabled={state.creating || state.revealing} onClick={onCreate} type="button">
-        {state.creating ? "Creating snapshot…" : "Create debug snapshot"}
+        {state.creating ? "Saving snapshot…" : "Save debug snapshot"}
       </button>
       {state.path === undefined ? null : (
-        <>
-          <input aria-label="Debug snapshot path" readOnly value={state.path} />
+        <div className="debug-snapshot-result">
+          <p>
+            Saved. <SnapshotPath path={state.path} />
+          </p>
           <button disabled={state.revealing} onClick={onReveal} type="button">
-            {state.revealing ? "Revealing…" : "Reveal snapshot"}
+            {desktopPlatform(navigator.userAgent) === "windows"
+              ? "Show in Explorer"
+              : "Show in Finder"}
           </button>
-        </>
+        </div>
       )}
       {state.error === undefined ? null : <p role="alert">{state.error}</p>}
     </div>
@@ -104,8 +129,8 @@ function DebugSnapshotControls({
     dispatch({ type: "create.start" });
     try {
       dispatch({ type: "create.succeeded", path: await api.createDebugSnapshot(sessionId) });
-    } catch {
-      dispatch({ type: "create.failed" });
+    } catch (error) {
+      dispatch({ type: "create.failed", code: errorCode(error) });
     }
   };
   const reveal = async () => {
@@ -113,15 +138,15 @@ function DebugSnapshotControls({
     try {
       await api.revealDebugSnapshot(sessionId);
       dispatch({ type: "reveal.succeeded" });
-    } catch {
-      dispatch({ type: "reveal.failed" });
+    } catch (error) {
+      dispatch({ type: "reveal.failed", code: errorCode(error) });
     }
   };
   if (nativeActionMessage !== undefined) {
     return (
       <div className="debug-snapshot-controls">
         <button disabled title={nativeActionMessage} type="button">
-          Create debug snapshot
+          Save debug snapshot
         </button>
         <p>{nativeActionMessage}</p>
       </div>
@@ -190,21 +215,11 @@ function Overview({
       </article>
       {sessionId === undefined ? null : (
         <article className="technical-details-item technical-overview">
-          <p className="debug-snapshot-purpose">AI agent debugging snapshot</p>
+          <p className="debug-snapshot-purpose">Troubleshooting</p>
           <p className="technical-limits">
-            The snapshot contains saved workspace files and a file list. It is not the live folder.
+            Save a debug snapshot when you want to forward them to Codex / Claude. Both can contain
+            private data.
           </p>
-          <p className="technical-limits">
-            Create this for an AI coding agent such as Codex or Claude Code. It contains this
-            session&apos;s SQLite-backed records, workspace, generated files, inference traces, and
-            bounded microVM logs. Share it only through an approved channel.
-          </p>
-          <DebugSnapshotControls
-            api={api}
-            key={sessionId}
-            nativeActionMessage={nativeActionMessage}
-            sessionId={sessionId}
-          />
           <TranscriptCopy
             artifacts={artifacts}
             executions={executions}
@@ -212,6 +227,12 @@ function Overview({
             sessionId={sessionId}
             timeline={timeline}
             title={sessionTitle(timeline, sessionId)}
+          />
+          <DebugSnapshotControls
+            api={api}
+            key={sessionId}
+            nativeActionMessage={nativeActionMessage}
+            sessionId={sessionId}
           />
         </article>
       )}

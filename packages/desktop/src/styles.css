@@ -2541,16 +2541,26 @@ textarea:focus-visible {
 .debug-snapshot-controls {
   display: grid;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .debug-snapshot-controls button {
   min-height: 34px;
   padding: 0 10px;
+  border: 1px solid var(--reading-border);
   border-radius: 8px;
-  color: #fff;
-  background: var(--accent);
+  color: var(--ink);
+  background: transparent;
   cursor: pointer;
+}
+
+.debug-snapshot-controls button:hover:not(:disabled) {
+  background: var(--navigation-hover);
+}
+
+.debug-snapshot-controls button:active:not(:disabled),
+.transcript-copy button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .debug-snapshot-controls button:disabled {
@@ -2558,13 +2568,30 @@ textarea:focus-visible {
   opacity: 0.6;
 }
 
-.debug-snapshot-controls input {
+.debug-snapshot-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
-  padding: 8px;
-  border: 1px solid var(--reading-border);
-  border-radius: 8px;
+}
+
+.debug-snapshot-result p {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  color: var(--ink-soft);
+}
+
+.debug-snapshot-result button {
+  flex: 0 0 auto;
+}
+
+.debug-snapshot-path {
+  display: flex;
+  min-width: 0;
   color: var(--ink);
-  background: var(--reading-soft);
   font:
     11px / 1.4 "IBM Plex Mono",
     ui-monospace,
@@ -2573,12 +2600,23 @@ textarea:focus-visible {
     monospace;
 }
 
+.debug-snapshot-path span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.debug-snapshot-path .technical-path-name {
+  flex-shrink: 0.25;
+}
+
 .debug-snapshot-controls p[role="alert"] {
   color: #f0a48a;
 }
 
 .transcript-copy {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .transcript-copy button {
@@ -2589,15 +2627,15 @@ textarea:focus-visible {
   gap: 6px;
   min-height: 34px;
   padding: 0 10px;
-  border: 1px solid var(--reading-border);
+  border: 1px solid rgb(40 111 109 / 24%);
   border-radius: 8px;
-  color: var(--ink);
-  background: transparent;
+  color: var(--shell);
+  background: var(--accent);
   cursor: pointer;
 }
 
 .transcript-copy button:hover:not(:disabled) {
-  background: var(--navigation-hover);
+  background: var(--accent-strong);
 }
 
 .transcript-copy button:disabled {

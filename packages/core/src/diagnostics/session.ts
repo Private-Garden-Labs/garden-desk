@@ -171,6 +171,7 @@ async function populateSnapshot(root: string, records: DebugCatalogRecords): Pro
     session: records.session,
     folder: records.folder,
     draft: records.draft,
+    summary: records.summary,
     attachments: records.attachments,
     workspaceManifestHash: workspace.manifestHash,
     runs: records.runs.map((item) => item.run),

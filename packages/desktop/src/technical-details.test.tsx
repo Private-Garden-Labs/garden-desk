@@ -160,12 +160,11 @@ it("keeps the overview separate from step evidence", () => {
   expect(markup).toContain('class="technical-details-resize-handle"');
   expect(markup).toContain("Local session ID</th><td>da911f87-ff26-46d8-9a58-bad222a584ab");
   expect(markup).toContain("Catalog path</th><td>");
-  expect(markup).toContain("Create debug snapshot");
-  expect(markup).toContain("AI agent debugging snapshot");
-  expect(markup).toContain("Codex or Claude Code");
-  expect(markup).toContain("SQLite-backed records");
-  expect(markup).toContain("bounded microVM logs");
-  expect(markup).toContain("approved channel");
+  expect(markup).toContain("Troubleshooting");
+  expect(markup).toContain("Both can contain private data.");
+  expect(markup.indexOf("Copy session transcript")).toBeLessThan(
+    markup.indexOf("Save debug snapshot"),
+  );
   expect(markup).toContain('aria-label="Close technical details"');
   expect(markup).toContain('aria-label="Technical details sections"');
   expect(markup).toMatch(/aria-selected="true"[^>]*>Overview/);
@@ -253,7 +252,7 @@ it("shows pending, success, reveal, and failure states", () => {
       state={{ ...initialDebugSnapshotState, creating: true }}
     />,
   );
-  expect(pending).toContain("Creating snapshot…");
+  expect(pending).toContain("Saving snapshot…");
   expect(pending).toContain("disabled");
 
   const ready = renderToStaticMarkup(
@@ -263,19 +262,22 @@ it("shows pending, success, reveal, and failure states", () => {
       state={{ ...initialDebugSnapshotState, path: "/tmp/garden-desk-session-debug-ready" }}
     />,
   );
-  expect(ready).toContain('aria-label="Debug snapshot path"');
+  expect(ready).toContain("Saved.");
   expect(ready).toContain("/tmp/garden-desk-session-debug-ready");
-  expect(ready).toContain("Reveal snapshot");
+  expect(ready).toContain("Show in Finder");
 
   const failed = renderToStaticMarkup(
     <DebugSnapshotPanel
       onCreate={() => undefined}
       onReveal={() => undefined}
-      state={{ ...initialDebugSnapshotState, error: "The debug snapshot could not be created." }}
+      state={{
+        ...initialDebugSnapshotState,
+        error: "Could not save the debug snapshot. Code: debug_state_invalid",
+      }}
     />,
   );
   expect(failed).toContain('role="alert"');
-  expect(failed).toContain("could not be created");
+  expect(failed).toContain("Code: debug_state_invalid");
 });
 
 it("follows only while the viewer remains near the bottom", () => {

@@ -110,6 +110,10 @@ async function assertSnapshotContent(root: string): Promise<void> {
   const oldTrace = await json(join(root, "logs", IDS.oldRun, "trace.json"));
   const execution = await json(join(root, "logs", IDS.run, "executions", "0000.json"));
   expect((session.session as Record<string, unknown>).title).toBe("Selected");
+  expect(session.summary).toMatchObject({ runId: IDS.run, text: "private summary" });
+  expect(session.runs).toContainEqual(
+    expect.objectContaining({ agentId: "analyst", assignment: "Check the totals." }),
+  );
   expect(JSON.stringify(session)).not.toContain(IDS.otherSession);
   expect(JSON.stringify(conversation)).toContain("selected private prompt");
   expect(JSON.stringify(conversation)).not.toContain("other session secret");
