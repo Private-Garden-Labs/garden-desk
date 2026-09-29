@@ -119,12 +119,10 @@ function matches(skill: SkillSummary, query: string): boolean {
 function Toolbar({
   controller,
   nativeActionMessage,
-  onDone,
   search,
 }: {
   controller: SkillsController;
   nativeActionMessage: string | undefined;
-  onDone(): void;
   search: ReactNode;
 }) {
   return (
@@ -150,9 +148,6 @@ function Toolbar({
       >
         <Icon name="folder" />
       </button>
-      <button className="skills-action" onClick={onDone} type="button">
-        Done
-      </button>
     </div>
   );
 }
@@ -160,11 +155,9 @@ function Toolbar({
 export function SkillList({
   controller,
   nativeActionMessage,
-  onDone,
 }: {
   controller: SkillsController;
   nativeActionMessage: string | undefined;
-  onDone(): void;
 }) {
   const [query, setQuery] = useState("");
   const skills = controller.skills;
@@ -176,7 +169,6 @@ export function SkillList({
       <Toolbar
         controller={controller}
         nativeActionMessage={nativeActionMessage}
-        onDone={onDone}
         search={
           skills.length > 8 ? (
             <label className="skills-search">

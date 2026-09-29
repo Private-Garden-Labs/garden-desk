@@ -1,4 +1,5 @@
 import type { SkillsController } from "../skills.js";
+import { Icon } from "./icons.js";
 import { SkillEditor } from "./skill-editor.js";
 import { SkillList } from "./skill-list.js";
 
@@ -6,14 +7,14 @@ interface SkillsPageProps {
   controller: SkillsController;
   dropActive: boolean;
   nativeActionMessage: string | undefined;
-  onDone(): void;
+  onBack(): void;
 }
 
 export function SkillsPage({
   controller,
   dropActive,
   nativeActionMessage,
-  onDone,
+  onBack,
 }: SkillsPageProps) {
   const draft = controller.draft;
   return (
@@ -24,6 +25,17 @@ export function SkillsPage({
     >
       <div aria-hidden="true" className="window-drag-region" data-tauri-drag-region="" />
       <header className="skills-page-header">
+        {draft === undefined ? (
+          <button
+            aria-label="Back to chat"
+            className="header-icon-action"
+            onClick={onBack}
+            title="Back to chat"
+            type="button"
+          >
+            <Icon name="chevron-left" />
+          </button>
+        ) : null}
         <h1>{draft === undefined ? "Skills" : draft.name}</h1>
       </header>
       <div className="skills-page-body">
@@ -39,11 +51,7 @@ export function SkillsPage({
             </p>
           )}
           {draft === undefined ? (
-            <SkillList
-              controller={controller}
-              nativeActionMessage={nativeActionMessage}
-              onDone={onDone}
-            />
+            <SkillList controller={controller} nativeActionMessage={nativeActionMessage} />
           ) : (
             <SkillEditor controller={controller} draft={draft} key={draft.name} />
           )}

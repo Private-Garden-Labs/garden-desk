@@ -894,7 +894,7 @@ textarea:focus-visible {
   white-space: nowrap;
 }
 
-.rename-action {
+.header-icon-action {
   display: grid;
   width: 30px;
   height: 30px;
@@ -913,18 +913,19 @@ textarea:focus-visible {
     opacity 160ms ease;
 }
 
-.chat-header:hover .rename-action:not(:disabled),
-.rename-action:focus-visible {
+.chat-header:hover .header-icon-action:not(:disabled),
+.skills-page-header:hover .header-icon-action:not(:disabled),
+.header-icon-action:focus-visible {
   opacity: 0.85;
 }
 
-.rename-action:hover:not(:disabled) {
+.header-icon-action:hover:not(:disabled) {
   color: var(--accent-strong);
   background: var(--navigation-hover);
   opacity: 1;
 }
 
-.rename-action:disabled {
+.header-icon-action:disabled {
   opacity: 0.2;
   cursor: default;
 }
@@ -2932,6 +2933,7 @@ textarea:focus-visible {
   z-index: 2;
   display: flex;
   align-items: center;
+  gap: 4px;
   padding: 18px 22px;
   border-bottom: 1px solid var(--reading-border);
 }
@@ -3640,7 +3642,7 @@ textarea:focus-visible {
   .sidebar-item-row,
   .guided-examples button,
   .header-action,
-  .rename-action,
+  .header-icon-action,
   .sidebar-settings-button,
   .suggestions button,
   .composer,
