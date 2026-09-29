@@ -81,6 +81,7 @@
   --accent: #397f79;
   --accent-strong: #286f6d;
   --accent-soft: #c8ddd6;
+  --on-accent: #fff;
   --ember: #d96843;
   --ember-soft: #efd0c3;
   --success: #6bb287;
@@ -273,6 +274,7 @@ textarea:focus-visible {
   --accent: #6fa9a0;
   --accent-strong: #86beb4;
   --accent-soft: #2d4542;
+  --on-accent: #071f25;
   --ember: #df7958;
   --ember-soft: #442a24;
   --success: #7ab68e;
@@ -806,7 +808,7 @@ textarea:focus-visible {
   padding: 0 12px;
   border: 1px solid rgb(40 111 109 / 24%);
   border-radius: 8px;
-  color: var(--shell);
+  color: var(--on-accent);
   background: var(--accent);
   cursor: pointer;
 }
@@ -988,7 +990,7 @@ textarea:focus-visible {
 
 .rename-actions .rename-save {
   border-color: transparent;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent-strong);
 }
 
@@ -2156,7 +2158,7 @@ textarea:focus-visible {
   padding: 7px 18px;
   border: 0;
   border-radius: 999px;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   cursor: pointer;
 }
@@ -2629,7 +2631,7 @@ textarea:focus-visible {
   padding: 0 10px;
   border: 1px solid rgb(40 111 109 / 24%);
   border-radius: 8px;
-  color: var(--shell);
+  color: var(--on-accent);
   background: var(--accent);
   cursor: pointer;
 }
@@ -2801,7 +2803,7 @@ textarea:focus-visible {
   min-height: 30px;
   padding: 0 9px;
   border-radius: 8px;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   font-size: 11px;
   cursor: pointer;
@@ -2916,7 +2918,7 @@ textarea:focus-visible {
 
 .confirmation-actions .confirmation-primary {
   border-color: rgb(40 111 109 / 24%);
-  color: var(--shell);
+  color: var(--on-accent);
   background: var(--accent);
 }
 
@@ -3069,7 +3071,7 @@ textarea:focus-visible {
 
 .skills-primary {
   border-color: rgb(40 111 109 / 24%);
-  color: var(--shell);
+  color: var(--on-accent);
   background: var(--accent);
 }
 
@@ -3536,11 +3538,6 @@ textarea:focus-visible {
 .app-shell[data-theme="dark"] .confirmation-actions .confirmation-remove {
   color: #17191a;
   background: var(--ember);
-}
-
-.app-shell[data-theme="dark"] .confirmation-actions .confirmation-primary {
-  color: #071f25;
-  background: var(--accent);
 }
 
 .app-shell[data-theme="dark"] .technical-details-drawer {
