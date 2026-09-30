@@ -2,12 +2,9 @@ import { AgentArtifactSummarySchema, AgentExecutionSnapshotSchema } from "@garde
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, it } from "vitest";
 import type { DesktopApi } from "./api.js";
+import { DebugSnapshotPanel } from "./components/debug-snapshot-controls.js";
 import { SourceCode } from "./components/source-code.js";
-import {
-  DebugSnapshotPanel,
-  shouldFollowLog,
-  TechnicalDetails,
-} from "./components/technical-details.js";
+import { shouldFollowLog, TechnicalDetails } from "./components/technical-details.js";
 import { LogsPanel } from "./components/technical-logs.js";
 import { initialDebugSnapshotState } from "./debug-snapshot.js";
 import type { TimelineItem } from "./state.js";
