@@ -1,7 +1,7 @@
 ---
 name: review-opus
 description: Opus reviewer for /garden-desk-code-review; reviews all lenses for a small PR, reviews one large-PR lens, or validates one finding.
-model: claude-opus-5
+model: opus
 effort: medium
 tools: Bash, Read, Grep, Glob
 ---
