@@ -123,6 +123,19 @@ Do these steps in this order. A download link must not go live before its file a
 
 The website admin tools use `admin.gardendesk.ai`, protected by the existing Cloudflare Access login policy. The Worker also validates the Access token and requires the same origin for blog changes. Blog drafts and published Markdown use the existing D1 database; only published posts appear at `/blog/`, in the sitemap, and in the RSS feed. Apply the database migration before deployment, and add the admin hostname to Access before adding its Worker route. To try the admin tools and blog locally, run `pnpm site:admin` and open the admin link it prints.
 
+Claude Code and Codex can list, read, create, and update blog posts through the MCP endpoint (Model Context Protocol, the way coding agents connect to tools) at `https://admin.gardendesk.ai/mcp`. Create a Cloudflare Access service token, add a Service Auth policy for it to the admin Access application, and keep its ID and secret in `GARDEN_ACCESS_CLIENT_ID` and `GARDEN_ACCESS_CLIENT_SECRET`. While `pnpm site:admin` runs, `http://127.0.0.1:4175/mcp` works without a token.
+
+```bash
+claude mcp add --transport http garden-blog https://admin.gardendesk.ai/mcp --header "CF-Access-Client-Id: $GARDEN_ACCESS_CLIENT_ID" --header "CF-Access-Client-Secret: $GARDEN_ACCESS_CLIENT_SECRET"
+```
+
+```toml
+# ~/.codex/config.toml
+[mcp_servers.garden-blog]
+url = "https://admin.gardendesk.ai/mcp"
+env_http_headers = { "CF-Access-Client-Id" = "GARDEN_ACCESS_CLIENT_ID", "CF-Access-Client-Secret" = "GARDEN_ACCESS_CLIENT_SECRET" }
+```
+
 ## Agent Skills
 
 The skills under [.agents/skills](../.agents/skills) package this workflow for Codex and Claude Code. See [.agents/skills/README.md](../.agents/skills/README.md).

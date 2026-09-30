@@ -3,12 +3,14 @@ import client from "./admin-client.txt";
 import { type Post, type PostInput, post, posts, save, validInput } from "./blog-store";
 import type { Env } from "./index";
 import { markdown } from "./markdown";
+import { mcp } from "./mcp";
 import { adminPage, escapeHtml, publicOrigin, responseHeaders, time } from "./page";
 
 const scripts: Record<string, string> = { "/editor.js": client, "/appearance.js": appearance };
 
 export async function admin(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  if (url.pathname === "/mcp") return mcp(request, env);
   if (url.pathname.startsWith("/api/")) return api(request, env, url.pathname);
   if (request.method !== "GET" && request.method !== "HEAD")
     return new Response("Method not allowed", { status: 405 });

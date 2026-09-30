@@ -101,6 +101,41 @@ test("only the signed-in admin can publish safe Markdown, and drafts stay privat
   }
 });
 
+test("the blog MCP endpoint needs the Access token and a matching origin", async () => {
+  const db = new DatabaseSync(":memory:");
+  const env = blogEnvironment(db);
+  const jwt = await blogToken(env);
+  const context = { waitUntil: () => undefined };
+  const create = (headers: Record<string, string>) =>
+    worker.fetch(
+      new Request("https://admin.gardendesk.ai/mcp", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/call",
+          params: { name: "create_post", arguments: { slug: "first-post", ...draftPost() } },
+        }),
+      }),
+      env,
+      context,
+    );
+  try {
+    expect((await create({})).status).toBe(403);
+    expect(
+      (await create({ "cf-access-jwt-assertion": jwt, origin: "https://other.example" })).status,
+    ).toBe(403);
+    expect(await (await create({ "cf-access-jwt-assertion": jwt })).json()).toMatchObject({
+      result: { content: [{ text: "Saved as a draft." }] },
+    });
+    const page = new Request("https://gardendesk.ai/blog/first-post/");
+    expect((await worker.fetch(page, env, context)).status).toBe(404);
+  } finally {
+    db.close();
+  }
+});
+
 function blogEnvironment(db: DatabaseSync): Env {
   db.exec(blogSchema);
   return {
