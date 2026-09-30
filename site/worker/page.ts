@@ -56,17 +56,40 @@ interface AdminPage {
   editor?: boolean;
 }
 
+const appearanceIcons = {
+  system: "M4 5h16v12H4zM9 21h6M12 17v4",
+  light:
+    "M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4m0-14.2-1.4 1.4M6.3 17.7l-1.4 1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0",
+  dark: "M20 15.5A8 8 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5z",
+};
+
 export function adminPage(options: AdminPage): Response {
   const link = (path: string, label: string) =>
     `<a href="${path}"${path === options.section ? ' aria-current="page"' : ""}>${label}</a>`;
+  const icons = Object.entries(appearanceIcons)
+    .map(
+      ([name, path]) =>
+        `<svg class="icon-${name}" viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"/></svg>`,
+    )
+    .join("");
   return new Response(
     `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(options.title)} | Garden Desk admin</title><link rel="icon" href="/assets/favicon.svg"><link rel="stylesheet" href="/assets/admin.css"></head>
+<title>${escapeHtml(options.title)} | Garden Desk admin</title><link rel="icon" href="/assets/favicon.svg"><script src="/appearance.js"></script><link rel="stylesheet" href="/assets/admin.css"></head>
 <body><a class="skip-link" href="#main">Skip to content</a>
-<header><a class="wordmark" href="/stats/"><img src="/assets/favicon.svg" alt="">Garden Desk admin</a><nav aria-label="Admin">${link("/stats/", "Analytics")}${link("/blog/", "Blog")}<a href="${publicOrigin}/">Website</a></nav></header>
-<main id="main">${options.body}</main>${options.editor ? '<script type="module" src="/editor.js"></script>' : ""}</body></html>`,
+<header><a class="wordmark" href="/stats/"><img src="/assets/favicon.svg" alt="">Garden Desk <span>Admin</span></a><nav aria-label="Admin">${link("/stats/", "Analytics")}${link("/blog/", "Blog")}<a href="${publicOrigin}/">Website</a></nav><button type="button" id="appearance" class="appearance" aria-label="Appearance: System. Switch to Light">${icons}</button></header>
+<main id="main"${options.editor ? ' class="wide"' : ""}>${options.body}</main>${options.editor ? '<script type="module" src="/editor.js"></script>' : ""}</body></html>`,
     { headers: responseHeaders("text/html; charset=utf-8", true) },
   );
+}
+
+export function time(value: string | null): string {
+  const label = new Date(value ?? "").toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  return `<time datetime="${value}">${label}</time>`;
 }
 
 export function responseHeaders(type: string, privatePage = false): Record<string, string> {

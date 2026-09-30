@@ -1,7 +1,7 @@
 import { type Post, post, posts } from "./blog-store";
 import type { Env } from "./index";
 import { markdown } from "./markdown";
-import { escapeHtml, publicOrigin, publicPage, responseHeaders } from "./page";
+import { escapeHtml, publicOrigin, publicPage, responseHeaders, time } from "./page";
 
 export async function blog(request: Request, env: Env): Promise<Response | undefined> {
   const path = new URL(request.url).pathname;
@@ -107,14 +107,4 @@ async function sitemap(request: Request, env: Env): Promise<Response> {
 
 function redirect(path: string): Response {
   return new Response(null, { status: 301, headers: { location: path } });
-}
-
-function time(value: string | null): string {
-  const label = new Date(value ?? "").toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-  return `<time datetime="${value}">${label}</time>`;
 }
