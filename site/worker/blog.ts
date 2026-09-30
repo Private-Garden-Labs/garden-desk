@@ -1,7 +1,7 @@
 import { type Post, post, posts } from "./blog-store";
 import type { Env } from "./index";
 import { markdown } from "./markdown";
-import { escapeHtml, page, publicOrigin, responseHeaders } from "./page";
+import { escapeHtml, publicOrigin, publicPage, responseHeaders } from "./page";
 
 export async function blog(request: Request, env: Env): Promise<Response | undefined> {
   const path = new URL(request.url).pathname;
@@ -9,18 +9,17 @@ export async function blog(request: Request, env: Env): Promise<Response | undef
   if (!path.startsWith("/blog")) return undefined;
   if (request.method !== "GET" && request.method !== "HEAD")
     return new Response("Method not allowed", { status: 405 });
-  if (path === "/blog") return Response.redirect(`${publicOrigin}/blog/`, 301);
+  if (path === "/blog") return redirect("/blog/");
   if (path === "/blog/feed.xml") return feed(env);
   if (path === "/blog/") return index(env);
-  return serveArticle(path, env);
+  return serveArticle(request, path, env);
 }
 
-async function serveArticle(path: string, env: Env): Promise<Response> {
+async function serveArticle(request: Request, path: string, env: Env): Promise<Response> {
   const match = path.match(/^\/blog\/([a-z0-9]+(?:-[a-z0-9]+)*)(\/|\.md)?$/u);
-  if (match?.[1] === undefined) return missing();
-  const entry = await post(env, match[1]);
-  if (entry === undefined) return missing();
-  if (match[2] === ".md")
+  const entry = match?.[1] === undefined ? undefined : await post(env, match[1]);
+  if (entry === undefined) return env.ASSETS.fetch(request);
+  if (match?.[2] === ".md")
     return new Response(
       `# ${entry.title}\n\n${entry.description}\n\nBy Garden Desk team\n\n${entry.markdown}`,
       {
@@ -30,30 +29,30 @@ async function serveArticle(path: string, env: Env): Promise<Response> {
         },
       },
     );
-  if (match[2] === undefined) return Response.redirect(`${publicOrigin}/blog/${entry.slug}/`, 301);
-  return article(entry);
+  if (match?.[2] === undefined) return redirect(`/blog/${entry.slug}/`);
+  return article(env, entry);
 }
 
 async function index(env: Env): Promise<Response> {
   const entries = await posts(env);
-  const body =
+  const cards =
     entries.length === 0
-      ? "<p>Our first post is on its way.</p>"
+      ? "<section><p>The first post is on its way.</p></section>"
       : entries
           .map(
             (entry) =>
-              `<article class="post-summary"><p class="meta">${date(entry.published_at)}</p><h2><a href="/blog/${entry.slug}/">${escapeHtml(entry.title)}</a></h2><p>${escapeHtml(entry.description)}</p><a href="/blog/${entry.slug}/">Read post</a></article>`,
+              `<section class="post-card"><p class="page-meta">${time(entry.published_at)}</p><h2><a href="/blog/${entry.slug}/">${escapeHtml(entry.title)}</a></h2><p>${escapeHtml(entry.description)}</p></section>`,
           )
           .join("");
-  return page({
+  return publicPage(env, {
     title: "Blog",
     description: "Notes and news from the Garden Desk team.",
     path: "/blog/",
-    body: `<h1>From the Garden Desk team</h1><p class="lede">Notes, news, and useful ways to work with your files.</p>${body}`,
+    body: `<h1>From the Garden Desk team</h1><p class="lede">Notes, news, and useful ways to work with your files. Follow along with the <a href="/blog/feed.xml">RSS feed</a>.</p>${cards}`,
   });
 }
 
-function article(entry: Post): Response {
+function article(env: Env, entry: Post): Promise<Response> {
   const url = `${publicOrigin}/blog/${entry.slug}/`;
   const schema = {
     "@context": "https://schema.org",
@@ -68,12 +67,12 @@ function article(entry: Post): Response {
     author: { "@type": "Organization", name: "Garden Desk team", url: publicOrigin },
     publisher: { "@type": "Organization", name: "Garden Desk", url: publicOrigin },
   };
-  return page({
+  return publicPage(env, {
     title: entry.title,
     description: entry.description,
     path: `/blog/${entry.slug}/`,
     schema,
-    body: `<article><a href="/blog/">All posts</a><h1>${escapeHtml(entry.title)}</h1><p class="meta">Garden Desk team · <time datetime="${entry.published_at}">${date(entry.published_at)}</time></p><p class="lede">${escapeHtml(entry.description)}</p><div class="prose">${markdown(entry.markdown)}</div><p><a href="/blog/${entry.slug}.md">Read as Markdown</a></p></article>`,
+    body: `<p class="page-meta">${time(entry.published_at)} · Garden Desk team</p><h1>${escapeHtml(entry.title)}</h1><p class="lede">${escapeHtml(entry.description)}</p><section class="prose">${markdown(entry.markdown)}</section><p class="post-links"><a href="/blog/">All posts</a><a href="/blog/${entry.slug}.md">Read as Markdown</a></p>`,
   });
 }
 
@@ -106,18 +105,16 @@ async function sitemap(request: Request, env: Env): Promise<Response> {
   });
 }
 
-function missing(): Response {
-  return new Response("Post not found", {
-    status: 404,
-    headers: responseHeaders("text/plain; charset=utf-8"),
-  });
+function redirect(path: string): Response {
+  return new Response(null, { status: 301, headers: { location: path } });
 }
 
-function date(value: string | null): string {
-  return new Date(value ?? "").toLocaleDateString("en-GB", {
+function time(value: string | null): string {
+  const label = new Date(value ?? "").toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
     timeZone: "UTC",
   });
+  return `<time datetime="${value}">${label}</time>`;
 }

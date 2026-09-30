@@ -1,7 +1,6 @@
 import { isOwner } from "./access";
 import { admin } from "./admin";
 import { blog } from "./blog";
-import { adminOrigin } from "./page";
 import { stats } from "./stats";
 
 interface Statement {
@@ -34,23 +33,13 @@ export default {
     if (url.hostname === "downloads.gardendesk.ai")
       return serveDownload(request, url, env, context);
     if (url.hostname === "admin.gardendesk.ai") return serveAdmin(request, env);
-    if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
-      const path = url.pathname.slice(6) || "/";
-      return Response.redirect(
-        `${adminOrigin}${path.endsWith("/") ? path : `${path}/`}${url.search}`,
-        301,
-      );
-    }
-    const response = await blog(request, env);
-    return servePage(request, env, context, response);
+    return servePage(request, env, context, await blog(request, env));
   },
 };
 
 async function serveAdmin(request: Request, env: Env): Promise<Response> {
   if (!(await isOwner(request, env))) return new Response("Forbidden", { status: 403 });
-  const response =
-    new URL(request.url).pathname === "/stats/" ? await stats(env) : await admin(request, env);
-  return request.method === "HEAD" ? new Response(null, response) : response;
+  return new URL(request.url).pathname === "/stats/" ? stats(env) : admin(request, env);
 }
 
 function counted(request: Request): boolean {
@@ -88,7 +77,7 @@ async function servePage(
       count(env, "visit", visitorPlatform(request.headers.get("user-agent") ?? "")),
     );
   }
-  return request.method === "HEAD" ? new Response(null, response) : response;
+  return response;
 }
 
 function visitorPlatform(agent: string): string {

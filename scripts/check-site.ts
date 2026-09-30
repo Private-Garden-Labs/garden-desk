@@ -12,6 +12,7 @@ const routeFiles = [
   "alex/index.html",
   "demo/index.html",
   "releases/index.html",
+  "blog/index.html",
   "supporters/index.html",
   "privacy/index.html",
   "terms/index.html",
@@ -42,7 +43,7 @@ function publishedUrl(path: string): URL {
 }
 
 function localOutputPath(url: URL): string | undefined {
-  if (url.origin !== publishedRoot.origin || url.pathname === "/blog/") return undefined;
+  if (url.origin !== publishedRoot.origin) return undefined;
   const route = decodeURIComponent(url.pathname.slice(publishedRoot.pathname.length));
   const targetRoute = route === "" || route.endsWith("/") ? `${route}index.html` : route;
   return join(output, targetRoute);

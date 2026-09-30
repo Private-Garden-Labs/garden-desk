@@ -1,5 +1,5 @@
 import type { Env } from "./index";
-import { page } from "./page";
+import { adminPage } from "./page";
 
 interface Row {
   day: string;
@@ -15,12 +15,10 @@ export async function stats(env: Env): Promise<Response> {
   )
     .bind(since)
     .all<Row>();
-  return page({
+  return adminPage({
     title: "Analytics",
-    description: "Garden Desk website analytics.",
-    path: "/stats/",
-    admin: true,
-    body: `<h1>Analytics</h1><p>Last 90 days. Dates use UTC. Page loads and download starts can include repeat visits.</p>${table(
+    section: "/stats/",
+    body: `<h1>Analytics</h1><p class="meta">Last 90 days. Dates use UTC. Page loads and download starts can include repeat visits.</p>${table(
       "Page loads",
       results.filter((row) => row.kind === "visit"),
     )}${table(
@@ -31,6 +29,7 @@ export async function stats(env: Env): Promise<Response> {
 }
 
 function table(title: string, rows: Row[]): string {
+  if (rows.length === 0) return `<h2>${title}</h2><p class="empty">None in the last 90 days.</p>`;
   const platforms = [...new Set(rows.map((row) => row.platform))].sort((a, b) =>
     a.localeCompare(b),
   );
@@ -47,7 +46,7 @@ function table(title: string, rows: Row[]): string {
   const sums = platforms.map((platform) =>
     rows.filter((row) => row.platform === platform).reduce((sum, row) => sum + row.count, 0),
   );
-  return `<h2>${title}</h2><div class="table-scroll"><table><thead><tr><th>Day</th><th>Total</th>${platforms
+  return `<h2>${title}</h2><div class="table-scroll"><table class="numbers"><thead><tr><th>Day</th><th>Total</th>${platforms
     .map((platform) => `<th>${platform}</th>`)
     .join(
       "",

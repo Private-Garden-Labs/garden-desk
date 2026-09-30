@@ -9,7 +9,7 @@
     "directory": "../dist",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "run_worker_first": true
+    "run_worker_first": ["/*", "!/assets/*"]
   },
   "routes": [
     { "pattern": "gardendesk.ai", "custom_domain": true },

@@ -1,25 +1,8 @@
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server.browser";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { micromark } from "micromark";
+import { gfm, gfmHtml } from "micromark-extension-gfm";
 
 export function markdown(source: string): string {
-  return renderToStaticMarkup(
-    createElement(
-      Markdown,
-      {
-        skipHtml: true,
-        remarkPlugins: [remarkGfm],
-        components: {
-          table: ({ children }) =>
-            createElement(
-              "div",
-              { className: "table-scroll" },
-              createElement("table", null, children),
-            ),
-        },
-      },
-      source,
-    ),
-  );
+  return micromark(source, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })
+    .replaceAll("<table>", '<div class="table-scroll"><table>')
+    .replaceAll("</table>", "</table></div>");
 }

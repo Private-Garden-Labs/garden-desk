@@ -1,8 +1,8 @@
 import client from "./admin-client.txt";
-import { type Post, post, posts, save, validInput } from "./blog-store";
+import { type Post, type PostInput, post, posts, save, validInput } from "./blog-store";
 import type { Env } from "./index";
 import { markdown } from "./markdown";
-import { adminOrigin, escapeHtml, page, publicOrigin, responseHeaders } from "./page";
+import { adminPage, escapeHtml, publicOrigin, responseHeaders } from "./page";
 
 export async function admin(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
@@ -13,8 +13,8 @@ export async function admin(request: Request, env: Env): Promise<Response> {
     return new Response(client, {
       headers: responseHeaders("text/javascript; charset=utf-8", true),
     });
-  if (url.pathname.startsWith("/assets/")) return env.ASSETS.fetch(request);
-  if (url.pathname === "/") return Response.redirect(`${adminOrigin}/stats/`, 302);
+  if (url.pathname === "/")
+    return new Response(null, { status: 302, headers: { location: "/stats/" } });
   if (url.pathname === "/blog/") return list(env);
   if (url.pathname === "/new/") return editor();
   const slug = url.pathname.match(/^\/blog\/([a-z0-9]+(?:-[a-z0-9]+)*)\/$/u)?.[1];
@@ -23,57 +23,37 @@ export async function admin(request: Request, env: Env): Promise<Response> {
 }
 
 async function api(request: Request, env: Env, path: string): Promise<Response> {
-  if (request.method !== "PUT" && request.method !== "POST")
-    return json({ error: "Method not allowed" }, 405);
   if (request.headers.get("origin") !== new URL(request.url).origin)
     return json({ error: "Forbidden" }, 403);
-  if (!request.headers.get("content-type")?.startsWith("application/json"))
-    return json({ error: "Use JSON" }, 415);
   let input: unknown;
   try {
-    input = JSON.parse(await boundedBody(request));
+    input = await request.json();
   } catch {
-    return json({ error: "Invalid or too large post" }, 400);
+    return json({ error: "Invalid request" }, 400);
   }
+  if (path === "/api/preview" && request.method === "POST") return preview(input);
+  const slug = path.match(/^\/api\/posts\/([a-z0-9]+(?:-[a-z0-9]+)*)$/u)?.[1];
+  if (
+    slug === undefined ||
+    slug.length > 100 ||
+    (request.method !== "PUT" && request.method !== "POST")
+  )
+    return json({ error: "Invalid post address" }, 400);
   if (!validInput(input))
     return json(
       { error: "Enter a title, description, and post. Maximum post length is 100,000 characters." },
       400,
     );
-  if (path === "/api/preview" && request.method === "POST")
-    return json({ html: markdown(input.markdown) });
-  return writePost(request, env, path, input);
-}
-
-async function writePost(
-  request: Request,
-  env: Env,
-  path: string,
-  input: import("./blog-store").PostInput,
-): Promise<Response> {
-  const slug = path.match(/^\/api\/posts\/([a-z0-9]+(?:-[a-z0-9]+)*)$/u)?.[1];
-  if (slug === undefined || slug.length > 100) return json({ error: "Invalid post address" }, 400);
   if (!(await save(env, slug, input, request.method === "POST")))
     return json({ error: "This URL name is already used. Choose another name." }, 409);
-  return json({ url: `/blog/${slug}/`, published: input.publish });
+  return json({ url: `/blog/${slug}/` });
 }
 
-async function boundedBody(request: Request): Promise<string> {
-  const reader = request.body?.getReader();
-  if (reader === undefined) throw new Error("Missing body");
-  const decoder = new TextDecoder();
-  let body = "";
-  let size = 0;
-  while (true) {
-    const chunk = await reader.read();
-    if (chunk.done) return body + decoder.decode();
-    size += chunk.value.byteLength;
-    if (size > 500_000) {
-      await reader.cancel();
-      throw new Error("Post too large");
-    }
-    body += decoder.decode(chunk.value, { stream: true });
-  }
+function preview(input: unknown): Response {
+  const source = (input as Partial<PostInput> | null)?.markdown;
+  if (typeof source !== "string" || source.length > 100_000)
+    return json({ error: "Maximum post length is 100,000 characters." }, 400);
+  return json({ html: markdown(source) });
 }
 
 async function list(env: Env): Promise<Response> {
@@ -81,37 +61,43 @@ async function list(env: Env): Promise<Response> {
   const rows = entries
     .map(
       (entry) =>
-        `<tr><td><a href="/blog/${entry.slug}/">${escapeHtml(entry.title)}</a></td><td>${entry.published_at === null ? "Draft" : "Published"}</td><td>${escapeHtml(entry.updated_at.slice(0, 10))}</td></tr>`,
+        `<tr><td><a href="/blog/${entry.slug}/">${escapeHtml(entry.title)}</a></td><td>${entry.published_at === null ? '<span class="badge">Draft</span>' : '<span class="badge published">Published</span>'}</td><td><time datetime="${entry.updated_at}">${entry.updated_at.slice(0, 10)}</time></td></tr>`,
     )
     .join("");
-  return page({
+  return adminPage({
     title: "Blog posts",
-    description: "Manage Garden Desk blog posts.",
-    path: "/blog/",
-    admin: true,
-    body: `<div class="page-heading"><h1>Blog posts</h1><a class="button" href="/new/">New post</a></div><p>Write a draft, preview it, then publish it on the website.</p>${entries.length === 0 ? "<p>No posts yet.</p>" : `<div class="table-scroll"><table><thead><tr><th>Post</th><th>Status</th><th>Updated</th></tr></thead><tbody>${rows}</tbody></table></div>`}`,
+    section: "/blog/",
+    body: `<div class="page-heading"><h1>Blog posts</h1><a class="button" href="/new/">New post</a></div>${entries.length === 0 ? '<p class="empty">No posts yet. Write a draft, preview it, then publish it on the website.</p>' : `<div class="table-scroll"><table><thead><tr><th>Post</th><th>Status</th><th>Updated</th></tr></thead><tbody>${rows}</tbody></table></div>`}`,
   });
 }
 
 function editor(entry?: Post): Response {
   const published = entry?.published_at != null;
-  const existing = entry !== undefined;
   const fields = entry ?? { slug: "", title: "", description: "", markdown: "" };
-  const title = existing ? "Edit post" : "New post";
-  return page({
-    title,
-    description: "Write a Garden Desk blog post.",
-    path: existing ? `/blog/${fields.slug}/` : "/new/",
-    admin: true,
+  const status =
+    entry === undefined
+      ? "New draft. Only you can see it."
+      : published
+        ? `Published on the website. <a href="${publicOrigin}/blog/${fields.slug}/">View post</a>`
+        : "Draft. Only you can see it.";
+  const actions = published
+    ? '<button type="submit" value="save">Save changes</button><button type="submit" value="unpublish" class="danger">Remove from website</button>'
+    : '<button type="submit" value="save" class="secondary">Save draft</button><button type="submit" value="publish">Publish</button>';
+  return adminPage({
+    title: entry === undefined ? "New post" : fields.title,
+    section: "/blog/",
     editor: true,
-    body: `<a href="/blog/">All posts</a><h1>${title}</h1><p>Every post is from the Garden Desk team.</p>
-<form id="post-form" data-published="${published}" data-existing="${existing}">
+    body: `<form id="post-form" data-published="${published}" data-existing="${entry !== undefined}">
+<div class="editor-bar"><div><a href="/blog/">All posts</a><h1>${entry === undefined ? "New post" : "Edit post"}</h1><p class="meta">${status}</p></div><div class="actions">${actions}</div></div>
+<p id="save-status" role="status" aria-live="polite"></p>
+<div class="editor-grid"><div class="fields">
 <label>Title<input name="title" required maxlength="180" value="${escapeHtml(fields.title)}"></label>
-<label>URL name<input name="slug" required maxlength="100" pattern="[a-z0-9]+(-[a-z0-9]+)*" ${existing ? "readonly" : ""} value="${escapeHtml(fields.slug)}" aria-describedby="slug-help"></label><p id="slug-help" class="meta">Lowercase letters, numbers, and hyphens. The address stays fixed after the first save.</p>
+<label>URL name<span class="slug"><span>gardendesk.ai/blog/</span><input name="slug" required maxlength="100" pattern="[a-z0-9]+(-[a-z0-9]+)*" ${entry === undefined ? "" : "readonly"} value="${escapeHtml(fields.slug)}" aria-describedby="slug-help"></span></label>
+<p id="slug-help" class="meta">Lowercase letters, numbers, and hyphens. It cannot change after the first save.</p>
 <label>Description<textarea name="description" required maxlength="320" rows="2">${escapeHtml(fields.description)}</textarea></label>
-<div class="editor-grid"><label>Markdown<textarea name="markdown" required maxlength="100000" rows="22" spellcheck="true">${escapeHtml(fields.markdown)}</textarea></label><section aria-label="Post preview"><h2>Preview</h2><div id="preview" class="prose">${existing ? markdown(fields.markdown) : "<p>Your preview will appear here.</p>"}</div></section></div>
-<div class="actions"><button type="submit" value="save">${published ? "Save changes" : "Save draft"}</button>${published ? "" : '<button type="submit" value="publish">Publish</button>'}${published ? '<button type="submit" value="unpublish" class="secondary">Remove from website</button>' : ""}<button type="button" id="preview-button" class="secondary">Refresh preview</button>${published ? `<a href="${publicOrigin}/blog/${fields.slug}/">View public post</a>` : ""}</div>
-<p id="save-status" role="status" aria-live="polite"></p></form>`,
+<label class="markdown">Markdown<textarea name="markdown" required maxlength="100000" spellcheck="true">${escapeHtml(fields.markdown)}</textarea></label>
+</div><section class="preview" aria-label="Preview"><h1 id="preview-title">${escapeHtml(fields.title)}</h1><p id="preview-description" class="lede">${escapeHtml(fields.description)}</p><div id="preview" class="prose">${markdown(fields.markdown)}</div></section></div>
+</form>`,
   });
 }
 

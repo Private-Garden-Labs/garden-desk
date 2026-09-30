@@ -1,5 +1,6 @@
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { afterEach, expect, test, vi } from "vitest";
+import template from "../blog/index.html?raw";
 import worker, { type Env } from "./index";
 import blogSchema from "./migrations/0002_blog_posts.sql?raw";
 
@@ -104,8 +105,13 @@ function blogEnvironment(db: DatabaseSync): Env {
   db.exec(blogSchema);
   return {
     ASSETS: {
-      fetch: async () =>
-        new Response("<urlset><url><loc>https://gardendesk.ai/</loc></url></urlset>"),
+      fetch: async (request) => {
+        const path = new URL(request.url).pathname;
+        if (path === "/blog/") return new Response(template);
+        if (path === "/sitemap.xml")
+          return new Response("<urlset><url><loc>https://gardendesk.ai/</loc></url></urlset>");
+        return new Response("Not found", { status: 404 });
+      },
     },
     ACCESS_TEAM_DOMAIN: "https://team.cloudflareaccess.com",
     ACCESS_AUD: "blog",
@@ -160,9 +166,6 @@ async function checkPublished(
   expect(await (await open("/sitemap.xml")).text()).toContain("/blog/first-post/");
   expect(await (await open("/blog/feed.xml")).text()).toContain("/blog/first-post/");
   expect(await (await open("/blog/first-post.md")).text()).toContain(source);
-  expect((await open("/admin/stats")).headers.get("location")).toBe(
-    "https://admin.gardendesk.ai/stats/",
-  );
 }
 
 function draftPost() {
