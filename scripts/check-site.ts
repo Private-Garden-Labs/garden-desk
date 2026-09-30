@@ -42,7 +42,7 @@ function publishedUrl(path: string): URL {
 }
 
 function localOutputPath(url: URL): string | undefined {
-  if (url.origin !== publishedRoot.origin) return undefined;
+  if (url.origin !== publishedRoot.origin || url.pathname === "/blog/") return undefined;
   const route = decodeURIComponent(url.pathname.slice(publishedRoot.pathname.length));
   const targetRoute = route === "" || route.endsWith("/") ? `${route}index.html` : route;
   return join(output, targetRoute);

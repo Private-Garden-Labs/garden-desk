@@ -9,11 +9,12 @@
     "directory": "../dist",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/*", "!/assets/*"]
+    "run_worker_first": true
   },
   "routes": [
     { "pattern": "gardendesk.ai", "custom_domain": true },
     { "pattern": "www.gardendesk.ai", "custom_domain": true },
+    { "pattern": "admin.gardendesk.ai", "custom_domain": true },
     { "pattern": "downloads.gardendesk.ai/*", "zone_name": "gardendesk.ai" }
   ],
   "d1_databases": [

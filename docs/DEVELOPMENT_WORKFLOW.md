@@ -121,6 +121,8 @@ Do these steps in this order. A download link must not go live before its file a
 5. In one pull request, change each link in the home page hero (`site/index.html`), each link and SHA-256 on `site/releases/index.html`, and the links in `scripts/check-site.ts`. Run `pnpm site:check`.
 6. After the merge, the "Deploy public website" workflow publishes the site to Cloudflare. A page that was open before the deploy can show the old links. Check the live page with `curl -s https://gardendesk.ai/ | rg data-download` or reload it with Command-Shift-R.
 
+The website admin tools use `admin.gardendesk.ai`, protected by the existing Cloudflare Access login policy. Old `/admin/` links redirect there. The Worker also validates the Access token and requires the same origin for blog changes. Blog drafts and published Markdown use the existing D1 database; only published posts appear at `/blog/`, in the sitemap, and in the RSS feed. Apply the database migration before deployment, and add the admin hostname to Access before adding its Worker route.
+
 ## Agent Skills
 
 The skills under [.agents/skills](../.agents/skills) package this workflow for Codex and Claude Code. See [.agents/skills/README.md](../.agents/skills/README.md).

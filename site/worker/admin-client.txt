@@ -1,0 +1,78 @@
+const form = document.querySelector("#post-form");
+const status = document.querySelector("#save-status");
+const preview = document.querySelector("#preview");
+const field = (name) => form.elements.namedItem(name);
+let dirty = false;
+
+form.addEventListener("input", () => {
+  dirty = true;
+});
+window.addEventListener("beforeunload", (event) => {
+  if (dirty) {
+    event.preventDefault();
+    event.returnValue = "";
+  }
+});
+
+function input(publish) {
+  return {
+    title: field("title").value,
+    description: field("description").value,
+    markdown: field("markdown").value,
+    publish,
+  };
+}
+
+async function send(path, method, body) {
+  const response = await fetch(path, {
+    method,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (
+    response.redirected ||
+    !response.headers.get("content-type")?.startsWith("application/json")
+  ) {
+    throw new Error("Your login has expired. Copy your text before you sign in again.");
+  }
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error ?? "The request failed. Your text is still here.");
+  return result;
+}
+
+function busy(value) {
+  for (const control of form.querySelectorAll("button,input,textarea")) control.disabled = value;
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const action = event.submitter?.value ?? "save";
+  const publish = action === "publish" || (action === "save" && form.dataset.published === "true");
+  status.textContent = "Saving…";
+  busy(true);
+  try {
+    const result = await send(
+      `/api/posts/${field("slug").value}`,
+      form.dataset.existing === "true" ? "PUT" : "POST",
+      input(publish),
+    );
+    dirty = false;
+    window.location.assign(result.url);
+  } catch (error) {
+    status.textContent = error.message;
+    busy(false);
+  }
+});
+
+document.querySelector("#preview-button").addEventListener("click", async () => {
+  status.textContent = "Loading preview…";
+  busy(true);
+  try {
+    const result = await send("/api/preview", "POST", input(false));
+    preview.innerHTML = result.html;
+    status.textContent = "Preview updated.";
+  } catch (error) {
+    status.textContent = error.message;
+  }
+  busy(false);
+});
