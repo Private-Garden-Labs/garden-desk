@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { chmod, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -35,20 +35,8 @@ export interface DebugFixture {
 }
 
 async function applyMigrations(database: DatabaseSync): Promise<void> {
-  for (let version = 1; version <= 10; version += 1) {
-    const names = [
-      "initial",
-      "audit-head",
-      "conversations",
-      "agent",
-      "agent-performance",
-      "agent-workspace",
-      "agent-executions",
-      "agent-inference-traces",
-      "folder-order",
-      "agent-skill-request-traces",
-    ];
-    const name = `${String(version).padStart(4, "0")}-${names[version - 1]}.sql`;
+  const names = (await readdir(migrationRoot)).filter((name) => name.endsWith(".sql")).sort();
+  for (const name of names) {
     database.exec(await readFile(join(migrationRoot, name), "utf8"));
   }
 }
@@ -130,7 +118,7 @@ function insertRuns(database: DatabaseSync): void {
   insertJob.run(IDS.oldJob, "old", NOW, NOW);
   database
     .prepare(
-      "INSERT INTO agent_runs (id, session_id, job_id, state, response, error, created_at, updated_at, performance_json, trace_version) VALUES (?, ?, ?, 'succeeded', ?, NULL, ?, ?, NULL, 1)",
+      "INSERT INTO agent_runs (id, session_id, job_id, state, response, error, created_at, updated_at, performance_json, trace_version, agent_id, assignment) VALUES (?, ?, ?, 'succeeded', ?, NULL, ?, ?, NULL, 1, 'analyst', 'Check the totals.')",
     )
     .run(IDS.run, IDS.session, IDS.job, "done", NOW, NOW);
   database
@@ -138,6 +126,9 @@ function insertRuns(database: DatabaseSync): void {
       "INSERT INTO agent_runs (id, session_id, job_id, state, response, error, created_at, updated_at, performance_json, trace_version) VALUES (?, ?, ?, 'succeeded', ?, NULL, ?, ?, NULL, 0)",
     )
     .run(IDS.oldRun, IDS.session, IDS.oldJob, "historical", NOW, NOW);
+  database
+    .prepare("INSERT INTO agent_session_summaries VALUES (?, ?, ?, ?, 1, ?)")
+    .run(IDS.session, IDS.run, "private summary", IDS.message, NOW);
   insertExecutionEvidence(database);
 }
 

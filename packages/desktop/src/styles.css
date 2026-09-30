@@ -81,6 +81,7 @@
   --accent: #397f79;
   --accent-strong: #286f6d;
   --accent-soft: #c8ddd6;
+  --on-accent: #fff;
   --ember: #d96843;
   --ember-soft: #efd0c3;
   --success: #6bb287;
@@ -273,6 +274,7 @@ textarea:focus-visible {
   --accent: #6fa9a0;
   --accent-strong: #86beb4;
   --accent-soft: #2d4542;
+  --on-accent: #071f25;
   --ember: #df7958;
   --ember-soft: #442a24;
   --success: #7ab68e;
@@ -806,7 +808,7 @@ textarea:focus-visible {
   padding: 0 12px;
   border: 1px solid rgb(40 111 109 / 24%);
   border-radius: 8px;
-  color: var(--shell);
+  color: var(--on-accent);
   background: var(--accent);
   cursor: pointer;
 }
@@ -892,7 +894,7 @@ textarea:focus-visible {
   white-space: nowrap;
 }
 
-.rename-action {
+.header-icon-action {
   display: grid;
   width: 30px;
   height: 30px;
@@ -911,18 +913,19 @@ textarea:focus-visible {
     opacity 160ms ease;
 }
 
-.chat-header:hover .rename-action:not(:disabled),
-.rename-action:focus-visible {
+.chat-header:hover .header-icon-action:not(:disabled),
+.skills-page-header:hover .header-icon-action:not(:disabled),
+.header-icon-action:focus-visible {
   opacity: 0.85;
 }
 
-.rename-action:hover:not(:disabled) {
+.header-icon-action:hover:not(:disabled) {
   color: var(--accent-strong);
   background: var(--navigation-hover);
   opacity: 1;
 }
 
-.rename-action:disabled {
+.header-icon-action:disabled {
   opacity: 0.2;
   cursor: default;
 }
@@ -988,7 +991,7 @@ textarea:focus-visible {
 
 .rename-actions .rename-save {
   border-color: transparent;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent-strong);
 }
 
@@ -2156,7 +2159,7 @@ textarea:focus-visible {
   padding: 7px 18px;
   border: 0;
   border-radius: 999px;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   cursor: pointer;
 }
@@ -2541,16 +2544,26 @@ textarea:focus-visible {
 .debug-snapshot-controls {
   display: grid;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .debug-snapshot-controls button {
   min-height: 34px;
   padding: 0 10px;
+  border: 1px solid var(--reading-border);
   border-radius: 8px;
-  color: #fff;
-  background: var(--accent);
+  color: var(--ink);
+  background: transparent;
   cursor: pointer;
+}
+
+.debug-snapshot-controls button:hover:not(:disabled) {
+  background: var(--navigation-hover);
+}
+
+.debug-snapshot-controls button:active:not(:disabled),
+.transcript-copy button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .debug-snapshot-controls button:disabled {
@@ -2558,13 +2571,30 @@ textarea:focus-visible {
   opacity: 0.6;
 }
 
-.debug-snapshot-controls input {
+.debug-snapshot-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
-  padding: 8px;
-  border: 1px solid var(--reading-border);
-  border-radius: 8px;
+}
+
+.debug-snapshot-result p {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  color: var(--ink-soft);
+}
+
+.debug-snapshot-result button {
+  flex: 0 0 auto;
+}
+
+.debug-snapshot-path {
+  display: flex;
+  min-width: 0;
   color: var(--ink);
-  background: var(--reading-soft);
   font:
     11px / 1.4 "IBM Plex Mono",
     ui-monospace,
@@ -2573,12 +2603,23 @@ textarea:focus-visible {
     monospace;
 }
 
+.debug-snapshot-path span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.debug-snapshot-path .technical-path-name {
+  flex-shrink: 0.25;
+}
+
 .debug-snapshot-controls p[role="alert"] {
   color: #f0a48a;
 }
 
 .transcript-copy {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .transcript-copy button {
@@ -2589,15 +2630,15 @@ textarea:focus-visible {
   gap: 6px;
   min-height: 34px;
   padding: 0 10px;
-  border: 1px solid var(--reading-border);
+  border: 1px solid rgb(40 111 109 / 24%);
   border-radius: 8px;
-  color: var(--ink);
-  background: transparent;
+  color: var(--on-accent);
+  background: var(--accent);
   cursor: pointer;
 }
 
 .transcript-copy button:hover:not(:disabled) {
-  background: var(--navigation-hover);
+  background: var(--accent-strong);
 }
 
 .transcript-copy button:disabled {
@@ -2763,7 +2804,7 @@ textarea:focus-visible {
   min-height: 30px;
   padding: 0 9px;
   border-radius: 8px;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   font-size: 11px;
   cursor: pointer;
@@ -2878,7 +2919,7 @@ textarea:focus-visible {
 
 .confirmation-actions .confirmation-primary {
   border-color: rgb(40 111 109 / 24%);
-  color: var(--shell);
+  color: var(--on-accent);
   background: var(--accent);
 }
 
@@ -2892,6 +2933,7 @@ textarea:focus-visible {
   z-index: 2;
   display: flex;
   align-items: center;
+  gap: 4px;
   padding: 18px 22px;
   border-bottom: 1px solid var(--reading-border);
 }
@@ -3031,7 +3073,7 @@ textarea:focus-visible {
 
 .skills-primary {
   border-color: rgb(40 111 109 / 24%);
-  color: var(--shell);
+  color: var(--on-accent);
   background: var(--accent);
 }
 
@@ -3500,11 +3542,6 @@ textarea:focus-visible {
   background: var(--ember);
 }
 
-.app-shell[data-theme="dark"] .confirmation-actions .confirmation-primary {
-  color: #071f25;
-  background: var(--accent);
-}
-
 .app-shell[data-theme="dark"] .technical-details-drawer {
   background: var(--reading-raised);
 }
@@ -3605,7 +3642,7 @@ textarea:focus-visible {
   .sidebar-item-row,
   .guided-examples button,
   .header-action,
-  .rename-action,
+  .header-icon-action,
   .sidebar-settings-button,
   .suggestions button,
   .composer,

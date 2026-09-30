@@ -78,7 +78,7 @@ function separatorIndex(value: string): number {
   return Math.max(value.lastIndexOf("/"), value.lastIndexOf("\\"));
 }
 
-function splitPath(value: string): [string, string] | undefined {
+export function splitPath(value: string): [string, string] | undefined {
   const last = separatorIndex(value);
   if (last <= 0) return undefined;
   const previous = separatorIndex(value.slice(0, last));

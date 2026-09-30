@@ -129,7 +129,7 @@ function ConversationIdentity({
       </strong>
       <button
         aria-label="Rename conversation"
-        className="rename-action"
+        className="header-icon-action"
         disabled={renameMessage !== undefined}
         onClick={() => setRenaming(true)}
         title={renameMessage ?? "Rename conversation"}

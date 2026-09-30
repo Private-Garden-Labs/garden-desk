@@ -13,7 +13,12 @@ describe("debug snapshot state", () => {
       path: undefined,
       revealing: false,
     });
-    expect(debugSnapshotReducer(ready, { type: "create.failed" }).path).toBeUndefined();
+    const failed = debugSnapshotReducer(ready, {
+      type: "create.failed",
+      code: "debug_state_invalid",
+    });
+    expect(failed.path).toBeUndefined();
+    expect(failed.error).toBe("Could not save the debug snapshot. Code: debug_state_invalid");
   });
 
   it("retains the created path across reveal failures and resets for another session", () => {
@@ -21,9 +26,12 @@ describe("debug snapshot state", () => {
       type: "create.succeeded",
       path: "/tmp/garden-desk-session-debug-ready",
     });
-    const failure = debugSnapshotReducer(ready, { type: "reveal.failed" });
+    const failure = debugSnapshotReducer(ready, {
+      type: "reveal.failed",
+      code: "debug_snapshot_missing",
+    });
     expect(failure.path).toBe(ready.path);
-    expect(failure.error).toContain("could not be revealed");
+    expect(failure.error).toContain("Code: debug_snapshot_missing");
     expect(debugSnapshotReducer(failure, { type: "session.reset" })).toBe(
       initialDebugSnapshotState,
     );

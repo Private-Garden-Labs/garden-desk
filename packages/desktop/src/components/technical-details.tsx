@@ -3,18 +3,14 @@ import type {
   AgentExecutionSnapshot,
   ModelRuntimeStatus,
 } from "@gardendesk/shared";
-import { type CSSProperties, useEffect, useReducer, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import capabilities from "../../../workers/images/agent/capabilities.json" with { type: "json" };
 import type { DesktopApi, PromptFolder } from "../api.js";
-import {
-  type DebugSnapshotState,
-  debugSnapshotReducer,
-  initialDebugSnapshotState,
-} from "../debug-snapshot.js";
 import { showCatalogFolder, showFolder } from "../desktop-actions.js";
 import { showPromptFolder, usePromptLocations } from "../skills.js";
 import type { TimelineItem } from "../state.js";
 import type { AgentStep } from "../steps.js";
+import { DebugSnapshotControls } from "./debug-snapshot-controls.js";
 import { DrawerResizeHandle, useDrawerResize } from "./drawer-resize.js";
 import { Icon } from "./icons.js";
 import { StepList } from "./step-list.js";
@@ -61,79 +57,6 @@ interface TechnicalDetailsProps {
   onClose(): void;
   onSelectStep(stepId: string | undefined): void;
   setError(message: string | undefined): void;
-}
-
-export function DebugSnapshotPanel({
-  onCreate,
-  onReveal,
-  state,
-}: {
-  onCreate(): void;
-  onReveal(): void;
-  state: DebugSnapshotState;
-}) {
-  return (
-    <div className="debug-snapshot-controls">
-      <button disabled={state.creating || state.revealing} onClick={onCreate} type="button">
-        {state.creating ? "Creating snapshot…" : "Create debug snapshot"}
-      </button>
-      {state.path === undefined ? null : (
-        <>
-          <input aria-label="Debug snapshot path" readOnly value={state.path} />
-          <button disabled={state.revealing} onClick={onReveal} type="button">
-            {state.revealing ? "Revealing…" : "Reveal snapshot"}
-          </button>
-        </>
-      )}
-      {state.error === undefined ? null : <p role="alert">{state.error}</p>}
-    </div>
-  );
-}
-
-function DebugSnapshotControls({
-  api,
-  nativeActionMessage,
-  sessionId,
-}: {
-  api: DesktopApi;
-  nativeActionMessage?: string | undefined;
-  sessionId: string;
-}) {
-  const [state, dispatch] = useReducer(debugSnapshotReducer, initialDebugSnapshotState);
-  const create = async () => {
-    dispatch({ type: "create.start" });
-    try {
-      dispatch({ type: "create.succeeded", path: await api.createDebugSnapshot(sessionId) });
-    } catch {
-      dispatch({ type: "create.failed" });
-    }
-  };
-  const reveal = async () => {
-    dispatch({ type: "reveal.start" });
-    try {
-      await api.revealDebugSnapshot(sessionId);
-      dispatch({ type: "reveal.succeeded" });
-    } catch {
-      dispatch({ type: "reveal.failed" });
-    }
-  };
-  if (nativeActionMessage !== undefined) {
-    return (
-      <div className="debug-snapshot-controls">
-        <button disabled title={nativeActionMessage} type="button">
-          Create debug snapshot
-        </button>
-        <p>{nativeActionMessage}</p>
-      </div>
-    );
-  }
-  return (
-    <DebugSnapshotPanel
-      onCreate={() => void create()}
-      onReveal={() => void reveal()}
-      state={state}
-    />
-  );
 }
 
 function Overview({
@@ -190,21 +113,11 @@ function Overview({
       </article>
       {sessionId === undefined ? null : (
         <article className="technical-details-item technical-overview">
-          <p className="debug-snapshot-purpose">AI agent debugging snapshot</p>
+          <p className="debug-snapshot-purpose">Troubleshooting</p>
           <p className="technical-limits">
-            The snapshot contains saved workspace files and a file list. It is not the live folder.
+            Copy the transcript or save a debug snapshot when you want to forward them to Codex /
+            Claude. Both can contain private data.
           </p>
-          <p className="technical-limits">
-            Create this for an AI coding agent such as Codex or Claude Code. It contains this
-            session&apos;s SQLite-backed records, workspace, generated files, inference traces, and
-            bounded microVM logs. Share it only through an approved channel.
-          </p>
-          <DebugSnapshotControls
-            api={api}
-            key={sessionId}
-            nativeActionMessage={nativeActionMessage}
-            sessionId={sessionId}
-          />
           <TranscriptCopy
             artifacts={artifacts}
             executions={executions}
@@ -212,6 +125,12 @@ function Overview({
             sessionId={sessionId}
             timeline={timeline}
             title={sessionTitle(timeline, sessionId)}
+          />
+          <DebugSnapshotControls
+            api={api}
+            key={sessionId}
+            nativeActionMessage={nativeActionMessage}
+            sessionId={sessionId}
           />
         </article>
       )}

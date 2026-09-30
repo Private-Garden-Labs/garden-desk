@@ -171,7 +171,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
           controller={skills}
           dropActive={dropIntent !== undefined}
           nativeActionMessage={nativeUnavailable}
-          onDone={() => setSkillsOpen(false)}
+          onBack={() => setSkillsOpen(false)}
         />
       ) : (
         <main aria-busy={!desktopReady} className="workspace">

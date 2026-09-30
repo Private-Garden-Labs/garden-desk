@@ -15,7 +15,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type DatabasePort, GardenDeskDatabase } from "./database.js";
 
-const LATEST_SCHEMA_VERSION = 16;
+export const LATEST_SCHEMA_VERSION = 16;
 
 const MIGRATION_NAMES = [
   "initial",
