@@ -20,6 +20,12 @@ importers:
       '@types/three':
         specifier: 0.185.4
         version: 0.185.4
+      micromark:
+        specifier: 4.0.2
+        version: 4.0.2
+      micromark-extension-gfm:
+        specifier: 3.0.0
+        version: 3.0.0
       three:
         specifier: 0.185.1
         version: 0.185.1

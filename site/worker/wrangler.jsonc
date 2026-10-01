@@ -14,6 +14,7 @@
   "routes": [
     { "pattern": "gardendesk.ai", "custom_domain": true },
     { "pattern": "www.gardendesk.ai", "custom_domain": true },
+    { "pattern": "admin.gardendesk.ai", "custom_domain": true },
     { "pattern": "downloads.gardendesk.ai/*", "zone_name": "gardendesk.ai" }
   ],
   "d1_databases": [

@@ -263,7 +263,7 @@ even mid-hide. */
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: clamp(18px, 2vw, 24px);
   color: var(--ink-soft);
   font-size: 14px;
 }
@@ -271,6 +271,7 @@ even mid-hide. */
 .site-nav a {
   position: relative;
   text-decoration: none;
+  white-space: nowrap;
   transition: color 180ms ease;
 }
 
@@ -1051,7 +1052,7 @@ html.motion-ready [data-reveal].is-revealed {
   line-height: 1.65;
 }
 
-.legal section {
+.legal > section {
   padding: 28px 0;
   border-top: 1px solid var(--line);
 }
@@ -1318,7 +1319,7 @@ html.motion-ready [data-reveal].is-revealed {
 }
 
 .legal .lede,
-.legal section {
+.legal > section {
   border: 1px solid var(--glass-edge);
   background: linear-gradient(135deg, rgb(240 237 227 / 9.4%), rgb(240 237 227 / 5.2%));
   box-shadow:
@@ -1333,7 +1334,7 @@ html.motion-ready [data-reveal].is-revealed {
   border-radius: 18px;
 }
 
-.legal section {
+.legal > section {
   margin-top: 14px;
   padding: 26px 28px;
   border-radius: 20px;
@@ -1478,7 +1479,7 @@ html.motion-ready [data-reveal].is-revealed {
   .requirements-grid,
   .open-source-panel,
   .final-cta .section-inner,
-  .legal section {
+  .legal > section {
     animation: view-reveal both linear;
     animation-timeline: view();
     animation-range: entry 6% cover 28%;
@@ -1660,7 +1661,7 @@ html.motion-ready [data-reveal].is-revealed {
   .requirements-grid,
   .open-source-panel,
   .final-cta .section-inner,
-  .legal section {
+  .legal > section {
     opacity: 1;
     transform: none;
     animation: none;
@@ -2478,5 +2479,169 @@ nudged by the pointer. */
 @media (width <= 900px) {
   .release-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+.blog h1 {
+  font-size: clamp(36px, 4.6vw, 56px);
+  line-height: 1.08;
+}
+
+.blog .lede a,
+.blog .prose a,
+.post-links a {
+  color: var(--ink-strong);
+  text-decoration-color: var(--brass);
+  text-underline-offset: 0.2em;
+}
+
+.post-card {
+  position: relative;
+}
+
+.post-card h2 a {
+  color: var(--ink-strong);
+  text-decoration: none;
+}
+
+.post-card h2 a::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  content: "";
+}
+
+.post-card h2 a:focus-visible {
+  outline: none;
+}
+
+.post-card:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+
+.post-card p:last-child {
+  margin-bottom: 0;
+}
+
+.blog .prose {
+  overflow-wrap: break-word;
+}
+
+.blog .prose > :first-child {
+  margin-top: 0;
+}
+
+.blog .prose > :last-child {
+  margin-bottom: 0;
+}
+
+.blog .prose h2 {
+  margin: 36px 0 12px;
+}
+
+.blog .prose h3 {
+  margin: 28px 0 8px;
+  font-size: 18px;
+}
+
+.blog .prose strong {
+  color: var(--ink-strong);
+}
+
+.blog .prose code {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.88em;
+}
+
+.blog .prose pre {
+  overflow-x: auto;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgb(3 12 7 / 30%);
+}
+
+.blog .prose blockquote {
+  margin: 20px 0;
+  padding-left: 18px;
+  border-left: 1px solid var(--line-strong);
+}
+
+.blog .prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+.blog .prose hr {
+  margin: 32px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.blog .table-scroll {
+  margin: 20px 0;
+  overflow-x: auto;
+}
+
+.blog .prose table {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-collapse: collapse;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.blog .prose th,
+.blog .prose td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-soft);
+}
+
+.blog .prose :is(th, td):not([align]) {
+  text-align: left;
+}
+
+.blog .prose th {
+  background: var(--glass-strong);
+  color: var(--ink-strong);
+}
+
+.blog .prose tbody tr:nth-child(even) {
+  background: var(--glass);
+}
+
+.blog .footnotes {
+  margin-top: 32px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.blog .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.post-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 28px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .post-card {
+    transition: border-color 180ms ease;
+  }
+
+  .post-card:hover {
+    border-color: var(--leaf-soft);
   }
 }

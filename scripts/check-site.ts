@@ -12,6 +12,7 @@ const routeFiles = [
   "alex/index.html",
   "demo/index.html",
   "releases/index.html",
+  "blog/index.html",
   "supporters/index.html",
   "privacy/index.html",
   "terms/index.html",
