@@ -24,7 +24,7 @@
     "windowsPackageIntegrityReview": "docs/research/m3-package-integrity-dependency-review.md",
     "visionRuntimeReview": "docs/research/m3-image-runtime-dependency-review.md",
     "inferenceRuntimeAssets": "assets/inference-runtime.json",
-    "inferenceRuntimeDecision": "docs/adr/0020-ternary-bonsai-2-prism-fork.md"
+    "inferenceRuntimeDecision": "docs/ARCHITECTURE.md"
   },
   "directDependencies": [
     {

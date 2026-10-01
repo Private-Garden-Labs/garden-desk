@@ -1,91 +1,6 @@
 # Development Workflow
 
-Created: 2026-07-15
-
-This is the implementation and contribution workflow for Garden Desk. [AGENTS.md](../AGENTS.md) is authoritative, followed by accepted ADRs, [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), and this document. M3 is complete, and Community Desktop V1 is released; see [M3_STATUS.md](M3_STATUS.md) for release evidence.
-
-## Operating Principles
-
-- Work only inside an active milestone or a direct owner request and accepted issue scope. Roadmap presence is not authorization.
-- Search the repository and maintained dependencies before writing custom infrastructure.
-- Prefer deterministic checks and primary-source evidence.
-- Report commands and results exactly; never imply that an unrun check passed.
-- Keep repository development skills in development tooling. Packaged specialist workflows live in prompt files and use the shared child-run system.
-
-There is no coverage percentage, no test-driven development except for bug fixes, and no generic application architecture. The Test Rule in [AGENTS.md](../AGENTS.md) and the milestone gates define what is required.
-
-## 1. Confirm The Scope
-
-Before changing a file, read the current phase in [AGENTS.md](../AGENTS.md), check for an active milestone gate in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), and read the ADRs and folder rules in [IMPLEMENTATION_STRUCTURE.md](IMPLEMENTATION_STRUCTURE.md) that the change touches. Stop if the work belongs to an inactive milestone without a direct owner request. The `garden-desk-plan-change` skill produces the short change brief.
-
-## 2. Research First
-
-Inspect the relevant source, tests, schemas, adapters, and recent history. Check whether the capability already exists. For a dependency decision use official documentation, package metadata, source, releases, advisories, and license files, and run the `garden-desk-review-dependency` skill; a popular package is not automatically acceptable. Mark unvalidated compatibility, performance, or packaging claims as research-derived.
-
-## 3. Implement The Minimum Change
-
-Create a short-lived branch and open a focused pull request for every stage. Do not start the next stage until the current pull request is merged or closed.
-
-- Write only what the active gate consumes and keep security boundaries complete.
-- Treat the no-network microVM and read-only `/source` mount as the primary containment for guest-authored commands and hostile files. Do not add security checks for command text, URLs, content, formats, or guest-only paths inside that boundary.
-- Add validation only at a host authority crossing and only when an active product contract requires it.
-- Handle named cases and return a typed unsupported outcome for the rest.
-- Add an abstraction only for an ADR-mandated seam or a second real implementation.
-- Keep policy separate from model output and adapters thin around dependencies.
-- Apply the Test Rule: bug fixes start with one failing reproduction test (`garden-desk-fix-bug` skill); everything else is implemented first and gets at most one focused test.
-
-If the gate demands disproportionate code, propose reducing the requirement before adding infrastructure around it.
-
-## 4. Verify
-
-Use the smallest row that matches the change:
-
-| Change | Local verification |
-| --- | --- |
-| Documentation or instructions only | Inspect the diff, validate links and command names, and run `git diff --check`. Run no product tests. |
-| Focused source change | Run `pnpm lint`, `pnpm typecheck`, and the one focused test required by the Test Rule, if any. For a platform boundary, use `pnpm test:platform:gate`. For an M2 native boundary, use `pnpm test:native:m2`. |
-| Native helper, build script, or packaged runtime | Run `pnpm verify`. Do not duplicate commands that it includes. |
-| Full `pnpm test` suite | Leave it to CI unless the owner explicitly requests a local run. |
-| Real model, physical microVM, golden task, or milestone gate | Use only as a last resort and only with explicit owner approval under the Top Priority rule in `AGENTS.md`. |
-
-A request to fully verify, commit, push, or open a pull request does not select a larger row. A general instruction to run a full command means a complete run of the selected command, not the largest repository gate. Missing or unapproved hardware, models, workers, packages, or checks are reported as not run, never as passed.
-
-The `garden-desk-verify-change` skill produces the verification report. Report `not ready` for a fixable incomplete change and `blocked` only when progress needs a decision, authority, platform, or asset that is unavailable.
-
-## 5. Review And Hand Off
-
-Review findings in this order: security, privacy, authority, and process boundaries; active milestone contract and scope; correctness, evidence, recovery, and user-visible behavior; minimum-code and dependency discipline; maintainability and documentation.
-
-Severities:
-
-- **P0**: data exposure, authority bypass, destructive behavior, or release-blocking security failure.
-- **P1**: broken milestone contract, correctness, recovery, evidence, or approval invariant.
-- **P2**: material test, scope, dependency, or maintainability gap to fix before merge.
-- **P3**: low-risk clarity or documentation improvement.
-
-The automated GitHub review follows [REVIEW.md](../REVIEW.md); its CRITICAL, WARNING, and SUGGESTION map to P0-P1, P2, and P3.
-
-Use the `garden-desk-review-change` skill for a review and the `garden-desk-handoff` skill when work continues elsewhere. Never include secrets, customer content, raw sensitive outputs, or hidden model reasoning in a report.
-
-## Pull Request Gate
-
-A pull request is ready for review when it links the milestone or owner request and accepted issue when applicable, contains no unrelated cleanup or speculative scaffolding, preserves product and security boundaries, states verification results exactly, documents dependency and redistribution impact, updates contracts and authoritative documentation when behavior changes, and is authored only by its human owner. Reviewers may ask for a split when a pull request spans unrelated responsibilities.
-
-## Real-Model Reproduction
-
-Real-model reproduction is a last-resort diagnostic method, not a standard agent-loop check. First use source inspection, existing evidence, and focused deterministic tests. If those methods cannot answer an important question, state the unresolved question, why cheaper evidence cannot answer it, the exact command or workload, and the number of planned invocations. Ask the owner before the run. A direct owner request for that workload is approval. Approval covers only the named commands and invocation count; a failed, interrupted, or additional run needs new approval. A general request to fix, verify, commit, push, or open a pull request is not approval.
-
-Raw development inference diagnostics are private and must not enter reports, product records, debug snapshots, user-interface data, or Git.
-
-- With explicit approval, run `pnpm test:m3:macos` on physical Apple silicon for the canonical headless M3 gate. It verifies the pinned Ternary Bonsai 2 model, real multi-step Python tasks, artifacts, guest isolation, timeout, and output limits without the desktop UI; guest Node.js coverage is the direct-source probe only.
-- With explicit approval, run `pnpm model:compare` (raw server measurements: prefill, generation, memory by context, tool-call precision, specialist choice) and `pnpm model:compare:agent` (Windows, full agent runs on the specialist cases) for a model or runtime candidate. `pnpm model:compare:report` renders every result under `packages/eval/.generated/model-comparison` into one table.
-- For an approved task-specific daemon reproduction, create an ignored script under `packages/eval/.generated/`. Use `createGardenDeskCore` with `packages/eval/.generated/models`, the generated macOS helper, and `packages/workers/images`; start the real current-user server with `startDaemon`; then call it through `packages/cli/src/client.ts` using `folders.add`, `sessions.create`, `agent.start`, and repeated `agent.get` requests until the run is terminal.
-- Put the ephemeral workspace directly under `/tmp` so the macOS Unix-socket path stays within its length limit. If the restricted shell returns `listen EPERM` or denies Virtualization.framework, do not treat that sandbox denial as a product failure. Ask for new approval before a rerun outside the restricted shell.
-- Capture the terminal run state, error, response, and complete ordered events, including generated code, stdout, stderr, and termination. Run only the invocations that the owner approved.
-- Keep models, generated helpers, guest images, reproduction scripts, fixtures, and workspaces uncommitted. Report Windows evidence separately and never infer it from macOS.
-- After a real golden-task run, report the pass count (`golden: N/4 passed`) to the owner.
-
-Development inference diagnostics live in [packages/eval/src/gates/development-inference.ts](../packages/eval/src/gates/development-inference.ts).
+How to set up, change, verify, review, and release Garden Desk. [AGENTS.md](../AGENTS.md) is authoritative. [ARCHITECTURE.md](ARCHITECTURE.md) describes what V1 is.
 
 ## Local Source Setup
 
@@ -94,36 +9,72 @@ After cloning, run the setup command for your platform:
 - Apple silicon macOS: `bash setup.sh`.
 - Windows 11 x64 Pro or Enterprise with Hyper-V enabled: run `powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1` in standard PowerShell.
 
-Setup checks required tools and asks before it installs missing tools through official installers. It checks Docker with Linux containers only when the guest image is missing. After approval, it installs locked project packages, downloads missing model and runtime files, builds a missing guest image, and starts the app. Complete local assets are reused. The first setup needs an internet connection. If an installer requires a restart, restart and run setup again.
+Setup checks the required tools and asks before it installs a missing one. After you approve, it installs the locked packages, downloads missing model and runtime files, builds a missing guest image (Docker with Linux containers), and starts the app. The first setup needs an internet connection. If an installer asks you to restart, restart and run setup again. On Windows, after the helper adds you to Hyper-V Administrators, sign out and back in.
 
-On Windows, the helper can add the requesting account to Hyper-V Administrators. Sign out and back in after that change, then start the app again.
+Later, `pnpm start` runs `pnpm desktop:dev`. Run setup again when dependencies or required assets change. The development terminal shows WebView and Core output. That output is not stored and must never include prompts, messages, tool payloads, reasoning, or file contents.
 
-For later starts, `pnpm start` runs `pnpm desktop:dev` with the installed packages and assets. Development preparation rebuilds local application resources when needed. Run setup again when dependencies or required assets change. Packaged applications still require no download at first launch.
+## Make A Change
 
-During `pnpm desktop:dev`, the terminal shows WebView console output, unhandled WebView errors, and Garden Desk Core process output. This development-only stream is not stored and must not include prompts, messages, tool payloads, hidden reasoning, or file contents.
+1. Work from a direct owner request. Use the `garden-desk-plan-change` skill for anything non-trivial.
+2. Search the repository and maintained dependencies first. For a new dependency, use the `garden-desk-review-dependency` skill.
+3. Make the smallest change on a short-lived branch and open a pull request. Follow the Test Rule in [AGENTS.md](../AGENTS.md#test-rule). For a bug, use the `garden-desk-fix-bug` skill.
+
+## Verify
+
+Use the smallest row that matches the change. The `garden-desk-verify-change` skill writes the report.
+
+| Change | Local verification |
+| --- | --- |
+| Documentation or instructions only | Check links and command names, and run `git diff --check`. |
+| Focused source change | `pnpm lint`, `pnpm typecheck`, and the one test the Test Rule requires, if any. Platform boundary: `pnpm test:platform:gate`. Native inference boundary: `pnpm test:native:m2`. |
+| Native helper, build script, or packaged runtime | `pnpm verify`. |
+| Real model, physical microVM, golden task, or milestone gate | Only with explicit owner approval (see below). |
+
+CI runs `pnpm verify` (which includes the full test suite) on pull requests. Pushes to `main` do not run it. Report a check you did not run as not run, never as passed.
+
+## Review
+
+Use the `garden-desk-review-change` skill. Review security and privacy first, then correctness and recovery, then minimum code. Severities:
+
+- **P0**: data exposure, authority bypass, or destructive behavior.
+- **P1**: broken contract, correctness, recovery, or approval rule.
+- **P2**: unnecessary code or tests, scope creep, or a dependency gap.
+- **P3**: low-risk clarity fix.
+
+The GitHub review follows [REVIEW.md](../REVIEW.md). Its CRITICAL maps to P0 and P1, WARNING to P2, and SUGGESTION to P3. Use the `garden-desk-handoff` skill when work moves to someone else.
+
+## Real-Model Reproduction
+
+Use this only as a last resort, and only after the owner approves the exact command and number of runs (see [AGENTS.md](../AGENTS.md#top-priority-minimum-work)). Raw inference diagnostics stay private and out of Git.
+
+- `pnpm test:m3:macos` and `pnpm test:m3:windows` run the guest isolation probes. They then run four golden folder tasks (XLSX, DOCX, PDF, and a mixed-folder report) with deterministic checks, and print `golden: N/4 passed`. Report that count to the owner.
+- `pnpm model:compare`, `pnpm model:compare:agent`, and `pnpm model:compare:report` compare model or runtime candidates.
+- For a task-specific reproduction, write an ignored script under `packages/eval/.generated/`. Start Core with `createGardenDeskCore` and `startDaemon`, then drive it through `packages/cli/src/client.ts` until the run ends. Put the workspace directly under `/tmp` so the macOS socket path stays short. A sandbox `listen EPERM` or a Virtualization.framework denial is not a product failure.
+- Report Windows results separately. Never infer them from macOS.
 
 ## Platform Notes
 
-- Windows desktop authority changes need separate standard-user evidence for development and the staged production application: the main executable stays `asInvoker`, only the fixed setup helper may request UAC, a different credentialed administrator must add the requesting account, a new sign-in activates HCS access, and tampered setup bytes are rejected. macOS evidence must independently show that no Windows helper, administrator prompt, or elevated launch was introduced.
-- Windows `desktop:dev` keeps Vite hot reload but passes `--no-watch` to Tauri because NTFS access notifications can be misread as Rust source edits and cause a rebuild loop. Restart the development command after changing Rust desktop-host code. macOS keeps Tauri's normal Rust watcher.
-- Windows development signing uses the disposable current-user identity. A public production build sets `GARDEN_DESK_WINDOWS_SIGNING_MODE=production`, the Azure Artifact Signing values in `GARDEN_DESK_WINDOWS_SIGNING_ENDPOINT`, `GARDEN_DESK_WINDOWS_SIGNING_ACCOUNT`, and `GARDEN_DESK_WINDOWS_SIGNING_PROFILE`, and the path of `Azure.CodeSigning.Dlib.dll` in `GARDEN_DESK_WINDOWS_SIGNING_DLIB`. The build signs with the Windows SDK `signtool` and timestamps with `http://timestamp.acs.microsoft.com`. It uses the signed-in Azure identity, which must hold the Artifact Signing Certificate Profile Signer role on the certificate profile. Production mode fails closed when a value is missing, when `signtool` is absent, or when the signed file does not verify.
-- The packaged inference runtime is verified before it is signed. `assets/inference-runtime.json` pins a `stagedSha256` for each platform, and packaging stops when the staged files do not match it. A file that already carries a valid vendor signature keeps that signature.
-- macOS development builds sign ad-hoc. A public production build runs on the owner's Mac with `APPLE_SIGNING_IDENTITY` set to the Developer ID Application identity in the login keychain; the sidecar, the inference runtime, and the VZ helper are then signed with the hardened runtime and a timestamp before Tauri signs the app. The build then notarizes and staples the DMG with the `garden-desk` notary profile in the login keychain. Create that profile once with `xcrun notarytool store-credentials garden-desk --key <AuthKey_ID.p8> --key-id <key ID> --issuer <issuer ID>`, using an App Store Connect API key. The DMG step asks macOS to let the terminal control Finder for the window layout; allow it, or set `CI=true` to build the DMG without the layout.
+- Windows `desktop:dev` passes `--no-watch` to Tauri, because NTFS notifications cause a rebuild loop. Restart it after you change Rust desktop code.
+- Windows development builds sign with a disposable current-user identity. A production build sets `GARDEN_DESK_WINDOWS_SIGNING_MODE=production`, plus `GARDEN_DESK_WINDOWS_SIGNING_ENDPOINT`, `GARDEN_DESK_WINDOWS_SIGNING_ACCOUNT`, `GARDEN_DESK_WINDOWS_SIGNING_PROFILE`, and `GARDEN_DESK_WINDOWS_SIGNING_DLIB` (the path of `Azure.CodeSigning.Dlib.dll`). It signs with `signtool` and timestamps with `http://timestamp.acs.microsoft.com`. The signed-in Azure identity needs the Artifact Signing Certificate Profile Signer role. The build fails closed if a value or `signtool` is missing, or if verification fails.
+- `assets/inference-runtime.json` pins a `stagedSha256` per platform. Packaging stops on a mismatch. A file that already carries a valid vendor signature keeps it.
+- macOS development builds sign ad hoc. A production build sets `APPLE_SIGNING_IDENTITY` to the Developer ID Application identity. It signs the sidecar, inference runtime, and VZ helper with the hardened runtime, then notarizes and staples the DMG with the `garden-desk` notary profile. Create that profile once with `xcrun notarytool store-credentials garden-desk --key <AuthKey_ID.p8> --key-id <key ID> --issuer <issuer ID>`. Allow the terminal to control Finder for the DMG layout, or set `CI=true` to skip the layout.
 
 ## Publish A Release
 
-Do these steps in this order. A download link must not go live before its file and its SHA-256 exist.
+A download link must not go live before its file and SHA-256 exist.
 
-1. Build and sign each file on its platform (see Platform Notes). Rename the files to `Garden-Desk-<version>-macos-arm64.dmg` and `Garden-Desk-<version>-windows-x64.zip`, and record the SHA-256 of each file.
-2. Upload each file to the Cloudflare R2 bucket `garden-desk-releases` with the key `v<version>/<file name>`, the header `Content-Disposition: attachment; filename="<file name>"`, and the custom metadata `sha256`. Files larger than 5 GiB need a multipart upload: use the R2 S3-compatible API with an R2 API token, or a temporary Worker with an R2 binding that accepts parts of at most 100 MB. Delete the Worker after the upload.
-3. Do not open a download address before its upload. Cloudflare keeps the `404` for up to 4 hours. If this occurs, purge only that URL in the `gardendesk.ai` zone.
-4. Make sure that `https://downloads.gardendesk.ai/v<version>/<file name>` returns `200` and that a full download from it has the recorded SHA-256.
-5. In one pull request, change each link in the home page hero (`site/index.html`), each link and SHA-256 on `site/releases/index.html`, and the links in `scripts/check-site.ts`. Run `pnpm site:check`.
-6. After the merge, the "Deploy public website" workflow publishes the site to Cloudflare. A page that was open before the deploy can show the old links. Check the live page with `curl -s https://gardendesk.ai/ | rg data-download` or reload it with Command-Shift-R.
+1. Build and sign on each platform. Name the files `Garden-Desk-<version>-macos-arm64.dmg` and `Garden-Desk-<version>-windows-x64.zip`, and record each SHA-256.
+2. Upload each file to the Cloudflare R2 bucket `garden-desk-releases`. Use the key `v<version>/<file name>`, the header `Content-Disposition: attachment; filename="<file name>"`, and the custom metadata `sha256`. For files over 5 GiB, use a multipart upload through the R2 S3 API, or through a temporary Worker that accepts parts of at most 100 MB. Delete that Worker afterwards.
+3. Do not open a download address before its upload. Cloudflare caches the `404` for up to 4 hours. If that happens, purge only that URL in the `gardendesk.ai` zone.
+4. Confirm that `https://downloads.gardendesk.ai/v<version>/<file name>` returns `200` and that the full download matches the SHA-256.
+5. In one pull request, update the links in `site/index.html`, the links and SHA-256 values in `site/releases/index.html`, and the links in `scripts/check-site.ts`. Run `pnpm site:check`.
+6. After the merge, the "Deploy public website" workflow publishes the site. Check it with `curl -s https://gardendesk.ai/ | rg data-download`.
 
-The website admin tools use `admin.gardendesk.ai`, protected by the existing Cloudflare Access login policy. The Worker also validates the Access token and requires the same origin for blog changes. Blog drafts and published Markdown use the existing D1 database; only published posts appear at `/blog/`, in the sitemap, and in the RSS feed. Apply the database migration before deployment, and add the admin hostname to Access before adding its Worker route. To try the admin tools and blog locally, run `pnpm site:admin` and open the admin link it prints.
+## Website Admin And Blog
 
-Claude Code and Codex can list, read, create, and update blog posts through the MCP endpoint (Model Context Protocol, the way coding agents connect to tools) at `https://admin.gardendesk.ai/mcp`. Create a Cloudflare Access service token, add a Service Auth policy for it to the admin Access application, and keep its ID and secret in `GARDEN_ACCESS_CLIENT_ID` and `GARDEN_ACCESS_CLIENT_SECRET`. While `pnpm site:admin` runs, `http://127.0.0.1:4175/mcp` works without a token.
+The admin runs at `admin.gardendesk.ai` behind Cloudflare Access. The Worker also validates the Access token and requires the same origin for blog changes. Posts live in the D1 database, and only published posts appear on `/blog/`, in the sitemap, and in the RSS feed. Apply the database migration before deployment. Add the admin hostname to Access before you add its Worker route. To work locally, run `pnpm site:admin`.
+
+Claude Code and Codex can manage posts through the MCP endpoint (Model Context Protocol, the way coding agents connect to tools) at `https://admin.gardendesk.ai/mcp`. To set it up, create a Cloudflare Access service token and add a Service Auth policy for it. Keep the token's ID and secret in `GARDEN_ACCESS_CLIENT_ID` and `GARDEN_ACCESS_CLIENT_SECRET`. Locally, `http://127.0.0.1:4175/mcp` needs no token.
 
 ```bash
 claude mcp add --transport http garden-blog https://admin.gardendesk.ai/mcp --header "CF-Access-Client-Id: $GARDEN_ACCESS_CLIENT_ID" --header "CF-Access-Client-Secret: $GARDEN_ACCESS_CLIENT_SECRET"
@@ -136,22 +87,10 @@ url = "https://admin.gardendesk.ai/mcp"
 env_http_headers = { "CF-Access-Client-Id" = "GARDEN_ACCESS_CLIENT_ID", "CF-Access-Client-Secret" = "GARDEN_ACCESS_CLIENT_SECRET" }
 ```
 
-## Agent Skills
+## Prompts, Commands, And Skills
 
-The skills under [.agents/skills](../.agents/skills) package this workflow for Codex and Claude Code. See [.agents/skills/README.md](../.agents/skills/README.md).
+- **Command.** Create `prompts/commands/<name>.md`. Add a short `description:` in the frontmatter and put the instructions in the body. `$ARGUMENTS` inserts the user's request. A command can name an `agent`, or set `workflow:` to a handler under `packages/core/src/commands/` (see `review.md`).
+- **Skill.** Create `prompts/skills/<name>/SKILL.md` with `name` and `description` frontmatter. The name must match the directory. An agent's `skills` list picks the skills it uses.
+- **Agent.** Agents live in `prompts/agents/*.md`. Their frontmatter sets tools, skills, temperature, and the turn cap.
 
-## Attribution
-
-The workflow review was informed by [Everything Claude Code](https://github.com/affaan-m/ECC) (research-before-code, explicit verification, reusable skills, review, and handoff). Garden Desk uses original wording and does not include ECC's package, installers, hooks, MCP baseline, memory database, autonomous learning, worktree services, coverage rules, model routing, or runtime components. If substantial ECC material is ever copied, its MIT license and notice must accompany it.
-
-## Contribution Activation
-
-External implementation contributions remain closed until the owner activates them. Pull-request CI runs on pull request activity; direct pushes to `main` do not run it. Activation is described in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md#v1-launch-and-contribution-activation).
-
-## Commands
-
-Type `/` in the message box to see command names and descriptions. Filter with text, use Up/Down to select, and press Enter or Tab to insert. Escape closes the list. `/review` requires exactly one attachment and returns a text review in chat. Restart desktop development after a command or Core change so the packaged resources and desktop use the same version.
-
-The main agent can also select the same review process through `review({ path, prompt })`. It reviews one file from the selected folder, attachments, or workspace and returns findings to the main agent. Each internal call keeps its numbered text in a separate working directory. The user does not need to type `/review`.
-
-To add a prompt command, create `prompts/commands/<name>.md` with a short, unquoted `description:` in `---` frontmatter and instructions in the body. The filename supplies the command name. `$ARGUMENTS` inserts the user's remaining request; without it, the request follows the body. Commands use the normal agent by default. A fixed workflow needs a handler under `packages/core/src/commands/`; `review.md` shows `workflow: document-review`. Commands load at Core startup. Do not load command definitions from selected folders or attachments.
+Core rejects malformed prompts at startup and never loads prompts from selected folders or attachments. Restart `pnpm desktop:dev` after you change a prompt or Core, so the app and Core run the same version.

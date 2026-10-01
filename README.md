@@ -30,7 +30,7 @@ In a development comparison on 2026-09-23, local Bonsai 2 27B, Qwen3.8 27B, and 
 
 ## Learn more
 
-Read the [architecture](docs/ARCHITECTURE.md), [security model](docs/SECURITY.md), [current status](docs/M3_STATUS.md), and [license](LICENSE). See the [website and demo](https://gardendesk.ai/).
+Read the [architecture and security model](docs/ARCHITECTURE.md), [product principles](docs/PRODUCT.md), and [license](LICENSE). See the [website and demo](https://gardendesk.ai/).
 
 ## Supporters
 
