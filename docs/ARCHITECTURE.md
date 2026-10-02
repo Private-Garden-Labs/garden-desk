@@ -1,129 +1,88 @@
 # Architecture
 
-Updated: 2026-09-23
+Garden Desk V1 is released for Apple silicon macOS and Windows 11 x64. It is a local desktop agent: a person picks a folder or attaches files, asks for a result, and gets files back. Earlier plans, decision records, research, and milestone evidence are in Git history (`git show aec683a9:docs/`).
 
-Garden Desk V1 is a local desktop application with three isolated layers: a thin Tauri interface, an authoritative Node.js control plane, and session-scoped no-network agent microVMs plus a narrow host-native inference worker.
-
-## System Shape
+## Layers
 
 ```text
-┌───────────────────────────────────────────────────────────────┐
-│ Tauri v2 desktop                                              │
-│ React webview + minimal Rust host + native dialogs            │
-└──────────────────────────┬────────────────────────────────────┘
-                           │ typed commands / local RPC
-┌──────────────────────────▼────────────────────────────────────┐
-│ Garden Desk Core                                              │
-│ grants · sessions · jobs · policy · audit · model mediation  │
-│ limits · recovery · worker supervision                       │
-└───────────────┬──────────────────────────────┬────────────────┘
-                │ typed inference IPC          │ typed VM IPC
-┌───────────────▼──────────────┐  ┌────────────▼────────────────┐
-│ Native inference worker     │  │ Session agent microVM       │
-│ approved model only         │  │ zero NICs · immutable root  │
-│ no tools/workspace/network  │  │ live read-only /source     │
-└──────────────────────────────┘  │ durable /workspace · shell │
-                                  └─────────────────────────────┘
+Desktop (Tauri v2, React)
+  └─ Garden Desk Core (Node.js, TypeScript)
+       ├─ Inference worker (private llama.cpp server, OS sandbox)
+       └─ Session microVM (no network device)
+            /source            selected folder, live and read-only
+            /run/attachments   attached files, immutable
+            /workspace         128 MiB, persistent, writable
 ```
 
-## Desktop Plane
+- **Desktop.** The Rust host owns only the window, native dialogs, supervision of the exact packaged Core sidecar, and the connection to it. The webview has no shell, process, environment, network, or filesystem access. It handles opaque IDs, never host paths.
+- **Core.** Core is the only product authority. It owns folder grants, attachments, sessions, the agent loop, policy, audit, inference, worker supervision, and recovery. The desktop reaches it only over a current-user local connection: a Unix socket on macOS and a protected named pipe on Windows. There is no TCP. Core and the desktop never run as administrator.
+- **Inference worker.** This is one resident llama.cpp server on a private Unix socket. macOS confines it with Seatbelt. Windows runs it in a no-capability AppContainer inside a one-process job. It has no tools, network, credentials, or workspace.
+- **MicroVM.** Each conversation gets a VM with an immutable root image. The VM has Python, Node.js, `/bin/sh`, BusyBox, and a fixed set of offline libraries, and it cannot install packages. `/workspace` is saved as a content-addressed manifest and restored after eviction or restart. Idle VMs stay in a pool sized from installed RAM.
 
-The first desktop uses Tauri v2 with React and TypeScript. The Rust host owns only window lifecycle, native dialogs and granted-folder opening, exact Garden Desk Core sidecar startup, and connection bootstrap.
+## Agent
 
-The webview receives no generic shell, process launcher, environment reader, network client, local-endpoint selector, or unrestricted filesystem API. It works with opaque folder, session, attachment, job, and artifact identifiers through narrow typed commands.
+- Prompts live in `prompts/`: agents, commands, skills, and system text. They are packaged, hashed, and verified with the app.
+- The main agent has up to 40 turns. Its tools are `bash`, `python`, `node`, `read`, `glob`, `grep`, `list`, `write`, `edit`, `image`, `skill`, `task`, `question`, and `review`. `read` returns numbered text for DOC, DOCX, and PDF through one fixed guest extraction.
+- `task` runs one specialist child at a time in the same VM. The specialists are general, explore, matter chronology, contract obligations, document comparison, and financial review.
+- `/review` reviews one attached document in a single model call with no tools. `/obligations`, `/reconcile`, and `/expenses` run a specialist directly.
+- Packaged skills are prompt-only. A person can also add, edit, or turn off skill files in the workspace `skills/` folder.
+- Every file created or changed under `/workspace` during a run is delivered to the user. Open uses a verified temporary copy. Save As uses a native dialog and an atomic Core write, and the webview never sees the destination path.
+- Core compacts the conversation at 80 percent of the context. A session summary keeps continuity across runs. After a crash, runs left running are marked failed. Model reasoning is never stored.
 
-The sidebar's Chats section begins with New chat and then the newest five global sessions, with Show more for older sessions. Its Folders section begins with Add folder and then folder groups. Each folder group exposes its newest five sessions, cursor-based expansion, and a folder icon that asks the native shell to open the active Core-resolved grant in Finder or Explorer. Both chat lists show a Show less icon after expansion to return to the newest five. The main pane restores conversation and observable agent activity. Its header exposes the approved model's human-readable identity, residency state, and manual unload control. The composer remains anchored at the bottom.
+## Security Boundary
 
-## Garden Desk Core
+- The model proposes tool calls. Core validates each call and runs it in the guest. The model never gets host authority.
+- Network isolation comes from the VM having no network device, not from matching commands or URLs. Do not add filters inside the VM.
+- Selected folders are never writable. Only an explicit Open or Save As crosses back to the host.
+- Guest output that enters host state is checked for schema, path, size, and hash.
+- There is no telemetry, analytics, or crash reporting. Audit records are local and hash-chained, and leave the machine only by explicit export.
+- On Windows, one signed helper elevates once to add the current user to Hyper-V Administrators. The app stays browse-only until the next sign-in. macOS needs no administrator step.
+- The packaged app verifies and read-locks its sidecar, helpers, and prompts against a signed resource manifest before it starts them.
+- Data at rest relies on the operating-system account and disk encryption.
 
-Garden Desk Core is a separate Node.js/TypeScript process and the sole product authority. It owns:
+## Model And Hardware
 
-- Current-user-only local RPC and version negotiation.
-- Folder grants and explicit attachments.
-- Session, turn, draft, job, and artifact state.
-- Canonical folder grants, live read-only mount authority, and immutable attachment staging.
-- Policy, audit, cancellation, timeouts, and recovery.
-- Model selection, memory scheduling, and inference mediation.
-- Agent-loop orchestration and worker teardown.
-- Validation of guest messages and results.
+- The generation model is Ternary Bonsai 2 27B (`PQ2_0`) with its Q8_0 image projector. The encoder is Qwen3-Embedding-0.6B. `assets/models.json` pins each file, and `assets/inference-runtime.json` pins the PrismML llama.cpp fork builds for Metal, CUDA 13.3, and AMD HIP.
+- Packages are self-contained, so first launch downloads nothing.
+- The context cache is FP16. Core fits the context once to the inference memory budget, between 32K and 128K tokens. The server's reasoning budget is 32,768 tokens. Thinking levels are None, Medium, and Extended.
+- A Mac needs at least 16 GiB of memory. The inference budget is 10 GiB below 24 GiB and 16 GiB from 24 GiB up.
+- On Windows the worker prefers one dedicated GPU (12 GB minimum), with a budget of up to 16 GiB. Otherwise it uses one integrated GPU with 16 GiB usable and 24 GiB of RAM. Intel graphics are not supported.
 
-Unit tests may use the programmatic facade, but every desktop capability also crosses the daemon protocol. macOS uses a Unix domain socket; Windows uses the protected current-user named pipe. Desktop mode has no TCP listener.
+## Code Map
 
-The desktop and Garden Desk Core run without administrator privileges on both platforms. Windows HCS requires either an administrator or Hyper-V Administrators account, so a signed Windows-only setup helper may elevate once, identify the requesting account from the non-elevated desktop process token, and add only that account to the built-in Hyper-V Administrators group. After the next Windows sign-in, the ordinary desktop token owns HCS lifecycle and the fixed Hyper-V socket admits that group. macOS retains its existing current-user Virtualization.framework path and has no administrator setup helper or prompt.
+```text
+packages/shared    versioned contracts (Zod only)
+packages/core      workspace catalog, sessions, agent loop, daemon, policy, audit, inference
+packages/workers   inference client, microVM launchers, guest agent, guest image
+packages/desktop   Tauri and React app, packaging, Windows Hyper-V setup helper
+packages/cli       daemon health client
+packages/eval      fixtures, platform gates, golden tasks, model comparison
+prompts/           agent, command, skill, and system prompts
+site/              website, admin, and blog
+```
 
-## Agent MicroVM
+- State is one schema-versioned SQLite catalog, plus immutable content-addressed artifacts and per-session workspace manifests. To change the schema, add the next numbered migration in `packages/core/src/workspace/migrations/`. Never edit an existing one.
+- Change these files together: the guest library manifest, `packages/workers/images/agent/capabilities.json`, the guest build recipe, and `compliance/inventory.json`.
+- `pnpm check:source` limits each source file to 300 lines. Biome limits each function to 40 lines, cognitive complexity 10, and four parameters.
 
-Each agent session starts or reuses one microVM under ADR 0012. Only one execution runs at a time per conversation, while independent conversations may overlap within the hardware-derived VM capacity. The VM configuration contains no virtual network adapter, DNS, route, NAT, bridge, or generic host proxy.
+## Decisions
 
-The guest receives:
+- Local and offline first: no account, no cloud dependency, no silent cloud fallback, no telemetry.
+- Ship a generic file agent first, not a document pipeline.
+- Hostile files and agent code run only in the no-network microVM. GPU inference stays host-native inside an OS sandbox.
+- Core is TypeScript on Node.js. Rust and Swift own only OS capabilities.
+- The desktop is Tauri v2 and React with a thin Rust host. This replaced an earlier Electron plan.
+- The model is Ternary Bonsai 2 27B on the PrismML fork. Stock llama.cpp cannot read `PQ2_0`. AMD on Windows uses HIP, not Vulkan.
+- Sampling follows the model card: temperature 1 for chat, with greedy decoding only for JSON. There is no separate output token limit.
+- Product contracts do not depend on one model family. Each model, runtime, and hardware combination is certified on its own.
+- Garden Desk is licensed Apache-2.0. Contributions use a DCO sign-off with no CLA.
 
-- An immutable verified root image.
-- The selected folder mounted live and read-only at `/source`, without Core enumeration or copy limits.
-- Immutable explicit attachments under `/run/attachments`.
-- A 128 MiB writable `/workspace` committed as an atomic content-addressed manifest and rehydrated after eviction or restart.
-- One fixed typed host/guest socket.
-- A typed task and bounded completion mediation.
-- Fixed Python, Node.js, `/bin/sh`, BusyBox tools, and reviewed offline libraries.
+## Possible Next Work
 
-The guest does not receive credentials, user home, writable host mounts, arbitrary host paths, a host shell, package installation, an external broker, a generic Garden Desk Core API, approval authority, export authority, or a generic model endpoint.
+None of this is active. Each item needs an owner request.
 
-Every file a run creates or changes under `/workspace` is a session-owned deliverable; there is no separate internal-versus-deliverable classification. At successful finalization Core validates path, size, bytes, and hash before persistence. Task text, suffixes, format names, and model completion markers do not decide deliverable completion. The guest never commits authoritative state or writes the selected host folder.
-
-## Agent Loop
-
-Garden Desk Core owns the loop; the guest owns execution.
-
-1. Core resolves the session, canonical folder grant, attachments, and durable history.
-2. Core starts or reuses the guest and hydrates `/workspace`.
-3. Core sends persistent chat history plus generic JSON-Schema tool definitions to the constrained inference worker.
-4. The model returns text and zero or more native tool calls. Core validates each typed call before it runs and applies only the loop's 40-turn cap and cancellation; there is no retry or recovery logic for how the model uses its tools. For a plain file the `read` tool streams bytes and decodes strict UTF-8 plain text; invalid UTF-8 and NUL bytes fail. Safe optional integers clamp to configured bounds; wrong types, non-finite numbers, and unsafe integers fail. Tool-result previews are at most 50 KiB after JSON encoding. A complete oversized result is saved under `/workspace` and the tool result names its path.
-5. Python and Node calls run source once, save source to a workspace path and run it, run the last saved bytes at a workspace path, or run a live file directly from `/source/...`. A direct `/source/...` call records its absolute path with null source text. Execution, inspection, and workspace edit tools run inside the guest; `read` extracts DOC, DOCX, and PDF text inside the guest; skill bodies load on demand through the generic `skill` tool or are included in a fixed specialist's instructions; a depth-one child agent gets an isolated history while sharing the same session VM.
-6. Tool results, including real interpreter failures, return to the model as conversation history. When the worker-reported used context reaches 80 percent of the allocated context, Core replaces the older conversation head with one model-written summary while the current user request and last two assistant/tool turns stay verbatim. Durable trace and execution evidence are unchanged. A completed run can also enter the ordered per-session summary queue only when it reports a measured chat allocation of at least 16,384 tokens. Each summary attempt has a new request identity and trace. One retry is allowed only for an approved worker failure. Summary failure does not fail its completed run, and Core cancels pending summary work at shutdown.
-7. Core records observable activity, validates and commits the workspace manifest, and retains the guest in a least-recently-used warm pool bounded by total RAM, the inference cap, a host reserve, and the fixed guest limit.
-8. On successful finalization, Core commits the assistant response and valid observed deliverables in one logical completion flow. `artifacts.materialize` creates a verified owner-only temporary copy. `artifacts.export` performs an atomic host write chosen through the native dialog; the webview never receives the destination path.
-
-OpenCode informs the persistent conversation, generic tool, sub-agent, and compaction design but is not a runtime dependency. Garden Desk implements those behaviors within its existing no-network execution and audit boundaries.
-
-## Inference Worker
-
-The runtime is the pinned PrismML llama.cpp fork server with a hash-verified Ternary Bonsai 2 27B model. It uses Metal, CUDA, or HIP inside the native OS boundary. Windows uses the no-capability AppContainer and one-process job. Mac permits only the exact private Unix socket. The Windows helper relays opaque bytes; TypeScript owns HTTP and parsing. No TCP, credentials, tools, or arbitrary workspace access is allowed. See [ADR 0019](adr/0019-qwen38-private-server.md) and [ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md).
-
-Core mediates all inference and retains tool authority. One resident server has one slot. The existing scheduler queues model turns and unloads generation before embedding or image work. Cancellation closes the request and waits at most one second for the slot to become idle; a failed server is then stopped. Shutdown stops the server and removes its private directory.
-
-Generation uses a context fitted to the available inference memory, from 32K to 128K tokens, with no separate output token budget ([ADR 0020](adr/0020-ternary-bonsai-2-prism-fork.md)). Core retains compaction. Each generate or chat request aborts after 60 ms for every requested token, and after at least five minutes, so a turn that fills its fitted context keeps its full time before stall recovery runs.
-
-Reasoning stays in transient memory during one task and is cleared at completion, cancellation, or compaction. Stored messages and traces contain no reasoning. Task time stays fixed across tool turns. Context accounting includes cached input; performance counts only evaluated input tokens. Unavailable allocation measurements are omitted.
-
-## State And Recovery
-
-Authoritative data uses the schema-versioned SQLite workspace catalog, immutable content-addressed artifacts, a single-writer lock, and the redaction-aware hash-chained audit log established in M1.
-
-M3 adds folder grants, sessions, turns, drafts, attachments, agent runs, observable events, and artifact metadata. An interrupted transaction cannot leave a partial conversation. After daemon restart, the last committed state remains readable and in-flight jobs become an explicit interrupted state before retry or cancellation.
-
-Raw hidden model reasoning is never persisted. Supported typed thought segments can remain in transient desktop memory until the application closes and are never restored.
-
-## Security Boundaries
-
-- The user grants a folder or explicit files; the model never chooses host paths.
-- Garden Desk Core stages inputs and rechecks path identity at use time.
-- Host inputs are read-only to the guest; scratch is guest-only and ephemeral.
-- The microVM has no network device and no general host proxy.
-- Agent code cannot install dependencies or access credentials.
-- The model proposes; Garden Desk Core authorizes and mediates; the guest executes only within its job.
-- The webview has no direct product authority.
-- Generated files are session-owned proposals and cannot silently mutate the host. Only explicit user Open or Save As actions cross the native boundary, and export audit records omit destination paths.
-- Application telemetry, analytics, automatic crash reporting, and background metrics export do not exist.
-
-## Packaging
-
-V1 packages the Tauri host, exact Garden Desk Core sidecar, native helpers, approved model assets, and verified guest image. First launch performs zero downloads. The Windows package alone contains the one-time Hyper-V membership helper; its signature and hash are recorded in the application-anchored resource manifest and verified before elevation. The macOS bundle excludes it.
-
-Platform packages verify identities, hashes, signatures, notices, SBOMs, current-user endpoint permissions, no-network VM configuration, model confinement, and restart behavior on physical macOS and Windows systems.
-
-## Post-V1 Document Intelligence
-
-Canonical parsing, OCR/layout, retrieval, evidence packs, citations, and deterministic verification are one post-V1 follow-up. They may add product-owned fast paths for measured common tasks while retaining the generic agent as the long-tail capability. They cannot weaken the V1 authority boundaries.
-
-## Later Deployment Shapes
-
-The same control-plane boundaries may later support supported personal computers and multi-user office appliances. Identity, shared storage, network brokers, backup, governance, and organization policy require separate decisions and are not part of V1.
+- Document intelligence: parsing, OCR and layout, retrieval, citations, and deterministic checks.
+- Signed offline Knowledge Bundles of reference material.
+- Legal, accounting, and medical administration workflow packs chosen from real use.
+- An office appliance with accounts, permissions, backup, and audit.
+- Managed model downloads through a typed network broker, and Linux support.

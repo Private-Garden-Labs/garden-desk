@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file is the control document for agents working in this repository. It is authoritative, followed by accepted ADRs, [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md), and [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md).
+This file is the control document for agents working in this repository. It is authoritative, followed by [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md).
 
 ## Top Priority: Minimum Work
 
@@ -17,7 +17,7 @@ A real run is any command or script that loads a real model or starts a physical
 
 ## Current Phase
 
-M0, M1, M2, and M3 are complete. Community Desktop V1 is released, including the owner-approved prompt-only professional review skills, fixed local specialists, explicit Markdown commands, and the skill files a person adds, edits, or turns off in the workspace skills folder. Release evidence lives in [docs/M3_STATUS.md](docs/M3_STATUS.md). No post-V1 milestone is active. Do not start post-V1 work (document intelligence and later) without a new explicit owner request. Preserve the completed M1, M2, and M3 contracts, security primitives, transports, native helpers, guest images, and evidence.
+Community Desktop V1 is released; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) describes it. No milestone is active. Work only from a direct owner request. Preserve the shipped security boundaries, contracts, native helpers, and guest images.
 
 ## Test Rule
 
@@ -37,7 +37,7 @@ Model misbehavior is not a bug. Do not add recovery code, prompt rules, evidence
 
 ## Minimum Implementation Rule
 
-Garden Desk is a startup. Write the minimum clear code that delivers the active milestone behavior for the named use cases. Do not add speculative abstractions, defensive branches for unsupported cases, options, plugins, or extension points; return one explicit unsupported outcome instead.
+Garden Desk is a startup. Write the minimum clear code that delivers the requested behavior for the named use cases. Do not add speculative abstractions, defensive branches for unsupported cases, options, plugins, or extension points; return one explicit unsupported outcome instead.
 
 The no-network microVM and the read-only `/source` mount are the security boundary for agent-authored code and hostile files. Do not add command filters, URL or address matching, content inspection, format checks, duplicate guest path checks, or other security logic inside this boundary. Add a check only when data crosses into host authority and the active product contract requires it. Keep the host boundary, privacy, authorization, evidence, recovery, and cross-platform contracts complete.
 
@@ -55,34 +55,33 @@ Garden Desk Core, the harness, and orchestration code are TypeScript on Node.js.
 - `packages/desktop/native/windows-hyper-v-setup/`: one elevated step that adds only the requesting user to the Hyper-V Administrators group. Desktop and Core stay non-elevated; macOS has no administrator setup.
 - `packages/workers/native/windows-appcontainer-launcher/`: the fixed no-capability AppContainer, job limits, scoped read access, worker or runtime launch, and opaque private Unix-socket relay. TypeScript owns runtime arguments and HTTP parsing.
 
-Follow the architecture and gates in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) and the folder map in [docs/IMPLEMENTATION_STRUCTURE.md](docs/IMPLEMENTATION_STRUCTURE.md). Start from the product architecture and security boundaries, not framework defaults. Keep source small and hand-editable. Install only dependencies pinned in the lockfiles; commit no generated binaries, models, images, build output, or dependency directories. Do not introduce employer-owned, confidential, or third-party proprietary content. Mark carried-forward research claims as research-derived until validated.
+Follow the layers, boundaries, and code map in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Start from the product architecture and security boundaries, not framework defaults. Keep source small and hand-editable. Install only dependencies pinned in the lockfiles; commit no generated binaries, models, images, build output, or dependency directories. Do not introduce employer-owned, confidential, or third-party proprietary content. Mark carried-forward research claims as research-derived until validated.
 
 ## Consistency Rule
 
-Code, tests, schemas, fixtures, configuration, commands, and the authoritative documents (this file, ADRs, the implementation plan, the development workflow) must describe the same current behavior. When behavior changes, update those surfaces in the same change. Status and narrative documents change only when a milestone claim changes. Do not silently choose between conflicting code and documentation; resolve it within scope or report the conflict.
+Code, tests, schemas, fixtures, configuration, commands, and the authoritative documents (this file, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)) must describe the same current behavior. When behavior changes, update those surfaces in the same change. Do not silently choose between conflicting code and documentation; resolve it within scope or report the conflict.
 
 ## Writing Rule
 
-Documentation is for people. Write the absolute minimum amount of code comments, default to zero. Use plain wording, explain a technical term on first use, and do not add long technical explanations to `.md` files. Say "no-network microVM"; use "no-NIC" only with an explanation. Follow the Clean Code principles in [docs/IMPLEMENTATION_QUALITY_BAR.md](docs/IMPLEMENTATION_QUALITY_BAR.md).
+Documentation is for people. Write the absolute minimum amount of code comments, default to zero. Use plain wording, explain a technical term on first use, and do not add long technical explanations to `.md` files. Say "no-network microVM"; use "no-NIC" only with an explanation. Write clean code: clear names, small single-purpose functions, no boolean flag arguments, and errors handled once at the boundary that can act on them.
 
 ## Product And Security Principles
 
 - Local and offline first. No cloud dependency, no silent cloud fallback, no telemetry. Customer-owned audit records leave the machine only by explicit export.
 - No AI infrastructure vocabulary in the ordinary user experience. Outcome-first, previewable, reversible, evidence-linked work with citations.
-- Hardware-aware defaults, not user-managed model configuration. Ternary Bonsai 2 27B is the default generation model and Qwen3-Embedding-0.6B the managed encoder ([ADR 0020](docs/adr/0020-ternary-bonsai-2-prism-fork.md), [ADR 0019](docs/adr/0019-qwen38-private-server.md)). Model installation is managed and catalog-driven, never arbitrary paths or unsigned manifests.
+- Hardware-aware defaults, not user-managed model configuration. Ternary Bonsai 2 27B is the default generation model and Qwen3-Embedding-0.6B the managed encoder ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#model-and-hardware)). Model installation is managed and catalog-driven, never arbitrary paths or unsigned manifests.
 - The model never gets host authority. Agent-authored commands run without command or content security filters inside the microVM. Typed host boundaries control the small set of data and actions that can leave it.
 - Hostile document processing and agent-authored Python, Node.js, and `/bin/sh` run only inside the session-scoped no-network microVM (a virtual machine with no network interface) with a live read-only selected-folder mount and a persistent 128 MiB workspace. Command, URL, or address matching is never network isolation.
 - Host filesystem authority stays in Core. The guest gets `/source` read-only and `/workspace` writable. Destructive or consequential host actions are approval-gated. Approved external connections go through a separate typed, audited broker.
-- GPU-backed inference may stay host-native only under the OS-enforced boundary in [ADR 0012](docs/adr/0012-worker-isolation-and-untrusted-documents.md).
-- Keep the community platform hardware-agnostic and business controls modular ([docs/OPEN_SOURCE_BOUNDARY.md](docs/OPEN_SOURCE_BOUNDARY.md)).
+- GPU-backed inference may stay host-native only inside the OS-enforced inference sandbox in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#layers).
+- Keep the community platform hardware-agnostic and business controls modular ([docs/PRODUCT.md](docs/PRODUCT.md)).
 
 ## Agent Skills
 
-The skills under [.agents/skills](.agents/skills) (with matching pointers in [.claude/skills](.claude/skills) for Claude Code) package this workflow for Codex and Claude Code: plan a change, fix a bug, verify, review, review a dependency, hand off, apply the design rules. They do not override this file, ADRs, or the active milestone. The GitHub pull request review runs the command in [.claude/commands/garden-desk-code-review.md](.claude/commands/garden-desk-code-review.md), which reads [REVIEW.md](REVIEW.md) first and this file as secondary context, and may only read the pull request and post review comments.
+The skills under [.agents/skills](.agents/skills) (with matching pointers in [.claude/skills](.claude/skills) for Claude Code) package this workflow for Codex and Claude Code: plan a change, fix a bug, verify, review, review a dependency, hand off, apply the design rules. They do not override this file. The GitHub pull request review runs the command in [.claude/commands/garden-desk-code-review.md](.claude/commands/garden-desk-code-review.md), which reads [REVIEW.md](REVIEW.md) first and this file as secondary context, and may only read the pull request and post review comments.
 
 ## Where To Look
 
-- [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md): how to plan, verify, review, and reproduce agent behavior with the real model.
-- [docs/IMPLEMENTATION_QUALITY_BAR.md](docs/IMPLEMENTATION_QUALITY_BAR.md): minimal-code constraints and Clean Code principles.
-- [docs/M3_STATUS.md](docs/M3_STATUS.md), [docs/M1_STATUS.md](docs/M1_STATUS.md), [docs/M2_STATUS.md](docs/M2_STATUS.md): milestone evidence.
-- [docs/SECURITY.md](docs/SECURITY.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/DESKTOP_DESIGN.md](docs/DESKTOP_DESIGN.md), [docs/GLOSSARY.md](docs/GLOSSARY.md), [docs/adr](docs/adr).
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): what V1 is, the security boundary, the code map, and key decisions.
+- [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md): setup, verify, review, real-model runs, signing, and releases.
+- [docs/PRODUCT.md](docs/PRODUCT.md): who it is for and the product principles.

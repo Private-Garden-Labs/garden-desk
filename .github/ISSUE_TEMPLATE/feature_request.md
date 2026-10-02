@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Propose milestone-scoped behavior or a contribution-ready task
+about: Propose new behavior or a contribution-ready task
 title: "proposal: "
 labels: enhancement
 assignees: ""
@@ -16,7 +16,6 @@ assignees: ""
 
 ## Proposed Scope
 
-- Relevant milestone:
 - Product contract or workflow:
 - Minimum useful behavior:
 - Explicitly out of scope:
