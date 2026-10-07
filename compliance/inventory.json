@@ -308,10 +308,31 @@
       "use": "github_pages"
     }
   ],
+  "lawTexts": [
+    {
+      "name": "U.S. federal law texts (U.S. Code 2024 edition, public laws, eCFR, House Document 110-50)",
+      "version": "pinned in laws/sources.json",
+      "license": "Public domain (17 U.S.C. 105)",
+      "use": "packaged_law_library"
+    },
+    {
+      "name": "EU law texts (EUR-Lex consolidated texts and Official Journal, via Cellar)",
+      "version": "pinned in laws/sources.json",
+      "license": "Reuse with source acknowledgement under Commission Decision 2011/833/EU; only the Official Journal text is authentic",
+      "use": "packaged_law_library"
+    },
+    {
+      "name": "CISG text (Justice Laws Canada, S.C. 1991, c. 13, Schedule)",
+      "version": "pinned in laws/sources.json",
+      "license": "Reproduction of Federal Law Order (SI/97-5); not an official version",
+      "use": "packaged_law_library"
+    }
+  ],
   "redistribution": {
     "dependencies": "not_yet_shipped",
     "models": "controlled_by_assets_models_json",
     "guestImage": "packaged_with_manifest_and_spdx_sbom_on_certified_platforms",
-    "noticeBundle": "required_before_any_packaged_distribution"
+    "noticeBundle": "required_before_any_packaged_distribution",
+    "lawLibrary": "packaged_with_source_urls_and_hashes_from_laws_sources_json"
   }
 }

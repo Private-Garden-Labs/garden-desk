@@ -6,6 +6,8 @@ import type {
   CommandSummary,
   ConversationMessage,
   FolderSummary,
+  Jurisdiction,
+  LawJurisdictionSummary,
   MessageRole,
   SessionDraft,
   SessionPage,
@@ -54,7 +56,12 @@ export interface GardenDeskCorePorts extends InferenceService {
   ): Promise<void>;
   exportArtifact(sessionId: string, artifactId: string, destination: string): Promise<void>;
   removeAttachment(sessionId: string, attachmentId: string): Promise<boolean>;
-  startAgent(sessionId: string, task: string, thinking: ThinkingLevel): Promise<AgentRunSummary>;
+  startAgent(
+    sessionId: string,
+    task: string,
+    thinking: ThinkingLevel,
+    jurisdiction: Jurisdiction | null,
+  ): Promise<AgentRunSummary>;
   listAgentRuns(sessionId: string): Promise<AgentRunSummary[]>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;
@@ -69,6 +76,8 @@ export interface GardenDeskCorePorts extends InferenceService {
   removeSkill(name: string): Promise<boolean>;
   setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
   skillLocations(): Promise<SkillLocations>;
+  listLaws(): Promise<LawJurisdictionSummary[]>;
+  setLawEnabled(id: Jurisdiction, enabled: boolean): Promise<boolean>;
   verifyAudit(): Promise<boolean>;
   close(): Promise<void>;
 }
@@ -95,6 +104,8 @@ function skillPorts(ports: GardenDeskCorePorts) {
     removeSkill: (name: string) => ports.removeSkill(name),
     setSkillEnabled: (name: string, enabled: boolean) => ports.setSkillEnabled(name, enabled),
     skillLocations: () => ports.skillLocations(),
+    listLaws: () => ports.listLaws(),
+    setLawEnabled: (id: Jurisdiction, enabled: boolean) => ports.setLawEnabled(id, enabled),
   };
 }
 
@@ -143,7 +154,8 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
       ports.materializeAttachment(sessionId, attachmentId),
     ...artifactPorts(ports),
     removeAttachment: (sessionId, attachmentId) => ports.removeAttachment(sessionId, attachmentId),
-    startAgent: (sessionId, task, thinking) => ports.startAgent(sessionId, task, thinking),
+    startAgent: (sessionId, task, thinking, jurisdiction) =>
+      ports.startAgent(sessionId, task, thinking, jurisdiction),
     listAgentRuns: (sessionId) => ports.listAgentRuns(sessionId),
     getAgentRun: (runId) => ports.getAgentRun(runId),
     getAgentTrace: (runId) => ports.getAgentTrace(runId),

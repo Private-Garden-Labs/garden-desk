@@ -2,6 +2,9 @@ export const INFERENCE_PROFILE = {
   modelId: "ternary-bonsai-2-27b-pq2_0",
   name: "Ternary Bonsai 2 27B",
   projectorId: "ternary-bonsai-2-27b-mmproj-q8_0",
+  encoderId: "qwen3-embedding-0.6b-q8_0",
+  /** The encoder runs on the CPU beside the generation model and embeds only short search queries. */
+  encoderContextTokens: 512,
   minimumContextTokens: 32_768,
   maximumContextTokens: 131_072,
   contextStepTokens: 4_096,

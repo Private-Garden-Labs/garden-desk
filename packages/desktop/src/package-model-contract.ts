@@ -7,6 +7,9 @@ export const generationModelResourcePath = `models/${generationModelFileName}`;
 export const projectorModelId = INFERENCE_PROFILE.projectorId;
 export const projectorModelFileName = `${projectorModelId}.gguf`;
 export const projectorModelResourcePath = `models/${projectorModelFileName}`;
+export const encoderModelId = INFERENCE_PROFILE.encoderId;
+export const encoderModelFileName = `${encoderModelId}.gguf`;
+export const encoderModelResourcePath = `models/${encoderModelFileName}`;
 export const packagedModelFiles = [
   {
     id: generationModelId,
@@ -17,6 +20,11 @@ export const packagedModelFiles = [
     id: projectorModelId,
     fileName: projectorModelFileName,
     resourcePath: projectorModelResourcePath,
+  },
+  {
+    id: encoderModelId,
+    fileName: encoderModelFileName,
+    resourcePath: encoderModelResourcePath,
   },
 ] as const;
 
@@ -36,12 +44,20 @@ export function canonicalProjectorModelPath(repositoryRoot: string): string {
   return canonicalModelPath(repositoryRoot, projectorModelFileName);
 }
 
+export function canonicalEncoderModelPath(repositoryRoot: string): string {
+  return canonicalModelPath(repositoryRoot, encoderModelFileName);
+}
+
 export function packagedGenerationModelPath(resourcesRoot: string): string {
   return packagedModelPath(resourcesRoot, generationModelFileName);
 }
 
 export function packagedProjectorModelPath(resourcesRoot: string): string {
   return packagedModelPath(resourcesRoot, projectorModelFileName);
+}
+
+export function packagedEncoderModelPath(resourcesRoot: string): string {
+  return packagedModelPath(resourcesRoot, encoderModelFileName);
 }
 
 export function generationModelPackageFile(repositoryRoot: string): {
@@ -58,5 +74,6 @@ export function modelPackageFiles(repositoryRoot: string): Array<{ source: strin
   return [
     generationModelPackageFile(repositoryRoot),
     { source: canonicalProjectorModelPath(repositoryRoot), path: projectorModelResourcePath },
+    { source: canonicalEncoderModelPath(repositoryRoot), path: encoderModelResourcePath },
   ];
 }

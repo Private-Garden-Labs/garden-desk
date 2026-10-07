@@ -160,6 +160,21 @@ export async function installInferenceResources(
 function productBuild(): boolean {
   return !process.argv.includes("--check") && ["darwin", "win32"].includes(process.platform);
 }
+
+async function installLawLibrary(mode: "development" | "production"): Promise<void> {
+  await mkdir(join(resourcesRoot, "laws"), { recursive: true });
+  try {
+    await copyFile(
+      join(repositoryRoot, "laws", "law-library.sqlite"),
+      join(resourcesRoot, "laws", "law-library.sqlite"),
+    );
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    if (productBuild() && mode === "production") {
+      throw new Error("Missing laws/law-library.sqlite. Run `pnpm laws:build`, then build again.");
+    }
+  }
+}
 async function installProductResources(
   mode: "development" | "production",
 ): Promise<Omit<ResourceHashes, "migrations">> {
@@ -208,6 +223,7 @@ export async function installResources(
     await copyFile(source, destination);
     migrations[name] = await sha256(destination);
   }
+  await installLawLibrary(mode);
   const windowsPipeGuard = await installWindowsPipeGuard();
   const productResources = productBuild() ? await installProductResources(mode) : {};
   await writePackageIdentity(resourcesRoot, {

@@ -4,6 +4,7 @@ import { Icon } from "./icons.js";
 interface SidebarSettingsProps {
   active: boolean;
   appVersion: string | undefined;
+  onOpenLaws(): void;
   onOpenReleases(): void;
   onOpenSkills(): void;
 }
@@ -21,12 +22,55 @@ function useDismissOnOutsideClick(open: boolean, close: () => void) {
   return container;
 }
 
-export function SidebarSettings({
-  active,
+type SettingsMenuProps = Omit<SidebarSettingsProps, "active"> & {
+  choose(action: () => void): void;
+};
+
+function SettingsMenu({
   appVersion,
+  choose,
+  onOpenLaws,
   onOpenReleases,
   onOpenSkills,
-}: SidebarSettingsProps) {
+}: SettingsMenuProps) {
+  return (
+    <div aria-label="Settings" className="sidebar-menu" role="menu">
+      <button
+        className="sidebar-menu-item"
+        onClick={() => choose(onOpenSkills)}
+        role="menuitem"
+        type="button"
+      >
+        <Icon name="skill" />
+        Skills
+      </button>
+      <button
+        className="sidebar-menu-item"
+        onClick={() => choose(onOpenLaws)}
+        role="menuitem"
+        type="button"
+      >
+        <Icon name="read" />
+        Laws
+      </button>
+      <button
+        className="sidebar-menu-item"
+        onClick={() => choose(onOpenReleases)}
+        role="menuitem"
+        title="Garden Desk does not check for updates. This opens gardendesk.ai/releases in your browser."
+        type="button"
+      >
+        <Icon name="external" />
+        Open the releases page
+      </button>
+      {appVersion === undefined ? null : (
+        <p className="sidebar-menu-version">Version {appVersion}</p>
+      )}
+    </div>
+  );
+}
+
+export function SidebarSettings({ active, ...menu }: SidebarSettingsProps) {
   const [open, setOpen] = useState(false);
   const container = useDismissOnOutsideClick(open, () => setOpen(false));
   const choose = (action: () => void) => {
@@ -42,32 +86,7 @@ export function SidebarSettings({
       }}
       ref={container}
     >
-      {open ? (
-        <div aria-label="Settings" className="sidebar-menu" role="menu">
-          <button
-            className="sidebar-menu-item"
-            onClick={() => choose(onOpenSkills)}
-            role="menuitem"
-            type="button"
-          >
-            <Icon name="skill" />
-            Skills
-          </button>
-          <button
-            className="sidebar-menu-item"
-            onClick={() => choose(onOpenReleases)}
-            role="menuitem"
-            title="Garden Desk does not check for updates. This opens gardendesk.ai/releases in your browser."
-            type="button"
-          >
-            <Icon name="external" />
-            Open the releases page
-          </button>
-          {appVersion === undefined ? null : (
-            <p className="sidebar-menu-version">Version {appVersion}</p>
-          )}
-        </div>
-      ) : null}
+      {open ? <SettingsMenu {...menu} choose={choose} /> : null}
       <button
         aria-current={active ? "page" : undefined}
         aria-expanded={open}

@@ -1929,6 +1929,19 @@ textarea:focus-visible {
   height: 14px;
 }
 
+.law-menu {
+  width: 280px;
+}
+
+.law-menu-note {
+  margin: 6px 0 0;
+  padding: 8px 10px 4px;
+  border-top: 1px solid var(--reading-border);
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .question-prompt {
   display: flex;
   flex-direction: column;
@@ -3237,6 +3250,56 @@ textarea:focus-visible {
 
 .skill-switch[aria-checked="true"] span {
   transform: translateX(16px);
+}
+
+.law-disclaimer {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--reading-border);
+  border-radius: 12px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.law-list {
+  margin-top: 14px;
+}
+
+.law-row {
+  align-items: flex-start;
+}
+
+.law-sources {
+  margin-top: 6px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.law-sources summary {
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.law-sources summary:hover {
+  color: var(--ink);
+}
+
+.law-sources summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.law-sources ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.law-sources li span {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
 }
 
 .skill-drop-zone {

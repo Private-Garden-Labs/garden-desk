@@ -90,6 +90,8 @@ describe("M3 model package input", () => {
         "resources/core/models/ternary-bonsai-2-27b-pq2_0.gguf",
       "../../eval/.generated/models/ternary-bonsai-2-27b-mmproj-q8_0.gguf":
         "resources/core/models/ternary-bonsai-2-27b-mmproj-q8_0.gguf",
+      "../../eval/.generated/models/qwen3-embedding-0.6b-q8_0.gguf":
+        "resources/core/models/qwen3-embedding-0.6b-q8_0.gguf",
       "../../../assets/fonts/LICENSE.txt": "assets/fonts/LICENSE.txt",
     });
     expect(launcher).toContain('tauriArguments[0] === "dev"');

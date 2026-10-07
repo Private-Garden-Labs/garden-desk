@@ -14,6 +14,7 @@ import {
   type ToolValidation,
   textParam,
 } from "./generic-tool-support.js";
+import { lawsTool } from "./law-tool.js";
 import { questionTool } from "./question-tool.js";
 import { remainingParam, remainingSchema, reviewTool } from "./review-tool.js";
 import { boundedToolOutput } from "./tool-output.js";
@@ -233,6 +234,7 @@ function specs(context: ToolContext, skillNames: string[]): ToolSpec[] {
     skillTool(context.skills, skillNames),
     taskTool(context.subagents ?? []),
     questionTool(),
+    ...(context.laws === undefined ? [] : [lawsTool(context.laws)]),
   ];
 }
 

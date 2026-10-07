@@ -6,6 +6,8 @@ import type {
   CommandSummary,
   ConversationMessage,
   FolderSummary,
+  Jurisdiction,
+  LawJurisdictionSummary,
   ModelRuntimeStatus,
   SessionDraft,
   SessionPage,
@@ -86,7 +88,12 @@ export interface DesktopApi {
   removeAttachment(sessionId: string, attachmentId: string): Promise<boolean>;
   saveDraft(sessionId: string, content: string): Promise<SessionDraft>;
   loadDraft(sessionId: string): Promise<SessionDraft | undefined>;
-  startAgent(sessionId: string, task: string, thinking: ThinkingLevel): Promise<AgentRunSummary>;
+  startAgent(
+    sessionId: string,
+    task: string,
+    thinking: ThinkingLevel,
+    jurisdiction: Jurisdiction | null,
+  ): Promise<AgentRunSummary>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;
   listAgentRuns(sessionId: string): Promise<AgentRunSummary[]>;
@@ -105,5 +112,7 @@ export interface DesktopApi {
   setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
   skillLocations(): Promise<SkillLocations>;
   openPromptFolder(folder: PromptFolder): Promise<void>;
+  listLaws(): Promise<LawJurisdictionSummary[]>;
+  setLawEnabled(id: Jurisdiction, enabled: boolean): Promise<boolean>;
   listenForDroppedPaths?(listener: (event: NativeDropEvent) => void): Promise<() => void>;
 }

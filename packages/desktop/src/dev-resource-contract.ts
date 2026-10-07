@@ -11,6 +11,7 @@ function modelInputs(repositoryRoot: string): string[] {
   return [
     join(root, `${INFERENCE_PROFILE.modelId}.gguf`),
     join(root, `${INFERENCE_PROFILE.projectorId}.gguf`),
+    join(root, `${INFERENCE_PROFILE.encoderId}.gguf`),
   ];
 }
 
@@ -23,6 +24,7 @@ function commonInputs(desktopRoot: string, repositoryRoot: string): string[] {
     join(repositoryRoot, "packages", "core", "package.json"),
     join(repositoryRoot, "packages", "core", "src"),
     join(repositoryRoot, "prompts"),
+    join(repositoryRoot, "laws"),
     join(repositoryRoot, "packages", "workers", "package.json"),
     join(repositoryRoot, "packages", "workers", "src"),
     join(repositoryRoot, "packages", "workers", "images", "build.ts"),

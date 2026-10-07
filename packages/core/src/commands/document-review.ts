@@ -5,6 +5,7 @@ import {
   DEFAULT_THINKING_LEVEL,
   INFERENCE_PROFILE,
   JobIdSchema,
+  LAW_DISCLAIMER,
 } from "@gardendesk/shared";
 import { currentTimeContext, withCurrentTimeContext } from "../agent/chat-current-time.js";
 import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-input.js";
@@ -121,6 +122,16 @@ async function generateReview(
   }
 }
 
+async function packagedLaw(input: ChatAgentInput, text: string) {
+  const laws = input.laws;
+  if (laws === undefined) return undefined;
+  return {
+    jurisdiction: laws.name,
+    currentAsOf: laws.currentAsOf,
+    packagedLaw: await laws.forDocument(text, input.signal),
+  };
+}
+
 export async function runDocumentReview(
   command: CommandInvocation,
   input: ChatAgentInput,
@@ -141,6 +152,7 @@ export async function reviewDocument(
 ): Promise<AgentRunResult> {
   const extracted = await extractDocument(input, source.attachment, source.directory);
   input.signal?.throwIfAborted();
+  const law = await packagedLaw(input, extracted.result.stdout);
   const request = {
     modelId: input.modelId,
     contextSize: input.contextTokens,
@@ -163,12 +175,16 @@ export async function reviewDocument(
             extractedText: extracted.result.stdout,
           }),
         },
+        ...(law === undefined ? [] : [{ role: "user" as const, text: JSON.stringify(law) }]),
       ],
       currentTimeContext(input.systemPrompt("current-time")),
     ),
   };
   input.onEvent?.("inference.started", "Reviewing the extracted text.");
-  const { result, response } = await generateReview(input, chat, request);
+  const generated = await generateReview(input, chat, request);
+  const result = generated.result;
+  const response =
+    law === undefined ? generated.response : `${generated.response}\n\n${LAW_DISCLAIMER}`;
   const allocated = result.memory.contextSizeTokens;
   if (allocated !== undefined) input.onContext?.(result.contextUsedTokens, allocated, true);
   input.onResponse?.(response);

@@ -1,9 +1,11 @@
 import type { AttachmentSummary, CommandSummary, ThinkingLevel } from "@gardendesk/shared";
 import { type FormEvent, type KeyboardEvent, useEffect, useLayoutEffect, useRef } from "react";
+import type { LawsController } from "../laws.js";
 import { AttachmentChip } from "./attachment-chip.js";
 import { CommandMenu, useCommandMenu } from "./command-menu.js";
 import { EffortControl } from "./effort-control.js";
 import { Icon } from "./icons.js";
+import { LawControl } from "./law-control.js";
 
 interface ComposerProps {
   commands: CommandSummary[];
@@ -11,6 +13,7 @@ interface ComposerProps {
   disabled: boolean;
   dropActive?: boolean;
   draft: string;
+  laws: LawsController;
   nativeActionMessage?: string | undefined;
   removableAttachmentIds: string[];
   running: boolean;
@@ -94,6 +97,7 @@ export function Composer({
   disabled,
   dropActive = false,
   draft,
+  laws,
   nativeActionMessage,
   removableAttachmentIds,
   running,
@@ -180,6 +184,7 @@ export function Composer({
           <Icon name="add" />
         </button>
         <div className="composer-send-group">
+          <LawControl disabled={disabled || running} laws={laws} />
           <EffortControl
             disabled={disabled || running}
             onThinkingChange={onThinkingChange}

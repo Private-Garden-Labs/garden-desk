@@ -118,6 +118,11 @@ export class DemoDesktopApi implements DesktopApi {
   removeSkill = demoUnavailable;
   setSkillEnabled = demoUnavailable;
   openPromptFolder = demoUnavailable;
+  setLawEnabled = demoUnavailable;
+
+  async listLaws() {
+    return [];
+  }
 
   async listSkills() {
     return demoSkills.map((skill) => ({ ...skill }));
