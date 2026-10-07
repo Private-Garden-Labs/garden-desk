@@ -16,7 +16,7 @@ import {
 
 const QUERY_INSTRUCTION =
   "Instruct: Given a contract clause or legal question, retrieve the law sections that govern it\nQuery: ";
-const QUERY_CHARACTERS = 1_500;
+const QUERY_CHARACTERS = 1_000;
 const SEARCH_RESULTS = 5;
 const DOCUMENT_PASSAGES = 24;
 const DOCUMENT_RESULTS = 16;

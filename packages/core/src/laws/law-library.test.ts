@@ -2,10 +2,11 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { INFERENCE_PROFILE } from "@gardendesk/shared";
 import { describe, expect, it } from "vitest";
-import { LawLibrary } from "./law-library.js";
+import { type Embed, LawLibrary } from "./law-library.js";
 
-async function library(): Promise<LawLibrary> {
+async function library(embed: Embed = async () => [1, 0]): Promise<LawLibrary> {
   const root = await mkdtemp(join(tmpdir(), "garden-desk-laws-"));
   const path = join(root, "law-library.sqlite");
   const database = new DatabaseSync(path);
@@ -23,7 +24,7 @@ async function library(): Promise<LawLibrary> {
   `);
   database.prepare("INSERT INTO chunks VALUES (?, ?), (?, ?)").run(1, unit(), 2, unit());
   database.close();
-  return new LawLibrary(path, join(root, "settings.json"), async () => [1, 0]);
+  return new LawLibrary(path, join(root, "settings.json"), embed);
 }
 
 function unit(): Uint8Array {
@@ -39,6 +40,18 @@ describe("law library", () => {
     ]);
     laws.setEnabled("us", false);
     expect(() => laws.context("us")).toThrow("law_jurisdiction_unavailable");
+    laws.close();
+  });
+
+  it("keeps a digit-only query within the encoder context", async () => {
+    const embedded: string[] = [];
+    const laws = await library(async (text) => {
+      embedded.push(text);
+      return [1, 0];
+    });
+    await laws.context("eu").search("1".repeat(5_000));
+    const digits = embedded[0]?.split("Query: ")[1]?.length ?? 0;
+    expect(digits + 24).toBeLessThanOrEqual(INFERENCE_PROFILE.encoderContextTokens);
     laws.close();
   });
 });
