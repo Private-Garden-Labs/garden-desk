@@ -4,7 +4,7 @@ export const INFERENCE_PROFILE = {
   projectorId: "ternary-bonsai-2-27b-mmproj-q8_0",
   encoderId: "qwen3-embedding-0.6b-q8_0",
   /** The encoder runs on the CPU beside the generation model and embeds only short search queries. */
-  encoderContextTokens: 512,
+  encoderContextTokens: 1024,
   minimumContextTokens: 32_768,
   maximumContextTokens: 131_072,
   contextStepTokens: 4_096,
