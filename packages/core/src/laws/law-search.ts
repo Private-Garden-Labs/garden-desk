@@ -1,5 +1,5 @@
 const RANK_DEPTH = 40;
-const FUSION_OFFSET = 60;
+const FUSION_OFFSET = 5;
 const QUERY_WORDS = 64;
 const CHUNK_CHARACTERS = 1_500;
 
