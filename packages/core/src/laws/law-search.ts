@@ -44,9 +44,9 @@ export function fuseRanks(rankings: readonly number[][]): number[] {
 }
 
 /** Takes each passage's best sections first, so every clause of a document gets its match. */
-export function interleave(rankings: readonly number[][], depth: number, limit: number): number[] {
+export function interleave(rankings: readonly number[][], limit: number): number[] {
   const picked = new Set<number>();
-  for (let rank = 0; rank < depth; rank += 1)
+  for (let rank = 0; rank < RANK_DEPTH; rank += 1)
     for (const ranking of rankings) {
       const id = ranking[rank];
       if (id !== undefined) picked.add(id);
@@ -55,7 +55,7 @@ export function interleave(rankings: readonly number[][], depth: number, limit: 
 }
 
 export function documentPassages(text: string, count: number): string[] {
-  const size = Math.max(800, Math.ceil(text.length / count));
+  const size = Math.max(300, Math.ceil(text.length / count));
   const passages: string[] = [];
   let current = "";
   for (const line of text.split(/\r?\n/u)) {

@@ -88,7 +88,7 @@ export class LawLibrary {
         const rankings: number[][] = [];
         for (const passage of documentPassages(text, DOCUMENT_PASSAGES))
           rankings.push(await this.rank(id, passage, signal));
-        return this.sections(interleave(rankings, 2, DOCUMENT_RESULTS));
+        return this.sections(interleave(rankings, DOCUMENT_RESULTS));
       },
     };
   }
