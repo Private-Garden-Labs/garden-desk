@@ -6,7 +6,10 @@ import { INFERENCE_PROFILE } from "@gardendesk/shared";
 import { describe, expect, it } from "vitest";
 import { type Embed, LawLibrary } from "./law-library.js";
 
-async function library(embed: Embed = async () => [1, 0]): Promise<LawLibrary> {
+async function library(
+  embed: Embed = async () => [1, 0],
+  seed?: (database: DatabaseSync) => void,
+): Promise<LawLibrary> {
   const root = await mkdtemp(join(tmpdir(), "garden-desk-laws-"));
   const path = join(root, "law-library.sqlite");
   const database = new DatabaseSync(path);
@@ -23,6 +26,7 @@ async function library(embed: Embed = async () => [1, 0]): Promise<LawLibrary> {
     INSERT INTO sections_fts (rowid, citation, heading, title, text) SELECT id, citation, heading, '', text FROM sections;
   `);
   database.prepare("INSERT INTO chunks VALUES (?, ?), (?, ?)").run(1, unit(), 2, unit());
+  seed?.(database);
   database.close();
   return new LawLibrary(path, join(root, "settings.json"), embed);
 }
@@ -52,6 +56,22 @@ describe("law library", () => {
     await laws.context("eu").search("1".repeat(5_000));
     const digits = embedded[0]?.split("Query: ")[1]?.length ?? 0;
     expect(digits + 24).toBeLessThanOrEqual(INFERENCE_PROFILE.encoderContextTokens);
+    laws.close();
+  });
+
+  it("shows the part of a long section that matched", async () => {
+    const filler = "Other rules apply here. ".repeat(60);
+    const laws = await library(undefined, (database) => {
+      database
+        .prepare("INSERT INTO sections VALUES (3, 'sherman', 'us', '15 U.S.C. 45', '', ?)")
+        .run(`${filler}\n${filler}\nOnline sales may not be banned.`);
+      database
+        .prepare("INSERT INTO chunks VALUES (?, ?), (?, ?)")
+        .run(3, new Uint8Array(Float32Array.from([0, 1]).buffer), 3, unit());
+    });
+    const sections = await laws.context("us").search("online sales");
+    const long = sections.find((section) => section.citation === "15 U.S.C. 45");
+    expect(long?.text).toContain("Online sales may not be banned.");
     laws.close();
   });
 });

@@ -2,40 +2,14 @@ import { type ChildProcess, spawn } from "node:child_process";
 import { createServer } from "node:net";
 import type { DatabaseSync } from "node:sqlite";
 import { setTimeout as delay } from "node:timers/promises";
+import { chunkText } from "../../packages/core/src/laws/law-search.js";
 import { dimensions } from "./database.js";
 
-const chunkCharacters = 1_500;
 const batchSize = 32;
 
 interface Encoder {
   server: ChildProcess;
   url: string;
-}
-
-function splitLong(paragraph: string): string[] {
-  const pieces: string[] = [];
-  let rest = paragraph;
-  while (rest.length > chunkCharacters) {
-    const cut = rest.lastIndexOf(" ", chunkCharacters);
-    const end = cut > 0 ? cut : chunkCharacters;
-    pieces.push(rest.slice(0, end));
-    rest = rest.slice(end).trimStart();
-  }
-  return [...pieces, rest];
-}
-
-/** Chunks of at most 1,500 characters, split at paragraph boundaries where possible. */
-export function chunkText(text: string): string[] {
-  const chunks: string[] = [];
-  let current = "";
-  for (const paragraph of text.split("\n").flatMap(splitLong)) {
-    if (current !== "" && current.length + 1 + paragraph.length > chunkCharacters) {
-      chunks.push(current);
-      current = "";
-    }
-    current = current === "" ? paragraph : `${current}\n${paragraph}`;
-  }
-  return current === "" ? chunks : [...chunks, current];
 }
 
 async function freePort(): Promise<number> {

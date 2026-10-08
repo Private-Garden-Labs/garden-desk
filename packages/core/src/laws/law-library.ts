@@ -10,7 +10,9 @@ import {
   fuseRanks,
   interleave,
   keywordQuery,
+  type Ranking,
   type SectionVectors,
+  sectionExcerpt,
   vectorRanks,
 } from "./law-search.js";
 
@@ -32,6 +34,7 @@ export interface LawSection {
 export interface LawContext {
   name: string;
   currentAsOf: string;
+  searched(): boolean;
   search(query: string, signal?: AbortSignal): Promise<LawSection[]>;
   forDocument(text: string, signal?: AbortSignal): Promise<LawSection[]>;
 }
@@ -79,13 +82,18 @@ export class LawLibrary {
   context(id: Jurisdiction): LawContext {
     const jurisdiction = this.list().find((item) => item.id === id && item.enabled);
     if (jurisdiction === undefined) throw new Error("law_jurisdiction_unavailable");
+    let searched = false;
     return {
       name: jurisdiction.name,
       currentAsOf: jurisdiction.currentAsOf,
-      search: async (query, signal) =>
-        this.sections((await this.rank(id, query, signal)).slice(0, SEARCH_RESULTS)),
+      searched: () => searched,
+      search: async (query, signal) => {
+        searched = true;
+        return this.sections(interleave([await this.rank(id, query, signal)], SEARCH_RESULTS));
+      },
       forDocument: async (text, signal) => {
-        const rankings: number[][] = [];
+        searched = true;
+        const rankings: Ranking[] = [];
         for (const passage of documentPassages(text, DOCUMENT_PASSAGES))
           rankings.push(await this.rank(id, passage, signal));
         return this.sections(interleave(rankings, DOCUMENT_RESULTS));
@@ -93,13 +101,11 @@ export class LawLibrary {
     };
   }
 
-  private async rank(id: Jurisdiction, text: string, signal?: AbortSignal): Promise<number[]> {
+  private async rank(id: Jurisdiction, text: string, signal?: AbortSignal): Promise<Ranking> {
     const query = text.slice(0, QUERY_CHARACTERS);
     const vector = await this.embed(`${QUERY_INSTRUCTION}${query}`, signal);
-    return fuseRanks([
-      this.keywordRanks(id, query),
-      vectorRanks(this.sectionVectors(id), Float32Array.from(vector)),
-    ]);
+    const meaning = vectorRanks(this.sectionVectors(id), Float32Array.from(vector));
+    return { ids: fuseRanks([this.keywordRanks(id, query), meaning.ids]), chunks: meaning.chunks };
   }
 
   private keywordRanks(id: Jurisdiction, text: string): number[] {
@@ -122,7 +128,8 @@ export class LawLibrary {
     const rows = this.required()
       .prepare(
         `SELECT chunks.section_id AS id, chunks.vector AS vector FROM chunks
-         JOIN sections ON sections.id = chunks.section_id WHERE sections.jurisdiction = ?`,
+         JOIN sections ON sections.id = chunks.section_id WHERE sections.jurisdiction = ?
+         ORDER BY chunks.rowid`,
       )
       .all(id) as Array<{ id: number; vector: Uint8Array }>;
     const dimensions = (rows[0]?.vector.byteLength ?? 0) / 4;
@@ -130,23 +137,25 @@ export class LawLibrary {
     rows.forEach((row, index) => {
       values.set(new Float32Array(Uint8Array.from(row.vector).buffer), index * dimensions);
     });
-    const vectors = { sectionIds: Int32Array.from(rows, (row) => row.id), values };
+    const counts = new Map<number, number>();
+    const chunkIndexes = Int32Array.from(rows, (row) => {
+      const index = counts.get(row.id) ?? 0;
+      counts.set(row.id, index + 1);
+      return index;
+    });
+    const vectors = { sectionIds: Int32Array.from(rows, (row) => row.id), chunkIndexes, values };
     this.vectors.set(id, vectors);
     return vectors;
   }
 
-  private sections(ids: readonly number[]): LawSection[] {
+  private sections(picked: ReadonlyArray<[number, number]>): LawSection[] {
     const statement = this.required().prepare(
       `SELECT sections.citation, sections.heading, sources.title AS source, sections.text
        FROM sections JOIN sources ON sources.id = sections.source_id WHERE sections.id = ?`,
     );
-    return ids.map((id) => {
+    return picked.map(([id, chunk]) => {
       const section = statement.get(id) as unknown as LawSection;
-      const text =
-        section.text.length > SECTION_CHARACTERS
-          ? `${section.text.slice(0, SECTION_CHARACTERS)} [section continues]`
-          : section.text;
-      return { ...section, text };
+      return { ...section, text: sectionExcerpt(section.text, chunk, SECTION_CHARACTERS) };
     });
   }
 

@@ -1,10 +1,53 @@
 const RANK_DEPTH = 40;
 const FUSION_OFFSET = 60;
 const QUERY_WORDS = 64;
+const CHUNK_CHARACTERS = 1_500;
 
 export interface SectionVectors {
   sectionIds: Int32Array;
+  chunkIndexes: Int32Array;
   values: Float32Array;
+}
+
+/** Section ids, best first, and the index of each section's best-matching chunk. */
+export interface Ranking {
+  ids: number[];
+  chunks: Map<number, number>;
+}
+
+function splitLong(paragraph: string): string[] {
+  const pieces: string[] = [];
+  let rest = paragraph;
+  while (rest.length > CHUNK_CHARACTERS) {
+    const cut = rest.lastIndexOf(" ", CHUNK_CHARACTERS);
+    const end = cut > 0 ? cut : CHUNK_CHARACTERS;
+    pieces.push(rest.slice(0, end));
+    rest = rest.slice(end).trimStart();
+  }
+  return [...pieces, rest];
+}
+
+/** Chunks of at most 1,500 characters, split at paragraph boundaries where possible. */
+export function chunkText(text: string): string[] {
+  const chunks: string[] = [];
+  let current = "";
+  for (const paragraph of text.split("\n").flatMap(splitLong)) {
+    if (current !== "" && current.length + 1 + paragraph.length > CHUNK_CHARACTERS) {
+      chunks.push(current);
+      current = "";
+    }
+    current = current === "" ? paragraph : `${current}\n${paragraph}`;
+  }
+  return current === "" ? chunks : [...chunks, current];
+}
+
+/** Shows a long section from the chunk that matched, so the reader sees the rule the search found. */
+export function sectionExcerpt(text: string, chunk: number, limit: number): string {
+  if (text.length <= limit) return text;
+  const shown = chunkText(text).slice(chunk).join("\n");
+  const omitted = chunk > 0 ? "[earlier text omitted]\n" : "";
+  const continues = shown.length > limit ? " [section continues]" : "";
+  return `${omitted}${shown.slice(0, limit)}${continues}`;
 }
 
 export function keywordQuery(text: string): string | undefined {
@@ -16,8 +59,8 @@ export function keywordQuery(text: string): string | undefined {
     .join(" OR ");
 }
 
-export function vectorRanks(vectors: SectionVectors, query: Float32Array): number[] {
-  const best = new Map<number, number>();
+export function vectorRanks(vectors: SectionVectors, query: Float32Array): Ranking {
+  const best = new Map<number, { score: number; chunk: number }>();
   const dimensions = query.length;
   for (let row = 0; row < vectors.sectionIds.length; row += 1) {
     let score = 0;
@@ -25,12 +68,16 @@ export function vectorRanks(vectors: SectionVectors, query: Float32Array): numbe
     for (let index = 0; index < dimensions; index += 1)
       score += (vectors.values[offset + index] ?? 0) * (query[index] ?? 0);
     const id = vectors.sectionIds[row] ?? 0;
-    if (score > (best.get(id) ?? Number.NEGATIVE_INFINITY)) best.set(id, score);
+    if (score > (best.get(id)?.score ?? Number.NEGATIVE_INFINITY))
+      best.set(id, { score, chunk: vectors.chunkIndexes[row] ?? 0 });
   }
-  return [...best]
-    .sort((left, right) => right[1] - left[1])
-    .slice(0, RANK_DEPTH)
-    .map(([id]) => id);
+  return {
+    ids: [...best]
+      .sort((left, right) => right[1].score - left[1].score)
+      .slice(0, RANK_DEPTH)
+      .map(([id]) => id),
+    chunks: new Map([...best].map(([id, match]) => [id, match.chunk])),
+  };
 }
 
 /** Reciprocal rank fusion: a section ranked high by either search ranks high overall. */
@@ -43,15 +90,20 @@ export function fuseRanks(rankings: readonly number[][]): number[] {
   return [...scores].sort((left, right) => right[1] - left[1]).map(([id]) => id);
 }
 
-/** Takes each passage's best sections first, so every clause of a document gets its match. */
-export function interleave(rankings: readonly number[][], limit: number): number[] {
-  const picked = new Set<number>();
+/**
+ * Takes each passage's best sections first, so every clause of a document gets its match.
+ * Returns [section id, chunk] pairs; a long section appears once per part that matched.
+ */
+export function interleave(rankings: readonly Ranking[], limit: number): Array<[number, number]> {
+  const picked = new Map<string, [number, number]>();
   for (let rank = 0; rank < RANK_DEPTH; rank += 1)
     for (const ranking of rankings) {
-      const id = ranking[rank];
-      if (id !== undefined) picked.add(id);
+      const id = ranking.ids[rank];
+      if (id === undefined || picked.size >= limit) continue;
+      const chunk = ranking.chunks.get(id) ?? 0;
+      picked.set(`${id}:${chunk}`, [id, chunk]);
     }
-  return [...picked].slice(0, limit);
+  return [...picked.values()];
 }
 
 export function documentPassages(text: string, count: number): string[] {
