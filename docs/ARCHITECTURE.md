@@ -46,7 +46,7 @@ Desktop (Tauri v2, React)
 - Packages are self-contained, so first launch downloads nothing.
 - The context cache is FP16. Core fits the context once to the inference memory budget, between 32K and 128K tokens. The server's reasoning budget is 32,768 tokens. Thinking levels are None, Medium, and Extended.
 - A Mac needs at least 16 GiB of memory. The inference budget is 10 GiB below 24 GiB and 16 GiB from 24 GiB up.
-- On Windows the worker prefers one dedicated GPU, then one integrated GPU. Either one needs at least 10.44 GB of usable memory (a 12 GB card), with a budget of up to 16 GiB. Core reserves 4 GiB of RAM for inference with a dedicated GPU and the whole budget with an integrated GPU, plus 4 GiB for the host and 1 GiB for each agent session. Intel graphics are not supported.
+- On Windows the worker prefers one dedicated GPU, then one integrated GPU. Either one needs at least 10.44 GB of usable memory (a 12 GB card), with a budget of up to 16 GiB. Core reserves 4 GiB of RAM for inference with a dedicated GPU and the whole budget with an integrated GPU, plus 4 GiB for the host and 1 GiB for each agent session, so 16 GB of RAM is enough with a dedicated GPU. Intel graphics are not supported.
 
 ## Code Map
 
