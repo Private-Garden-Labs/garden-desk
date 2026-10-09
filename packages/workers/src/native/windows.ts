@@ -127,9 +127,9 @@ export function windowsNativeWorkerArguments(
       scratch,
       "--memory",
       String(
-        options.gpu?.memoryKind === "dedicated"
-          ? INFERENCE_PROFILE.windowsDedicatedHostMemoryBytes
-          : request.memoryBudgetBytes,
+        options.gpu?.memoryKind === undefined
+          ? request.memoryBudgetBytes
+          : INFERENCE_PROFILE.windowsProcessMemoryLimitBytes,
       ),
       ...(request.readPaths ?? []).flatMap((path) => ["--read", resolve(path)]),
       ...(options.gpu === undefined ? [] : windowsGpuArguments(options.gpu)),

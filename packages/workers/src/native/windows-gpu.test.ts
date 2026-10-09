@@ -4,7 +4,6 @@ import type { WindowsGpuLaunch } from "./windows.js";
 import { isExpectedWindowsGpuIdentity } from "./windows-gpu-identity.js";
 import {
   normalizeGpuName,
-  resolveIntegratedGpuBudget,
   resolveWindowsGpuMemoryProfile,
   resolveWindowsGpuProfileFromFacts,
   type WindowsGpuAdapterInfo,
@@ -47,24 +46,22 @@ function probe(
   };
 }
 
-describe("Windows integrated GPU budgets", () => {
-  it.each([
-    [24 * GiB - 1, 16 * GiB, undefined],
-    [24 * GiB, 16 * GiB - 1, undefined],
-    [24 * GiB, 16 * GiB, 16 * GiB],
-  ])(
-    "maps installed bytes %d and detected bytes %d to the safe budget",
-    (installed, detected, budget) => {
-      expect(resolveIntegratedGpuBudget(installed, detected)).toBe(budget);
-    },
-  );
+describe("Windows integrated GPU budget", () => {
+  it("uses the GPU floor and reserves the budget in system memory", () => {
+    const floor = INFERENCE_PROFILE.minimumGpuMemoryBytes;
+    expect(resolveWindowsGpuMemoryProfile(true, 16 * GiB, floor - 1)).toBeUndefined();
+    expect(resolveWindowsGpuMemoryProfile(true, 16 * GiB, floor)).toEqual({
+      memoryBudgetBytes: floor,
+      hostMemoryReservationBytes: floor,
+    });
+  });
 });
 
 describe("Windows dedicated GPU budget", () => {
   it("admits a large card only while its usable memory clears the floor", () => {
-    const floor = INFERENCE_PROFILE.minimumDedicatedMemoryBytes;
-    expect(resolveWindowsGpuMemoryProfile(false, 16 * GiB, 32 * GiB, floor - 1)).toBeUndefined();
-    expect(resolveWindowsGpuMemoryProfile(false, 16 * GiB, 32 * GiB, floor)).toMatchObject({
+    const floor = INFERENCE_PROFILE.minimumGpuMemoryBytes;
+    expect(resolveWindowsGpuMemoryProfile(false, 16 * GiB, floor - 1)).toBeUndefined();
+    expect(resolveWindowsGpuMemoryProfile(false, 16 * GiB, floor)).toMatchObject({
       memoryBudgetBytes: floor,
     });
   });

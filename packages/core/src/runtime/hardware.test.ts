@@ -54,11 +54,11 @@ describe("agent VM memory policy", () => {
   });
 
   it.each([
-    [32, 8],
-    [64, 40],
-    [128, 104],
-  ])("reserves 20 GiB for inference on a %d GiB Windows host", (memory, sessions) => {
-    expect(resolveAgentSessionCapacity(20 * GiB, memory * GiB, 512)).toBe(sessions);
+    [16, 8],
+    [32, 24],
+    [64, 56],
+  ])("reserves 4 GiB for dedicated GPU inference on a %d GiB Windows host", (memory, sessions) => {
+    expect(resolveAgentSessionCapacity(4 * GiB, memory * GiB, 512)).toBe(sessions);
   });
 
   it("keeps concurrent guests inside the host processors", () => {

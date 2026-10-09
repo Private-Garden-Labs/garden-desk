@@ -97,38 +97,28 @@ export function normalizeGpuName(value: string): string {
     .trim();
 }
 
-export function resolveIntegratedGpuBudget(
-  installedMemoryBytes: number,
-  detectedMemoryBytes: number,
-): number | undefined {
-  return installedMemoryBytes >= INFERENCE_PROFILE.windowsIntegratedMemoryBytes &&
-    detectedMemoryBytes >= INFERENCE_PROFILE.memoryBudgetBytes
-    ? INFERENCE_PROFILE.memoryBudgetBytes
-    : undefined;
-}
-
 /**
- * The inference budget follows the memory the runtime reports as usable. A
- * dedicated GPU is supported only when that budget holds the model and the
- * smallest supported context, so an admitted GPU can always start the server.
+ * The inference budget follows the memory the runtime reports as usable. A GPU
+ * is supported only when that budget holds the model and the smallest supported
+ * context, so an admitted GPU can always start the server. An integrated GPU
+ * takes its budget from system memory.
  */
 export function resolveWindowsGpuMemoryProfile(
   integrated: boolean,
   detectedMemoryBytes: number,
-  installedMemoryBytes: number,
   availableMemoryBytes = detectedMemoryBytes,
 ): { hostMemoryReservationBytes: number; memoryBudgetBytes: number } | undefined {
-  const dedicatedBudgetBytes = Math.min(availableMemoryBytes, INFERENCE_PROFILE.memoryBudgetBytes);
-  const memoryBudgetBytes = integrated
-    ? resolveIntegratedGpuBudget(installedMemoryBytes, availableMemoryBytes)
-    : dedicatedBudgetBytes >= INFERENCE_PROFILE.minimumDedicatedMemoryBytes
-      ? dedicatedBudgetBytes
-      : undefined;
-  if (memoryBudgetBytes === undefined || detectedMemoryBytes < memoryBudgetBytes) return undefined;
+  const memoryBudgetBytes = Math.min(availableMemoryBytes, INFERENCE_PROFILE.memoryBudgetBytes);
+  if (
+    memoryBudgetBytes < INFERENCE_PROFILE.minimumGpuMemoryBytes ||
+    detectedMemoryBytes < memoryBudgetBytes
+  ) {
+    return undefined;
+  }
   return {
     memoryBudgetBytes,
     hostMemoryReservationBytes: integrated
-      ? INFERENCE_PROFILE.memoryBudgetBytes
+      ? memoryBudgetBytes
       : INFERENCE_PROFILE.windowsDedicatedHostMemoryBytes,
   };
 }
@@ -213,7 +203,6 @@ async function resolveCandidate(
     const memory = resolveWindowsGpuMemoryProfile(
       candidate.adapter.integrated,
       generation.totalMemoryBytes,
-      installedMemoryBytes,
       generation.availableMemoryBytes,
     );
     if (memory === undefined) continue;
