@@ -55,22 +55,22 @@ const hostPackages = [
   { name: "Node.js", version: "24.18.0", license: "MIT" },
   {
     name: "llama.cpp (PrismML fork)",
-    version: "prism-b10709-9a9394a",
+    version: "prism-b10754-2459f68",
     license: "MIT",
     notice: "License text: licenses/llama.cpp-LICENSE.txt",
     source: {
       file:
         process.platform === "win32"
-          ? "llama-prism-b10709-9a9394a-bin-win-cuda-13.3-x64.zip"
-          : "llama-prism-b10709-9a9394a-bin-macos-arm64.tar.gz",
+          ? "llama-prism-b10754-2459f68-bin-win-cuda-13.3-x64.zip"
+          : "llama-prism-b10754-2459f68-bin-macos-arm64.tar.gz",
       sha256:
         process.platform === "win32"
-          ? "d656f217172c489706df40951e46bef647eb1a81eb8eeb1398c8f38bd7fa9725"
-          : "f9cdf245fb7b832f1996dd776b321d4ae1f23b6d88c380100f636742c3a980ff",
+          ? "4a589d87d69dc102843c3cdfe6619a6fbbbd731c8cb52f4ab9da82a6f2dfdd1a"
+          : "e411342cf017a9a3399cc242d45176acc025ecae1ec426c678bc6a9120432036",
       url:
         process.platform === "win32"
-          ? "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-win-cuda-13.3-x64.zip"
-          : "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-macos-arm64.tar.gz",
+          ? "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10754-2459f68/llama-prism-b10754-2459f68-bin-win-cuda-13.3-x64.zip"
+          : "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10754-2459f68/llama-prism-b10754-2459f68-bin-macos-arm64.tar.gz",
     },
   },
   {
@@ -120,19 +120,19 @@ function platformPackages(): NoticePackage[] {
           source: {
             file: "cudart-llama-bin-win-cuda-13.3-x64.zip",
             sha256: "1462a050eb4c684921ba51dcc4cc488a036674c3e73e9945ee705b854808d03e",
-            url: "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/cudart-llama-bin-win-cuda-13.3-x64.zip",
+            url: "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10754-2459f68/cudart-llama-bin-win-cuda-13.3-x64.zip",
           },
         },
         {
           name: "llama.cpp (PrismML fork) HIP",
-          version: "prism-b10709-9a9394a",
+          version: "prism-b10754-2459f68",
           license: "MIT",
           purpose: "packaged Windows AMD inference runtime",
           notice: "License text: licenses/llama.cpp-LICENSE.txt",
           source: {
-            file: "llama-prism-b10709-9a9394a-bin-win-hip-radeon-x64.zip",
-            sha256: "86792e1590232e4ac702df2fe961fe196552ad7642658b5347834f539a1525b6",
-            url: "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10709-9a9394a/llama-prism-b10709-9a9394a-bin-win-hip-radeon-x64.zip",
+            file: "llama-prism-b10754-2459f68-bin-win-hip-radeon-x64.zip",
+            sha256: "7612f2e3653134f05ea943902c1090d29f5d37dc25d795d43ab8cf2a610aaa06",
+            url: "https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10754-2459f68/llama-prism-b10754-2459f68-bin-win-hip-radeon-x64.zip",
           },
         },
         {
@@ -141,7 +141,7 @@ function platformPackages(): NoticePackage[] {
           license: "MIT",
           purpose: "AMD matrix libraries and kernel data for the Windows AMD inference runtime",
           notice:
-            "License text: licenses/rocm-LICENSE.txt. Shipped inside llama-prism-b10709-9a9394a-bin-win-hip-radeon-x64.zip. Needs amdhip64_7.dll from the AMD Adrenalin driver.",
+            "License text: licenses/rocm-LICENSE.txt. Shipped inside llama-prism-b10754-2459f68-bin-win-hip-radeon-x64.zip. Needs amdhip64_7.dll from the AMD Adrenalin driver.",
         },
       ]
     : [];

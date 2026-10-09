@@ -78,7 +78,7 @@ it("uses the model card sampling values and the reasoning guardrail", () => {
     temperature: 1,
     top_p: 0.95,
     top_k: 20,
-    min_p: 0,
+    min_p: 0.05,
     presence_penalty: 0,
     repeat_penalty: 1,
   });
