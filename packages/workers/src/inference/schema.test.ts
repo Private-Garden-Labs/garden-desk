@@ -125,7 +125,7 @@ it("fits the context to the memory budget between the minimum and the product ma
     memoryBudgetBytes: 16 * 1024 ** 3,
     modelByteLength: 7_206_168_928,
   } as const;
-  const floor = INFERENCE_PROFILE.minimumDedicatedMemoryBytes;
+  const floor = INFERENCE_PROFILE.minimumGpuMemoryBytes;
   expect(fittedContextTokens(fit)).toBe(131_072);
   expect(fittedContextTokens({ ...fit, memoryBudgetBytes: 10 * 1024 ** 3 })).toBe(36_864);
   expect(fittedContextTokens({ ...fit, memoryBudgetBytes: floor })).toBe(32_768);

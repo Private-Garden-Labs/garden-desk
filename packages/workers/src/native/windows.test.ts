@@ -54,9 +54,9 @@ it.skipIf(process.platform !== "win32" || process.arch !== "x64")(
   },
 );
 
-it("reserves host memory beyond the GPU budget for the Windows inference process", () => {
+it("caps the Windows inference process above the GPU budget and reserves less host memory", () => {
   const gpuBudget = 16 * 1024 ** 3;
-  const hostLimit = 20 * 1024 ** 3;
+  const processLimit = 20 * 1024 ** 3;
   const arguments_ = windowsNativeWorkerArguments(
     { workerEntryPath: "unused", memoryBudgetBytes: gpuBudget, serverArguments: [] },
     "scratch",
@@ -65,10 +65,10 @@ it("reserves host memory beyond the GPU budget for the Windows inference process
   );
   expect(
     arguments_.slice(arguments_.indexOf("--memory"), arguments_.indexOf("--memory") + 2),
-  ).toEqual(["--memory", String(hostLimit)]);
-  expect(resolveWindowsGpuMemoryProfile(false, gpuBudget, 32 * 1024 ** 3)).toEqual({
+  ).toEqual(["--memory", String(processLimit)]);
+  expect(resolveWindowsGpuMemoryProfile(false, gpuBudget)).toEqual({
     memoryBudgetBytes: gpuBudget,
-    hostMemoryReservationBytes: hostLimit,
+    hostMemoryReservationBytes: 4 * 1024 ** 3,
   });
 });
 
@@ -99,7 +99,6 @@ describe("Windows native worker launch arguments", () => {
           expectedName: "Integrated Graphics",
           memoryKind: "unified",
           detectedMemoryBytes: 16,
-          installedMemoryBytes: 32,
         },
       },
     );

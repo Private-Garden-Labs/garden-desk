@@ -58,13 +58,6 @@ fn run_worker(arguments: RunArguments) -> Result<i32, Box<dyn Error>> {
                 .detected_memory_bytes
                 .map(|value| value.to_string()),
         ),
-        (
-            "--installed-memory",
-            arguments
-                .gpu
-                .installed_memory_bytes
-                .map(|value| value.to_string()),
-        ),
     ] {
         if let Some(value) = value {
             child_arguments.push(name.to_owned());
