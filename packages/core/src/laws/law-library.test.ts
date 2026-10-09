@@ -61,13 +61,14 @@ describe("law library", () => {
 
   it("shows the part of a long section that matched", async () => {
     const filler = "Other rules apply here. ".repeat(60);
+    const other = new Uint8Array(Float32Array.from([0, 1]).buffer);
     const laws = await library(undefined, (database) => {
       database
         .prepare("INSERT INTO sections VALUES (3, 'sherman', 'us', '15 U.S.C. 45', '', ?)")
-        .run(`${filler}\n${filler}\nOnline sales may not be banned.`);
+        .run(`${filler}\n${filler}\n${filler}\nOnline sales may not be banned.`);
       database
-        .prepare("INSERT INTO chunks VALUES (?, ?), (?, ?)")
-        .run(3, new Uint8Array(Float32Array.from([0, 1]).buffer), 3, unit());
+        .prepare("INSERT INTO chunks VALUES (?, ?), (?, ?), (?, ?)")
+        .run(3, other, 3, other, 3, unit());
     });
     const sections = await laws.context("us").search("online sales");
     const long = sections.find((section) => section.citation === "15 U.S.C. 45");
