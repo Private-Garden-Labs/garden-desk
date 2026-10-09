@@ -30,7 +30,7 @@ export const INFERENCE_PROFILE = {
   fullBudgetMacMemoryBytes: 24 * 1024 ** 3,
   /** Model, fixed buffers, margin, and the smallest supported context. */
   minimumGpuMemoryBytes: 10_444_171_616,
-  runtimeBuild: "llama.cpp@prism-b10709-9a9394a",
+  runtimeBuild: "llama.cpp@prism-b10754-2459f68",
 } as const;
 
 /** Returns undefined when the budget cannot hold the model and the minimum context. */
