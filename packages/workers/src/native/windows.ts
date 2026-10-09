@@ -109,6 +109,12 @@ function windowsGpuArguments(gpu: WindowsGpuLaunch): string[] {
   return args;
 }
 
+/** The CPU encoder runs with `--device none`; without a GPU it holds no graphics memory. */
+function serverGpu(serverArguments: string[], gpu: WindowsGpuLaunch | undefined) {
+  const device = serverArguments.indexOf("--device");
+  return device !== -1 && serverArguments[device + 1] === "none" ? undefined : gpu;
+}
+
 export function windowsNativeWorkerArguments(
   request: NativeWorkerLaunchRequest,
   scratch: string,
@@ -116,6 +122,7 @@ export function windowsNativeWorkerArguments(
   options: WindowsNativeWorkerLauncherOptions = {},
 ): string[] {
   if (request.serverArguments !== undefined) {
+    const gpu = serverGpu(request.serverArguments, options.gpu);
     return [
       "run-server",
       "--executable",
@@ -124,12 +131,12 @@ export function windowsNativeWorkerArguments(
       scratch,
       "--memory",
       String(
-        options.gpu?.memoryKind === undefined
+        gpu?.memoryKind === undefined
           ? request.memoryBudgetBytes
           : INFERENCE_PROFILE.windowsProcessMemoryLimitBytes,
       ),
       ...(request.readPaths ?? []).flatMap((path) => ["--read", resolve(path)]),
-      ...(options.gpu === undefined ? [] : windowsGpuArguments(options.gpu)),
+      ...(gpu === undefined ? [] : windowsGpuArguments(gpu)),
       "--",
       "--host",
       join(scratch, "s.sock"),
