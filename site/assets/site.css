@@ -220,7 +220,7 @@ iframe:focus-visible {
   transform: translateX(-50%);
   border: 1px solid rgb(255 255 255 / 76%);
   border-radius: 20px;
-  background: rgb(255 255 255 / 56%);
+  background: rgb(255 255 255 / 86%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 88%),
     0 14px 40px rgb(15 54 35 / 10%);
@@ -410,6 +410,7 @@ even mid-hide. */
 }
 
 .legal .page-meta,
+.blog .page-meta,
 .not-found .page-meta {
   margin: 0 0 14px;
   color: var(--leaf-soft);
@@ -561,6 +562,7 @@ html.motion-ready [data-reveal].is-revealed {
 
 .section h2,
 .legal h1,
+.blog h1,
 .not-found h1 {
   margin: 0;
   font-family:
@@ -1037,6 +1039,7 @@ html.motion-ready [data-reveal].is-revealed {
 }
 
 .legal,
+.blog,
 .not-found {
   width: min(760px, calc(100% - 40px));
   min-height: calc(100vh - 200px);
@@ -1044,7 +1047,13 @@ html.motion-ready [data-reveal].is-revealed {
   padding: 90px 0 120px;
 }
 
+.blog,
+.blog-page .site-footer {
+  width: min(1180px, calc(100% - 40px));
+}
+
 .legal .lede,
+.blog .lede,
 .not-found p {
   margin: 24px 0 50px;
   color: var(--ink-soft);
@@ -1536,6 +1545,8 @@ html.motion-ready [data-reveal].is-revealed {
   .section-inner,
   .site-footer,
   .legal,
+  .blog,
+  .blog-page .site-footer,
   .not-found {
     width: min(100% - 28px, 1180px);
   }
@@ -2482,9 +2493,34 @@ nudged by the pointer. */
   }
 }
 
+.blog-page {
+  --paper: #13271b;
+  --ink: #e2e7de;
+  --ink-soft: #bfcfc4;
+  background-color: var(--paper);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='.2 0 0 0 .4 .2 0 0 0 .4 .2 0 0 0 .4 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(140% 640px at 50% -200px, rgb(47 107 74 / 30%), transparent 72%);
+  background-repeat: repeat, no-repeat;
+  background-size:
+    200px 200px,
+    auto;
+  background-blend-mode: overlay, normal;
+}
+
+.blog-page body {
+  background: none;
+}
+
+.blog-page body::before {
+  content: none;
+}
+
 .blog h1 {
   font-size: clamp(36px, 4.6vw, 56px);
   line-height: 1.08;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
 }
 
 .blog .lede a,
@@ -2495,19 +2531,36 @@ nudged by the pointer. */
   text-underline-offset: 0.2em;
 }
 
+.blog .prose h2,
+.post-card h2 {
+  font-family: "IBM Plex Serif", Georgia, serif;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
 .post-card {
   position: relative;
+  padding: 32px 0;
+  border-top: 1px solid var(--line);
+}
+
+.post-card h2 {
+  margin: 0 0 10px;
 }
 
 .post-card h2 a {
   color: var(--ink-strong);
   text-decoration: none;
+  text-decoration-color: var(--brass);
+  text-underline-offset: 0.2em;
 }
 
 .post-card h2 a::after {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
   content: "";
 }
 
@@ -2521,10 +2574,16 @@ nudged by the pointer. */
 }
 
 .post-card p:last-child {
-  margin-bottom: 0;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 17px;
+  line-height: 1.6;
 }
 
 .blog .prose {
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.8;
   overflow-wrap: break-word;
 }
 
@@ -2536,13 +2595,23 @@ nudged by the pointer. */
   margin-bottom: 0;
 }
 
+.blog .prose :is(p, ul, ol) {
+  margin: 0 0 1.2em;
+}
+
+.blog .prose li + li {
+  margin-top: 0.4em;
+}
+
 .blog .prose h2 {
-  margin: 36px 0 12px;
+  margin: 56px 0 16px;
+  color: var(--ink-strong);
 }
 
 .blog .prose h3 {
-  margin: 28px 0 8px;
-  font-size: 18px;
+  margin: 36px 0 8px;
+  color: var(--ink-strong);
+  font-size: 20px;
 }
 
 .blog .prose strong {
@@ -2582,23 +2651,23 @@ nudged by the pointer. */
 }
 
 .blog .table-scroll {
-  margin: 20px 0;
+  margin: 32px 0;
   overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
 }
 
 .blog .prose table {
   width: 100%;
-  border: 1px solid var(--line);
   border-collapse: collapse;
   font-size: 15px;
+  line-height: 1.45;
   font-variant-numeric: tabular-nums;
 }
 
 .blog .prose th,
 .blog .prose td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink-soft);
+  padding: 11px 16px;
 }
 
 .blog .prose :is(th, td):not([align]) {
@@ -2608,6 +2677,8 @@ nudged by the pointer. */
 .blog .prose th {
   background: var(--glass-strong);
   color: var(--ink-strong);
+  font-weight: 600;
+  vertical-align: bottom;
 }
 
 .blog .prose tbody tr:nth-child(even) {
@@ -2633,15 +2704,13 @@ nudged by the pointer. */
   display: flex;
   flex-wrap: wrap;
   gap: 8px 24px;
-  margin-top: 28px;
+  margin: 56px 0 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .post-card {
-    transition: border-color 180ms ease;
-  }
-
-  .post-card:hover {
-    border-color: var(--leaf-soft);
+  .post-card:hover h2 a {
+    text-decoration-line: underline;
   }
 }
