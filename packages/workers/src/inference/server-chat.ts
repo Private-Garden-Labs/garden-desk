@@ -153,7 +153,7 @@ function thinkingOptions(request: ChatGenerationRequest | StructuredGenerationRe
   return { preserve_thinking: false, reasoning_effort: request.thinking };
 }
 
-const THINKING_SAMPLING = { top_p: 0.95, top_k: 20, min_p: 0, presence_penalty: 0 };
+const THINKING_SAMPLING = { top_p: 0.95, top_k: 20, min_p: 0.05, presence_penalty: 0 };
 const NON_THINKING_SAMPLING = { top_p: 0.8, top_k: 20, min_p: 0, presence_penalty: 1.5 };
 
 function sampling(request: ChatGenerationRequest | StructuredGenerationRequest) {

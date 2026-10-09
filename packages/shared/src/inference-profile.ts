@@ -27,13 +27,13 @@ export const INFERENCE_PROFILE = {
   reasoningBudgetTokens: 32_768,
   memoryBudgetBytes: 16 * 1024 ** 3,
   reducedMemoryBudgetBytes: 10 * 1024 ** 3,
-  windowsDedicatedHostMemoryBytes: 20 * 1024 ** 3,
+  windowsProcessMemoryLimitBytes: 20 * 1024 ** 3,
+  windowsDedicatedHostMemoryBytes: 4 * 1024 ** 3,
   minimumMacMemoryBytes: 16 * 1024 ** 3,
   fullBudgetMacMemoryBytes: 24 * 1024 ** 3,
-  windowsIntegratedMemoryBytes: 24 * 1024 ** 3,
   /** Model, fixed buffers, margin, and the smallest supported context. */
-  minimumDedicatedMemoryBytes: 10_444_171_616,
-  runtimeBuild: "llama.cpp@prism-b10709-9a9394a",
+  minimumGpuMemoryBytes: 10_444_171_616,
+  runtimeBuild: "llama.cpp@prism-b10754-2459f68",
 } as const;
 
 /** Returns undefined when the budget cannot hold the model and the minimum context. */

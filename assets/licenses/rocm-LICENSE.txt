@@ -1,5 +1,5 @@
 AMD ROCm components in the Windows AMD inference runtime.
-Shipped inside llama-prism-b10709-9a9394a-bin-win-hip-radeon-x64.zip:
+Shipped inside llama-prism-b10754-2459f68-bin-win-hip-radeon-x64.zip:
 ggml-hip.dll, libhipblas.dll, libhipblaslt.dll, rocblas.dll, and the
 rocblas/library and hipblaslt/library kernel data.
 

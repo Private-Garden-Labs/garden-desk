@@ -42,7 +42,7 @@ describe("M3 Windows portable package", () => {
       expect(staging).toContain(value);
     }
     const cuda = JSON.parse(assets).platforms["windows-cuda-x64"];
-    expect(cuda.archive).toBe("llama-prism-b10709-9a9394a-bin-win-cuda-13.3-x64.zip");
+    expect(cuda.archive).toBe("llama-prism-b10754-2459f68-bin-win-cuda-13.3-x64.zip");
     expect(Object.values(cuda.dependencies[0].files)).toEqual([
       "cublas64_13.dll",
       "cublasLt64_13.dll",
@@ -64,6 +64,16 @@ describe("M3 Windows image runtime", () => {
       "vcruntime140.dll",
       "vcruntime140_1.dll",
     ]);
+  });
+
+  it("packages the OpenMP runtime that the CUDA CPU backends import", async () => {
+    const source = await readFile(join(process.cwd(), "assets/inference-runtime.json"), "utf8");
+    const runtime = (
+      JSON.parse(source) as {
+        platforms: { "windows-cuda-x64": { dependencies: Array<{ files: object }> } };
+      }
+    ).platforms["windows-cuda-x64"];
+    expect(Object.keys(runtime.dependencies[1]?.files ?? {})).toContain("vcomp140.dll");
   });
 });
 

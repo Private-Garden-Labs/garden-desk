@@ -37,7 +37,6 @@ pub struct GpuArguments {
     pub expected_name: Option<String>,
     pub memory_kind: Option<String>,
     pub detected_memory_bytes: Option<usize>,
-    pub installed_memory_bytes: Option<usize>,
 }
 
 fn value(values: &[(String, String)], name: &str) -> Result<String, Box<dyn Error>> {
@@ -90,9 +89,6 @@ fn gpu_arguments(values: &[(String, String)]) -> Result<GpuArguments, Box<dyn Er
         expected_name,
         memory_kind,
         detected_memory_bytes: optional(values, "--detected-gpu-memory")
-            .map(|value| value.parse::<usize>())
-            .transpose()?,
-        installed_memory_bytes: optional(values, "--installed-memory")
             .map(|value| value.parse::<usize>())
             .transpose()?,
     })
