@@ -520,10 +520,10 @@
           {
             "id": "eu-consumer-credit",
             "title": "Consumer Credit Directive, Directive (EU) 2023/2225",
-            "version": "Consolidated 2023-10-30 (02023L2225-20231030)",
+            "version": "Consolidated 2023-10-30 (02023L2225-20231030), with the 2026-09-22 corrigendum",
             "format": "eurlex",
             "url": "https://publications.europa.eu/resource/cellar/ec039927-c4fe-11ee-95d9-01aa75ed71a1.0019.02/DOC_1",
-            "sha256": "d5faeeb543d27e2efdac7c0afe8f58cb4ce6f697af8e28342571bec8fa4b15a9",
+            "sha256": "febaa1a5e05a9d40821f000b2756f91ad7434bbefaa997d3b904eec2823e7543",
             "citation": "Directive (EU) 2023/2225"
           }
         ],
