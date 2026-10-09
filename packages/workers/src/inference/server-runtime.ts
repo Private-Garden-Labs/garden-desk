@@ -1,5 +1,6 @@
+import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { INFERENCE_PROFILE } from "@gardendesk/shared";
+import { INFERENCE_PROFILE, SPLASH_MODEL } from "@gardendesk/shared";
 import type { NativeWorkerHandle, NativeWorkerLauncher } from "../native/launcher.js";
 import { ServerError, serverFailure, serverRequest } from "./server-http.js";
 import { observeServerMemory, type ServerAllocations } from "./server-memory.js";
@@ -71,19 +72,66 @@ export function serverArguments(input: {
   ];
 }
 
+function splashArguments(modelPath: string, contextTokens: number | "auto"): string[] {
+  return [
+    join(modelPath, "target"),
+    join(modelPath, "draft"),
+    "--tokenizer",
+    join(modelPath, "tokenizer"),
+    "--model",
+    SPLASH_MODEL.repository,
+    "--max-context",
+    String(contextTokens),
+    "--max-memory",
+    "auto",
+  ];
+}
+
+export type ServerHandle = NativeWorkerHandle & {
+  memory(): ServerAllocations;
+  splash: boolean;
+  contextTokens: number;
+};
+
+type ServerInput = {
+  modelPath: string;
+  memoryBudgetBytes: number;
+  /** "auto" lets Splash fit the context; llama.cpp always receives a number. */
+  contextTokens: number | "auto";
+  embedding?: boolean;
+  projectorPath?: string;
+  speculation: "none" | "ngram-mod";
+};
+
+function launchArguments(launcher: NativeWorkerLauncher, input: ServerInput) {
+  const splash = launcher.splash === true && input.embedding !== true;
+  const { contextTokens } = input;
+  if (splash) return { splash, serverArguments: splashArguments(input.modelPath, contextTokens) };
+  if (contextTokens === "auto") throw new ServerError("invalid_argument");
+  const backend = launcher.gpu?.backend ?? "metal";
+  return { splash, serverArguments: serverArguments({ ...input, contextTokens, backend }) };
+}
+
+async function servedContextTokens(
+  handle: NativeWorkerHandle,
+  input: ServerInput,
+  splash: boolean,
+  signal: AbortSignal,
+): Promise<number> {
+  if (!splash) return Number(input.contextTokens);
+  const status = (await serverRequest(handle, "/status", undefined, { signal })) as {
+    maximum_context_tokens: number;
+  };
+  return Math.min(status.maximum_context_tokens, INFERENCE_PROFILE.maximumContextTokens);
+}
+
 export async function startServer(
   launcher: NativeWorkerLauncher,
   entryPath: string,
-  input: {
-    modelPath: string;
-    memoryBudgetBytes: number;
-    contextTokens: number;
-    embedding?: boolean;
-    projectorPath?: string;
-    speculation: "none" | "ngram-mod";
-  },
+  input: ServerInput,
   signal: AbortSignal,
-): Promise<NativeWorkerHandle & { memory(): ServerAllocations }> {
+): Promise<ServerHandle> {
+  const launch = launchArguments(launcher, input);
   const handle = await launcher.launch({
     workerEntryPath: entryPath,
     memoryBudgetBytes: input.memoryBudgetBytes,
@@ -91,7 +139,7 @@ export async function startServer(
       input.modelPath,
       ...(input.projectorPath === undefined ? [] : [input.projectorPath]),
     ],
-    serverArguments: serverArguments({ ...input, backend: launcher.gpu?.backend ?? "metal" }),
+    ...launch,
   });
   const memory = observeServerMemory(handle);
   let ready = false;
@@ -119,7 +167,8 @@ export async function startServer(
       await delay(25, undefined, { signal });
     }
     await serverRequest(handle, "/health", undefined, { signal });
-    return Object.assign(handle, { memory });
+    const contextTokens = await servedContextTokens(handle, input, launch.splash, signal);
+    return Object.assign(handle, { memory, splash: launch.splash, contextTokens });
   } catch (error) {
     await handle.dispose();
     throw error;

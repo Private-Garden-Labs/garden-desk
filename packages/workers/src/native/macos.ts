@@ -43,6 +43,26 @@ function runtimeReadPaths(workerEntryPath: string): string[] {
 
 const SYSTEM_READ_PATHS = ["/System", "/usr/lib"];
 
+// Serves the unmodified Splash HTTP server on the private Unix socket instead of TCP.
+const SPLASH_SERVE = [
+  "import os, socket, socketserver, sys",
+  "path, root = sys.argv[1:3]",
+  "sys.path.insert(0, os.path.join(root, 'server'))",
+  "sys.argv = ['server.py', *sys.argv[3:], '--binary', os.path.join(root, 'engine', 'splash'), '--no-webui']",
+  "import server",
+  "class UnixServer(server.FrontendServer):",
+  "    address_family = socket.AF_UNIX",
+  "    def __init__(self, _address, *args, **kwargs): super().__init__(path, *args, **kwargs)",
+  "    def server_bind(self):",
+  "        socketserver.TCPServer.server_bind(self)",
+  "        self.server_name, self.server_port = 'localhost', 0",
+  "    def server_activate(self):",
+  "        super().server_activate()",
+  "        print('listening on unix://' + path, flush=True)",
+  "server.FrontendServer = UnixServer",
+  "server.main()",
+].join("\n");
+
 function parentPaths(path: string): string[] {
   const parents: string[] = [];
   let current = resolve(path);
@@ -67,26 +87,31 @@ function hostDataDeny(
     `(literal ${literal(runtimeExecutable)})`,
     `(literal ${literal(temporaryRoot)})`,
     `(subpath ${literal(temporaryRoot)})`,
-    ...modelPaths.map((path) => `(literal ${literal(path)})`),
+    ...modelPaths.map((path) => `(subpath ${literal(path)})`),
   ];
   const outsideExceptions = exceptions.map((rule) => `(require-not ${rule})`).join(" ");
   return `(deny file-read-data (require-all (subpath "/") ${outsideExceptions}))`;
+}
+
+interface RuntimeCommand {
+  executable: string;
+  /** Every program the sandbox may start: the executable and, for Splash, its engine. */
+  executables: string[];
+  readPaths: string[];
+  args: string[];
 }
 
 function sandboxProfile(
   request: NativeWorkerLaunchRequest,
   temporaryRoot: string,
   deniedPaths: string[],
-  runtimeExecutable: string,
+  command: RuntimeCommand,
 ): string {
-  const runtimeExecutables = [runtimeExecutable];
+  const { executable: runtimeExecutable, readPaths } = command;
   const protectedRules = [...deniedPaths, ...credentialPaths()]
     .map((path) => `(subpath ${literal(path)})`)
     .join(" ");
   const server = request.serverArguments !== undefined;
-  const readPaths = server
-    ? [dirname(runtimeExecutable)]
-    : runtimeReadPaths(request.workerEntryPath);
   const modelPaths =
     request.readPaths ?? (request.modelPath === undefined ? [] : [request.modelPath]);
   const socket = literal(join(temporaryRoot, "s.sock"));
@@ -104,12 +129,13 @@ function sandboxProfile(
     hostDataDeny(readPaths, temporaryRoot, runtimeExecutable, modelPaths),
     `(deny file-write* (require-not (subpath ${literal(temporaryRoot)})))`,
     "(deny process-fork)",
+    ...(command.executables.length > 1 ? ["(allow process-fork)"] : []),
     "(deny process-exec)",
-    `(allow process-exec ${runtimeExecutables.map((path) => `(literal ${literal(path)})`).join(" ")})`,
+    `(allow process-exec ${command.executables.map((path) => `(literal ${literal(path)})`).join(" ")})`,
     `(allow file-read* (literal ${literal(runtimeExecutable)}))`,
     ...SYSTEM_READ_PATHS.map((path) => `(allow file-read* (subpath ${literal(path)}))`),
     ...readPaths.map((path) => `(allow file-read* (subpath ${literal(path)}))`),
-    ...modelPaths.map((path) => `(allow file-read* (literal ${literal(path)}))`),
+    ...modelPaths.map((path) => `(allow file-read* (subpath ${literal(path)}))`),
     `(allow file-read* (subpath ${literal(temporaryRoot)}))`,
     `(allow file-write* (subpath ${literal(temporaryRoot)}))`,
     ...(protectedRules === "" ? [] : [`(deny file-read* ${protectedRules})`]),
@@ -117,39 +143,55 @@ function sandboxProfile(
 }
 
 export class MacOsNativeWorkerLauncher implements NativeWorkerLauncher {
+  readonly splash = true;
   readonly gpu = { backend: "metal", memoryKind: "unified" } as const;
   constructor(
     private readonly deniedPaths: string[] = [],
     private readonly runtimeExecutable: string = resolve(
       "packages/eval/.generated/inference/macos-arm64/llama-server",
     ),
+    private readonly splashRoot: string = join(
+      dirname(dirname(runtimeExecutable)),
+      "macos-arm64-splash",
+    ),
   ) {}
 
-  // biome-ignore lint/complexity/noExcessiveLinesPerFunction: sandbox construction and process cleanup remain paired.
+  private command(request: NativeWorkerLaunchRequest, socket: string): RuntimeCommand {
+    const serverArguments = request.serverArguments;
+    if (serverArguments === undefined) {
+      const args = [
+        "--conditions=gardendesk-runtime",
+        request.workerEntryPath,
+        "--memory-budget",
+        String(request.memoryBudgetBytes),
+        ...(request.modelPath === undefined ? [] : ["--model", request.modelPath]),
+      ];
+      const readPaths = runtimeReadPaths(request.workerEntryPath);
+      return { executable: process.execPath, executables: [process.execPath], readPaths, args };
+    }
+    if (request.splash !== true) {
+      const executable = this.runtimeExecutable;
+      const args = ["--host", socket, ...serverArguments];
+      return { executable, executables: [executable], readPaths: [dirname(executable)], args };
+    }
+    const executable = join(this.splashRoot, "python", "bin", "python3.13");
+    return {
+      executable,
+      executables: [executable, join(this.splashRoot, "engine", "splash")],
+      readPaths: [this.splashRoot],
+      args: ["-I", "-B", "-c", SPLASH_SERVE, socket, this.splashRoot, ...serverArguments],
+    };
+  }
+
   async launch(request: NativeWorkerLaunchRequest): Promise<NativeWorkerHandle> {
     if (process.platform !== "darwin" || process.arch !== "arm64") {
       throw new NativeWorkerLaunchError("unsupported", "unsupported_native_worker_platform");
     }
     const temporaryAlias = await mkdtemp(join(tmpdir(), "gd-"));
     const temporaryRoot = await realpath(temporaryAlias);
-    const runtime =
-      request.serverArguments === undefined ? process.execPath : this.runtimeExecutable;
-    const profile = sandboxProfile(request, temporaryRoot, this.deniedPaths, runtime);
-    const args = [
-      "-p",
-      profile,
-      runtime,
-      ...(request.serverArguments === undefined
-        ? [
-            "--conditions=gardendesk-runtime",
-            request.workerEntryPath,
-            "--memory-budget",
-            String(request.memoryBudgetBytes),
-          ]
-        : ["--host", join(temporaryRoot, "s.sock"), ...request.serverArguments]),
-    ];
-    if (request.serverArguments === undefined && request.modelPath !== undefined)
-      args.push("--model", request.modelPath);
+    const command = this.command(request, join(temporaryRoot, "s.sock"));
+    const profile = sandboxProfile(request, temporaryRoot, this.deniedPaths, command);
+    const args = ["-p", profile, command.executable, ...command.args];
     const child = spawn("/usr/bin/sandbox-exec", args, {
       cwd: temporaryRoot,
       env: {
@@ -157,6 +199,8 @@ export class MacOsNativeWorkerLauncher implements NativeWorkerLauncher {
         TMPDIR: temporaryRoot,
         PATH: "/usr/bin:/bin",
         NODE_NO_WARNINGS: "1",
+        HF_HUB_OFFLINE: "1",
+        HF_HUB_DISABLE_TELEMETRY: "1",
       },
       stdio: ["pipe", "pipe", "pipe"],
     });

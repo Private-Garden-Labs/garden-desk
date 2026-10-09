@@ -19,6 +19,9 @@ interface ChatEvent {
   }>;
   usage?: { prompt_tokens: number; completion_tokens: number };
   timings?: { prompt_n: number; prompt_ms: number; predicted_n: number; predicted_ms: number };
+  metrics?: {
+    request_latency?: { start_to_first_token_ms?: number; first_token_to_done_ms?: number };
+  };
 }
 export interface ChatStreams {
   reasoning?: Map<string, string>;
@@ -58,6 +61,7 @@ interface Reply {
   calls: Map<number, { id: string; name: string; arguments: string }>;
   usage: ChatEvent["usage"];
   timings: ChatEvent["timings"];
+  metrics: ChatEvent["metrics"];
   finish: string | null | undefined;
 }
 
@@ -85,11 +89,24 @@ function appendEvent(reply: Reply, event: ChatEvent, streams: ChatStreams) {
   appendTools(reply, delta?.tool_calls ?? []);
   reply.usage = event.usage ?? reply.usage;
   reply.timings = event.timings ?? reply.timings;
+  reply.metrics = event.metrics ?? reply.metrics;
   reply.finish = choice?.finish_reason ?? reply.finish;
 }
 
+function splashTimings(reply: Reply): ChatEvent["timings"] {
+  const latency = reply.metrics?.request_latency;
+  if (reply.usage === undefined || latency === undefined) return undefined;
+  return {
+    prompt_n: reply.usage.prompt_tokens,
+    prompt_ms: latency.start_to_first_token_ms ?? 0,
+    predicted_n: reply.usage.completion_tokens,
+    predicted_ms: latency.first_token_to_done_ms ?? 0,
+  };
+}
+
 function result(reply: Reply, streams: ChatStreams, began: number) {
-  const { usage, timings } = reply;
+  const { usage } = reply;
+  const timings = reply.timings ?? splashTimings(reply);
   if (usage === undefined || timings === undefined)
     throw new ServerError("malformed_worker_message");
   const toolCalls = [...reply.calls.values()].map((call) => ({
@@ -120,8 +137,26 @@ function result(reply: Reply, streams: ChatStreams, began: number) {
   };
 }
 
+/** Splash reads thinking options at the top level and supports only zero penalties. */
+function splashBody(body: Record<string, unknown>): Record<string, unknown> {
+  const { chat_template_kwargs, presence_penalty, repeat_penalty, ...rest } = body;
+  const options = (chat_template_kwargs ?? {}) as {
+    enable_thinking?: boolean;
+    reasoning_effort?: string;
+    preserve_thinking?: boolean;
+  };
+  const effort = options.enable_thinking === false ? "none" : options.reasoning_effort;
+  return {
+    ...rest,
+    ...(effort === undefined ? {} : { reasoning_effort: effort }),
+    ...(options.preserve_thinking === undefined
+      ? {}
+      : { preserve_thinking: options.preserve_thinking }),
+  };
+}
+
 export async function completeChat(
-  handle: NativeWorkerHandle,
+  handle: NativeWorkerHandle & { splash?: boolean },
   body: Record<string, unknown>,
   signal: AbortSignal,
   streams: ChatStreams = {},
@@ -133,12 +168,18 @@ export async function completeChat(
     calls: new Map(),
     usage: undefined,
     timings: undefined,
+    metrics: undefined,
     finish: undefined,
   };
+  const splash = handle.splash === true;
   await serverRequest(
     handle,
     "/v1/chat/completions",
-    { ...body, stream: true, stream_options: { include_usage: true }, cache_prompt: true },
+    {
+      ...(splash ? splashBody(body) : { ...body, cache_prompt: true }),
+      stream: true,
+      stream_options: { include_usage: true },
+    },
     {
       signal,
       onEvent: (event) => appendEvent(reply, event as ChatEvent, streams),

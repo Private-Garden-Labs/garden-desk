@@ -56,9 +56,13 @@ export function runtimeResourceNames(
     ...Object.values(runtime.files),
     ...(runtime.dependencies ?? []).flatMap((dependency) => Object.values(dependency.files)),
   ];
+  const directories = Object.values(runtime.directories ?? {});
   if (
     new Set(names).size !== names.length ||
-    !names.includes(runtime.executable) ||
+    !(
+      names.includes(runtime.executable) ||
+      directories.some((directory) => runtime.executable.startsWith(`${directory}/`))
+    ) ||
     names.some((name) => name.length === 0 || basename(name) !== name)
   ) {
     throw new Error("Image inspection runtime manifest is invalid.");
