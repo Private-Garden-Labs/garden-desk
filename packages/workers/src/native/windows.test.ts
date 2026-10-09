@@ -99,7 +99,6 @@ describe("Windows native worker launch arguments", () => {
           expectedName: "Integrated Graphics",
           memoryKind: "unified",
           detectedMemoryBytes: 16,
-          installedMemoryBytes: 32,
         },
       },
     );

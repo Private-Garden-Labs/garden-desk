@@ -18,7 +18,6 @@ export interface WindowsGpuLaunch {
   deviceIndex?: number;
   detectedMemoryBytes?: number;
   expectedName?: string;
-  installedMemoryBytes?: number;
   memoryKind?: "dedicated" | "unified";
 }
 
@@ -42,8 +41,7 @@ export function validateWindowsGpuLaunch(gpu: WindowsGpuLaunch): void {
     (gpu.memoryKind !== undefined &&
       gpu.memoryKind !== "dedicated" &&
       gpu.memoryKind !== "unified") ||
-    !validPositiveInteger(gpu.detectedMemoryBytes) ||
-    !validPositiveInteger(gpu.installedMemoryBytes)
+    !validPositiveInteger(gpu.detectedMemoryBytes)
   ) {
     throw new Error("invalid_windows_gpu_selection");
   }
@@ -103,7 +101,6 @@ function windowsGpuArguments(gpu: WindowsGpuLaunch): string[] {
     ["--expected-gpu-name", gpu.expectedName],
     ["--gpu-memory-kind", gpu.memoryKind],
     ["--detected-gpu-memory", gpu.detectedMemoryBytes],
-    ["--installed-memory", gpu.installedMemoryBytes],
   ];
   const args = ["--gpu-backend", gpu.backend];
   for (const [name, value] of optional) {

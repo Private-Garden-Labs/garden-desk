@@ -14,7 +14,6 @@ export interface WindowsGpuAdapterInfo {
 
 export interface WindowsGpuInfo {
   schemaVersion: 1;
-  installedMemoryBytes: number;
   adapters: WindowsGpuAdapterInfo[];
 }
 
@@ -48,17 +47,14 @@ interface IsolatedVariant {
 }
 
 type Probe = (selection: WindowsGpuLaunch) => Promise<WindowsRuntimeProbeResult | undefined>;
-function safeInteger(value: unknown, allowZero = true): value is number {
-  return (
-    typeof value === "number" && Number.isSafeInteger(value) && (allowZero ? value >= 0 : value > 0)
-  );
+function safeInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
 }
 
 export function parseWindowsGpuInfo(output: string): WindowsGpuInfo {
   const value = JSON.parse(output) as Partial<WindowsGpuInfo>;
   if (
     value.schemaVersion !== 1 ||
-    !safeInteger(value.installedMemoryBytes, false) ||
     !Array.isArray(value.adapters) ||
     value.adapters.length > MAX_GPU_DEVICES
   ) {
@@ -191,7 +187,6 @@ async function isolatedVariant(
 
 async function resolveCandidate(
   candidate: Candidate,
-  installedMemoryBytes: number,
   probe: Probe,
 ): Promise<WindowsGpuProfile | undefined> {
   const [cuda, hip] = await Promise.all([
@@ -214,7 +209,6 @@ async function resolveCandidate(
         deviceIndex: generation.deviceIndex,
         detectedMemoryBytes: generation.totalMemoryBytes,
         expectedName: generation.expectedName,
-        installedMemoryBytes,
         memoryKind: candidate.adapter.integrated ? "unified" : "dedicated",
       },
     };
@@ -251,7 +245,7 @@ export async function resolveWindowsGpuProfileFromFacts(
   try {
     const profiles = await Promise.all(
       mappedCandidates(info.adapters, inventories).map(
-        async (candidate) => await resolveCandidate(candidate, info.installedMemoryBytes, probe),
+        async (candidate) => await resolveCandidate(candidate, probe),
       ),
     );
     const selected = selectPreferredWindowsGpuProfile(

@@ -32,8 +32,8 @@ function inventory(
   return { schemaVersion: 1, backend, deviceNames, totalMemoryBytes };
 }
 
-function facts(adapters: WindowsGpuAdapterInfo[], installedMemoryBytes = 32 * GiB): WindowsGpuInfo {
-  return { schemaVersion: 1, installedMemoryBytes, adapters };
+function facts(adapters: WindowsGpuAdapterInfo[]): WindowsGpuInfo {
+  return { schemaVersion: 1, adapters };
 }
 
 function probe(
@@ -120,7 +120,7 @@ describe("Windows integrated GPU fallback", () => {
     "uses the unified policy for %s without a vendor rule",
     async (name) => {
       const selected = await resolveWindowsGpuProfileFromFacts(
-        facts([adapter("integrated", name, true)], 24 * GiB),
+        facts([adapter("integrated", name, true)]),
         [inventory("hip", [name])],
         probe({ "hip:0": { name, memory: 16 * GiB } }),
       );
