@@ -4,6 +4,8 @@
 
 Garden Desk is a free desktop agent for work with local files. Choose a folder or attach files, describe the result you need, and review what it makes. It runs on your computer with no account, telemetry, or cloud service.
 
+The cloud is a noisy city with no privacy. Garden Desk is your own desk in a private backyard, where nobody tracks you.
+
 <img width="1467" height="967" alt="Screenshot 2026-09-28 at 13 13 41" src="https://github.com/user-attachments/assets/2817bdfc-3567-41da-b8dc-3848c9b5d78c" />
 
 
