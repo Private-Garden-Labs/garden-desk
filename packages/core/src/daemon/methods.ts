@@ -3,6 +3,7 @@ import {
   AttachmentIdSchema,
   FolderIdSchema,
   JobIdSchema,
+  JurisdictionSchema,
   MessageRoleSchema,
   PROTOCOL_VERSION,
   type RpcRequest,
@@ -13,6 +14,7 @@ import {
 } from "@gardendesk/shared";
 import type { GardenDeskCore } from "../facade.js";
 import { dispatchArtifactMethod } from "./artifact-methods.js";
+import { dispatchLawMethod } from "./law-methods.js";
 import { dispatchQuestionMethod } from "./question-methods.js";
 import { failure, success } from "./responses.js";
 import { createSession, deleteSession, listSessions, renameSession } from "./session-methods.js";
@@ -128,10 +130,13 @@ async function removeAttachment(core: GardenDeskCore, request: RpcRequest): Prom
 async function startAgent(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
   const sessionId = sessionIdParam(request);
   const thinking = ThinkingLevelSchema.safeParse(request.params.thinking);
+  const jurisdiction = JurisdictionSchema.nullable()
+    .default(null)
+    .safeParse(request.params.jurisdiction);
   const task = typeof request.params.task === "string" ? request.params.task.trim() : "";
-  if (task.length === 0 || !thinking.success)
+  if (task.length === 0 || !thinking.success || !jurisdiction.success)
     return failure(request, "invalid_request", "Invalid task.");
-  return success(request, await core.startAgent(sessionId, task, thinking.data));
+  return success(request, await core.startAgent(sessionId, task, thinking.data, jurisdiction.data));
 }
 
 async function getAgentRun(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
@@ -244,6 +249,9 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
     case "skills.remove":
     case "skills.setEnabled":
       return dispatchSkillMethod(core, request);
+    case "laws.list":
+    case "laws.setEnabled":
+      return dispatchLawMethod(core, request);
     default:
       return failure(request, "unsupported", `Unsupported method: ${request.method}`);
   }

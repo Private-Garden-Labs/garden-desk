@@ -17,3 +17,5 @@ packages/desktop/src-tauri/binaries/
 packages/desktop/src-tauri/gen/
 packages/desktop/src-tauri/resources/
 .claude/settings.local.json
+laws/law-library.sqlite
+laws/.cache/

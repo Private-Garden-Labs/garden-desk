@@ -1,0 +1,706 @@
+{
+  "jurisdictions": [
+    {
+      "id": "us",
+      "name": "United States (federal)",
+      "currentAsOf": "U.S. Code 2024 edition (laws through 2025-01-06), with later amendments to included sections through P.L. 119-118 (2026-09-30); eCFR as of 2026-10-05",
+      "tiers": {
+        "core": [
+          {
+            "id": "us-constitution",
+            "title": "Constitution of the United States, with all amendments",
+            "version": "House Document 110-50 (2007)",
+            "format": "constitution",
+            "url": "https://www.govinfo.gov/content/pkg/CDOC-110hdoc50/html/CDOC-110hdoc50.htm",
+            "sha256": "e8a9606e762ea07e1975dad91574e1c69b42b0caf37d8f6e3d193b207e8721da",
+            "citation": "U.S. Const."
+          },
+          {
+            "id": "us-9-usc-arbitration",
+            "title": "Federal Arbitration Act (FAA), with the New York and Panama Convention chapters, 9 U.S.C.",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title9/html/USCODE-2024-title9.htm",
+            "sha256": "67fb04b2af6d2215ff710fc7bf20882efb93efe102d50a617b852befcaa57bc7",
+            "citation": "9 U.S.C.",
+            "paths": [""]
+          },
+          {
+            "id": "us-15-usc-ch1-antitrust",
+            "title": "Sherman Act and Clayton Act (antitrust), 15 U.S.C. chapter 1",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 1/"]
+          },
+          {
+            "id": "us-15-usc-ftc-act",
+            "title": "Federal Trade Commission Act (FTC Act), 15 U.S.C. chapter 2, subchapter I",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 2/SUBCHAPTER I/"]
+          },
+          {
+            "id": "us-15-usc-e-sign",
+            "title": "Electronic Signatures in Global and National Commerce Act (E-SIGN), 15 U.S.C. chapter 96",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 96/"]
+          },
+          {
+            "id": "us-15-usc-fcpa",
+            "title": "Foreign Corrupt Practices Act (FCPA) anti-bribery provisions, 15 U.S.C. 78dd-1 to 78dd-3",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 2B/Sec. 78dd-"]
+          },
+          {
+            "id": "us-11-usc-365",
+            "title": "Bankruptcy Code: executory contracts and unexpired leases, 11 U.S.C. 365",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title11/html/USCODE-2024-title11.htm",
+            "sha256": "9ffa6b789edac684679f93cda99b28ccb9e94786aefe80008acf0eb9bcbaca12",
+            "citation": "11 U.S.C.",
+            "paths": ["CHAPTER 3/SUBCHAPTER IV/Sec. 365"]
+          },
+          {
+            "id": "us-42-usc-1981",
+            "title": "Equal rights to make and enforce contracts, and damages for intentional employment discrimination, 42 U.S.C. 1981 and 1981a",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title42/html/USCODE-2024-title42.htm",
+            "sha256": "b1cc6f3ffc2ee4993038437795a9057085f20196fbe13e731833f9c37ba52be5",
+            "citation": "42 U.S.C.",
+            "paths": ["CHAPTER 21/SUBCHAPTER I/Sec. 1981"]
+          },
+          {
+            "id": "us-50-usc-ieepa",
+            "title": "International Emergency Economic Powers Act (IEEPA, sanctions), 50 U.S.C. chapter 35",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title50/html/USCODE-2024-title50.htm",
+            "sha256": "ccab6e1743ed19de3fc70e5db3b57eaf8c982e39bc8ff33c9b182abc51d70a15",
+            "citation": "50 U.S.C.",
+            "paths": ["CHAPTER 35/"]
+          },
+          {
+            "id": "us-cisg",
+            "title": "United Nations Convention on Contracts for the International Sale of Goods (CISG), Vienna 1980",
+            "version": "1980 text, Justice Laws Canada XML",
+            "format": "cisg",
+            "url": "https://laws-lois.justice.gc.ca/eng/XML/I-20.4.xml",
+            "sha256": "1a12d9e34bfdadb72ea33fc1fb13ccd85cbc02f4524482e6a71220b689b2b302",
+            "citation": "CISG"
+          }
+        ],
+        "consumer": [
+          {
+            "id": "us-15-usc-ccpa",
+            "title": "Consumer Credit Protection Act (Truth in Lending, Fair Credit Reporting, Fair Debt Collection Practices, Equal Credit Opportunity, Electronic Fund Transfer), 15 U.S.C. chapter 41",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 41/"]
+          },
+          {
+            "id": "us-15-usc-magnuson-moss",
+            "title": "Magnuson-Moss Warranty Act, 15 U.S.C. chapter 50",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 50/"]
+          },
+          {
+            "id": "us-15-usc-rosca",
+            "title": "Restore Online Shoppers' Confidence Act (ROSCA, online subscriptions), 15 U.S.C. chapter 110",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 110/"]
+          },
+          {
+            "id": "us-16-cfr-429",
+            "title": "FTC Cooling-Off Rule for door-to-door sales, 16 CFR part 429",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=429",
+            "sha256": "9efb1e1da9970b2473ac91451cbbeff699ce6a2eb9d35029988db2e5fe6eb309",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-433",
+            "title": "FTC Holder in Due Course Rule (preservation of consumers' claims and defenses), 16 CFR part 433",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=433",
+            "sha256": "df7caff274c8ccc946904c00b6b4c333de2238a239c6455d2dd6ede11794b34b",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-444",
+            "title": "FTC Credit Practices Rule, 16 CFR part 444",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=444",
+            "sha256": "2468a8e6b1f114ac6f1617b58690a30cee718ff1ba5990672670ea3c4cb98937",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-700",
+            "title": "Interpretations of the Magnuson-Moss Warranty Act, 16 CFR part 700",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=700",
+            "sha256": "2e9082dbde4c0bf4dc3c783256243814a17fb13e984fb37277b3f58d4fc5c416",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-701",
+            "title": "Disclosure of written consumer product warranty terms and conditions, 16 CFR part 701",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=701",
+            "sha256": "44cec512301992927ee10d2c60041a6ee95abadc0ee76c34ce0eb590de73def0",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-702",
+            "title": "Pre-sale availability of written warranty terms, 16 CFR part 702",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=702",
+            "sha256": "892548e45c894638546a3697e0ff32153bb69a8b9e0cc7fc5768ccd7452a7afe",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-703",
+            "title": "Informal dispute settlement procedures for warranties, 16 CFR part 703",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=703",
+            "sha256": "cba9e3c1683b8a4bda29796d8b08bda848d8344e3ca7cd2c6f1573ed935789b8",
+            "citation": "16 CFR"
+          }
+        ],
+        "employment": [
+          {
+            "id": "us-29-usc-nlra",
+            "title": "National Labor Relations Act (NLRA), 29 U.S.C. chapter 7, subchapter II",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm",
+            "sha256": "e96eb2f9d3108d9fbaa91d35c25cbcd1db72fbeeadb7bbbc52c2fe8ab41796d1",
+            "citation": "29 U.S.C.",
+            "paths": ["CHAPTER 7/SUBCHAPTER II/"]
+          },
+          {
+            "id": "us-29-usc-flsa",
+            "title": "Fair Labor Standards Act (FLSA, minimum wage and overtime), 29 U.S.C. chapter 8",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm",
+            "sha256": "e96eb2f9d3108d9fbaa91d35c25cbcd1db72fbeeadb7bbbc52c2fe8ab41796d1",
+            "citation": "29 U.S.C.",
+            "paths": ["CHAPTER 8/"]
+          },
+          {
+            "id": "us-29-usc-adea",
+            "title": "Age Discrimination in Employment Act (ADEA), 29 U.S.C. chapter 14",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm",
+            "sha256": "e96eb2f9d3108d9fbaa91d35c25cbcd1db72fbeeadb7bbbc52c2fe8ab41796d1",
+            "citation": "29 U.S.C.",
+            "paths": ["CHAPTER 14/"]
+          },
+          {
+            "id": "us-29-usc-fmla",
+            "title": "Family and Medical Leave Act (FMLA), 29 U.S.C. chapter 28",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm",
+            "sha256": "e96eb2f9d3108d9fbaa91d35c25cbcd1db72fbeeadb7bbbc52c2fe8ab41796d1",
+            "citation": "29 U.S.C.",
+            "paths": ["CHAPTER 28/"]
+          },
+          {
+            "id": "us-42-usc-title-vii",
+            "title": "Title VII of the Civil Rights Act of 1964 (equal employment opportunity), 42 U.S.C. chapter 21, subchapter VI",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title42/html/USCODE-2024-title42.htm",
+            "sha256": "b1cc6f3ffc2ee4993038437795a9057085f20196fbe13e731833f9c37ba52be5",
+            "citation": "42 U.S.C.",
+            "paths": ["CHAPTER 21/SUBCHAPTER VI/"]
+          },
+          {
+            "id": "us-42-usc-ada",
+            "title": "Americans with Disabilities Act (ADA), 42 U.S.C. chapter 126",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title42/html/USCODE-2024-title42.htm",
+            "sha256": "b1cc6f3ffc2ee4993038437795a9057085f20196fbe13e731833f9c37ba52be5",
+            "citation": "42 U.S.C.",
+            "paths": ["CHAPTER 126/"]
+          },
+          {
+            "id": "us-18-usc-trade-secrets",
+            "title": "Economic Espionage Act and Defend Trade Secrets Act (trade secrets), 18 U.S.C. chapter 90",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18.htm",
+            "sha256": "96637a8d5f1c3ae6f13d3f88f8b268d253afb01fe8c59ea05ceb136b5bf8eb10",
+            "citation": "18 U.S.C.",
+            "paths": ["PART I/CHAPTER 90/"]
+          }
+        ],
+        "ip-and-data": [
+          {
+            "id": "us-17-usc-copyright",
+            "title": "Copyright Act: subject matter, ownership, duration and infringement, 17 U.S.C. chapters 1, 2, 3 and 5",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title17/html/USCODE-2024-title17.htm",
+            "sha256": "5e42106e930d973551182ccf2b122311aff6a6a42642e269509b14527b250acd",
+            "citation": "17 U.S.C.",
+            "paths": ["CHAPTER 1/", "CHAPTER 2/", "CHAPTER 3/", "CHAPTER 5/"]
+          },
+          {
+            "id": "us-35-usc-patent-ownership",
+            "title": "Patent Act: ownership and assignment, 35 U.S.C. chapter 26",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title35/html/USCODE-2024-title35.htm",
+            "sha256": "33417d938bc88cb36125b765e96a87618299c869c6a9b206a7290657f17055de",
+            "citation": "35 U.S.C.",
+            "paths": ["PART III/CHAPTER 26/"]
+          },
+          {
+            "id": "us-15-usc-lanham",
+            "title": "Lanham Act (trademarks), 15 U.S.C. chapter 22",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 22/"]
+          },
+          {
+            "id": "us-15-usc-glba",
+            "title": "Gramm-Leach-Bliley Act (GLBA) financial privacy, 15 U.S.C. chapter 94",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 94/"]
+          },
+          {
+            "id": "us-45-cfr-164",
+            "title": "HIPAA Privacy, Security and Breach Notification Rules, 45 CFR part 164",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-45.xml?part=164",
+            "sha256": "233fec3ad4a05762fd58d636fafc24c51ae60fa48f1be8354ea17a790b364f2e",
+            "citation": "45 CFR"
+          }
+        ]
+      }
+    },
+    {
+      "id": "eu",
+      "name": "European Union",
+      "currentAsOf": "Latest EUR-Lex consolidated texts as of 2026-10-07; Treaties and Charter as consolidated in 2016",
+      "tiers": {
+        "treaties": [
+          {
+            "id": "eu-teu",
+            "title": "Treaty on European Union (TEU)",
+            "version": "Consolidated version, OJ C 202, 7.6.2016",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/2021d50a-3468-11e6-969e-01aa75ed71a1.0005.01/DOC_1",
+            "sha256": "4122d5168aa78e5e4a3b8cb51888decd999a7c5b02c8ce21354593ab74552c5b",
+            "citation": "TEU",
+            "until": "PROTOCOLS"
+          },
+          {
+            "id": "eu-tfeu",
+            "title": "Treaty on the Functioning of the European Union (TFEU), with the Protocols and Annexes to the Treaties",
+            "version": "Consolidated version, OJ C 202, 7.6.2016",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/f1bcba61-0d85-4e7f-b41e-a72c42eb5c49.0005.01/DOC_1",
+            "sha256": "9edd9ff12dfe0824d4648631c48b97d458cf19bab7a4c273e99370a1eec00560",
+            "citation": "TFEU",
+            "until": "DECLARATIONS"
+          },
+          {
+            "id": "eu-charter",
+            "title": "Charter of Fundamental Rights of the European Union",
+            "version": "Consolidated version, OJ C 202, 7.6.2016",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/c483a582-2c70-11e6-b497-01aa75ed71a1.0006.03/DOC_1",
+            "sha256": "bbbe6b76325a6b6de46685c5f85da2b14c0eaa5c2ab5db92b2d8da12cc13dfe9",
+            "citation": "Charter"
+          }
+        ],
+        "core": [
+          {
+            "id": "eu-rome-i-applicable-law",
+            "title": "Rome I Regulation (law applicable to contractual obligations), Regulation (EC) No 593/2008",
+            "version": "Consolidated 2008-07-24 (02008R0593-20080724)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/9041fafb-9049-4aa3-aec4-57b38719bac4.0006.03/DOC_1",
+            "sha256": "2fdf7b5c9b395a358b6cfa7e64ec336a3601d6cf3906ff23bb68e6f0f9784872",
+            "citation": "Regulation (EC) No 593/2008"
+          },
+          {
+            "id": "eu-brussels-i-bis-jurisdiction",
+            "title": "Brussels I bis Regulation (jurisdiction and enforcement of judgments), Regulation (EU) No 1215/2012",
+            "version": "Consolidated 2015-02-26 (02012R1215-20150226)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/30f1faf6-4a23-489d-98dd-03f0d89d3990.0021.02/DOC_4",
+            "sha256": "7dd895b469274ef5001cc00a8c5b7c9a7062f7845c355f9753692e75883322bf",
+            "citation": "Regulation (EU) No 1215/2012"
+          },
+          {
+            "id": "eu-unfair-contract-terms",
+            "title": "Unfair Contract Terms Directive, Council Directive 93/13/EEC",
+            "version": "Consolidated 2022-05-28 (01993L0013-20220528)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/ca4536e5-e274-11ec-a534-01aa75ed71a1.0007.02/DOC_1",
+            "sha256": "83c977be6e9519f56ede6ee2a21d2ad01b30eb067977b139132a84ace4f3fb58",
+            "citation": "Directive 93/13/EEC"
+          },
+          {
+            "id": "eu-late-payment",
+            "title": "Late Payment Directive, Directive 2011/7/EU",
+            "version": "Original Official Journal text (32011L0007)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/07b9575f-efc1-492a-b529-a51dd5652762.0016.03/DOC_1",
+            "sha256": "629ef52ec778231f930dc82d7c5a0698bb6f6385b1d051e741451541cb03be01",
+            "citation": "Directive 2011/7/EU"
+          },
+          {
+            "id": "eu-gdpr",
+            "title": "General Data Protection Regulation (GDPR), Regulation (EU) 2016/679",
+            "version": "Consolidated 2016-05-04 (02016R0679-20160504)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/5f2552c2-cc45-11e6-ad7c-01aa75ed71a1.0022.03/DOC_1",
+            "sha256": "a681ff22f32f125749af6e96947224369efc132edb8a95b12637e357df1056de",
+            "citation": "Regulation (EU) 2016/679"
+          },
+          {
+            "id": "eu-gdpr-standard-contractual-clauses",
+            "title": "Standard contractual clauses for transfers of personal data to third countries, Implementing Decision (EU) 2021/914",
+            "version": "Original Official Journal text (32021D0914)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/55862dbf-c72b-11eb-a925-01aa75ed71a1.0006.03/DOC_1",
+            "sha256": "85d76f03ea30e1cc739311df8f362b03c35cf9c3350f6d7f6e012c65c042872d",
+            "citation": "Implementing Decision (EU) 2021/914"
+          },
+          {
+            "id": "eu-vertical-block-exemption",
+            "title": "Vertical Block Exemption Regulation, Regulation (EU) 2022/720",
+            "version": "Consolidated 2024-02-11 (02022R0720-20240211)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/ff941912-d5a5-11ee-b9d9-01aa75ed71a1.0007.02/DOC_1",
+            "sha256": "5074c1554c4a9c56ffe698d3c99222a33976d2024680dd1b4374fd0eda3bafea",
+            "citation": "Regulation (EU) 2022/720"
+          },
+          {
+            "id": "eu-e-commerce",
+            "title": "Electronic Commerce Directive, Directive 2000/31/EC",
+            "version": "Consolidated 2024-02-17 (02000L0031-20240217)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/88aa5abc-f6a0-11ee-a251-01aa75ed71a1.0002.02/DOC_1",
+            "sha256": "94357558342aa37e43b53098f7db309fb780955f583ff0f25750b0e44506f070",
+            "citation": "Directive 2000/31/EC"
+          },
+          {
+            "id": "eu-eidas-e-signatures",
+            "title": "eIDAS Regulation (electronic identification, trust services and e-signatures), Regulation (EU) No 910/2014",
+            "version": "Consolidated 2024-10-18 (02014R0910-20241018)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/6a1e14d9-907e-11ef-a130-01aa75ed71a1.0007.02/DOC_2",
+            "sha256": "b4ab7d733d234eef3a505330717d8a8d4d6388f2d9a0a4bfcde2d1b497ba72ce",
+            "citation": "Regulation (EU) No 910/2014"
+          },
+          {
+            "id": "eu-data-act",
+            "title": "Data Act, Regulation (EU) 2023/2854",
+            "version": "Original Official Journal text (32023R2854)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/ef51c6ab-a06c-11ee-b164-01aa75ed71a1.0006.03/DOC_1",
+            "sha256": "1085b7fa3011970b65b1e4d56205202dceb37f72cd22336aa0c78af35ceaea66",
+            "citation": "Regulation (EU) 2023/2854"
+          },
+          {
+            "id": "eu-russia-sectoral-sanctions",
+            "title": "Russia sectoral sanctions, Council Regulation (EU) No 833/2014",
+            "version": "Consolidated 2026-07-24 (02014R0833-20260724)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/0492ea31-a0ce-11f1-b25c-01aa75ed71a1.0004.02/DOC_1",
+            "sha256": "2682ecf3442d2f16a3b36ef4d9bbb6fde43fd4d6743bcd991bd4a8e14857770b",
+            "citation": "Regulation (EU) No 833/2014"
+          },
+          {
+            "id": "eu-russia-asset-freeze",
+            "title": "Asset freeze over threats to Ukraine, Council Regulation (EU) No 269/2014",
+            "version": "Consolidated 2026-08-07 (02014R0269-20260807)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/32f92abb-a17d-11f1-b25c-01aa75ed71a1.0002.03/DOC_1",
+            "sha256": "fa0236d029656ee4de310e9d945c1d555f97e8bae32513960f784123be5c0767",
+            "citation": "Regulation (EU) No 269/2014"
+          },
+          {
+            "id": "eu-cisg",
+            "title": "United Nations Convention on Contracts for the International Sale of Goods (CISG), Vienna 1980",
+            "version": "1980 text, Justice Laws Canada XML",
+            "format": "cisg",
+            "url": "https://laws-lois.justice.gc.ca/eng/XML/I-20.4.xml",
+            "sha256": "1a12d9e34bfdadb72ea33fc1fb13ccd85cbc02f4524482e6a71220b689b2b302",
+            "citation": "CISG"
+          }
+        ],
+        "consumer": [
+          {
+            "id": "eu-consumer-rights",
+            "title": "Consumer Rights Directive, Directive 2011/83/EU",
+            "version": "Consolidated 2026-09-27 (02011L0083-20260927)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/82067e60-3e52-11f1-814f-01aa75ed71a1.0006.03/DOC_1",
+            "sha256": "442fb8e2f0e8e5e1f81e84e25969eff1c49e1613986140064f3b3f7f988d19ab",
+            "citation": "Directive 2011/83/EU"
+          },
+          {
+            "id": "eu-sale-of-goods",
+            "title": "Sale of Goods Directive, Directive (EU) 2019/771",
+            "version": "Consolidated 2026-07-31 (02019L0771-20260731)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/9fb0f204-640a-11f1-9b18-01aa75ed71a1.0007.02/DOC_1",
+            "sha256": "342729740cf4da6f1fafd191d341b0083ecd9de6457ffa7d67bc895df1cda96e",
+            "citation": "Directive (EU) 2019/771"
+          },
+          {
+            "id": "eu-digital-content",
+            "title": "Digital Content and Services Directive, Directive (EU) 2019/770",
+            "version": "Original Official Journal text (32019L0770)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/c426ed23-7c64-11e9-9f05-01aa75ed71a1.0006.03/DOC_1",
+            "sha256": "f7f39a97410dcb4183ffdb9abac316cd1dfbcc2805a614f0aa6adc112c0fcfcc",
+            "citation": "Directive (EU) 2019/770"
+          },
+          {
+            "id": "eu-unfair-commercial-practices",
+            "title": "Unfair Commercial Practices Directive, Directive 2005/29/EC",
+            "version": "Consolidated 2026-09-27 (02005L0029-20260927)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/16caab8e-3e51-11f1-814f-01aa75ed71a1.0005.03/DOC_1",
+            "sha256": "1ebbb7b9f2c7c7712b0c3bd19f4319cb5a52ac9514dc008bd34084c550f77138",
+            "citation": "Directive 2005/29/EC"
+          },
+          {
+            "id": "eu-consumer-credit",
+            "title": "Consumer Credit Directive, Directive (EU) 2023/2225",
+            "version": "Consolidated 2023-10-30 (02023L2225-20231030), with the 2026-09-22 corrigendum",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/ec039927-c4fe-11ee-95d9-01aa75ed71a1.0019.02/DOC_1",
+            "sha256": "febaa1a5e05a9d40821f000b2756f91ad7434bbefaa997d3b904eec2823e7543",
+            "citation": "Directive (EU) 2023/2225"
+          }
+        ],
+        "employment": [
+          {
+            "id": "eu-working-conditions",
+            "title": "Transparent and Predictable Working Conditions Directive, Directive (EU) 2019/1152",
+            "version": "Original Official Journal text (32019L1152)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/aaba87d8-a3b5-11e9-9d01-01aa75ed71a1.0006.03/DOC_1",
+            "sha256": "0171763090878960e374c720487c9d38a7480cbc255eeddfdc9e7cf5bb4fb67c",
+            "citation": "Directive (EU) 2019/1152"
+          },
+          {
+            "id": "eu-working-time",
+            "title": "Working Time Directive, Directive 2003/88/EC",
+            "version": "Original Official Journal text (32003L0088)",
+            "format": "eurlex-text",
+            "url": "https://publications.europa.eu/resource/cellar/050dd964-4f94-4c61-ab50-89217a0d90e2.0004.01/DOC_1",
+            "sha256": "0d23ad4953be900de8a614fea4022aa46086e0bdc2fdfd6d0fde0cd84429e4b6",
+            "citation": "Directive 2003/88/EC"
+          },
+          {
+            "id": "eu-temporary-agency-work",
+            "title": "Temporary Agency Work Directive, Directive 2008/104/EC",
+            "version": "Original Official Journal text (32008L0104)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/ffa0ca58-234b-4c3d-a558-276cc9647192.0006.02/DOC_1",
+            "sha256": "096feca0c9f0ebc3e18b9382234691bea1619b6a7da1bce0bcc5ad1fcce62425",
+            "citation": "Directive 2008/104/EC"
+          },
+          {
+            "id": "eu-fixed-term-work",
+            "title": "Fixed-term Work Directive and framework agreement, Council Directive 1999/70/EC",
+            "version": "Consolidated 1999-07-10 (01999L0070-19990710)",
+            "format": "eurlex-text",
+            "url": "https://publications.europa.eu/resource/cellar/2c7aebbc-1726-41ad-a9ab-4cf58549512b.0001.02/DOC_1",
+            "sha256": "7730e87183048f1afd89baae929fc666d67df4fcaeb883af87cd376a683da6c3",
+            "citation": "Directive 1999/70/EC"
+          },
+          {
+            "id": "eu-part-time-work",
+            "title": "Part-time Work Directive and framework agreement, Council Directive 97/81/EC",
+            "version": "Consolidated 1998-05-25 (01997L0081-19980525)",
+            "format": "eurlex-text",
+            "url": "https://publications.europa.eu/resource/cellar/b64abac0-fa3f-4fad-b4a0-56f59af76e82.0016.02/DOC_1",
+            "sha256": "77df3dc2b51f420dfd81837d82fb645cf7071cbdfa60f060f88c06abe1999041",
+            "citation": "Directive 97/81/EC"
+          },
+          {
+            "id": "eu-equal-treatment-employment",
+            "title": "Employment Equality Directive (religion or belief, disability, age, sexual orientation), Council Directive 2000/78/EC",
+            "version": "Original Official Journal text (32000L0078)",
+            "format": "eurlex-text",
+            "url": "https://publications.europa.eu/resource/cellar/27cc3913-6ba0-402c-8cdf-c5e1f7989673.0005.01/DOC_1",
+            "sha256": "da9be09e516c85e14a0373ae60a8e9d697beac18e42a16a6f36d3f454d5000b9",
+            "citation": "Directive 2000/78/EC"
+          },
+          {
+            "id": "eu-racial-equality",
+            "title": "Racial Equality Directive, Council Directive 2000/43/EC",
+            "version": "Consolidated 2026-06-19 (02000L0043-20260619)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/f07d96f3-63ec-11f1-9b18-01aa75ed71a1.0006.02/DOC_1",
+            "sha256": "b4266a1c2310447b15fb996318a75947c720bf6c33ec6df7badcc4ba8534956a",
+            "citation": "Directive 2000/43/EC"
+          },
+          {
+            "id": "eu-gender-equality",
+            "title": "Gender Equality in Employment Directive (recast), Directive 2006/54/EC",
+            "version": "Consolidated 2026-06-19 (02006L0054-20260619)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/bf1c39d9-4362-11f1-8095-01aa75ed71a1.0007.02/DOC_1",
+            "sha256": "ad5898110833a4e3edb464b57bcb5e98d73d0cd06522ea51d5383c48e2ae43da",
+            "citation": "Directive 2006/54/EC"
+          }
+        ],
+        "commercial": [
+          {
+            "id": "eu-commercial-agents",
+            "title": "Commercial Agents Directive, Council Directive 86/653/EEC",
+            "version": "Original Official Journal text (31986L0653)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/a4fa7338-bc35-4e95-b255-6216fcd4e1ff.0008.05/DOC_1",
+            "sha256": "6d48acd3199111c73709564876bf514fa9e4252fba943149509aa33cb05419e4",
+            "citation": "Directive 86/653/EEC"
+          },
+          {
+            "id": "eu-platform-to-business",
+            "title": "Platform-to-Business Regulation (online intermediation services), Regulation (EU) 2019/1150",
+            "version": "Original Official Journal text (32019R1150)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/6c6c2c06-a3b4-11e9-9d01-01aa75ed71a1.0006.03/DOC_1",
+            "sha256": "412b3d1ae6070fe3ad574c8895400bd2723608dd55789739dcbd2ab77430cfbe",
+            "citation": "Regulation (EU) 2019/1150"
+          },
+          {
+            "id": "eu-technology-transfer-block-exemption",
+            "title": "Technology Transfer Block Exemption Regulation, Regulation (EU) No 316/2014",
+            "version": "Original Official Journal text (32014R0316)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/410bd45c-b6ca-11e3-86f9-01aa75ed71a1.0006.03/DOC_1",
+            "sha256": "133bc9193316d327cc7310277d86ae0d0158047013949a85d393f42438787b56",
+            "citation": "Regulation (EU) No 316/2014"
+          },
+          {
+            "id": "eu-horizontal-rd-block-exemption",
+            "title": "Research and Development Block Exemption Regulation, Regulation (EU) 2023/1066",
+            "version": "Original Official Journal text (32023R1066)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/8e744ed1-0112-11ee-87ec-01aa75ed71a1.0006.03/DOC_1",
+            "sha256": "6a27eae9a5931a22b1d9822779ceeacf516f1a4dc2a6fb11651ac0ce36abfae0",
+            "citation": "Regulation (EU) 2023/1066"
+          },
+          {
+            "id": "eu-specialisation-block-exemption",
+            "title": "Specialisation Block Exemption Regulation, Regulation (EU) 2023/1067",
+            "version": "Original Official Journal text (32023R1067)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/c85310fc-0112-11ee-87ec-01aa75ed71a1.0006.03/DOC_1",
+            "sha256": "739f177011993aefaf173f0bb29a8f723fbb695330477a653e444d90a9ecc682",
+            "citation": "Regulation (EU) 2023/1067"
+          },
+          {
+            "id": "eu-competition-procedure",
+            "title": "Competition procedure for Articles 101 and 102 TFEU, Council Regulation (EC) No 1/2003",
+            "version": "Consolidated 2009-07-01 (02003R0001-20090701)",
+            "format": "eurlex",
+            "url": "https://publications.europa.eu/resource/cellar/98a27a4e-ad29-11e9-9d01-01aa75ed71a1.0013.03/DOC_1",
+            "sha256": "ce5f4c28124b3fc45f4e0d4342bc9fe631e5795282dcf2549b6ed7f36f6f2eb7",
+            "citation": "Regulation (EC) No 1/2003"
+          }
+        ]
+      }
+    }
+  ],
+  "amendments": [
+    {
+      "section": "15 U.S.C. 1681b",
+      "law": "P.L. 119-36",
+      "date": "2025-09-05",
+      "provision": "/us/pl/119/36/s2/a",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ36/uslm/PLAW-119publ36.xml",
+      "sha256": "9e911a87c803e973eb615314ddfe28837a369a130ba1789af4f6dfe1f10f2054"
+    },
+    {
+      "section": "17 U.S.C. 105",
+      "law": "P.L. 119-60",
+      "date": "2025-12-18",
+      "provision": "/us/pl/119/60/dA/tXVII/s1702",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ60/uslm/PLAW-119publ60.xml",
+      "sha256": "7eb2742dc8b011fa6a7a6ec17daf459749e546a432b054e1966b6f567c216713"
+    }
+  ],
+  "aliases": {
+    "15 U.S.C. 1": "price fixing, bid rigging, market allocation, cartel, agreement between competitors, group boycott",
+    "15 U.S.C. 2": "monopolization, attempted monopolization, abuse of monopoly power",
+    "15 U.S.C. 1691": "credit discrimination, lending discrimination, national origin, place of birth, race, sex, age, marital status",
+    "42 U.S.C. 1981": "racial discrimination in contracts, alienage, equal right to make and enforce contracts",
+    "9 U.S.C. 2": "arbitration agreement, arbitration clause enforceable, class action waiver",
+    "15 U.S.C. 8403": "automatic renewal, subscription, negative option, free trial, simple cancellation",
+    "15 U.S.C. 45b": "non-disparagement clause, gag clause, ban on negative customer reviews, review penalty",
+    "15 U.S.C. 45": "unfair or deceptive acts or practices, unfair methods of competition",
+    "15 U.S.C. 2302": "warranty tie-in, warranty void if other brand parts or service are used",
+    "15 U.S.C. 1638": "closed-end credit disclosures, installment plan, annual percentage rate, finance charge disclosure",
+    "15 U.S.C. 7001": "electronic signatures, electronic records, consumer consent to electronic disclosures",
+    "Regulation (EU) 2016/679, Article 28": "data processor contract, data processing agreement, service provider handling customer personal data",
+    "Regulation (EU) 2016/679, Article 44": "international data transfers, transfer of personal data to third countries",
+    "Regulation (EU) 2016/679, Article 13": "privacy notice, informing customers about data collection",
+    "Directive 2011/7/EU, Article 7": "unfair terms on late payment, excluding interest for late payment, excluding recovery costs",
+    "Directive 2011/7/EU, Article 3": "payment terms between businesses, 60-day payment limit, late payment interest",
+    "Directive 2011/83/EU, Article 9": "right of withdrawal, cooling-off period, 14 days, distance and telephone sales",
+    "Regulation (EU) No 1215/2012, Article 18": "consumer jurisdiction, consumer may sue and be sued in home courts",
+    "Directive (EU) 2019/771, Article 10": "legal guarantee, two-year guarantee, seller liability for defects",
+    "Regulation (EU) 2022/720, Article 4": "hardcore restrictions, resale price maintenance, online sales ban, territorial and customer restrictions",
+    "TFEU Article 101": "cartels, anticompetitive agreements, price fixing, market sharing",
+    "Regulation (EU) No 833/2014, Article 3h": "luxury goods export ban to Russia, sale of goods above EUR 750 to Russia",
+    "CISG Article 1": "scope of the convention, international sale of goods between parties in different states"
+  }
+}

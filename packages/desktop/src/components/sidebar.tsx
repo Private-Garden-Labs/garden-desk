@@ -27,6 +27,7 @@ interface SidebarProps {
   onAddFolder(): void;
   onNewSession(folderId: string | null): void;
   onOpenFolder(folderId: string): void;
+  onOpenLaws(): void;
   onOpenReleases(): void;
   onOpenSkills(): void;
   onDeleteSession(session: SessionSummary): void;
@@ -274,6 +275,7 @@ export function Sidebar(props: SidebarProps) {
       <SidebarSettings
         active={props.settingsActive === true}
         appVersion={props.appVersion}
+        onOpenLaws={props.onOpenLaws}
         onOpenReleases={props.onOpenReleases}
         onOpenSkills={props.onOpenSkills}
       />

@@ -35,6 +35,10 @@ function boundedFailure(error: unknown): Error {
   if (error instanceof Error && error.message === "generation_token_limit") return error;
   return new ServerError("malformed_worker_message");
 }
+type ServerKind = "chat" | "embed";
+function serverKind(request: ModelRequest): ServerKind {
+  return request.operation === "embed" ? "embed" : "chat";
+}
 interface ResidentServer {
   handle: Awaited<ReturnType<typeof startServer>>;
   modelPath: string;
@@ -68,8 +72,9 @@ async function embedding(handle: NativeWorkerHandle, input: string, signal: Abor
   return vector.map((x) => x / norm);
 }
 
+/** Keeps the generation server and the CPU encoder server resident side by side. */
 export class InferenceWorkerClient {
-  private resident: ResidentServer | undefined;
+  private readonly residents: Partial<Record<ServerKind, ResidentServer>> = {};
   private busy = false;
   constructor(
     private readonly launcher: NativeWorkerLauncher,
@@ -81,12 +86,16 @@ export class InferenceWorkerClient {
     return await this.dropResident();
   }
 
-  private async dropResident(): Promise<boolean> {
-    const resident = this.resident;
-    this.resident = undefined;
-    if (resident === undefined) return false;
-    await resident.handle.dispose();
-    return true;
+  private async dropResident(kinds: ServerKind[] = ["chat", "embed"]): Promise<boolean> {
+    let dropped = false;
+    for (const kind of kinds) {
+      const resident = this.residents[kind];
+      delete this.residents[kind];
+      if (resident === undefined) continue;
+      await resident.handle.dispose();
+      dropped = true;
+    }
+    return dropped;
   }
 
   async execute(execution: InferenceExecution): Promise<InferenceWorkerResponse> {
@@ -104,7 +113,7 @@ export class InferenceWorkerClient {
       return await this.complete(execution, request, resident, signal);
     } catch (error) {
       if (signal.aborted) {
-        await this.cancel();
+        await this.cancel(serverKind(request));
         throw interruption(signal);
       }
       const failure = boundedFailure(error);
@@ -169,9 +178,11 @@ export class InferenceWorkerClient {
   ): Promise<ResidentServer> {
     const modelPath = execution.modelPath;
     if (modelPath === undefined) throw new ServerError("invalid_argument");
-    if (this.resident && this.reusable(this.resident, modelPath, request)) return this.resident;
-    await this.dropResident();
-    const embedding = request.operation === "embed";
+    const kind = serverKind(request);
+    const current = this.residents[kind];
+    if (current && this.reusable(current, modelPath, request)) return current;
+    await this.dropResident([kind]);
+    const embedding = kind === "embed";
     const contextTokens = await this.contextTokens(execution, request);
     const handle = await startServer(
       this.launcher,
@@ -197,8 +208,9 @@ export class InferenceWorkerClient {
         );
       throw new InferenceWorkerError("worker_crash", "Inference worker stopped.");
     });
-    this.resident = { handle, modelPath, contextTokens, embedding };
-    return this.resident;
+    const resident = { handle, modelPath, contextTokens, embedding };
+    this.residents[kind] = resident;
+    return resident;
   }
 
   private memory(contextTokens: number, budgetBytes: number) {
@@ -249,9 +261,9 @@ export class InferenceWorkerClient {
     });
   }
 
-  private async cancel(): Promise<void> {
-    if (this.resident === undefined) return;
-    const handle = this.resident.handle;
+  private async cancel(kind: ServerKind): Promise<void> {
+    const handle = this.residents[kind]?.handle;
+    if (handle === undefined) return;
     const signal = AbortSignal.timeout(1_000);
     try {
       while (
@@ -263,7 +275,7 @@ export class InferenceWorkerClient {
       )
         await delay(25, undefined, { signal });
     } catch {
-      await this.dropResident();
+      await this.dropResident([kind]);
     }
   }
 }

@@ -96,6 +96,7 @@ function childReviewInput(
     modelId: input.modelId,
     skills: input.skills,
     systemPrompt: input.systemPrompt,
+    ...(input.laws === undefined ? {} : { laws: input.laws }),
     ...(input.signal === undefined ? {} : { signal: input.signal }),
     ...(input.thinking === undefined ? {} : { thinking: input.thinking }),
     trace: { runId: child.id, store: ports.store.trace },
