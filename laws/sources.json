@@ -677,5 +677,30 @@
       "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ60/uslm/PLAW-119publ60.xml",
       "sha256": "7eb2742dc8b011fa6a7a6ec17daf459749e546a432b054e1966b6f567c216713"
     }
-  ]
+  ],
+  "aliases": {
+    "15 U.S.C. 1": "price fixing, bid rigging, market allocation, cartel, agreement between competitors, group boycott",
+    "15 U.S.C. 2": "monopolization, attempted monopolization, abuse of monopoly power",
+    "15 U.S.C. 1691": "credit discrimination, lending discrimination, national origin, place of birth, race, sex, age, marital status",
+    "42 U.S.C. 1981": "racial discrimination in contracts, alienage, equal right to make and enforce contracts",
+    "9 U.S.C. 2": "arbitration agreement, arbitration clause enforceable, class action waiver",
+    "15 U.S.C. 8403": "automatic renewal, subscription, negative option, free trial, simple cancellation",
+    "15 U.S.C. 45b": "non-disparagement clause, gag clause, ban on negative customer reviews, review penalty",
+    "15 U.S.C. 45": "unfair or deceptive acts or practices, unfair methods of competition",
+    "15 U.S.C. 2302": "warranty tie-in, warranty void if other brand parts or service are used",
+    "15 U.S.C. 1638": "closed-end credit disclosures, installment plan, annual percentage rate, finance charge disclosure",
+    "15 U.S.C. 7001": "electronic signatures, electronic records, consumer consent to electronic disclosures",
+    "Regulation (EU) 2016/679, Article 28": "data processor contract, data processing agreement, service provider handling customer personal data",
+    "Regulation (EU) 2016/679, Article 44": "international data transfers, transfer of personal data to third countries",
+    "Regulation (EU) 2016/679, Article 13": "privacy notice, informing customers about data collection",
+    "Directive 2011/7/EU, Article 7": "unfair terms on late payment, excluding interest for late payment, excluding recovery costs",
+    "Directive 2011/7/EU, Article 3": "payment terms between businesses, 60-day payment limit, late payment interest",
+    "Directive 2011/83/EU, Article 9": "right of withdrawal, cooling-off period, 14 days, distance and telephone sales",
+    "Regulation (EU) No 1215/2012, Article 18": "consumer jurisdiction, consumer may sue and be sued in home courts",
+    "Directive (EU) 2019/771, Article 10": "legal guarantee, two-year guarantee, seller liability for defects",
+    "Regulation (EU) 2022/720, Article 4": "hardcore restrictions, resale price maintenance, online sales ban, territorial and customer restrictions",
+    "TFEU Article 101": "cartels, anticompetitive agreements, price fixing, market sharing",
+    "Regulation (EU) No 833/2014, Article 3h": "luxury goods export ban to Russia, sale of goods above EUR 750 to Russia",
+    "CISG Article 1": "scope of the convention, international sale of goods between parties in different states"
+  }
 }

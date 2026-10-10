@@ -60,6 +60,8 @@ async function build(): Promise<void> {
   }
   const library = await readLawSources();
   const notes = await amendmentNotes(library.amendments);
+  const aliases = new Map(Object.entries(library.aliases));
+  const named = new Set<string>();
   const output = join(lawsRoot, "law-library.sqlite");
   const database = await createLibrary(output);
   database.exec("BEGIN");
@@ -67,7 +69,12 @@ async function build(): Promise<void> {
     insertJurisdiction(database, jurisdiction);
     const sources = Object.values(jurisdiction.tiers).flat();
     for (const [position, source] of sources.entries()) {
-      const sections = await sourceSections(source, notes);
+      const sections = (await sourceSections(source, notes)).map((section) => {
+        const alias = aliases.get(section.citation);
+        if (alias === undefined) return section;
+        named.add(section.citation);
+        return { ...section, heading: `${section.heading} (also: ${alias})` };
+      });
       insertSource(database, { ...source, jurisdiction: jurisdiction.id, position }, sections);
       console.log(`${jurisdiction.id} ${source.id}: ${sections.length} sections`);
     }
@@ -75,6 +82,8 @@ async function build(): Promise<void> {
   database.exec("COMMIT");
   if (notes.size > 0)
     throw new Error(`Amended sections not found: ${[...notes.keys()].join(", ")}`);
+  const unnamed = [...aliases.keys()].filter((citation) => !named.has(citation));
+  if (unnamed.length > 0) throw new Error(`Aliased sections not found: ${unnamed.join(", ")}`);
   if (server !== undefined && values.encoder !== undefined && values.vectors) {
     await writeVectors(database, server, values.encoder);
   }

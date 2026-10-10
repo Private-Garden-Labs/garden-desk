@@ -21,8 +21,9 @@ const QUERY_INSTRUCTION =
 const QUERY_CHARACTERS = 1_000;
 const SEARCH_RESULTS = 5;
 const DOCUMENT_PASSAGES = 24;
-const DOCUMENT_RESULTS = 16;
+const DOCUMENT_RESULTS = 28;
 const SECTION_CHARACTERS = 4_000;
+const DOCUMENT_SECTION_CHARACTERS = 2_000;
 
 export interface LawSection {
   citation: string;
@@ -89,14 +90,17 @@ export class LawLibrary {
       searched: () => searched,
       search: async (query, signal) => {
         searched = true;
-        return this.sections(interleave([await this.rank(id, query, signal)], SEARCH_RESULTS));
+        return this.sections(
+          interleave([await this.rank(id, query, signal)], SEARCH_RESULTS),
+          SECTION_CHARACTERS,
+        );
       },
       forDocument: async (text, signal) => {
         searched = true;
         const rankings: Ranking[] = [];
         for (const passage of documentPassages(text, DOCUMENT_PASSAGES))
           rankings.push(await this.rank(id, passage, signal));
-        return this.sections(interleave(rankings, DOCUMENT_RESULTS));
+        return this.sections(interleave(rankings, DOCUMENT_RESULTS), DOCUMENT_SECTION_CHARACTERS);
       },
     };
   }
@@ -148,14 +152,14 @@ export class LawLibrary {
     return vectors;
   }
 
-  private sections(picked: ReadonlyArray<[number, number]>): LawSection[] {
+  private sections(picked: ReadonlyArray<[number, number]>, characters: number): LawSection[] {
     const statement = this.required().prepare(
       `SELECT sections.citation, sections.heading, sources.title AS source, sections.text
        FROM sections JOIN sources ON sources.id = sections.source_id WHERE sections.id = ?`,
     );
     return picked.map(([id, chunk]) => {
       const section = statement.get(id) as unknown as LawSection;
-      return { ...section, text: sectionExcerpt(section.text, chunk, SECTION_CHARACTERS) };
+      return { ...section, text: sectionExcerpt(section.text, chunk, characters) };
     });
   }
 

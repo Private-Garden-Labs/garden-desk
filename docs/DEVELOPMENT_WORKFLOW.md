@@ -61,7 +61,7 @@ Use this only as a last resort, and only after the owner approves the exact comm
 
 ## Law Library
 
-`laws/sources.json` pins each law text by URL and SHA-256. `pnpm laws:build` downloads the texts into `laws/.cache/`, checks each hash, and writes `laws/law-library.sqlite`. To update a text, change its `url` and `sha256`. A mismatch error shows the hash it found. A production build stops when the library file is missing.
+`laws/sources.json` pins each law text by URL and SHA-256. `pnpm laws:build` downloads the texts into `laws/.cache/`, checks each hash, and writes `laws/law-library.sqlite`. To update a text, change its `url` and `sha256`. A mismatch error shows the hash it found. `aliases` adds common names, such as "price fixing", to a section's heading, so both searches find the section by those names. A production build stops when the library file is missing.
 
 The search vectors (numbers that let Core find sections by meaning) need the encoder model, so this is a real run that needs owner approval:
 

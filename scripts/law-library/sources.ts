@@ -34,6 +34,8 @@ export interface Jurisdiction {
 export interface LawSources {
   jurisdictions: Jurisdiction[];
   amendments: Amendment[];
+  /** Common names added to a section's heading, so both searches find it by those names. */
+  aliases: Record<string, string>;
 }
 
 export interface Section {

@@ -2,6 +2,7 @@ const RANK_DEPTH = 40;
 const FUSION_OFFSET = 5;
 const QUERY_WORDS = 64;
 const CHUNK_CHARACTERS = 1_500;
+const CLAUSE_CHARACTERS = 60;
 
 export interface SectionVectors {
   sectionIds: Int32Array;
@@ -106,17 +107,36 @@ export function interleave(rankings: readonly Ranking[], limit: number): Array<[
   return [...picked.values()];
 }
 
+function clauses(text: string): string[] {
+  const found: string[] = [];
+  let current = "";
+  for (const line of text
+    .split(/\r?\n/u)
+    .map((value) => value.trim())
+    .filter(Boolean)) {
+    current = current.length === 0 ? line : `${current}\n${line}`;
+    if (line.length >= CLAUSE_CHARACTERS) {
+      found.push(current);
+      current = "";
+    }
+  }
+  return current.length === 0 ? found : [...found, current];
+}
+
+/** One passage per clause, with a heading joined to the next line; a long document is merged into `count` passages. */
 export function documentPassages(text: string, count: number): string[] {
-  const size = Math.max(300, Math.ceil(text.length / count));
+  const units = clauses(text);
+  if (units.length <= count) return units;
+  const size = Math.ceil(text.length / count);
   const passages: string[] = [];
   let current = "";
-  for (const line of text.split(/\r?\n/u)) {
-    current = current.length === 0 ? line : `${current}\n${line}`;
+  for (const unit of units) {
+    current = current.length === 0 ? unit : `${current}\n${unit}`;
     if (current.length >= size) {
       passages.push(current);
       current = "";
     }
   }
-  if (current.trim().length > 0) passages.push(current);
-  return passages.filter((passage) => passage.trim().length > 0).slice(0, count);
+  if (current.length > 0) passages.push(current);
+  return passages.slice(0, count);
 }
