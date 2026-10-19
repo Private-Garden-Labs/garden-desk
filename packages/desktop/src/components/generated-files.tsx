@@ -1,6 +1,7 @@
 import type { AgentArtifactSummary } from "@gardendesk/shared";
 import { useState } from "react";
 import type { ArtifactSaveResult } from "../artifact-actions.js";
+import { t } from "../i18n/index.js";
 
 type ActionState = ArtifactSaveResult | "idle" | "opening" | "saving";
 
@@ -13,12 +14,12 @@ function isCodeFile(item: AgentArtifactSummary): boolean {
 
 function fileType(item: AgentArtifactSummary): { icon: string; label: string } {
   const extension = item.name.split(".").at(-1)?.toLocaleLowerCase("en-US");
-  if (extension === "docx") return { icon: "W", label: "Word document" };
-  if (extension === "xlsx") return { icon: "X", label: "Excel workbook" };
-  if (extension === "pdf") return { icon: "P", label: "PDF document" };
+  if (extension === "docx") return { icon: "W", label: t("files.word") };
+  if (extension === "xlsx") return { icon: "X", label: t("files.excel") };
+  if (extension === "pdf") return { icon: "P", label: t("files.pdf") };
   return {
     icon: "F",
-    label: item.mediaType === "application/octet-stream" ? "File" : item.mediaType,
+    label: item.mediaType === "application/octet-stream" ? t("files.file") : item.mediaType,
   };
 }
 
@@ -29,11 +30,11 @@ function fileSize(bytes: number): string {
 }
 
 function saveLabel(state: ActionState): string {
-  if (state === "saving") return "Saving…";
-  if (state === "saved") return "Saved";
-  if (state === "failed") return "Failed";
-  if (state === "cancelled") return "Cancelled";
-  return "Save As…";
+  if (state === "saving") return t("files.saving");
+  if (state === "saved") return t("files.saved");
+  if (state === "failed") return t("files.failed");
+  if (state === "cancelled") return t("files.cancelled");
+  return t("files.saveAs");
 }
 
 function GeneratedFileCard({
@@ -53,7 +54,7 @@ function GeneratedFileCard({
   return (
     <article className="generated-file-card">
       <button
-        aria-label={`Open ${item.name}`}
+        aria-label={t("files.open", { name: item.name })}
         className="generated-file-open"
         disabled={disabled}
         onClick={() => {
@@ -77,12 +78,12 @@ function GeneratedFileCard({
         </span>
         {state === "opening" ? (
           <span className="generated-file-status" role="status">
-            Opening…
+            {t("files.opening")}
           </span>
         ) : null}
       </button>
       <button
-        aria-label={`Save ${item.name} as`}
+        aria-label={t("files.saveNameAs", { name: item.name })}
         className="generated-file-save"
         disabled={disabled}
         onClick={() => {
@@ -112,8 +113,8 @@ export function GeneratedFiles({
   const documents = artifacts.filter((item) => !isCodeFile(item));
   if (documents.length === 0) return null;
   return (
-    <section aria-label="Generated files" className="generated-files">
-      <h3>Generated files</h3>
+    <section aria-label={t("files.generated")} className="generated-files">
+      <h3>{t("files.generated")}</h3>
       {documents.map((item) => (
         <GeneratedFileCard
           disabledReason={disabledReason}

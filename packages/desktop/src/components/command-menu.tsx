@@ -1,5 +1,6 @@
 import type { CommandSummary } from "@gardendesk/shared";
 import { type KeyboardEvent, type RefObject, useEffect, useId, useState } from "react";
+import { t } from "../i18n/index.js";
 
 interface CommandMenuInput {
   commands: CommandSummary[];
@@ -108,10 +109,15 @@ export function CommandMenu({ menu }: { menu: ReturnType<typeof useCommandMenu> 
   return (
     <div className="command-menu">
       <div className="command-menu-heading">
-        <span>Commands</span>
-        <span>↑↓ Select · Tab Insert · Esc Close</span>
+        <span>{t("commands.heading")}</span>
+        <span>{t("commands.keys")}</span>
       </div>
-      <div aria-label="Commands" id={menu.id} role="listbox" className="command-menu-list">
+      <div
+        aria-label={t("commands.heading")}
+        id={menu.id}
+        role="listbox"
+        className="command-menu-list"
+      >
         {menu.matches.map((command, index) => (
           <button
             aria-selected={index === menu.selected}
@@ -134,7 +140,7 @@ export function CommandMenu({ menu }: { menu: ReturnType<typeof useCommandMenu> 
           </button>
         ))}
       </div>
-      {menu.matches.length === 0 && <p className="command-menu-empty">No matching commands</p>}
+      {menu.matches.length === 0 && <p className="command-menu-empty">{t("commands.empty")}</p>}
     </div>
   );
 }

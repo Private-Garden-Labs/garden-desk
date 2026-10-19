@@ -1,4 +1,5 @@
 import {
+  AgentRunSnapshotSchema,
   AgentRunSummarySchema,
   AttachmentSummarySchema,
   FolderSummarySchema,
@@ -8,7 +9,7 @@ import {
 import { describe, expect, it, vi } from "vitest";
 import type { DesktopApi } from "./api.js";
 import { openArtifact, saveArtifact } from "./artifact-actions.js";
-import { addDroppedFolders, attach, selectSession } from "./desktop-actions.js";
+import { addDroppedFolders, attach, selectSession, send } from "./desktop-actions.js";
 import type { DesktopAction } from "./state.js";
 
 const session = SessionSummarySchema.parse({
@@ -247,5 +248,37 @@ describe("desktop generated file cancellation", () => {
       }),
     ).resolves.toBe("failed");
     expect(setError).toHaveBeenLastCalledWith("This generated file could not be saved.");
+  });
+});
+
+describe("desktop send", () => {
+  it("reads run status through an API whose methods use this", async () => {
+    const setError = vi.fn();
+    class ClassApi {
+      runs = new Map([[run.id, AgentRunSnapshotSchema.parse({ run, events: [], artifacts: [] })]]);
+      async startAgent() {
+        return run;
+      }
+      async listMessages() {
+        return [];
+      }
+      async getAgentRun(runId: typeof run.id) {
+        return this.runs.get(runId);
+      }
+    }
+
+    await send({
+      api: new ClassApi() as unknown as DesktopApi,
+      text: "Check the invoices.",
+      thinking: "medium",
+      jurisdiction: null,
+      activeSessionId: session.id,
+      newSessionFolderId: undefined,
+      dispatch: () => undefined,
+      setError,
+      setSubmitting: () => undefined,
+    });
+
+    expect(setError.mock.calls).toEqual([[undefined]]);
   });
 });

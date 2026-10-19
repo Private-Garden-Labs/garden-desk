@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { t } from "../i18n/index.js";
 import { Icon } from "./icons.js";
+import { LanguagePicker } from "./language-picker.js";
 
 interface SidebarSettingsProps {
   active: boolean;
@@ -10,7 +12,7 @@ interface SidebarSettingsProps {
 }
 
 function useDismissOnOutsideClick(open: boolean, close: () => void) {
-  const container = useRef<HTMLElement>(null);
+  const container = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
     const dismiss = (event: MouseEvent) => {
@@ -34,7 +36,7 @@ function SettingsMenu({
   onOpenSkills,
 }: SettingsMenuProps) {
   return (
-    <div aria-label="Settings" className="sidebar-menu" role="menu">
+    <div aria-label={t("settings.menu")} className="sidebar-menu" role="menu">
       <button
         className="sidebar-menu-item"
         onClick={() => choose(onOpenSkills)}
@@ -42,7 +44,7 @@ function SettingsMenu({
         type="button"
       >
         <Icon name="skill" />
-        Skills
+        {t("settings.skills")}
       </button>
       <button
         className="sidebar-menu-item"
@@ -51,20 +53,20 @@ function SettingsMenu({
         type="button"
       >
         <Icon name="read" />
-        Laws
+        {t("settings.laws")}
       </button>
       <button
         className="sidebar-menu-item"
         onClick={() => choose(onOpenReleases)}
         role="menuitem"
-        title="Garden Desk does not check for updates. This opens gardendesk.ai/releases in your browser."
+        title={t("settings.releasesTitle")}
         type="button"
       >
         <Icon name="external" />
-        Open the releases page
+        {t("settings.releases")}
       </button>
       {appVersion === undefined ? null : (
-        <p className="sidebar-menu-version">Version {appVersion}</p>
+        <p className="sidebar-menu-version">{t("settings.version", { version: appVersion })}</p>
       )}
     </div>
   );
@@ -79,25 +81,27 @@ export function SidebarSettings({ active, ...menu }: SidebarSettingsProps) {
   };
   return (
     <section
-      aria-label="App settings"
+      aria-label={t("settings.appSettings")}
       className="sidebar-settings"
       onKeyDown={(event) => {
         if (event.key === "Escape") setOpen(false);
       }}
-      ref={container}
     >
-      {open ? <SettingsMenu {...menu} choose={choose} /> : null}
-      <button
-        aria-current={active ? "page" : undefined}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        className={`sidebar-settings-button${active ? " sidebar-settings-button-active" : ""}`}
-        onClick={() => setOpen(!open)}
-        type="button"
-      >
-        <Icon name="settings" />
-        Settings
-      </button>
+      <div className="sidebar-settings-main" ref={container}>
+        {open ? <SettingsMenu {...menu} choose={choose} /> : null}
+        <button
+          aria-current={active ? "page" : undefined}
+          aria-expanded={open}
+          aria-haspopup="menu"
+          className={`sidebar-settings-button${active ? " sidebar-settings-button-active" : ""}`}
+          onClick={() => setOpen(!open)}
+          type="button"
+        >
+          <Icon name="settings" />
+          {t("settings.menu")}
+        </button>
+      </div>
+      <LanguagePicker />
     </section>
   );
 }

@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { t } from "../i18n/index.js";
 import type { DesktopAction, FolderGroup } from "../state.js";
 import { Icon } from "./icons.js";
 import { GlobalSessionList, SessionList } from "./session-list.js";
@@ -79,7 +80,7 @@ function useSidebarResize() {
 function SidebarResizeHandle({ resize }: { resize: ReturnType<typeof useSidebarResize> }) {
   return (
     <hr
-      aria-label="Resize navigation sidebar"
+      aria-label={t("sidebar.resize")}
       aria-orientation="vertical"
       aria-valuemax={SIDEBAR_MAX_WIDTH}
       aria-valuemin={SIDEBAR_MIN_WIDTH}
@@ -155,7 +156,7 @@ function FolderSection(props: SidebarProps) {
   const [draggingId, setDraggingId] = useState<string>();
   const [drop, setDrop] = useState<{ after: boolean; folderId: string }>();
   if (props.folders.length === 0) {
-    return <p className="sidebar-empty">Add a folder to start a group of private sessions.</p>;
+    return <p className="sidebar-empty">{t("sidebar.emptyFolders")}</p>;
   }
   const folderIds = props.folders.map((folder) => folder.id);
   return (
@@ -170,9 +171,9 @@ function FolderSection(props: SidebarProps) {
           >
             <SidebarItemRow
               deleteIcon="unmount"
-              deleteLabel={`Unmount ${folder.name}`}
+              deleteLabel={t("sidebar.unmount", { name: folder.name })}
               disabled={props.disabled}
-              dragLabel={`Reorder ${folder.name}`}
+              dragLabel={t("sidebar.reorder", { name: folder.name })}
               expanded={folder.expanded}
               label={folder.name}
               nativeActionMessage={props.nativeActionMessage}
@@ -208,7 +209,7 @@ function FolderSection(props: SidebarProps) {
               }}
               onSelect={() => props.dispatch({ type: "folder.toggle", folderId: folder.id })}
               onStartAction={() => props.onOpenFolder(folder.id)}
-              startActionLabel={`Open ${folder.name} folder`}
+              startActionLabel={t("sidebar.openFolder", { name: folder.name })}
               startIcon="folder"
             />
             {folder.expanded ? (
@@ -243,7 +244,7 @@ export function Sidebar(props: SidebarProps) {
       <div aria-hidden="true" className="window-drag-region" data-tauri-drag-region="" />
       <div className="brand">Garden Desk</div>
       <div className="sidebar-content">
-        <h2 className="sidebar-label">Chats</h2>
+        <h2 className="sidebar-label">{t("sidebar.chats")}</h2>
         <button
           className="nav-action"
           disabled={props.disabled}
@@ -251,10 +252,10 @@ export function Sidebar(props: SidebarProps) {
           type="button"
         >
           <Icon name="message" />
-          New chat
+          {t("sidebar.newChat")}
         </button>
         <GlobalSessionList {...props} />
-        <h2 className="sidebar-label">Folders</h2>
+        <h2 className="sidebar-label">{t("sidebar.folders")}</h2>
         <button
           className="nav-action"
           disabled={props.disabled || props.nativeActionMessage !== undefined}
@@ -263,7 +264,7 @@ export function Sidebar(props: SidebarProps) {
           type="button"
         >
           <Icon name="add" />
-          Add folder
+          {t("sidebar.addFolder")}
         </button>
         {props.nativeActionMessage === undefined ? null : (
           <p className="demo-unavailable-note">{props.nativeActionMessage}</p>

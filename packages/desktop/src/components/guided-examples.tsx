@@ -1,3 +1,5 @@
+import { t } from "../i18n/index.js";
+
 interface GuidedExamplesProps {
   disabled: boolean;
   examples: Array<{ label: string; prompt: string }>;
@@ -7,8 +9,8 @@ interface GuidedExamplesProps {
 export function GuidedExamples({ disabled, examples, onRun }: GuidedExamplesProps) {
   if (examples.length === 0) return null;
   return (
-    <section aria-label="Guided demo examples" className="guided-examples">
-      <p>Try a guided example</p>
+    <section aria-label={t("examples.label")} className="guided-examples">
+      <p>{t("examples.try")}</p>
       <div>
         {examples.map((example) => (
           <button

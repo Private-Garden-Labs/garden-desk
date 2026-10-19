@@ -1,3 +1,4 @@
+import { t } from "./i18n/index.js";
 import type { TimelineItem } from "./state-types.js";
 
 export type ActivityStatus = "running" | "done" | "failed";
@@ -59,14 +60,16 @@ function failedText(item: TimelineItem): boolean {
 }
 
 function thinkingTitle(durationMs: number | undefined): string {
-  if (durationMs === undefined) return "Thinking…";
+  if (durationMs === undefined) return t("thinking.pending");
   const seconds = Math.max(1, Math.round(durationMs / 1_000));
-  if (seconds < 60) return `Thought for ${seconds} ${seconds === 1 ? "second" : "seconds"}`;
-  const minutes = Math.floor(seconds / 60);
+  const thoughtFor = (duration: string) => t("thinking.thoughtFor", { duration });
+  if (seconds < 60) return thoughtFor(t("duration.seconds", { count: seconds }));
+  const minutes = t("duration.minutes", { count: Math.floor(seconds / 60) });
   const remaining = seconds % 60;
-  const minuteText = `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
-  if (remaining === 0) return `Thought for ${minuteText}`;
-  return `Thought for ${minuteText} ${remaining} ${remaining === 1 ? "second" : "seconds"}`;
+  if (remaining === 0) return thoughtFor(minutes);
+  return thoughtFor(
+    t("duration.minutesSeconds", { minutes, seconds: t("duration.seconds", { count: remaining }) }),
+  );
 }
 
 /**

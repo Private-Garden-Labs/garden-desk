@@ -2,6 +2,7 @@ import type { ModelRuntimeStatus } from "@gardendesk/shared";
 import { type Dispatch, useEffect, useRef } from "react";
 import type { DesktopApi, DesktopBootstrap } from "./api.js";
 import { selectSession } from "./desktop-actions.js";
+import { t } from "./i18n/index.js";
 import type { DesktopAction } from "./state.js";
 
 export interface DesktopBootstrapRequest {
@@ -43,7 +44,7 @@ export function useDesktopBootstrap(options: DesktopBootstrapOptions) {
         }
       })
       .catch(() => {
-        if (active) setError("Garden Desk could not finish loading.");
+        if (active) setError(t("error.loading"));
       });
     return () => {
       active = false;

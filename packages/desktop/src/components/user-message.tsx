@@ -1,16 +1,15 @@
 import type { AttachmentSummary } from "@gardendesk/shared";
 import { useEffect, useRef, useState } from "react";
+import { currentLocale, t } from "../i18n/index.js";
 import type { TimelineItem } from "../state.js";
 import { Icon } from "./icons.js";
 import { MessageAttachments } from "./message-attachments.js";
 
-const messageTimeFormatter = new Intl.DateTimeFormat(undefined, {
-  hour: "numeric",
-  minute: "2-digit",
-});
-
 export function formatMessageTime(createdAt: string): string {
-  return messageTimeFormatter.format(new Date(createdAt));
+  return new Intl.DateTimeFormat(currentLocale(), {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(createdAt));
 }
 
 export async function copyUserMessage(
@@ -48,7 +47,7 @@ export function UserMessage({
     if (resetTimer.current !== undefined) clearTimeout(resetTimer.current);
     resetTimer.current = setTimeout(() => setCopyState("idle"), 2_000);
   };
-  const label = copyState === "copied" ? "Copied" : copyState === "failed" ? "Copy failed" : "Copy";
+  const label = t(`copy.${copyState === "idle" ? "copy" : copyState}`);
   return (
     <div className="user-message">
       <article className="timeline-item timeline-user">
@@ -57,7 +56,12 @@ export function UserMessage({
       </article>
       <footer className="user-message-actions">
         <time dateTime={item.createdAt}>{formatMessageTime(item.createdAt)}</time>
-        <button aria-label={`${label} message`} onClick={copy} title={label} type="button">
+        <button
+          aria-label={t("copy.message", { label })}
+          onClick={copy}
+          title={label}
+          type="button"
+        >
           <Icon name="copy" />
           <span aria-live="polite">{copyState === "idle" ? "" : label}</span>
         </button>

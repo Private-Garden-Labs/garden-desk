@@ -11,6 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@gardendesk/shared": resolve(import.meta.dirname, "../shared/src/index.ts"),
+      "flag-icons": resolve(import.meta.dirname, "node_modules/flag-icons"),
       react: resolve(import.meta.dirname, "node_modules/react"),
       "react-dom": resolve(import.meta.dirname, "node_modules/react-dom"),
     },

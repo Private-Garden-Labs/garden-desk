@@ -1,5 +1,6 @@
 import type { AgentExecutionSnapshot } from "@gardendesk/shared";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { t } from "../i18n/index.js";
 import { selectAdjacentTab } from "./tab-keyboard.js";
 
 type LogStream = "stdout" | "stderr" | "vm";
@@ -56,14 +57,23 @@ function StreamViewer({
   return (
     <div className="technical-log-viewer">
       <textarea
-        aria-label={`${stream === "vm" ? "VM diagnostics" : stream === "stdout" ? "Output" : "Errors"} for execution ${execution.sequence + 1}`}
+        aria-label={t("logs.streamFor", {
+          stream: t(
+            stream === "vm"
+              ? "logs.vmDiagnostics"
+              : stream === "stdout"
+                ? "logs.output"
+                : "logs.errors",
+          ),
+          number: execution.sequence + 1,
+        })}
         onScroll={(event) => {
           const target = event.currentTarget;
           setFollowing(shouldFollowLog(target.scrollHeight, target.scrollTop, target.clientHeight));
         }}
         readOnly
         ref={element}
-        value={text.length === 0 ? "No entries." : text}
+        value={text.length === 0 ? t("logs.noEntries") : text}
       />
       {active && !following ? (
         <button
@@ -74,7 +84,7 @@ function StreamViewer({
           }}
           type="button"
         >
-          Jump to latest
+          {t("logs.jump")}
         </button>
       ) : null}
     </div>
@@ -85,14 +95,14 @@ export function StreamTabs({ execution }: { execution: AgentExecutionSnapshot })
   const [stream, setStream] = useState<LogStream>("stdout");
   const streamIds = ["stdout", "stderr", "vm"] as const;
   const streams = [
-    { id: "stdout" as const, label: "Output", bytes: execution.stdoutBytes },
-    { id: "stderr" as const, label: "Errors", bytes: execution.stderrBytes },
-    { id: "vm" as const, label: "VM diagnostics", bytes: execution.vmDiagnosticsBytes },
+    { id: "stdout" as const, label: t("logs.output"), bytes: execution.stdoutBytes },
+    { id: "stderr" as const, label: t("logs.errors"), bytes: execution.stderrBytes },
+    { id: "vm" as const, label: t("logs.vmDiagnostics"), bytes: execution.vmDiagnosticsBytes },
   ];
   return (
     <div className="technical-streams">
       <div
-        aria-label={`Log streams for execution ${execution.sequence + 1}`}
+        aria-label={t("logs.streams", { number: execution.sequence + 1 })}
         className="stream-tabs"
         role="tablist"
       >
@@ -120,9 +130,9 @@ export function StreamTabs({ execution }: { execution: AgentExecutionSnapshot })
 
 export function ExecutionStatus({ execution }: { execution: AgentExecutionSnapshot }) {
   const truncated = [
-    execution.stdoutTruncated ? "output truncated" : null,
-    execution.stderrTruncated ? "errors truncated" : null,
-    execution.vmDiagnosticsTruncated ? "VM diagnostics truncated" : null,
+    execution.stdoutTruncated ? t("logs.outputTruncated") : null,
+    execution.stderrTruncated ? t("logs.errorsTruncated") : null,
+    execution.vmDiagnosticsTruncated ? t("logs.vmTruncated") : null,
   ].filter((item): item is string => item !== null);
   return (
     <div className="execution-badges">
@@ -153,7 +163,7 @@ function ExecutionLogRow({
         type="button"
       >
         <span>
-          Execution {execution.sequence + 1} · {execution.language}
+          {t("logs.execution", { number: execution.sequence + 1, language: execution.language })}
         </span>
         <ExecutionStatus execution={execution} />
       </button>
@@ -184,7 +194,7 @@ export function LogsPanel({ executions }: { executions: AgentExecutionSnapshot[]
   }, [activeId, autoExpanded]);
   return (
     <div className="technical-details-scroll" id="technical-logs-panel" role="tabpanel">
-      {newest.length === 0 ? <p className="technical-details-empty">No executions yet.</p> : null}
+      {newest.length === 0 ? <p className="technical-details-empty">{t("logs.none")}</p> : null}
       {newest.map((execution) => (
         <ExecutionLogRow
           execution={execution}

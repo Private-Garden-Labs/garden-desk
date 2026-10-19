@@ -5,6 +5,7 @@ import {
   debugSnapshotReducer,
   initialDebugSnapshotState,
 } from "../debug-snapshot.js";
+import { t } from "../i18n/index.js";
 import { desktopPlatform } from "../platform.js";
 import { splitPath } from "./technical-overview-table.js";
 
@@ -40,17 +41,17 @@ export function DebugSnapshotPanel({
   return (
     <div className="debug-snapshot-controls">
       <button disabled={state.creating || state.revealing} onClick={onCreate} type="button">
-        {state.creating ? "Saving snapshot…" : "Save debug snapshot"}
+        {state.creating ? t("snapshot.saving") : t("snapshot.save")}
       </button>
       {state.path === undefined ? null : (
         <div className="debug-snapshot-result">
           <p>
-            Saved. <SnapshotPath path={state.path} />
+            {t("snapshot.saved")} <SnapshotPath path={state.path} />
           </p>
           <button disabled={state.revealing} onClick={onReveal} type="button">
             {desktopPlatform(navigator.userAgent) === "windows"
-              ? "Show in Explorer"
-              : "Show in Finder"}
+              ? t("snapshot.showWindows")
+              : t("snapshot.showMac")}
           </button>
         </div>
       )}
@@ -90,7 +91,7 @@ export function DebugSnapshotControls({
     return (
       <div className="debug-snapshot-controls">
         <button disabled title={nativeActionMessage} type="button">
-          Save debug snapshot
+          {t("snapshot.save")}
         </button>
         <p>{nativeActionMessage}</p>
       </div>

@@ -1,4 +1,5 @@
 import type { DesktopApi } from "./api.js";
+import { t } from "./i18n/index.js";
 import type { DesktopAction } from "./state.js";
 import type { AgentStep } from "./steps.js";
 
@@ -23,5 +24,5 @@ export function selectStep(selection: StepSelection, stepId: string | undefined)
   void api
     .getAgentTrace(runId)
     .then((trace) => dispatch({ type: "trace.load", trace }))
-    .catch(() => setError("The recorded prompts for this task could not be loaded."));
+    .catch(() => setError(t("error.promptsLoad")));
 }

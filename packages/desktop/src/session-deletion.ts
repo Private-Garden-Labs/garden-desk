@@ -1,4 +1,5 @@
 import type { DesktopApi } from "./api.js";
+import { t } from "./i18n/index.js";
 import type { DesktopAction } from "./state.js";
 
 interface DeleteConversationOptions {
@@ -17,8 +18,8 @@ export async function deleteConversation(options: DeleteConversationOptions) {
   } catch (error) {
     setError(
       String(error).includes("Stop the running conversation before deleting it.")
-        ? "Stop the conversation if it is running, then try deleting it again."
-        : "The conversation could not be deleted.",
+        ? t("error.sessionDeleteRunning")
+        : t("error.sessionDelete"),
     );
     return;
   }
@@ -40,6 +41,6 @@ export async function deleteConversation(options: DeleteConversationOptions) {
         : { type: "folder.refresh", folderId: session.folderId, page },
     );
   } catch {
-    setError("The conversation list could not be refreshed.");
+    setError(t("error.sessionsRefresh"));
   }
 }

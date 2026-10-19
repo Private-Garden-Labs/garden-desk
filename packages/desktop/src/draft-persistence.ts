@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { DesktopApi } from "./api.js";
+import { t } from "./i18n/index.js";
 import { retryLocalRequest } from "./run-polling.js";
 
 export function useDraftPersistence(
@@ -27,7 +28,7 @@ export function useDraftPersistence(
     timer.current = window.setTimeout(() => {
       timer.current = undefined;
       void retryLocalRequest(() => api.saveDraft(sessionId, draft)).catch(() => {
-        if (sequence.current === request) setError("The draft could not be saved.");
+        if (sequence.current === request) setError(t("error.draftSave"));
       });
     }, 250);
   };

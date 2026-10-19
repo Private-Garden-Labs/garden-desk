@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DesktopApi, SecureWorkspaceStatus } from "./api.js";
 import type { ConfirmationRequest } from "./components/confirmation.js";
-import { secureWorkspaceSetupDescription } from "./secure-workspace.js";
+import { t } from "./i18n/index.js";
 
 export function useSecureWorkspace(
   api: DesktopApi,
@@ -17,18 +17,18 @@ export function useSecureWorkspace(
     void api
       .configureSecureWorkspace()
       .then((result) => setStatus(result.status))
-      .catch(() => setError("Windows could not configure the secure workspace."))
+      .catch(() => setError(t("error.workspaceConfigure")))
       .finally(() => setBusy(false));
   }, [api, setError]);
 
   const showSetup = useCallback(() => {
     setConfirmation({
-      cancelLabel: "Use limited mode",
-      confirmLabel: "Set up",
-      description: secureWorkspaceSetupDescription,
+      cancelLabel: t("secure.limitedMode"),
+      confirmLabel: t("secure.setUp"),
+      description: t("secure.setupDescription"),
       intent: "primary",
       onConfirm: configure,
-      title: "Set up secure workspace?",
+      title: t("secure.setupTitle"),
     });
   }, [configure, setConfirmation]);
 
@@ -36,7 +36,7 @@ export function useSecureWorkspace(
     void api
       .getSecureWorkspaceStatus()
       .then(setStatus)
-      .catch(() => setError("The secure workspace status could not be read."));
+      .catch(() => setError(t("error.workspaceStatus")));
   }, [api, setError]);
 
   useEffect(() => {

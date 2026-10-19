@@ -230,3 +230,9 @@ h1 {
     flex-basis: 100%;
   }
 }
+
+.language-host {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}

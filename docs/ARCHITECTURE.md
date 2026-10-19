@@ -56,11 +56,11 @@ Desktop (Tauri v2, React)
 packages/shared    versioned contracts (Zod only)
 packages/core      workspace catalog, sessions, agent loop, daemon, policy, audit, inference
 packages/workers   inference client, microVM launchers, guest agent, guest image
-packages/desktop   Tauri and React app, packaging, Windows Hyper-V setup helper
+packages/desktop   Tauri and React app, packaging, Windows Hyper-V setup helper; UI in 28 languages in src/i18n, OS language by default
 packages/cli       daemon health client
 packages/eval      fixtures, platform gates, golden tasks, model comparison
 prompts/           agent, command, skill, and system prompts
-site/              website, admin, and blog
+site/              website, admin, and blog; page copy in 28 languages in site/locales
 ```
 
 - State is one schema-versioned SQLite catalog, plus immutable content-addressed artifacts and per-session workspace manifests. To change the schema, add the next numbered migration in `packages/core/src/workspace/migrations/`. Never edit an existing one.

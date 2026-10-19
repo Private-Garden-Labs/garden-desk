@@ -131,7 +131,8 @@ textarea:disabled {
 
 button:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+select:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
@@ -515,6 +516,119 @@ textarea:focus-visible {
 .sidebar-menu-item:hover {
   color: var(--accent-strong);
   background: var(--navigation-hover);
+}
+
+.sidebar-settings-main {
+  display: contents;
+}
+
+.language-trigger {
+  display: flex;
+  width: 44px;
+  min-height: 40px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin-inline-start: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    transform 120ms ease-out;
+}
+
+.language-trigger:active {
+  transform: scale(0.97);
+}
+
+.language-trigger[aria-expanded="true"] {
+  background: var(--navigation-hover);
+}
+
+.language-flag {
+  flex: 0 0 auto;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 14%);
+}
+
+.language-globe {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.language-list {
+  position: absolute;
+  z-index: 12;
+  bottom: calc(100% - 6px);
+  inset-inline: 4px;
+  display: grid;
+  max-height: min(420px, calc(100vh - 160px));
+  padding: 5px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  gap: 2px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--reading-raised);
+  box-shadow: 0 16px 40px rgb(3 16 20 / 26%);
+  transform-origin: bottom right;
+  animation: sidebar-menu-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+:root[dir="rtl"] .language-list {
+  transform-origin: bottom left;
+}
+
+.language-option {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--ink);
+  background: transparent;
+  font-size: 13px;
+  text-align: start;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.language-option-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.language-option:focus-visible {
+  outline-offset: -2px;
+}
+
+.language-option-check {
+  display: flex;
+  width: 18px;
+  flex: 0 0 auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .language-trigger:hover,
+  .language-option:hover {
+    color: var(--accent-strong);
+    background: var(--navigation-hover);
+  }
 }
 
 .sidebar-menu-version {
@@ -4071,6 +4185,7 @@ textarea:focus-visible {
   }
 
   .sidebar-menu,
+  .language-list,
   .skills-page {
     animation: none;
   }
