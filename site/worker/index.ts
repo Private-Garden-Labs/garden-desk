@@ -20,7 +20,8 @@ interface Context {
   waitUntil(promise: Promise<unknown>): void;
 }
 
-const bot = /bot|crawl|spider|slurp|preview|curl|wget|python|headless|lighthouse|monitor/iu;
+const bot =
+  /bot|crawl|spider|slurp|preview|curl|wget|python|headless|lighthouse|monitor|facebookexternalhit|meta-external|whatsapp|perplexity-user|claude-user|node|undici|go-http-client|axios|okhttp|java/iu;
 const download = /\/Garden-Desk-[^/]+-([a-z]+-[a-z0-9_]+)\.[a-z]+$/u;
 
 export default {
