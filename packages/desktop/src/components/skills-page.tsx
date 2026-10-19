@@ -1,3 +1,4 @@
+import { t } from "../i18n/index.js";
 import type { SkillsController } from "../skills.js";
 import { Icon } from "./icons.js";
 import { SkillEditor } from "./skill-editor.js";
@@ -19,7 +20,7 @@ export function SkillsPage({
   const draft = controller.draft;
   return (
     <main
-      aria-label="Skills"
+      aria-label={t("skills.title")}
       className={`workspace skills-page${dropActive ? " skills-page-drop" : ""}`}
       data-drop-target="skills"
     >
@@ -27,24 +28,20 @@ export function SkillsPage({
       <header className="skills-page-header">
         {draft === undefined ? (
           <button
-            aria-label="Back to chat"
+            aria-label={t("skills.back")}
             className="header-icon-action"
             onClick={onBack}
-            title="Back to chat"
+            title={t("skills.back")}
             type="button"
           >
             <Icon name="chevron-left" />
           </button>
         ) : null}
-        <h1>{draft === undefined ? "Skills" : draft.name}</h1>
+        <h1>{draft === undefined ? t("skills.title") : draft.name}</h1>
       </header>
       <div className="skills-page-body">
         <div className="skills-content">
-          <p className="skills-intro">
-            {draft === undefined
-              ? "Each skill teaches Garden Desk one kind of work. Turn one off to keep it out of every chat."
-              : draft.path}
-          </p>
+          <p className="skills-intro">{draft === undefined ? t("skills.intro") : draft.path}</p>
           {controller.error === undefined ? null : (
             <p className="skills-error" role="alert">
               {controller.error}

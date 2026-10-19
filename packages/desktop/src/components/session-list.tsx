@@ -1,4 +1,5 @@
 import type { SessionSummary } from "@gardendesk/shared";
+import { t } from "../i18n/index.js";
 import type { FolderGroup } from "../state.js";
 import { Icon } from "./icons.js";
 import { SidebarItemRow } from "./sidebar-item-row.js";
@@ -45,15 +46,15 @@ function SessionPageControls(props: {
         onClick={props.onShowMore}
         type="button"
       >
-        Show more
+        {t("session.showMore")}
       </button>
       {props.expanded ? (
         <button
-          aria-label="Show less"
+          aria-label={t("session.showLess")}
           className="show-less"
           disabled={props.disabled}
           onClick={props.onShowLess}
-          title="Show less"
+          title={t("session.showLess")}
           type="button"
         >
           <Icon name="chevron-up" />
@@ -69,7 +70,7 @@ export function GlobalSessionList(props: GlobalSessionListProps) {
       {props.globalSessions.map((session) => (
         <SidebarItemRow
           active={session.id === props.activeSessionId}
-          deleteLabel={`Delete ${session.title}`}
+          deleteLabel={t("session.delete", { title: session.title })}
           disabled={props.disabled}
           key={session.id}
           label={session.title}
@@ -100,12 +101,12 @@ export function SessionList(props: SessionListProps) {
         type="button"
       >
         <Icon name="message" />
-        New conversation
+        {t("session.newConversation")}
       </button>
       {props.folder.sessions.map((session) => (
         <SidebarItemRow
           active={session.id === props.activeSessionId}
-          deleteLabel={`Delete ${session.title}`}
+          deleteLabel={t("session.delete", { title: session.title })}
           disabled={props.disabled}
           key={session.id}
           label={session.title}

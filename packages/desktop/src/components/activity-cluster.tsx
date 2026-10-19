@@ -1,6 +1,7 @@
 import type { AgentRunSummary } from "@gardendesk/shared";
 import { useEffect, useRef, useState } from "react";
 import type { ActivityRow } from "../activity-rows.js";
+import { t } from "../i18n/index.js";
 import { ActivityRowView } from "./activity-row.js";
 import { Icon } from "./icons.js";
 import { SpecialistRunRow } from "./specialist-run.js";
@@ -45,9 +46,9 @@ function headerLabel(input: {
   finishedDurationMs: number | undefined;
 }): string {
   const duration = formatDuration(input.finishedDurationMs ?? input.elapsedMs);
-  if (input.working) return `Working for ${duration}`;
-  if (input.failed) return `Stopped after ${duration} · failed`;
-  return `Worked for ${duration}`;
+  if (input.working) return t("cluster.working", { duration });
+  if (input.failed) return t("cluster.stopped", { duration });
+  return t("cluster.worked", { duration });
 }
 
 function displayState(props: ClusterProps, open: boolean) {
@@ -95,7 +96,7 @@ export function ActivityCluster(props: ClusterProps) {
     open,
   );
   return (
-    <section aria-label="Agent activity" className="activity-cluster">
+    <section aria-label={t("cluster.label")} className="activity-cluster">
       <ClusterHeader
         canToggle={!props.working}
         expanded={display.expanded}
@@ -107,7 +108,7 @@ export function ActivityCluster(props: ClusterProps) {
         <div className="activity-cluster-rows">
           {props.parallel ? (
             <p className="activity-cluster-parallel">
-              Running {parallelCount(props.rows)} tasks in parallel
+              {t("cluster.parallel", { count: parallelCount(props.rows) })}
             </p>
           ) : null}
           {display.hiddenCount > 0 ? (
@@ -116,7 +117,7 @@ export function ActivityCluster(props: ClusterProps) {
               onClick={() => setOpen(true)}
               type="button"
             >
-              Show {display.hiddenCount} earlier steps
+              {t("cluster.earlier", { count: display.hiddenCount })}
             </button>
           ) : null}
           {display.visible.map((row, index) =>
@@ -150,7 +151,9 @@ function ClusterHeader({
   onToggle(): void;
   steps: number;
 }) {
-  const text = canToggle ? `${label} · ${steps} step${steps === 1 ? "" : "s"}` : label;
+  const text = canToggle
+    ? t("cluster.withSteps", { label, steps: t("cluster.steps", { count: steps }) })
+    : label;
   if (!canToggle) {
     return (
       <header className="activity-cluster-header">

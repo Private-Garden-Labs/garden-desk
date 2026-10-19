@@ -1,32 +1,25 @@
 import type { AgentRunSummary } from "@gardendesk/shared";
+import { t } from "../i18n/index.js";
 import { Icon } from "./icons.js";
 
 const identities = {
-  "document-review": { name: "Document review", icon: "read", color: "neutral" },
-  "financial-review": { name: "Financial review", icon: "reconcile", color: "teal" },
-  "matter-chronology": { name: "Matter chronology", icon: "timeline", color: "gold" },
-  "contract-obligations": { name: "Contract obligations", icon: "document-check", color: "violet" },
-  "document-comparison": { name: "Document comparison", icon: "compare", color: "rose" },
+  "document-review": { icon: "read", color: "neutral" },
+  "financial-review": { icon: "reconcile", color: "teal" },
+  "matter-chronology": { icon: "timeline", color: "gold" },
+  "contract-obligations": { icon: "document-check", color: "violet" },
+  "document-comparison": { icon: "compare", color: "rose" },
 } as const;
 
 export function specialistIdentity(agentId: string | null | undefined) {
-  return (
-    identities[agentId as keyof typeof identities] ?? {
-      name: "Task",
-      icon: "subagent" as const,
-      color: "neutral",
-    }
-  );
+  const known = agentId as keyof typeof identities;
+  const identity = identities[known];
+  return identity === undefined
+    ? { name: t("specialist.task"), icon: "subagent" as const, color: "neutral" }
+    : { ...identity, name: t(`specialist.${known}`) };
 }
 
 export function specialistStatus(state: AgentRunSummary["state"]) {
-  return {
-    queued: "Waiting",
-    running: "Working",
-    succeeded: "Complete",
-    failed: "Failed",
-    cancelled: "Stopped",
-  }[state];
+  return t(`specialist.${state}`);
 }
 
 export function SpecialistIcon({ agentId }: { agentId: string | null | undefined }) {

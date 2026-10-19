@@ -1,4 +1,5 @@
 import type { SecureWorkspaceStatus } from "../api.js";
+import { t } from "../i18n/index.js";
 import { secureWorkspaceMessage } from "../secure-workspace.js";
 
 export function SecureWorkspaceBanner({
@@ -16,7 +17,7 @@ export function SecureWorkspaceBanner({
       <span>{secureWorkspaceMessage(status)}</span>
       {status.state === "permission_required" ? (
         <button disabled={busy} onClick={onSetup} type="button">
-          {busy ? "Setting up…" : "Set up"}
+          {busy ? t("secure.settingUp") : t("secure.setUp")}
         </button>
       ) : null}
     </section>

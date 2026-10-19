@@ -2,6 +2,7 @@ import type { ModelRuntimeStatus } from "@gardendesk/shared";
 import { INFERENCE_PROFILE } from "@gardendesk/shared";
 import { useEffect } from "react";
 import type { DesktopApi } from "./api.js";
+import { t } from "./i18n/index.js";
 
 export const initialModelStatus: ModelRuntimeStatus = {
   modelId: INFERENCE_PROFILE.modelId,
@@ -17,10 +18,10 @@ export async function unloadModel(
 ) {
   try {
     const unloaded = await api.unloadModel();
-    if (!unloaded) setError("The model is still in use and could not be unloaded.");
+    if (!unloaded) setError(t("error.modelInUse"));
     setModel(await api.getModelStatus());
   } catch {
-    setError("The model could not be unloaded.");
+    setError(t("error.modelUnload"));
   }
 }
 

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { setLocale, t, useLocale } from "../i18n/index.js";
+import { isLocaleCode, localeOptions } from "../i18n/locales.js";
 import { Icon } from "./icons.js";
 
 interface SidebarSettingsProps {
@@ -21,6 +23,27 @@ function useDismissOnOutsideClick(open: boolean, close: () => void) {
   return container;
 }
 
+function LanguageSelect() {
+  const locale = useLocale();
+  return (
+    <label className="sidebar-menu-language">
+      <span>{t("settings.language")}</span>
+      <select
+        onChange={(event) => {
+          if (isLocaleCode(event.target.value)) void setLocale(event.target.value);
+        }}
+        value={locale}
+      >
+        {localeOptions.map((option) => (
+          <option key={option.code} value={option.code}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 export function SidebarSettings({
   active,
   appVersion,
@@ -35,7 +58,7 @@ export function SidebarSettings({
   };
   return (
     <section
-      aria-label="App settings"
+      aria-label={t("settings.appSettings")}
       className="sidebar-settings"
       onKeyDown={(event) => {
         if (event.key === "Escape") setOpen(false);
@@ -43,7 +66,7 @@ export function SidebarSettings({
       ref={container}
     >
       {open ? (
-        <div aria-label="Settings" className="sidebar-menu" role="menu">
+        <div aria-label={t("settings.menu")} className="sidebar-menu" role="menu">
           <button
             className="sidebar-menu-item"
             onClick={() => choose(onOpenSkills)}
@@ -51,20 +74,21 @@ export function SidebarSettings({
             type="button"
           >
             <Icon name="skill" />
-            Skills
+            {t("settings.skills")}
           </button>
           <button
             className="sidebar-menu-item"
             onClick={() => choose(onOpenReleases)}
             role="menuitem"
-            title="Garden Desk does not check for updates. This opens gardendesk.ai/releases in your browser."
+            title={t("settings.releasesTitle")}
             type="button"
           >
             <Icon name="external" />
-            Open the releases page
+            {t("settings.releases")}
           </button>
+          <LanguageSelect />
           {appVersion === undefined ? null : (
-            <p className="sidebar-menu-version">Version {appVersion}</p>
+            <p className="sidebar-menu-version">{t("settings.version", { version: appVersion })}</p>
           )}
         </div>
       ) : null}
@@ -77,7 +101,7 @@ export function SidebarSettings({
         type="button"
       >
         <Icon name="settings" />
-        Settings
+        {t("settings.menu")}
       </button>
     </section>
   );

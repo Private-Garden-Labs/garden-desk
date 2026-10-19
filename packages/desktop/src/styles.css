@@ -131,7 +131,8 @@ textarea:disabled {
 
 button:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+select:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
@@ -515,6 +516,41 @@ textarea:focus-visible {
 .sidebar-menu-item:hover {
   color: var(--accent-strong);
   background: var(--navigation-hover);
+}
+
+.sidebar-menu-language {
+  display: grid;
+  gap: 4px;
+  padding: 6px 10px 4px;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.sidebar-menu-language select {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--reading-raised);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sidebar-menu-language select:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.sidebar-menu-language select:active {
+  background: var(--navigation-hover);
+}
+
+.sidebar-menu-language select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .sidebar-menu-version {

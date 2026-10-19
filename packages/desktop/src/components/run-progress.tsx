@@ -1,3 +1,4 @@
+import { t } from "../i18n/index.js";
 import type { TimelineItem } from "../state.js";
 
 interface RunProgressProps {
@@ -13,17 +14,17 @@ export function RunProgress({ runId, timeline }: RunProgressProps) {
   ).length;
   const progress =
     completedTools > 0
-      ? `${completedTools} tool call${completedTools === 1 ? "" : "s"} completed`
+      ? t("progress.tools", { count: completedTools })
       : completedExecutions > 0
-        ? `${completedExecutions} execution${completedExecutions === 1 ? "" : "s"} completed`
-        : "Planning the first tool call";
+        ? t("progress.executions", { count: completedExecutions })
+        : t("progress.planning");
   return (
     <article className="thinking-stream run-progress">
       <header>
         <span aria-hidden="true" className="thinking-pulse" />
-        Working locally
+        {t("progress.working")}
       </header>
-      <p>{current.at(-1)?.text ?? "Starting the task…"}</p>
+      <p>{current.at(-1)?.text ?? t("progress.starting")}</p>
       <small>{progress}</small>
     </article>
   );

@@ -2,6 +2,7 @@ import type { ThinkingLevel } from "@gardendesk/shared";
 import type { DesktopApi } from "../api.js";
 import { attach, openAttachment, remove } from "../desktop-actions.js";
 import type { DropIntent } from "../desktop-drop.js";
+import { t } from "../i18n/index.js";
 import type { DesktopAction, DesktopState } from "../state.js";
 import { Composer } from "./composer.js";
 import type { ConfirmationRequest } from "./confirmation.js";
@@ -100,10 +101,11 @@ export function AppChatControls({
           )?.name;
           const sessionId = state.activeSessionId;
           setConfirmation({
-            title: `Remove “${attachmentName ?? "this attachment"}”?`,
-            description:
-              "This removes the attachment from the conversation. The original file on your computer is unchanged.",
-            confirmLabel: "Remove attachment",
+            title: t("attachment.removeTitle", {
+              name: attachmentName ?? t("attachment.thisAttachment"),
+            }),
+            description: t("attachment.removeDescription"),
+            confirmLabel: t("attachment.remove"),
             onConfirm: () =>
               void remove({
                 api,

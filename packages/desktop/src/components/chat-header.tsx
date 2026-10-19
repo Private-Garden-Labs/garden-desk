@@ -1,6 +1,7 @@
 import { MAX_SESSION_TITLE_LENGTH, type ModelRuntimeStatus } from "@gardendesk/shared";
 import { useEffect, useRef, useState } from "react";
 import { type AppearancePreference, nextAppearance } from "../appearance.js";
+import { t } from "../i18n/index.js";
 import { Icon } from "./icons.js";
 import { SpecialistIcon, specialistIdentity } from "./specialist-run.js";
 
@@ -18,19 +19,7 @@ interface ChatHeaderProps {
   onUnload(): void;
 }
 
-const statusText: Record<ModelRuntimeStatus["state"], string> = {
-  unsupported: "Not supported on this Mac",
-  unloaded: "Loads with your next message",
-  loading: "Loading on device",
-  busy: "Working on device",
-  ready: "Loaded and ready",
-};
-
-const appearanceLabels: Record<AppearancePreference, string> = {
-  system: "System",
-  light: "Light",
-  dark: "Dark",
-};
+const appearanceLabel = (appearance: AppearancePreference) => t(`appearance.${appearance}`);
 
 function AppearanceControl({
   appearance,
@@ -39,13 +28,16 @@ function AppearanceControl({
   appearance: AppearancePreference;
   onChange(): void;
 }) {
-  const next = nextAppearance(appearance);
+  const values = {
+    current: appearanceLabel(appearance),
+    next: appearanceLabel(nextAppearance(appearance)),
+  };
   return (
     <button
-      aria-label={`Appearance: ${appearanceLabels[appearance]}. Switch to ${appearanceLabels[next]}`}
+      aria-label={t("appearance.switch", values)}
       className="header-action appearance-action"
       onClick={onChange}
-      title={`Appearance: ${appearanceLabels[appearance]} · Next: ${appearanceLabels[next]}`}
+      title={t("appearance.title", values)}
       type="button"
     >
       <Icon name={`appearance-${appearance}`} />
@@ -68,7 +60,7 @@ function RenamePopover({
   const trimmed = name.trim();
   return (
     <form
-      aria-label="Rename conversation"
+      aria-label={t("header.rename")}
       className="rename-popover"
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) onCancel();
@@ -86,7 +78,7 @@ function RenamePopover({
         if (trimmed.length > 0) onSave(trimmed);
       }}
     >
-      <label htmlFor="conversation-name">Conversation name</label>
+      <label htmlFor="conversation-name">{t("header.conversationName")}</label>
       <input
         className="rename-field"
         id="conversation-name"
@@ -97,10 +89,10 @@ function RenamePopover({
       />
       <div className="rename-actions">
         <button onClick={onCancel} type="button">
-          Cancel
+          {t("common.cancel")}
         </button>
         <button className="rename-save" disabled={trimmed.length === 0} type="submit">
-          Save
+          {t("common.save")}
         </button>
       </div>
     </form>
@@ -128,11 +120,11 @@ function ConversationIdentity({
         {conversationTitle}
       </strong>
       <button
-        aria-label="Rename conversation"
+        aria-label={t("header.rename")}
         className="header-icon-action"
         disabled={renameMessage !== undefined}
         onClick={() => setRenaming(true)}
-        title={renameMessage ?? "Rename conversation"}
+        title={renameMessage ?? t("header.rename")}
         type="button"
       >
         <Icon name="pencil" />
@@ -156,7 +148,7 @@ function ModelCluster({
   nativeActionMessage,
   onUnload,
 }: Pick<ChatHeaderProps, "model" | "nativeActionMessage" | "onUnload">) {
-  const modelStatus = model.message ?? statusText[model.state];
+  const modelStatus = model.message ?? t(`model.${model.state}`);
   return (
     <div className={`model-cluster model-cluster-${model.state}`}>
       <span
@@ -171,11 +163,11 @@ function ModelCluster({
           className="header-action unload-action"
           disabled={nativeActionMessage !== undefined}
           onClick={onUnload}
-          title={nativeActionMessage ?? "Unload model from memory"}
+          title={nativeActionMessage ?? t("header.unloadModel")}
           type="button"
         >
           <Icon name="power" />
-          <span>Unload</span>
+          <span>{t("header.unload")}</span>
         </button>
       ) : null}
     </div>
@@ -207,11 +199,11 @@ export function ChatHeader({
         <ModelCluster model={model} nativeActionMessage={nativeActionMessage} onUnload={onUnload} />
         <AppearanceControl appearance={appearance} onChange={onAppearanceChange} />
         <button
-          aria-label="Open technical details"
+          aria-label={t("header.openTechnicalDetails")}
           className="header-action technical-details-action"
           disabled={technicalDetailsOpen}
           onClick={onTechnicalDetailsOpen}
-          title="Technical details"
+          title={t("header.technicalDetails")}
           type="button"
         >
           <Icon name="activity" />

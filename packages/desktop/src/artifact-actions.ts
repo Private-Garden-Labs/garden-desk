@@ -1,5 +1,6 @@
 import type { AgentArtifactSummary } from "@gardendesk/shared";
 import type { DesktopApi } from "./api.js";
+import { t } from "./i18n/index.js";
 
 type SetError = (message: string | undefined) => void;
 export type ArtifactSaveResult = "cancelled" | "failed" | "saved";
@@ -14,7 +15,7 @@ export async function openArtifact(
   try {
     await api.openArtifact(sessionId, artifactId);
   } catch {
-    setError("This generated file could not be opened. You can still use Save As…");
+    setError(t("error.artifactOpen"));
   }
 }
 
@@ -33,7 +34,7 @@ export async function saveArtifact(options: SaveArtifactOptions): Promise<Artifa
       ? "saved"
       : "cancelled";
   } catch {
-    options.setError("This generated file could not be saved.");
+    options.setError(t("error.artifactSave"));
     return "failed";
   }
 }
