@@ -150,8 +150,8 @@ export function TimelineMessage({
       />
       {copyable || metrics ? (
         <footer className="response-footer">
-          {copyable ? <ResponseCopyButton text={item.text} /> : null}
           {metrics ? <ResponseMetrics performance={performance} /> : null}
+          {copyable ? <ResponseCopyButton text={item.text} /> : null}
         </footer>
       ) : null}
     </article>
