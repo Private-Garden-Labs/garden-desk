@@ -35,13 +35,13 @@
     },
     {
       "name": "@tauri-apps/cli",
-      "version": "2.11.4",
+      "version": "2.12.3",
       "license": "Apache-2.0 OR MIT",
       "use": "development"
     },
     {
       "name": "@tauri-apps/api",
-      "version": "2.11.1",
+      "version": "2.12.4",
       "license": "Apache-2.0 OR MIT",
       "use": "desktop_typed_ipc"
     },
@@ -53,19 +53,19 @@
     },
     {
       "name": "@types/react",
-      "version": "19.2.17",
+      "version": "19.3.0",
       "license": "MIT",
       "use": "development"
     },
     {
       "name": "@types/react-dom",
-      "version": "19.2.3",
+      "version": "19.3.0",
       "license": "MIT",
       "use": "development"
     },
     {
       "name": "@vitejs/plugin-react",
-      "version": "6.0.3",
+      "version": "6.1.2",
       "license": "MIT",
       "use": "development"
     },
@@ -131,13 +131,13 @@
     },
     {
       "name": "react",
-      "version": "19.2.7",
+      "version": "19.3.1",
       "license": "MIT",
       "use": "desktop_ui"
     },
     {
       "name": "react-dom",
-      "version": "19.2.7",
+      "version": "19.3.1",
       "license": "MIT",
       "use": "desktop_ui"
     },
@@ -185,7 +185,7 @@
     },
     {
       "name": "vite",
-      "version": "8.1.4",
+      "version": "8.3.4",
       "license": "MIT",
       "use": "development"
     },
@@ -197,7 +197,7 @@
     },
     {
       "name": "zod",
-      "version": "4.4.3",
+      "version": "4.6.7",
       "license": "MIT",
       "use": "runtime_schema"
     }
@@ -217,25 +217,25 @@
     },
     {
       "name": "tauri",
-      "version": "2.11.5",
+      "version": "2.12.4",
       "license": "Apache-2.0 OR MIT",
       "use": "test_and_product_shell"
     },
     {
       "name": "tauri-build",
-      "version": "2.6.3",
+      "version": "2.7.3",
       "license": "Apache-2.0 OR MIT",
       "use": "test_and_product_shell_build"
     },
     {
       "name": "tauri-plugin-dialog",
-      "version": "2.7.2",
+      "version": "2.8.3",
       "license": "Apache-2.0 OR MIT",
       "use": "product_native_folder_file_and_save_dialogs"
     },
     {
       "name": "tauri-plugin-shell",
-      "version": "2.3.5",
+      "version": "2.5.0",
       "license": "Apache-2.0 OR MIT",
       "use": "test_and_product_exact_sidecar"
     }

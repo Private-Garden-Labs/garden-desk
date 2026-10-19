@@ -87,8 +87,8 @@ const hostPackages = [
     notice:
       "Copyright 2026 Alibaba Cloud. License text: licenses/qwen3.8-LICENSE.txt. https://huggingface.co/Qwen/Qwen3.8-27B",
   },
-  { name: "React", version: "19.2.7", license: "MIT" },
-  { name: "Tauri", version: "2.11.5", license: "Apache-2.0 OR MIT" },
+  { name: "React", version: "19.3.1", license: "MIT" },
+  { name: "Tauri", version: "2.12.4", license: "Apache-2.0 OR MIT" },
 ];
 
 function platformPackages(): NoticePackage[] {
