@@ -1521,10 +1521,6 @@ html.motion-ready [data-reveal].is-revealed {
     margin-bottom: 22px;
   }
 
-  .site-nav a:not(.nav-button):not(.nav-source) {
-    display: none;
-  }
-
   .nav-source span:not(.nav-source-arrow) {
     position: absolute;
     width: 1px;
@@ -1535,6 +1531,10 @@ html.motion-ready [data-reveal].is-revealed {
 }
 
 @media (max-width: 600px) {
+  .site-nav {
+    gap: 8px;
+  }
+
   body {
     padding-top: 74px;
   }
@@ -1640,14 +1640,6 @@ html.motion-ready [data-reveal].is-revealed {
 @media (max-width: 360px) {
   .site-header {
     padding: 0 10px;
-  }
-
-  .nav-button {
-    padding: 0 12px;
-  }
-
-  .site-nav .nav-button .button-icon {
-    display: none;
   }
 }
 
@@ -2720,12 +2712,6 @@ nudged by the pointer. */
 @media (max-width: 1100px) {
   .site-nav a:not(.nav-button):not(.nav-source) {
     display: none;
-  }
-}
-
-@media (max-width: 600px) {
-  .site-nav {
-    gap: 8px;
   }
 }
 

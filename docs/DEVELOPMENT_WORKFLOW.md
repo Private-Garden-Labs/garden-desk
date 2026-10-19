@@ -72,7 +72,7 @@ A download link must not go live before its file and SHA-256 exist.
 
 ## Website Languages
 
-English text lives in the HTML and in `site/locales/en.json`. Mark text with `data-i18n="key"` (plain text), `data-i18n-html="key"` (text with links or emphasis), or `data-i18n-attr="attribute=key"`, then add the key to every file in `site/locales`. A missing key shows English. Legal page bodies, blog posts, and the demo stay in English.
+English text lives in the HTML and in `site/locales/en.json`. Mark text with `data-i18n="key"` (plain text), `data-i18n-html="key"` (text with links or emphasis), or `data-i18n-attr="attribute=key"`, then add the key to every file in `site/locales`. A missing key shows English. Legal page bodies, blog posts, and the demo stay in English. The chosen language is saved in browser storage under `gardendesk.locale`. It is the only browser storage the site may use, and `pnpm site:check` fails on any other `localStorage` use.
 
 ## Website Admin And Blog
 
