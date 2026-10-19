@@ -189,7 +189,9 @@ if (socialCard.readUInt32BE(16) !== 1200 || socialCard.readUInt32BE(20) !== 630)
 const assets = (await files(output)).filter((path) => [".js", ".css"].includes(extname(path)));
 const assetTexts = await Promise.all(assets.map((path) => readFile(path, "utf8")));
 const assetText = assetTexts.join("\n");
-if (assetTexts.some((text) => text.includes("localStorage") && !text.includes("gardendesk.locale"))) {
+if (
+  assetTexts.some((text) => text.includes("localStorage") && !text.includes("gardendesk.locale"))
+) {
   failures.push("bundle: uses localStorage for something other than the language choice");
 }
 const homeScript = home.match(/src="([^"]+\.js)"/u)?.[1];
