@@ -25,7 +25,9 @@ Desktop (Tauri v2, React)
 - The main agent has up to 40 turns. Its tools are `bash`, `python`, `node`, `read`, `glob`, `grep`, `list`, `write`, `edit`, `image`, `skill`, `task`, `question`, and `review`. `read` returns numbered text for DOC, DOCX, and PDF through one fixed guest extraction.
 - `task` runs one specialist child at a time in the same VM. The specialists are general, explore, matter chronology, contract obligations, document comparison, and financial review.
 - `/review` reviews one attached document in a single model call with no tools. `/obligations`, `/reconcile`, and `/expenses` run a specialist directly.
+- To suggest commands in an empty chat, Core lists the names of up to 10 files in the selected folder; hidden files and links are skipped.
 - Packaged skills are prompt-only. A person can also add, edit, or turn off skill files in the workspace `skills/` folder.
+- The app includes a US federal and an EU law library in one read-only SQLite file. The Laws page turns each jurisdiction on or off, and the chat picks one at a time. With a jurisdiction picked, the main agent gets a `laws` tool and `/review` gets matching law sections. Search combines keyword (SQLite FTS5) and meaning (encoder vectors) results. Answers never call a document legal and always say they are not legal advice.
 - Every file created or changed under `/workspace` during a run is delivered to the user. Open uses a verified temporary copy. Save As uses a native dialog and an atomic Core write, and the webview never sees the destination path.
 - Core compacts the conversation at 80 percent of the context. A session summary keeps continuity across runs. After a crash, runs left running are marked failed. Model reasoning is never stored.
 
@@ -43,6 +45,7 @@ Desktop (Tauri v2, React)
 ## Model And Hardware
 
 - The generation model is Ternary Bonsai 2 27B (`PQ2_0`) with its Q8_0 image projector. The encoder is Qwen3-Embedding-0.6B. `assets/models.json` pins each file, and `assets/inference-runtime.json` pins the PrismML llama.cpp fork builds for Metal, CUDA 13.3, and AMD HIP.
+- The encoder runs on the CPU and stays loaded beside the generation model, so it does not use the GPU memory budget.
 - Packages are self-contained, so first launch downloads nothing.
 - The context cache is FP16. Core fits the context once to the inference memory budget, between 32K and 128K tokens. The server's reasoning budget is 32,768 tokens. Thinking levels are None, Medium, and Extended.
 - A Mac needs at least 16 GiB of memory. The inference budget is 10 GiB below 24 GiB and 16 GiB from 24 GiB up.
@@ -82,7 +85,6 @@ site/              website, admin, and blog; page copy in 28 languages in site/l
 None of this is active. Each item needs an owner request.
 
 - Document intelligence: parsing, OCR and layout, retrieval, citations, and deterministic checks.
-- Signed offline Knowledge Bundles of reference material.
 - Legal, accounting, and medical administration workflow packs chosen from real use.
 - An office appliance with accounts, permissions, backup, and audit.
 - Managed model downloads through a typed network broker, and Linux support.

@@ -271,6 +271,7 @@ describe("desktop send", () => {
       api: new ClassApi() as unknown as DesktopApi,
       text: "Check the invoices.",
       thinking: "medium",
+      jurisdiction: null,
       activeSessionId: session.id,
       newSessionFolderId: undefined,
       dispatch: () => undefined,

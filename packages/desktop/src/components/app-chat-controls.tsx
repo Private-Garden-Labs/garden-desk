@@ -3,6 +3,7 @@ import type { DesktopApi } from "../api.js";
 import { attach, openAttachment, remove } from "../desktop-actions.js";
 import type { DropIntent } from "../desktop-drop.js";
 import { t } from "../i18n/index.js";
+import type { LawsController } from "../laws.js";
 import type { DesktopAction, DesktopState } from "../state.js";
 import { Composer } from "./composer.js";
 import type { ConfirmationRequest } from "./confirmation.js";
@@ -16,6 +17,7 @@ interface AppChatControlsProps {
   disabled: boolean;
   dispatch(action: DesktopAction): void;
   dropIntent: DropIntent | undefined;
+  laws: LawsController;
   nativeActionMessage: string | undefined;
   onCancel(): void;
   onChange(draft: string): void;
@@ -36,6 +38,7 @@ export function AppChatControls({
   disabled,
   dispatch,
   dropIntent,
+  laws,
   nativeActionMessage,
   onCancel,
   onChange,
@@ -77,6 +80,7 @@ export function AppChatControls({
       dropActive={dropIntent === "files" || dropIntent === "mixed"}
       draft={state.draft}
       disabled={disabled}
+      laws={laws}
       nativeActionMessage={nativeActionMessage}
       onAttach={() =>
         void attach({

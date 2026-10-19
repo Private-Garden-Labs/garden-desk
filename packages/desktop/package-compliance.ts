@@ -87,6 +87,20 @@ const hostPackages = [
     notice:
       "Copyright 2026 Alibaba Cloud. License text: licenses/qwen3.8-LICENSE.txt. https://huggingface.co/Qwen/Qwen3.8-27B",
   },
+  {
+    name: "Qwen3-Embedding-0.6B GGUF",
+    version: "Q8_0",
+    license: "Apache-2.0",
+    notice:
+      "Copyright Alibaba Cloud. Apache License 2.0 text: licenses/qwen3.8-LICENSE.txt. https://huggingface.co/Qwen/Qwen3-Embedding-0.6B-GGUF",
+  },
+  {
+    name: "Law library texts",
+    version: "pinned in laws/sources.json",
+    license: "LicenseRef-public-law-texts",
+    notice:
+      "U.S. federal texts are public domain (17 U.S.C. 105). EU texts are reused under Commission Decision 2011/833/EU; only the Official Journal text is authentic. The CISG text is reproduced from Justice Laws Canada under SI/97-5 and is not an official version.",
+  },
   { name: "React", version: "19.2.7", license: "MIT" },
   { name: "Tauri", version: "2.11.5", license: "Apache-2.0 OR MIT" },
 ];

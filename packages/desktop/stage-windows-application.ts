@@ -6,8 +6,10 @@ import { fileURLToPath } from "node:url";
 import { INFERENCE_PROFILE } from "@gardendesk/shared";
 import { signExecutable } from "./build-signing.js";
 import {
+  canonicalEncoderModelPath,
   canonicalGenerationModelPath,
   canonicalProjectorModelPath,
+  packagedEncoderModelPath,
   packagedGenerationModelPath,
   packagedProjectorModelPath,
 } from "./src/package-model-contract.js";
@@ -47,6 +49,7 @@ async function packageRecord(
   const resourceManifest = join(coreResources, "resource-manifest.json");
   const model = join(coreResources, "models", `${INFERENCE_PROFILE.modelId}.gguf`);
   const projector = join(coreResources, "models", `${INFERENCE_PROFILE.projectorId}.gguf`);
+  const encoder = join(coreResources, "models", `${INFERENCE_PROFILE.encoderId}.gguf`);
   const inferenceRuntimes = nativeRuntimePackages();
   await Promise.all(
     inferenceRuntimes.map((name) =>
@@ -65,6 +68,8 @@ async function packageRecord(
       generationModelSha256: await sha256(model),
       projectorModelBytes: (await stat(projector)).size,
       projectorModelSha256: await sha256(projector),
+      encoderModelBytes: (await stat(encoder)).size,
+      encoderModelSha256: await sha256(encoder),
       inferenceRuntimes,
     },
   };
@@ -87,9 +92,11 @@ export async function stageWindowsApplication(): Promise<void> {
   await copyTree(join(tauriRoot, "resources", "core"), join(packageRoot, "resources", "core"));
   const packagedModel = packagedGenerationModelPath(join(packageRoot, "resources", "core"));
   const packagedProjector = packagedProjectorModelPath(join(packageRoot, "resources", "core"));
+  const packagedEncoder = packagedEncoderModelPath(join(packageRoot, "resources", "core"));
   await mkdir(join(packageRoot, "resources", "core", "models"), { recursive: true });
   await copyFile(canonicalGenerationModelPath(join(desktopRoot, "../..")), packagedModel);
   await copyFile(canonicalProjectorModelPath(join(desktopRoot, "../..")), packagedProjector);
+  await copyFile(canonicalEncoderModelPath(join(desktopRoot, "../..")), packagedEncoder);
   await mkdir(join(packageRoot, "assets", "fonts"), { recursive: true });
   await copyFile(
     join(desktopRoot, "..", "..", "assets", "fonts", "LICENSE.txt"),

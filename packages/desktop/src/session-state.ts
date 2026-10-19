@@ -9,6 +9,14 @@ export function activeSessionTitle(state: DesktopState): string | undefined {
   )?.title;
 }
 
+export function activeFolder(state: DesktopState) {
+  return state.folders.find(
+    (folder) =>
+      folder.id === state.newSessionFolderId ||
+      folder.sessions.some((session) => session.id === state.activeSessionId),
+  );
+}
+
 export function renameSession(
   state: DesktopState,
   action: { sessionId: string; title: string },

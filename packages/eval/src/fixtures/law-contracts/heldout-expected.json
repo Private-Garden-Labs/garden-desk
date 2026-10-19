@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "contracts": [
+    {
+      "file": "heldout-eu-saas-contract.md",
+      "jurisdiction": "eu",
+      "lawFindings": [
+        {
+          "clause": "2.3",
+          "issue": "The paid add-on is pre-selected and charged unless the consumer unticks it, so there is no express consent to the extra payment and the consumer can claim it back.",
+          "basis": ["Directive 2011/83/EU, Article 22"]
+        },
+        {
+          "clause": "2.4",
+          "issue": "The trader may raise the price at any time, at its discretion and without notice, so the consumer is charged the higher fee before being able to leave; a likely unfair term.",
+          "basis": ["Directive 93/13/EEC, Article 3", "Directive 93/13/EEC, Annex"]
+        },
+        {
+          "clause": "3.3",
+          "issue": "A EUR 25 charge on withdrawal: the trader must refund all payments and the consumer bears no cost for withdrawing beyond what the Directive allows.",
+          "basis": ["Directive 2011/83/EU, Article 13", "Directive 2011/83/EU, Article 14"]
+        },
+        {
+          "clause": "5.1",
+          "issue": "The service is supplied as it stands with no conformity promise and a one-month credit as the only remedy, which excludes the mandatory conformity requirements and remedies (repair, price reduction, termination).",
+          "basis": [
+            "Directive (EU) 2019/770, Article 8",
+            "Directive (EU) 2019/770, Article 14",
+            "Directive (EU) 2019/770, Article 22"
+          ]
+        },
+        {
+          "clause": "6.1",
+          "issue": "All uploaded files are erased on the day the contract ends with no way to retrieve them; the consumer must be able to get their content back free of charge, and a cloud storage provider must allow at least a 30-day data retrieval period.",
+          "basis": [
+            "Directive (EU) 2019/770, Article 16",
+            "Regulation (EU) 2023/2854, Article 25",
+            "Regulation (EU) 2016/679, Article 20"
+          ]
+        },
+        {
+          "clause": "6.2",
+          "issue": "Sharing personal data with partners for their advertising relies on a consent bundled into the subscription that cannot be withdrawn, so it is not freely given or revocable and has no lawful basis.",
+          "basis": ["Regulation (EU) 2016/679, Article 6", "Regulation (EU) 2016/679, Article 7"]
+        },
+        {
+          "clause": "9.2",
+          "issue": "An exclusive Dublin forum agreed before any dispute stops a consumer living in Portugal, a country the trader directs its service to, from suing in her home courts.",
+          "basis": [
+            "Regulation (EU) No 1215/2012, Article 17",
+            "Regulation (EU) No 1215/2012, Article 18",
+            "Regulation (EU) No 1215/2012, Article 19"
+          ]
+        }
+      ],
+      "lawfulClauses": [
+        {
+          "clause": "3.2",
+          "why": "A consumer who asked for the service to start during the withdrawal period and then withdraws pays a proportionate amount for what was provided.",
+          "basis": ["Directive 2011/83/EU, Article 14"]
+        },
+        {
+          "clause": "4.1",
+          "why": "Updates for a stated valid reason, at no extra cost, explained clearly, with 30 days' advance notice and a free right to terminate within 30 days if the change is detrimental, meet the conditions for modifying a digital service.",
+          "basis": ["Directive (EU) 2019/770, Article 19"]
+        },
+        {
+          "clause": "9.1",
+          "why": "Parties may choose the governing law of a consumer contract as long as the consumer keeps the mandatory protection of the law of their habitual residence, which the clause preserves.",
+          "basis": ["Regulation (EC) No 593/2008, Article 6"]
+        }
+      ],
+      "notCovered": [
+        {
+          "clause": "7.1",
+          "why": "Whether heirs can access a deceased person's account and files is a question of national succession law; the included EU acts do not answer it."
+        }
+      ],
+      "otherMistakes": [
+        {
+          "clause": "2.2",
+          "issue": "12 x EUR 9.99 is EUR 119.88, not EUR 129.88."
+        },
+        {
+          "clause": "8.1",
+          "issue": "Refers to a procedure in clause 11.2, but the agreement has no clause 11."
+        },
+        {
+          "clause": "Signatures",
+          "issue": "The trader signs as Lumenvault Cloud Ltd, but the party named in the agreement is Lumenvault Ltd."
+        }
+      ]
+    },
+    {
+      "file": "heldout-eu-employment-contract.md",
+      "jurisdiction": "eu",
+      "lawFindings": [
+        {
+          "clause": "1.3",
+          "issue": "A nine-month trial period exceeds the six-month maximum probation and is disproportionate for a twelve-month fixed-term assignment.",
+          "basis": ["Directive (EU) 2019/1152, Article 8"]
+        },
+        {
+          "clause": "2.3",
+          "issue": "Back-to-back shifts with eight hours off breach the 11 consecutive hours of daily rest, and no compensatory rest is given, so no derogation can apply.",
+          "basis": ["Directive 2003/88/EC, Article 3", "Directive 2003/88/EC, Article 17"]
+        },
+        {
+          "clause": "3.1",
+          "issue": "The agency worker is paid less than the client's own staff in the same job; agency workers must get at least the basic pay they would get if hired directly by the user undertaking.",
+          "basis": ["Directive 2008/104/EC, Article 5"]
+        },
+        {
+          "clause": "3.3",
+          "issue": "Paid annual leave is replaced by a percentage added to weekly pay with unpaid days off; the minimum paid leave cannot be replaced by an allowance during the employment.",
+          "basis": ["Directive 2003/88/EC, Article 7"]
+        },
+        {
+          "clause": "4.1",
+          "issue": "Training the worker must have by law is charged to the worker and not paid; mandatory training must be free of cost and count as working time.",
+          "basis": ["Directive (EU) 2019/1152, Article 13"]
+        },
+        {
+          "clause": "6.1",
+          "issue": "A EUR 2,500 release fee for taking a direct job with the client deters a later direct hire and charges the worker a fee, both prohibited for temporary-work agencies.",
+          "basis": ["Directive 2008/104/EC, Article 6"]
+        },
+        {
+          "clause": "7.1",
+          "issue": "Ending the contract because the worker becomes pregnant is less favourable treatment related to pregnancy, which is sex discrimination including in dismissals.",
+          "basis": ["Directive 2006/54/EC, Article 2", "Directive 2006/54/EC, Article 14"]
+        }
+      ],
+      "lawfulClauses": [
+        {
+          "clause": "2.2",
+          "why": "Single weeks of up to 54 hours are allowed when average weekly working time, overtime included, stays within 48 hours over a reference period of up to four months.",
+          "basis": ["Directive 2003/88/EC, Article 6", "Directive 2003/88/EC, Article 16"]
+        },
+        {
+          "clause": "5.1",
+          "why": "Side jobs outside the schedule are allowed; the only restriction rests on an objective ground (protecting business confidentiality and avoiding conflicts of interest).",
+          "basis": ["Directive (EU) 2019/1152, Article 9"]
+        },
+        {
+          "clause": "8.1",
+          "why": "Calculating a part-time worker's pay and allowances in proportion to hours worked applies the pro rata temporis principle and is not less favourable treatment.",
+          "basis": ["Directive 97/81/EC, Clause 4"]
+        }
+      ],
+      "notCovered": [
+        {
+          "clause": "3.4",
+          "why": "Sick pay levels and unpaid waiting days are set by national law and collective agreements; no included EU act regulates them."
+        }
+      ],
+      "otherMistakes": [
+        {
+          "clause": "3.2",
+          "issue": "38 hours x EUR 15.20 is EUR 577.60, not EUR 592.80."
+        },
+        {
+          "clause": "9.1",
+          "issue": "Refers to clause 12.3, but the contract ends at clause 9."
+        },
+        {
+          "clause": "Signatures",
+          "issue": "The worker signs as Agnieszka Novak, but the party named in the contract is Agnieszka Nowak."
+        }
+      ]
+    },
+    {
+      "file": "heldout-us-consumer-finance-contract.md",
+      "jurisdiction": "us",
+      "lawFindings": [
+        {
+          "clause": "3.1",
+          "issue": "A sale made at the buyer's home must come with the three-business-day cancellation notice and forms; declaring the sale final and the deposit non-refundable denies that right.",
+          "basis": ["16 CFR 429.0", "16 CFR 429.1"]
+        },
+        {
+          "clause": "4.1",
+          "issue": "Credit is conditioned on repayment by preauthorized automatic debits from the buyer's account.",
+          "basis": ["15 U.S.C. 1693k"]
+        },
+        {
+          "clause": "4.2",
+          "issue": "Requiring the spouse to co-sign only because the applicant is married, regardless of the applicant's own creditworthiness, is credit discrimination on marital status.",
+          "basis": ["15 U.S.C. 1691"]
+        },
+        {
+          "clause": "5.2",
+          "issue": "A nonpossessory lien on furniture and appliances the buyer already owns is a non-purchase-money security interest in household goods, an unfair credit practice.",
+          "basis": ["16 CFR 444.1", "16 CFR 444.2"]
+        },
+        {
+          "clause": "6.1",
+          "issue": "The contract lacks the holder notice and makes the buyer keep paying an assignee even if the goods fail, cutting off the buyer's claims and defenses against any holder.",
+          "basis": ["16 CFR 433.2"]
+        },
+        {
+          "clause": "7.1",
+          "issue": "A supplier that gives a written warranty may not disclaim implied warranties; selling the rest AS IS with no implied promise of quality or fitness is ineffective and prohibited.",
+          "basis": ["15 U.S.C. 2308"]
+        },
+        {
+          "clause": "8.1",
+          "issue": "A collection agency may not discuss the debt with the employer, relatives or neighbors, or call at work, without consent given directly to the collector; a term in the original credit contract does not supply that.",
+          "basis": ["15 U.S.C. 1692c"]
+        }
+      ],
+      "lawfulClauses": [
+        {
+          "clause": "5.1",
+          "why": "A security interest in the goods being bought is a purchase-money security interest, which the Credit Practices Rule allows even for household goods.",
+          "basis": ["16 CFR 444.2"]
+        },
+        {
+          "clause": "9.1",
+          "why": "A written agreement to arbitrate disputes from a transaction in commerce is valid and enforceable; it keeps small claims court available and leaves warranty claims out.",
+          "basis": ["9 U.S.C. 2"]
+        },
+        {
+          "clause": "10.1",
+          "why": "Electronic signatures and records are valid when the consumer consents after the required disclosures and shows they can open the electronic records.",
+          "basis": ["15 U.S.C. 7001"]
+        }
+      ],
+      "notCovered": [
+        {
+          "clause": "8.2",
+          "why": "Self-help repossession and entering the buyer's home to take back collateral are governed by state law (UCC Article 9 and breach-of-the-peace rules), not by the included federal acts."
+        }
+      ],
+      "otherMistakes": [
+        {
+          "clause": "2.1",
+          "issue": "The total of payments should be USD 4,159.08 (Amount Financed USD 3,200.00 plus Finance Charge USD 959.08, and 36 x USD 115.53), not USD 4,259.08."
+        },
+        {
+          "clause": "2.2",
+          "issue": "The first payment is due on July 22, 2026, a month before the contract date of August 22, 2026."
+        },
+        {
+          "clause": "Signatures",
+          "issue": "The buyer signs as David Okafor, but the buyer named in the contract is Daniel Okafor."
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import type { InferenceProfile, WorkspaceStatus } from "@gardendesk/shared";
+import { INFERENCE_PROFILE, type InferenceProfile, type WorkspaceStatus } from "@gardendesk/shared";
 import { createCodeAgentLauncher } from "./agent/launcher.js";
 import { MarkdownDefinitionLibrary } from "./agent/markdown-definition-library.js";
 import { AgentService } from "./agent/service.js";
@@ -12,6 +12,8 @@ import { warmConversationSession } from "./conversations/lifecycle.js";
 import { ConversationStore } from "./conversations/store.js";
 import { createFacade, type GardenDeskCore } from "./facade.js";
 import { JobStore } from "./jobs/jobs.js";
+import { createLawPorts } from "./law-ports.js";
+import { LawLibrary } from "./laws/law-library.js";
 import { createInferenceService, unavailableInference } from "./runtime/compose.js";
 import type { InferenceSupervisor } from "./runtime/supervisor.js";
 import { createSkillPorts } from "./skill-ports.js";
@@ -44,6 +46,7 @@ interface CoreServices {
   agentStore: AgentStore;
   inference: InferenceSupervisor | ReturnType<typeof unavailableInference>;
   skills: SkillStore;
+  laws: LawLibrary;
   agent?: AgentService;
 }
 
@@ -57,6 +60,7 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
   return createFacade({
     listCommands: async () => services.commands.list(),
     ...createSkillPorts(services.skills, audit),
+    ...createLawPorts(services.laws, audit),
     status: async () => ({
       workspace,
       catalogSchemaVersion: catalog.schemaVersion,
@@ -93,8 +97,9 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     async removeAttachment(sessionId, attachmentId) {
       return agent?.removeAttachment(sessionId, attachmentId) ?? unavailableAgent();
     },
-    async startAgent(sessionId, task, thinking) {
-      return agent?.start(sessionId, task, thinking) ?? unavailableAgent();
+    async startAgent(sessionId, task, thinking, jurisdiction) {
+      const laws = jurisdiction === null ? undefined : services.laws.context(jurisdiction);
+      return agent?.start(sessionId, task, thinking, laws) ?? unavailableAgent();
     },
     async listAgentRuns(sessionId) {
       return agent?.listRuns(sessionId) ?? unavailableAgent();
@@ -132,6 +137,7 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     async close() {
       await agent?.close();
       await inference.close();
+      services.laws.close();
       audit.append({ type: "core.closed", outcome: "succeeded", metadata: {} });
       catalog.close();
     },
@@ -194,6 +200,21 @@ export async function createGardenDeskCore(
           new MarkdownDefinitionLibrary(promptDirectory, skills),
           commands,
         );
+  const laws = new LawLibrary(
+    resolve(promptDirectory, "..", "laws", "law-library.sqlite"),
+    resolve(workspaceRoot, "laws", "settings.json"),
+    async (input, signal) =>
+      (
+        await inference.embed(
+          {
+            modelId: INFERENCE_PROFILE.encoderId,
+            input,
+            contextSize: INFERENCE_PROFILE.encoderContextTokens,
+          },
+          signal,
+        )
+      ).vector,
+  );
   const restoredSessionId = conversations.mostRecentSessionId();
   if (agent !== undefined && restoredSessionId !== undefined) {
     warmConversationSession(agent, audit, restoredSessionId);
@@ -208,6 +229,7 @@ export async function createGardenDeskCore(
     agentStore,
     inference,
     skills,
+    laws,
     ...(agent === undefined ? {} : { agent }),
   });
 }

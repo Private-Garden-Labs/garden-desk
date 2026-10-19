@@ -14,16 +14,18 @@ import type { DesktopAction, DesktopState } from "../state.js";
 import type { ConfirmationRequest } from "./confirmation.js";
 import { Sidebar } from "./sidebar.js";
 
+export type SettingsPage = "skills" | "laws";
+
 interface AppSidebarProps {
   api: DesktopApi;
   appVersion: string | undefined;
   dispatch(action: DesktopAction): void;
   dropIntent: DropIntent | undefined;
   nativeActionMessage: string | undefined;
-  onSkillsOpenChange(open: boolean): void;
+  onSettingsPageChange(page: SettingsPage | undefined): void;
   setConfirmation(request: ConfirmationRequest): void;
   setError(message: string | undefined): void;
-  skillsOpen: boolean;
+  settingsPage: SettingsPage | undefined;
   state: DesktopState;
 }
 
@@ -34,10 +36,10 @@ export function AppSidebar({
   dispatch,
   dropIntent,
   nativeActionMessage,
-  onSkillsOpenChange,
+  onSettingsPageChange,
   setConfirmation,
   setError,
-  skillsOpen,
+  settingsPage,
   state,
 }: AppSidebarProps) {
   return (
@@ -54,12 +56,13 @@ export function AppSidebar({
       nativeActionMessage={nativeActionMessage}
       onAddFolder={() => void addFolder(api, dispatch, setError)}
       onNewSession={(folderId) => {
-        onSkillsOpenChange(false);
+        onSettingsPageChange(undefined);
         dispatch({ type: "session.new", folderId });
       }}
       onOpenFolder={(folderId) => void showFolder(api, folderId, setError)}
       onOpenReleases={() => void showReleasePage(api, setError)}
-      onOpenSkills={() => onSkillsOpenChange(true)}
+      onOpenLaws={() => onSettingsPageChange("laws")}
+      onOpenSkills={() => onSettingsPageChange("skills")}
       onDeleteSession={(session) =>
         setConfirmation(
           deleteSessionConfirmation({
@@ -88,10 +91,10 @@ export function AppSidebar({
       }
       onReorderFolders={(folderIds) => void reorderFolders(api, folderIds, dispatch, setError)}
       onSelectSession={(sessionId) => {
-        onSkillsOpenChange(false);
+        onSettingsPageChange(undefined);
         void selectSession(api, sessionId, dispatch, setError);
       }}
-      settingsActive={skillsOpen}
+      settingsActive={settingsPage !== undefined}
       onShowMore={(folderId) =>
         void showMore({
           api,

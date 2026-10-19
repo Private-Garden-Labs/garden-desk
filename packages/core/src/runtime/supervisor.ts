@@ -1,13 +1,5 @@
-import type {
-  AuditEventInput,
-  InferenceOperation,
-  InferenceWorkerRequest,
-} from "@gardendesk/shared";
-import {
-  type InferenceDiagnosticOperation,
-  recordDevelopmentHostFailure,
-  waitForDevelopmentHostRecord,
-} from "@gardendesk/workers";
+import type { AuditEventInput, InferenceWorkerRequest } from "@gardendesk/shared";
+import type { InferenceDiagnosticOperation } from "@gardendesk/workers";
 import type {
   ChatInput,
   EmbeddingInput,
@@ -26,6 +18,11 @@ import {
   inferenceFailurePreservesResident,
 } from "./inference-errors.js";
 import { type ActiveInferenceExecution, inferenceTimeoutMs } from "./inference-timeout.js";
+import {
+  type ResidentModel,
+  releaseResidentModel,
+  stageResidentModel,
+} from "./model-preparation.js";
 import {
   DEFAULT_MODEL_ID,
   generationMeasurements,
@@ -48,41 +45,11 @@ import {
 type AuditAppender = (event: AuditEventInput) => void;
 type ResourceLease = ReturnType<ResourceScheduler["reserve"]>;
 type StagedModel = Awaited<ReturnType<ModelResolver["resolve"]>>;
-async function recordModelPreparationFailure(
-  operation: InferenceDiagnosticOperation,
-  error: unknown,
-): Promise<void> {
-  try {
-    if (globalThis.__GARDEN_DESK_DEVELOPMENT_BUILD__ === true)
-      await waitForDevelopmentHostRecord(
-        recordDevelopmentHostFailure("model_prepare", operation, error),
-      );
-  } catch {
-    // Diagnostics must not change inference behavior.
-  }
-}
-function modelPreparationFailure(error: unknown): InferenceFailure {
-  try {
-    if (error instanceof Error && error.message === "missing_model")
-      return new InferenceFailure("not_found", "Inference model unavailable.");
-    if (error instanceof Error && /memory/iu.test(error.message))
-      return new InferenceFailure("out_of_memory", "Inference memory unavailable.");
-  } catch {
-    // Return the fixed inference error below.
-  }
-  return new InferenceFailure("internal", "Inference failed.");
-}
 export class InferenceSupervisor extends ImageInferenceController implements InferenceService {
   private readonly residency = new AsyncSerial();
   private measurements: Parameters<typeof modelRuntimeStatus>[2] = {};
-  private resident:
-    | {
-        modelId: string;
-        operation: InferenceOperation;
-        stagedModel: StagedModel;
-        lease: ResourceLease;
-      }
-    | undefined;
+  private resident: ResidentModel | undefined;
+  private encoder: ResidentModel | undefined;
   // biome-ignore lint/complexity/useMaxParams: explicit ports keep inference authorities visible.
   constructor(
     private readonly port: InferencePort,
@@ -135,32 +102,27 @@ export class InferenceSupervisor extends ImageInferenceController implements Inf
     operation: InferenceDiagnosticOperation,
     signal: AbortSignal,
   ) {
+    const ports = { models: this.models, scheduler: this.scheduler };
+    if (operation === "embed") {
+      this.encoder ??= await stageResidentModel(ports, modelId, operation, signal);
+      return this.encoder;
+    }
     if (this.resident?.modelId === modelId && this.resident.operation === operation) {
       return this.resident;
     }
     if (this.resident !== undefined) await this.releaseResident();
-    const lease = this.scheduler.reserve(operation);
-    try {
-      const stagedModel = await this.models.resolve(modelId, signal);
-      this.resident = { modelId, operation, stagedModel, lease };
-      return this.resident;
-    } catch (error) {
-      lease.release();
-      await recordModelPreparationFailure(operation, error);
-      throw modelPreparationFailure(error);
-    }
+    this.resident = await stageResidentModel(ports, modelId, operation, signal);
+    return this.resident;
   }
   protected async releaseResident(): Promise<boolean> {
-    const resident = this.resident;
+    const { resident, encoder } = this;
     this.resident = undefined;
+    this.encoder = undefined;
     this.measurements = lastKnownContext(this.measurements);
     const unloaded = await this.port.unload();
+    await releaseResidentModel(encoder);
     if (resident === undefined) return unloaded;
-    try {
-      await resident.stagedModel.dispose();
-    } finally {
-      resident.lease.release();
-    }
+    await releaseResidentModel(resident);
     return true;
   }
   private async resources(request: InferenceWorkerRequest, signal: AbortSignal) {

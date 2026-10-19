@@ -40,6 +40,21 @@ function pathVerb(
   return { running: `${active} ${object}`, done: `${done} ${object}` };
 }
 
+function bashVerb(call: ChatToolCall): VerbObject {
+  const command = stringParam(call, "command");
+  const object = command === undefined ? "a command" : truncateMiddle(command);
+  return { running: `Running ${object}`, done: `Ran ${object}` };
+}
+
+function lawsVerb(call: ChatToolCall): VerbObject {
+  const query = stringParam(call, "query");
+  const object = query === undefined ? "" : ` for ${truncateMiddle(query)}`;
+  return {
+    running: `Searching the law library${object}`,
+    done: `Searched the law library${object}`,
+  };
+}
+
 function verbObject(call: ChatToolCall): VerbObject {
   switch (call.name) {
     case "read":
@@ -68,11 +83,8 @@ function verbObject(call: ChatToolCall): VerbObject {
     case "python":
     case "node":
       return { running: "Running code", done: "Ran code" };
-    case "bash": {
-      const command = stringParam(call, "command");
-      const object = command === undefined ? "a command" : truncateMiddle(command);
-      return { running: `Running ${object}`, done: `Ran ${object}` };
-    }
+    case "bash":
+      return bashVerb(call);
     case "skill": {
       const name = stringParam(call, "name") ?? "a skill";
       return { running: `Loading ${name} skill`, done: `Loaded ${name} skill` };
@@ -85,6 +97,8 @@ function verbObject(call: ChatToolCall): VerbObject {
       return { running: "Asking a question", done: "Question answered" };
     case "review":
       return { running: "Reviewing document", done: "Document reviewed" };
+    case "laws":
+      return lawsVerb(call);
     default:
       return { running: `Using ${call.name}`, done: `${call.name} completed` };
   }

@@ -1,6 +1,7 @@
 import type { CommandSummary } from "@gardendesk/shared";
 import { type KeyboardEvent, type RefObject, useEffect, useId, useState } from "react";
 import { t } from "../i18n/index.js";
+import { commandDescription } from "../workflow-suggestions.js";
 
 interface CommandMenuInput {
   commands: CommandSummary[];
@@ -39,7 +40,8 @@ export function useCommandMenu({ commands, draft, enabled, textarea, onChange }:
   const token = /^\/([^\s]*)/u.exec(draft);
   const query = token?.[1]?.toLowerCase() ?? "";
   const matches = commands.filter(
-    (command) => command.name.includes(query) || command.description.toLowerCase().includes(query),
+    (command) =>
+      command.name.includes(query) || commandDescription(command).toLowerCase().includes(query),
   );
   const selected = Math.min(index, Math.max(0, matches.length - 1));
   const open =
@@ -131,7 +133,7 @@ export function CommandMenu({ menu }: { menu: ReturnType<typeof useCommandMenu> 
             type="button"
           >
             <span className="command-menu-name">/{command.name}</span>
-            <span className="command-menu-description">{command.description}</span>
+            <span className="command-menu-description">{commandDescription(command)}</span>
             {index === menu.selected && (
               <span className="command-menu-enter" aria-hidden="true">
                 ↵
