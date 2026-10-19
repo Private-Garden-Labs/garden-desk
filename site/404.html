@@ -9,7 +9,8 @@
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./assets/site.css" />
     <script type="module" src="./assets/motion.ts"></script>
-    <title>Page not found | Garden Desk</title>
+    <script type="module" src="./assets/i18n.ts"></script>
+    <title data-i18n="notfound.title">Page not found | Garden Desk</title>
   </head>
   <body>
     <div class="leaf-field" data-leaf-field aria-hidden="true"></div>
@@ -17,14 +18,15 @@
       <a class="wordmark" href="https://gardendesk.ai/"
         ><img src="./assets/favicon.svg" alt="" />Garden Desk</a
       >
+      <nav aria-label="Main navigation" class="site-nav" data-i18n-attr="aria-label=nav.main"></nav>
     </header>
     <main class="not-found">
-      <p class="page-meta">404 · Page not found</p>
-      <h1>This page is outside the workspace.</h1>
-      <p>The address may have changed, or the page may never have existed.</p>
+      <p class="page-meta" data-i18n="notfound.meta">404 · Page not found</p>
+      <h1 data-i18n="notfound.h1">This page is outside the workspace.</h1>
+      <p data-i18n="notfound.text">The address may have changed, or the page may never have existed.</p>
       <a class="button button-primary" href="https://gardendesk.ai/">
         <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8M5 10v11h14V10M9 21v-7h6v7" /></svg>
-        <span>Return to Garden Desk</span>
+        <span data-i18n="notfound.home">Return to Garden Desk</span>
       </a>
     </main>
   </body>

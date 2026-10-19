@@ -70,6 +70,10 @@ A download link must not go live before its file and SHA-256 exist.
 5. In one pull request, update the links in `site/index.html`, the links and SHA-256 values in `site/releases/index.html`, and the links in `scripts/check-site.ts`. Run `pnpm site:check`.
 6. After the merge, the "Deploy public website" workflow publishes the site. Check it with `curl -s https://gardendesk.ai/ | rg data-download`.
 
+## Website Languages
+
+English text lives in the HTML and in `site/locales/en.json`. Mark text with `data-i18n="key"` (plain text), `data-i18n-html="key"` (text with links or emphasis), or `data-i18n-attr="attribute=key"`, then add the key to every file in `site/locales`. A missing key shows English. Legal page bodies, blog posts, and the demo stay in English. The chosen language is saved in browser storage under `gardendesk.locale`. It is the only browser storage the site may use, and `pnpm site:check` fails on any other `localStorage` use.
+
 ## Website Admin And Blog
 
 The admin runs at `admin.gardendesk.ai` behind Cloudflare Access. The Worker also validates the Access token and requires the same origin for blog changes. Posts live in the D1 database, and only published posts appear on `/blog/`, in the sitemap, and in the RSS feed. Apply the database migration before deployment. Add the admin hostname to Access before you add its Worker route. To work locally, run `pnpm site:admin`.

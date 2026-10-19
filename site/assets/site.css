@@ -1,3 +1,5 @@
+@import "./language.css";
+
 @font-face {
   font-family: "IBM Plex Sans";
   font-style: normal;
@@ -1519,10 +1521,6 @@ html.motion-ready [data-reveal].is-revealed {
     margin-bottom: 22px;
   }
 
-  .site-nav a:not(.nav-button):not(.nav-source) {
-    display: none;
-  }
-
   .nav-source span:not(.nav-source-arrow) {
     position: absolute;
     width: 1px;
@@ -1533,6 +1531,10 @@ html.motion-ready [data-reveal].is-revealed {
 }
 
 @media (max-width: 600px) {
+  .site-nav {
+    gap: 8px;
+  }
+
   body {
     padding-top: 74px;
   }
@@ -1638,14 +1640,6 @@ html.motion-ready [data-reveal].is-revealed {
 @media (max-width: 360px) {
   .site-header {
     padding: 0 10px;
-  }
-
-  .nav-button {
-    padding: 0 12px;
-  }
-
-  .site-nav .nav-button .button-icon {
-    display: none;
   }
 }
 
@@ -2712,5 +2706,36 @@ nudged by the pointer. */
 @media (hover: hover) and (pointer: fine) {
   .post-card:hover h2 a {
     text-decoration-line: underline;
+  }
+}
+
+@media (max-width: 1100px) {
+  .site-nav a:not(.nav-button):not(.nav-source) {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-nav .nav-button .button-icon {
+    display: none;
+  }
+}
+
+@media (max-width: 430px) {
+  .site-nav .nav-button {
+    width: 42px;
+    padding: 0;
+  }
+
+  .site-nav .nav-button .button-icon {
+    display: block;
+  }
+
+  .site-nav .nav-button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 }
