@@ -205,7 +205,7 @@ export async function send(options: SendOptions) {
     }
     await waitForAgentRun({
       runId: run.id,
-      read: api.getAgentRun,
+      read: (runId) => api.getAgentRun(runId),
       onSnapshot: (snapshot) => dispatch({ type: "agent.snapshot", snapshot }),
     });
     try {
