@@ -92,19 +92,26 @@ export function fuseRanks(rankings: readonly number[][]): number[] {
 }
 
 /**
- * Takes each passage's best sections first, so every clause of a document gets its match.
- * Returns [section id, chunk] pairs; a long section appears once per part that matched.
+ * Takes each passage's best section not already taken, round by round, so every clause of a
+ * document gets its own match. Returns [section id, chunk] pairs, best first.
  */
-export function interleave(rankings: readonly Ranking[], limit: number): Array<[number, number]> {
-  const picked = new Map<string, [number, number]>();
-  for (let rank = 0; rank < RANK_DEPTH; rank += 1)
-    for (const ranking of rankings) {
-      const id = ranking.ids[rank];
-      if (id === undefined || picked.size >= limit) continue;
-      const chunk = ranking.chunks.get(id) ?? 0;
-      picked.set(`${id}:${chunk}`, [id, chunk]);
-    }
-  return [...picked.values()];
+export function interleave(rankings: readonly Ranking[]): Array<[number, number]> {
+  const picked = new Map<number, number>();
+  const next = rankings.map(() => 0);
+  let added = true;
+  while (added) {
+    added = false;
+    rankings.forEach((ranking, index) => {
+      let position = next[index] ?? 0;
+      while (picked.has(ranking.ids[position] ?? -1)) position += 1;
+      next[index] = position + 1;
+      const id = ranking.ids[position];
+      if (id === undefined) return;
+      picked.set(id, ranking.chunks.get(id) ?? 0);
+      added = true;
+    });
+  }
+  return [...picked];
 }
 
 function clauses(text: string): string[] {

@@ -21,9 +21,9 @@ const QUERY_INSTRUCTION =
 const QUERY_CHARACTERS = 1_000;
 const SEARCH_RESULTS = 5;
 const DOCUMENT_PASSAGES = 24;
-const DOCUMENT_RESULTS = 28;
 const SECTION_CHARACTERS = 4_000;
 const DOCUMENT_SECTION_CHARACTERS = 2_000;
+const DOCUMENT_LAW_CHARACTERS = 48_000;
 
 export interface LawSection {
   citation: string;
@@ -43,6 +43,17 @@ export interface LawContext {
 export type Embed = (text: string, signal?: AbortSignal) => Promise<number[]>;
 
 type JurisdictionRow = { id: string; name: string; current_as_of: string };
+
+function withinCharacters(sections: LawSection[], limit: number): LawSection[] {
+  const kept: LawSection[] = [];
+  let used = 0;
+  for (const section of sections) {
+    used += section.text.length;
+    if (used > limit) break;
+    kept.push(section);
+  }
+  return kept;
+}
 
 export class LawLibrary {
   private database: DatabaseSync | undefined;
@@ -91,7 +102,7 @@ export class LawLibrary {
       search: async (query, signal) => {
         searched = true;
         return this.sections(
-          interleave([await this.rank(id, query, signal)], SEARCH_RESULTS),
+          interleave([await this.rank(id, query, signal)]).slice(0, SEARCH_RESULTS),
           SECTION_CHARACTERS,
         );
       },
@@ -100,7 +111,10 @@ export class LawLibrary {
         const rankings: Ranking[] = [];
         for (const passage of documentPassages(text, DOCUMENT_PASSAGES))
           rankings.push(await this.rank(id, passage, signal));
-        return this.sections(interleave(rankings, DOCUMENT_RESULTS), DOCUMENT_SECTION_CHARACTERS);
+        return withinCharacters(
+          this.sections(interleave(rankings), DOCUMENT_SECTION_CHARACTERS),
+          DOCUMENT_LAW_CHARACTERS,
+        );
       },
     };
   }
