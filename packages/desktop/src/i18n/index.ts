@@ -13,6 +13,7 @@ const listeners = new Set<() => void>();
 const english: Messages = en;
 let locale: LocaleCode = "en";
 let messages: Messages = english;
+let plurals = new Intl.PluralRules(locale);
 
 function storedLocale(): LocaleCode | undefined {
   try {
@@ -27,6 +28,7 @@ async function apply(next: LocaleCode): Promise<void> {
   const load = loaders[`./locales/${next}.json`];
   messages = load === undefined ? english : (await load()).default;
   locale = next;
+  plurals = new Intl.PluralRules(next);
   document.documentElement.lang = next;
   document.documentElement.dir = rightToLeft.includes(next) ? "rtl" : "ltr";
   for (const listener of listeners) listener();
@@ -63,7 +65,7 @@ export function t(
   values: Record<string, string | number> = {},
 ): string {
   const count = values.count;
-  const rule = typeof count === "number" ? new Intl.PluralRules(locale).select(count) : "other";
+  const rule = typeof count === "number" ? plurals.select(count) : "other";
   const template =
     messages[`${key}_${rule}`] ??
     messages[`${key}_other`] ??

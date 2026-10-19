@@ -54,7 +54,7 @@ Desktop (Tauri v2, React)
 packages/shared    versioned contracts (Zod only)
 packages/core      workspace catalog, sessions, agent loop, daemon, policy, audit, inference
 packages/workers   inference client, microVM launchers, guest agent, guest image
-packages/desktop   Tauri and React app, packaging, Windows Hyper-V setup helper
+packages/desktop   Tauri and React app, packaging, Windows Hyper-V setup helper; UI in 28 languages in src/i18n, OS language by default
 packages/cli       daemon health client
 packages/eval      fixtures, platform gates, golden tasks, model comparison
 prompts/           agent, command, skill, and system prompts
