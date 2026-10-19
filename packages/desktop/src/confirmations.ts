@@ -1,4 +1,5 @@
 import type { DesktopApi } from "./api.js";
+import { t } from "./i18n/index.js";
 import { deleteConversation } from "./session-deletion.js";
 import type { DesktopAction } from "./state.js";
 
@@ -16,17 +17,16 @@ interface RevokeFolderConfirmation {
 export function revokeFolderConfirmation(request: RevokeFolderConfirmation) {
   const { api, dispatch, folderId, folderName, setError } = request;
   return {
-    title: `Unmount “${folderName ?? "this folder"}”?`,
-    description:
-      "Garden Desk will unmount this folder and remove its access grant. Files on your computer and existing conversation history are not deleted.",
-    confirmLabel: "Unmount folder",
+    title: t("confirm.unmountTitle", { name: folderName ?? t("confirm.thisFolder") }),
+    description: t("confirm.unmountDescription"),
+    confirmLabel: t("confirm.unmount"),
     onConfirm: () => {
       void api
         .revokeFolder(folderId)
         .then((revoked) => {
           if (revoked) dispatch({ type: "folder.revoked", folderId });
         })
-        .catch(() => setError("The folder could not be unmounted."));
+        .catch(() => setError(t("error.folderUnmount")));
     },
   };
 }
@@ -42,10 +42,9 @@ interface DeleteSessionConfirmation {
 export function deleteSessionConfirmation(request: DeleteSessionConfirmation) {
   const { api, dispatch, session, visibleCount, setError } = request;
   return {
-    title: `Delete “${session.title}”?`,
-    description:
-      "This permanently removes the conversation, its activity, and its generated-file records. This cannot be undone.",
-    confirmLabel: "Delete conversation",
+    title: t("confirm.deleteTitle", { title: session.title }),
+    description: t("confirm.deleteDescription"),
+    confirmLabel: t("confirm.delete"),
     onConfirm: () => void deleteConversation({ api, session, visibleCount, dispatch, setError }),
   };
 }

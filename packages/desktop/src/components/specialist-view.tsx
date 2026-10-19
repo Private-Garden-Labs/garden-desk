@@ -1,5 +1,6 @@
 import type { AgentRunSummary } from "@gardendesk/shared";
 import { useEffect, useRef } from "react";
+import { t } from "../i18n/index.js";
 import type { DesktopState, TimelineItem } from "../state.js";
 import { desktopThinking } from "../steps.js";
 import { Conversation } from "./conversation.js";
@@ -33,7 +34,7 @@ export function SpecialistView({
       id: `status-${run.id}`,
       createdAt: current.updatedAt,
       kind: "assistant",
-      text: unavailable ? "Current status is unavailable." : "Loading activity…",
+      text: unavailable ? t("specialist.unavailable") : t("specialist.loading"),
     });
   return (
     <Conversation
@@ -74,16 +75,16 @@ export function SpecialistActions({
         type="button"
       >
         <Icon name="chevron-left" />
-        Go back
+        {t("specialist.goBack")}
       </button>
       {needsAnswer ? (
         <button className="activity-row-label" onClick={onBack} type="button">
-          Your answer is needed
+          {t("specialist.needsAnswer")}
         </button>
       ) : null}
       {running ? (
         <button className="stop-button" onClick={onCancel} type="button">
-          Stop task
+          {t("specialist.stopTask")}
         </button>
       ) : null}
     </div>

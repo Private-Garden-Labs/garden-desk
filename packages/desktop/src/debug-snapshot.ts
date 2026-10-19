@@ -1,3 +1,5 @@
+import { t } from "./i18n/index.js";
+
 export interface DebugSnapshotState {
   creating: boolean;
   error: string | undefined;
@@ -35,7 +37,7 @@ export function debugSnapshotReducer(
   if (action.type === "create.failed") {
     return {
       creating: false,
-      error: `Could not save the debug snapshot. Code: ${action.code}`,
+      error: t("snapshot.createFailed", { code: action.code }),
       path: undefined,
       revealing: false,
     };
@@ -44,7 +46,7 @@ export function debugSnapshotReducer(
   if (action.type === "reveal.succeeded") return { ...state, revealing: false };
   return {
     ...state,
-    error: `Could not show the debug snapshot. Code: ${action.code}`,
+    error: t("snapshot.revealFailed", { code: action.code }),
     revealing: false,
   };
 }

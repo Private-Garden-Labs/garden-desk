@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { t } from "../i18n/index.js";
 import type { SkillDraft, SkillsController } from "../skills.js";
 
 export function SkillEditor({
@@ -12,7 +13,7 @@ export function SkillEditor({
   return (
     <div className="skill-editor">
       <textarea
-        aria-label={`${draft.name} skill file`}
+        aria-label={t("skills.editorFile", { name: draft.name })}
         className="skill-editor-text"
         onChange={(event) => setContent(event.target.value)}
         spellCheck={false}
@@ -20,12 +21,10 @@ export function SkillEditor({
       />
       <div className="skill-editor-actions">
         {draft.source === "built-in" ? (
-          <p className="skill-editor-note">
-            Garden Desk keeps your version. Remove it later to get the original back.
-          </p>
+          <p className="skill-editor-note">{t("skills.keepsVersion")}</p>
         ) : null}
         <button className="skills-action" onClick={controller.cancelEdit} type="button">
-          Cancel
+          {t("common.cancel")}
         </button>
         <button
           className="skills-action skills-primary"
@@ -33,7 +32,7 @@ export function SkillEditor({
           onClick={() => controller.save(content)}
           type="button"
         >
-          Save
+          {t("common.save")}
         </button>
       </div>
     </div>

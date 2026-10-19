@@ -1,4 +1,5 @@
 import type { AttachmentSummary } from "@gardendesk/shared";
+import { t } from "../i18n/index.js";
 import type { TimelineItem } from "../state.js";
 import { AttachmentChip } from "./attachment-chip.js";
 
@@ -11,7 +12,10 @@ export function MessageAttachments({
 }) {
   if (attachments.length === 0) return null;
   return (
-    <ul aria-label="Message attachments" className="attachment-list conversation-attachments">
+    <ul
+      aria-label={t("attachment.messageList")}
+      className="attachment-list conversation-attachments"
+    >
       {attachments.map((attachment) => (
         <AttachmentChip
           attachment={attachment}

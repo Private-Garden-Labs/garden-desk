@@ -1,6 +1,7 @@
 import type { ModelRuntimeStatus, SkillLocations } from "@gardendesk/shared";
 import capabilities from "../../../workers/images/agent/capabilities.json" with { type: "json" };
 import type { PromptFolder } from "../api.js";
+import { t } from "../i18n/index.js";
 import { TechnicalModelUsage } from "./technical-model-usage.js";
 
 type OverviewRow = [string, string, (() => void) | undefined];
@@ -23,13 +24,13 @@ function promptRows(
   onOpen: ((folder: PromptFolder) => void) | undefined,
 ): OverviewRow[] {
   const entries: Array<[string, PromptFolder, string | undefined]> = [
-    ["Skills folder", "skills", locations?.skillsPath],
-    ["Built-in skills", "built-in-skills", locations?.builtInSkillsPath],
-    ["System prompts", "system-prompts", locations?.systemPromptsPath],
+    [t("overview.skillsFolder"), "skills", locations?.skillsPath],
+    [t("overview.builtInSkills"), "built-in-skills", locations?.builtInSkillsPath],
+    [t("overview.systemPrompts"), "system-prompts", locations?.systemPromptsPath],
   ];
   return entries.map(([label, folder, path]) => [
     label,
-    path ?? "Not available",
+    path ?? t("usage.notAvailable"),
     path === undefined || onOpen === undefined ? undefined : () => onOpen(folder),
   ]);
 }
@@ -46,31 +47,35 @@ function overviewRows({
 }: OverviewProps): OverviewRow[] {
   const { sourceMount, workspaceMount, runtimeMount } = capabilities;
   return [
-    ["Local session ID", sessionId ?? "No session selected", undefined],
-    ["Catalog path", catalogPath || "Not available", onOpenCatalogFolder],
+    [t("overview.sessionId"), sessionId ?? t("overview.noSession"), undefined],
+    [t("overview.catalogPath"), catalogPath || t("usage.notAvailable"), onOpenCatalogFolder],
     ...promptRows(promptLocations, onOpenPromptFolder),
     [
-      "Session folder",
+      t("overview.sessionFolder"),
       sessionId === undefined
-        ? "No session selected"
+        ? t("overview.noSession")
         : `${workspaceMount.path} · read/write · ${workspaceMount.maximumBytes / 1024 ** 2} MiB`,
       undefined,
     ],
-    ["Source mount", `${sourceMount.path} · ${sourceMount.mode} · live`, onOpenSourceFolder],
     [
-      "Temporary storage",
+      t("overview.sourceMount"),
+      `${sourceMount.path} · ${sourceMount.mode} · live`,
+      onOpenSourceFolder,
+    ],
+    [
+      t("overview.tempStorage"),
       `${runtimeMount.path} · ${runtimeMount.maximumBytes / 1024 ** 2} MiB · temporary`,
       undefined,
     ],
-    ["Guest operating system", `Linux ${capabilities.runtimes.Linux}`, undefined],
+    [t("overview.guestOs"), `Linux ${capabilities.runtimes.Linux}`, undefined],
     [
-      "MicroVM limits",
-      sessionId === undefined ? "No session selected" : (limits ?? "Not available"),
+      t("overview.limits"),
+      sessionId === undefined ? t("overview.noSession") : (limits ?? t("usage.notAvailable")),
       undefined,
     ],
-    ["MicroVM network access", "false", undefined],
-    ["Model", model.name, undefined],
-    ["Model state", model.state, undefined],
+    [t("overview.network"), "false", undefined],
+    [t("overview.model"), model.name, undefined],
+    [t("overview.modelState"), model.state, undefined],
   ];
 }
 
@@ -92,7 +97,7 @@ function FolderLink({ onOpen, value }: { onOpen(): void; value: string }) {
     <button
       className="technical-path-link"
       onClick={onOpen}
-      title={parts === undefined ? "Open the folder" : value}
+      title={parts === undefined ? t("overview.openFolder") : value}
       type="button"
     >
       {parts === undefined ? (
@@ -109,7 +114,7 @@ function FolderLink({ onOpen, value }: { onOpen(): void; value: string }) {
 
 export function TechnicalOverviewTable(props: OverviewProps) {
   return (
-    <table aria-label="Session technical details" className="technical-overview-table">
+    <table aria-label={t("overview.table")} className="technical-overview-table">
       <tbody>
         {overviewRows(props).map(([label, value, onOpen]) => (
           <tr key={label}>

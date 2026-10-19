@@ -7,6 +7,7 @@ import { type CSSProperties, useEffect, useState } from "react";
 import capabilities from "../../../workers/images/agent/capabilities.json" with { type: "json" };
 import type { DesktopApi, PromptFolder } from "../api.js";
 import { showCatalogFolder, showFolder } from "../desktop-actions.js";
+import { t } from "../i18n/index.js";
 import { showPromptFolder, usePromptLocations } from "../skills.js";
 import type { TimelineItem } from "../state.js";
 import type { AgentStep } from "../steps.js";
@@ -103,21 +104,16 @@ function Overview({
           promptLocations={promptLocations}
           sessionId={sessionId}
         />
-        <p className="technical-limits">
-          Your skills folder is yours to change. The built-in files belong to the installed app.
-        </p>
+        <p className="technical-limits">{t("technical.skillsNote")}</p>
         <details>
-          <summary>Show tools and runtimes</summary>
+          <summary>{t("technical.showTools")}</summary>
           <pre>{guestCapabilities()}</pre>
         </details>
       </article>
       {sessionId === undefined ? null : (
         <article className="technical-details-item technical-overview">
-          <p className="debug-snapshot-purpose">Troubleshooting</p>
-          <p className="technical-limits">
-            Copy the transcript or save a debug snapshot when you want to forward them to Codex /
-            Claude. Both can contain private data.
-          </p>
+          <p className="debug-snapshot-purpose">{t("technical.troubleshooting")}</p>
+          <p className="technical-limits">{t("technical.troubleshootingNote")}</p>
           <TranscriptCopy
             artifacts={artifacts}
             executions={executions}
@@ -163,7 +159,7 @@ const DRAWER_TABS = ["overview", "steps"] as const;
 
 function DrawerTabs({ active, onSelect }: { active: DrawerTab; onSelect(tab: DrawerTab): void }) {
   return (
-    <div aria-label="Technical details sections" className="drawer-tabs" role="tablist">
+    <div aria-label={t("technical.sections")} className="drawer-tabs" role="tablist">
       {DRAWER_TABS.map((tab) => (
         <button
           aria-controls={`technical-${tab}-panel`}
@@ -175,7 +171,7 @@ function DrawerTabs({ active, onSelect }: { active: DrawerTab; onSelect(tab: Dra
           tabIndex={active === tab ? 0 : -1}
           type="button"
         >
-          {tab === "overview" ? "Overview" : "Steps"}
+          {tab === "overview" ? t("technical.overview") : t("technical.steps")}
         </button>
       ))}
     </div>
@@ -193,7 +189,7 @@ export function TechnicalDetails(props: TechnicalDetailsProps) {
   if (!props.open) return null;
   return (
     <aside
-      aria-label="Technical details"
+      aria-label={t("header.technicalDetails")}
       className="technical-details-drawer"
       style={
         resize.width === undefined
@@ -204,10 +200,10 @@ export function TechnicalDetails(props: TechnicalDetailsProps) {
       <DrawerResizeHandle resize={resize} />
       <header className="technical-details-header">
         <div>
-          <h2>Technical details</h2>
-          <p>Local limits, diagnostics, and execution evidence</p>
+          <h2>{t("header.technicalDetails")}</h2>
+          <p>{t("technical.subtitle")}</p>
         </div>
-        <button aria-label="Close technical details" onClick={props.onClose} type="button">
+        <button aria-label={t("technical.close")} onClick={props.onClose} type="button">
           <Icon name="close" />
         </button>
       </header>

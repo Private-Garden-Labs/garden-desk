@@ -1,5 +1,6 @@
 import type { ThinkingLevel } from "@gardendesk/shared";
 import type { DesktopApi } from "./api.js";
+import { t } from "./i18n/index.js";
 import { retryLocalRequest, waitForAgentRun } from "./run-polling.js";
 import { loadSessionActivity } from "./session-activity.js";
 import type { DesktopAction } from "./state.js";
@@ -13,7 +14,7 @@ export async function addFolder(api: DesktopApi, dispatch: Dispatch, setError: S
     const folder = await api.chooseFolder();
     if (folder !== undefined) dispatch({ type: "folder.add", folder });
   } catch {
-    setError("The selected folder could not be added.");
+    setError(t("error.folderAdd"));
   }
 }
 
@@ -34,7 +35,7 @@ export async function addDroppedFolders(
       dispatch({ type: "session.new", folderId: activeFolder.id });
     }
   } catch {
-    setError("The dropped folders could not be added.");
+    setError(t("error.foldersDropped"));
   }
 }
 
@@ -49,7 +50,7 @@ export async function reorderFolders(
     const folders = await api.reorderFolders(folderIds);
     dispatch({ type: "folders.reorder", folderIds: folders.map((folder) => folder.id) });
   } catch {
-    setError("The folder order could not be saved.");
+    setError(t("error.folderOrder"));
   }
 }
 
@@ -63,11 +64,11 @@ async function openWithError(open: () => Promise<void>, setError: SetError, fail
 }
 
 export async function showFolder(api: DesktopApi, folderId: string, setError: SetError) {
-  await openWithError(() => api.openFolder(folderId), setError, "The folder could not be opened.");
+  await openWithError(() => api.openFolder(folderId), setError, t("error.folderOpen"));
 }
 
 export async function showCatalogFolder(api: DesktopApi, setError: SetError) {
-  await openWithError(() => api.openCatalogFolder(), setError, "The folder could not be opened.");
+  await openWithError(() => api.openCatalogFolder(), setError, t("error.folderOpen"));
 }
 
 interface StartSessionOptions {
@@ -90,7 +91,7 @@ async function startSession(options: StartSessionOptions) {
     }
     return session.id;
   } catch {
-    setError("The conversation could not be created.");
+    setError(t("error.sessionCreate"));
     return undefined;
   }
 }
@@ -125,11 +126,11 @@ export async function selectSession(
       snapshots: activity.snapshots,
     });
     if (activity.incomplete) {
-      setError("Some past activity could not be loaded. The conversation is still available.");
+      setError(t("error.activityPartial"));
     }
   } catch {
     dispatch({ type: "session.load.failed", sessionId });
-    setError("The conversation could not be loaded.");
+    setError(t("error.sessionLoad"));
   }
 }
 
@@ -150,7 +151,7 @@ export async function showMore(options: ShowMoreOptions) {
       folderId === null ? { type: "global.page", page } : { type: "folder.page", folderId, page },
     );
   } catch {
-    setError("More conversations could not be loaded.");
+    setError(t("error.sessionsMore"));
   }
 }
 
@@ -164,7 +165,7 @@ export async function showLess(options: Omit<ShowMoreOptions, "cursor">) {
         : { type: "folder.refresh", folderId, page },
     );
   } catch {
-    setError("The conversation list could not be refreshed.");
+    setError(t("error.sessionsRefresh"));
   }
 }
 
@@ -215,14 +216,10 @@ export async function send(options: SendOptions) {
         messages: await retryLocalRequest(() => api.listMessages(sessionId)),
       });
     } catch {
-      setError("The task completed. Reopen this chat to restore its response.");
+      setError(t("error.responseRestore"));
     }
   } catch {
-    setError(
-      started
-        ? "The task status could not be refreshed. Reopen this chat to restore the latest result."
-        : "The offline task could not be started.",
-    );
+    setError(started ? t("error.statusRefresh") : t("error.taskStart"));
   } finally {
     setSubmitting(false);
   }
@@ -248,7 +245,7 @@ export async function attach(options: AttachOptions) {
     const attachments = await api.chooseFiles(sessionId);
     if (attachments.length > 0) dispatch({ type: "attachments.add", attachments });
   } catch {
-    setError("The selected files could not be attached.");
+    setError(t("error.attach"));
   }
 }
 
@@ -263,7 +260,7 @@ export async function attachDroppedFiles(options: AttachOptions & { paths: strin
     const attachments = await api.addFiles(sessionId, paths);
     if (attachments.length > 0) dispatch({ type: "attachments.add", attachments });
   } catch {
-    setError("Drop files on the chat input to attach them.");
+    setError(t("error.dropAttach"));
   }
 }
 
@@ -273,7 +270,7 @@ export async function openAttachment(
   attachmentId: string,
   setError: SetError,
 ) {
-  const failure = "The attached file could not be opened.";
+  const failure = t("error.attachmentOpen");
   await openWithError(() => api.openAttachment(sessionId, attachmentId), setError, failure);
 }
 
@@ -293,6 +290,6 @@ export async function remove(options: RemoveOptions) {
       dispatch({ type: "attachment.remove", attachmentId });
     }
   } catch {
-    setError("The attached file could not be removed.");
+    setError(t("error.attachmentRemove"));
   }
 }

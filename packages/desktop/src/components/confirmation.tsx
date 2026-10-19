@@ -1,3 +1,5 @@
+import { t } from "../i18n/index.js";
+
 export interface ConfirmationRequest {
   cancelLabel?: string;
   confirmLabel: string;
@@ -28,7 +30,7 @@ export function Confirmation({ request, onCancel, onConfirm }: ConfirmationProps
         <p id="confirmation-description">{request.description}</p>
         <div className="confirmation-actions">
           <button onClick={onCancel} type="button">
-            {request.cancelLabel ?? "Cancel"}
+            {request.cancelLabel ?? t("common.cancel")}
           </button>
           <button
             className={

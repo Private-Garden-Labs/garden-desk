@@ -1,11 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { SecureWorkspaceBanner } from "./components/secure-workspace-banner.js";
-import {
-  secureWorkspaceAllowsTasks,
-  secureWorkspaceMessage,
-  secureWorkspaceSetupDescription,
-} from "./secure-workspace.js";
+import { t } from "./i18n/index.js";
+import { secureWorkspaceAllowsTasks, secureWorkspaceMessage } from "./secure-workspace.js";
 
 describe("secure workspace setup", () => {
   it("allows tasks only after the current token has Hyper-V access", () => {
@@ -17,8 +14,8 @@ describe("secure workspace setup", () => {
   });
 
   it("discloses the standing Windows permission before setup", () => {
-    expect(secureWorkspaceSetupDescription).toContain("full Hyper-V management access");
-    expect(secureWorkspaceSetupDescription).toContain("sign out");
+    expect(t("secure.setupDescription")).toContain("full Hyper-V management access");
+    expect(t("secure.setupDescription")).toContain("sign out");
   });
 
   it("offers retry only while permission is missing", () => {

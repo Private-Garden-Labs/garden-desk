@@ -1,10 +1,9 @@
 import type { SkillSummary } from "@gardendesk/shared";
 import { type ReactNode, useState } from "react";
+import { t } from "../i18n/index.js";
 import type { SkillsController } from "../skills.js";
 import { Icon } from "./icons.js";
 import { SkillHelp } from "./skill-help.js";
-
-const INVALID = "This file needs a name and a description at the top.";
 
 function SkillRow({ controller, skill }: { controller: SkillsController; skill: SkillSummary }) {
   const own = skill.source !== "built-in";
@@ -15,30 +14,32 @@ function SkillRow({ controller, skill }: { controller: SkillsController; skill: 
           {skill.name}
           {own ? (
             <span className="skill-row-tag">
-              {skill.source === "customized" ? "Edited" : "Added"}
+              {skill.source === "customized" ? t("skills.edited") : t("skills.added")}
             </span>
           ) : null}
         </p>
-        <p className="skill-row-description">{skill.valid ? skill.description : INVALID}</p>
+        <p className="skill-row-description">
+          {skill.valid ? skill.description : t("skills.invalid")}
+        </p>
       </div>
       <div className="skill-row-actions">
         <button
-          aria-label={`Edit ${skill.name}`}
+          aria-label={t("skills.edit", { name: skill.name })}
           className="skill-row-action"
           disabled={controller.working}
           onClick={() => controller.edit(skill)}
-          title="Edit"
+          title={t("skills.editShort")}
           type="button"
         >
           <Icon name="pencil" />
         </button>
         {own ? (
           <button
-            aria-label={`Remove ${skill.name}`}
+            aria-label={t("skills.remove", { name: skill.name })}
             className="skill-row-action"
             disabled={controller.working}
             onClick={() => controller.remove(skill.name)}
-            title={skill.source === "customized" ? "Restore the original" : "Remove"}
+            title={skill.source === "customized" ? t("skills.restore") : t("skills.removeShort")}
             type="button"
           >
             <Icon name="trash" />
@@ -46,7 +47,7 @@ function SkillRow({ controller, skill }: { controller: SkillsController; skill: 
         ) : null}
         <button
           aria-checked={skill.enabled}
-          aria-label={`Use ${skill.name}`}
+          aria-label={t("skills.use", { name: skill.name })}
           className="skill-switch"
           disabled={controller.working}
           onClick={() => controller.setEnabled(skill.name, !skill.enabled)}
@@ -94,10 +95,8 @@ function AddZone({
 }) {
   return (
     <div className="skill-drop-zone">
-      <p>Drop a skill file here</p>
-      <p className="skill-drop-note">
-        A skill is one Markdown file that starts with a name and a description.
-      </p>
+      <p>{t("skills.drop")}</p>
+      <p className="skill-drop-note">{t("skills.dropNote")}</p>
       <button
         className="skills-action"
         disabled={controller.working || nativeActionMessage !== undefined}
@@ -105,7 +104,7 @@ function AddZone({
         title={nativeActionMessage}
         type="button"
       >
-        Choose a file
+        {t("skills.chooseFile")}
       </button>
     </div>
   );
@@ -136,14 +135,14 @@ function Toolbar({
         type="button"
       >
         <Icon name="add" />
-        Add skill
+        {t("skills.add")}
       </button>
       <button
-        aria-label="Open the skills folder"
+        aria-label={t("skills.openFolder")}
         className="skills-action skills-icon-action"
         disabled={nativeActionMessage !== undefined}
         onClick={controller.openFolder}
-        title={nativeActionMessage ?? "Open the skills folder"}
+        title={nativeActionMessage ?? t("skills.openFolder")}
         type="button"
       >
         <Icon name="folder" />
@@ -161,7 +160,7 @@ export function SkillList({
 }) {
   const [query, setQuery] = useState("");
   const skills = controller.skills;
-  if (skills === undefined) return <p className="skills-empty">Reading the skills…</p>;
+  if (skills === undefined) return <p className="skills-empty">{t("skills.reading")}</p>;
   const found = skills.filter((skill) => matches(skill, query));
   const own = found.filter((skill) => skill.source !== "built-in");
   return (
@@ -174,9 +173,9 @@ export function SkillList({
             <label className="skills-search">
               <Icon name="search" />
               <input
-                aria-label="Search skills"
+                aria-label={t("skills.searchLabel")}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search"
+                placeholder={t("skills.search")}
                 type="search"
                 value={query}
               />
@@ -185,15 +184,15 @@ export function SkillList({
         }
       />
       <SkillHelp nativeActionMessage={nativeActionMessage} />
-      {found.length === 0 ? <p className="skills-empty">No skill matches that search.</p> : null}
+      {found.length === 0 ? <p className="skills-empty">{t("skills.noMatch")}</p> : null}
       {own.length === 0 && query === "" ? (
         <AddZone controller={controller} nativeActionMessage={nativeActionMessage} />
       ) : (
-        <SkillGroup controller={controller} heading="Your skills" skills={own} />
+        <SkillGroup controller={controller} heading={t("skills.yours")} skills={own} />
       )}
       <SkillGroup
         controller={controller}
-        heading="Built in"
+        heading={t("skills.builtIn")}
         skills={found.filter((skill) => skill.source === "built-in")}
       />
     </>
