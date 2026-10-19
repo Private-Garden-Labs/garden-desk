@@ -569,13 +569,13 @@ select:focus-visible {
 .language-list {
   position: absolute;
   z-index: 12;
-  right: 12px;
   bottom: calc(100% - 6px);
-  left: 12px;
+  inset-inline: 4px;
   display: grid;
   max-height: min(420px, calc(100vh - 160px));
   padding: 5px;
   overflow-y: auto;
+  scrollbar-width: thin;
   gap: 2px;
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -592,18 +592,25 @@ select:focus-visible {
 .language-option {
   display: flex;
   width: 100%;
+  min-width: 0;
   min-height: 32px;
   flex: 0 0 auto;
   align-items: center;
-  gap: 9px;
-  padding: 0 10px;
+  gap: 8px;
+  padding: 0 8px;
   border: 0;
   border-radius: 8px;
   color: var(--ink);
   background: transparent;
   font-size: 13px;
   text-align: start;
+  white-space: nowrap;
   cursor: pointer;
+}
+
+.language-option-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .language-option:focus-visible {

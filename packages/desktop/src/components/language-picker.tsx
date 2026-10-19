@@ -73,7 +73,7 @@ function LanguageList({
             {option.code === locale ? <Icon name="check" /> : null}
           </span>
           <Flag code={option.code} />
-          {option.label}
+          <span className="language-option-name">{option.label}</span>
         </button>
       ))}
     </div>
