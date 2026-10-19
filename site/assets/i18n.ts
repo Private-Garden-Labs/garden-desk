@@ -32,23 +32,23 @@ const globeIcon =
 
 const languages = [
   ["en", "English (US)"],
-  ["cs", "čeština"],
-  ["da", "dansk"],
+  ["cs", "Čeština"],
+  ["da", "Dansk"],
   ["de", "Deutsch (DE)"],
-  ["es-419", "español (Latinoamérica)"],
-  ["es-ES", "español (España)"],
+  ["es-419", "Español (Latinoamérica)"],
+  ["es-ES", "Español (España)"],
   ["fil", "Filipino"],
-  ["fr", "français (FR)"],
+  ["fr", "Français (FR)"],
   ["id", "Indonesia"],
-  ["it", "italiano (IT)"],
+  ["it", "Italiano (IT)"],
   ["ms", "Melayu"],
   ["nl", "Nederlands (NL)"],
-  ["nb", "norsk bokmål (NO)"],
-  ["pl", "polski"],
-  ["pt-BR", "português (BR)"],
-  ["ro", "română"],
-  ["fi", "suomi"],
-  ["sv", "svenska"],
+  ["nb", "Norsk bokmål (NO)"],
+  ["pl", "Polski"],
+  ["pt-BR", "Português (BR)"],
+  ["ro", "Română"],
+  ["fi", "Suomi"],
+  ["sv", "Svenska"],
   ["tr", "Türkçe"],
   ["he", "עברית"],
   ["ar", "العربية (SA)"],
@@ -240,9 +240,9 @@ function mountPicker(choose: (code: string) => void) {
   });
 
   return (code: string, word: string): void => {
-    const label = languages.find(([candidate]) => candidate === code)?.[1] ?? code;
-    trigger.replaceChildren(flagImage(code));
-    trigger.setAttribute("aria-label", `${word}: ${label}`);
+    const selected = options.find((option) => option.dataset.code === code);
+    trigger.replaceChildren(...(selected?.cloneNode(true).childNodes ?? []));
+    trigger.setAttribute("aria-label", `${word}: ${selected?.textContent ?? code}`);
     for (const option of options)
       option.setAttribute("aria-selected", String(option.dataset.code === code));
   };
