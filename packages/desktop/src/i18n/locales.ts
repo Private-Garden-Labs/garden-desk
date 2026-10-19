@@ -46,14 +46,14 @@ export function isLocaleCode(value: string | null | undefined): value is LocaleC
   return localeOptions.some((option) => option.code === value);
 }
 
+function findCode(lower: string): LocaleCode | undefined {
+  return localeOptions.find((option) => option.code.toLowerCase() === lower)?.code;
+}
+
 function matchTag(tag: string): LocaleCode | undefined {
   const lower = tag.toLowerCase();
-  const exact = localeOptions.find((option) => option.code.toLowerCase() === lower);
-  if (exact !== undefined) return exact.code;
   const base = lower.split("-")[0] ?? lower;
-  return (
-    baseLanguages[base] ?? localeOptions.find((option) => option.code.toLowerCase() === base)?.code
-  );
+  return findCode(lower) ?? baseLanguages[base] ?? findCode(base);
 }
 
 export function resolveLocale(languages: readonly string[]): LocaleCode {

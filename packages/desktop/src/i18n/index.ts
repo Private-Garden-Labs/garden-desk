@@ -39,9 +39,7 @@ export async function initLocale(): Promise<void> {
 export async function setLocale(next: LocaleCode): Promise<void> {
   try {
     localStorage.setItem(STORAGE_KEY, next);
-  } catch {
-    // Storage can be blocked; the choice then lasts for this session only.
-  }
+  } catch {}
   await apply(next);
 }
 
