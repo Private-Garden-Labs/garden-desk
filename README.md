@@ -4,6 +4,8 @@
 
 Garden Desk is a free desktop agent for work with local files. Choose a folder or attach files, describe the result you need, and review what it makes. It runs on your computer with no account, telemetry, or cloud service.
 
+About the name: the cloud is a noisy city with no privacy. Garden Desk is your own desk in a private backyard, where nobody tracks you.
+
 <img width="1467" height="967" alt="Screenshot 2026-09-28 at 13 13 41" src="https://github.com/user-attachments/assets/2817bdfc-3567-41da-b8dc-3848c9b5d78c" />
 
 
@@ -22,7 +24,7 @@ Core controls folder access, approvals, audit, and recovery. The model proposes 
 
 ## Get Garden Desk
 
-Download signed builds for [Apple silicon macOS or Windows 11 x64](https://gardendesk.ai/releases/). Windows needs Pro or Enterprise with Hyper-V enabled. First launch needs no download. To build from source, use the [development workflow](docs/DEVELOPMENT_WORKFLOW.md#local-source-setup).
+Download signed builds for [Apple silicon macOS or Windows 11 x64](https://gardendesk.ai/releases/). Both need 16 GB of memory. Windows also needs an NVIDIA or AMD GPU with 12 GB of VRAM, and Pro or Enterprise with Hyper-V enabled. First launch needs no download. To build from source, use the [development workflow](docs/DEVELOPMENT_WORKFLOW.md#local-source-setup).
 
 ## Benchmark
 

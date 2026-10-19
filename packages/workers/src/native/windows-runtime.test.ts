@@ -51,7 +51,6 @@ const profile = {
     deviceIndex: 1,
     detectedMemoryBytes: 24,
     expectedName: "Selected GPU",
-    installedMemoryBytes: 32,
     memoryKind: "dedicated" as const,
   },
 };

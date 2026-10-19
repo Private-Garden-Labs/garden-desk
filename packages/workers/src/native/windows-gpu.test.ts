@@ -4,7 +4,6 @@ import type { WindowsGpuLaunch } from "./windows.js";
 import { isExpectedWindowsGpuIdentity } from "./windows-gpu-identity.js";
 import {
   normalizeGpuName,
-  resolveIntegratedGpuBudget,
   resolveWindowsGpuMemoryProfile,
   resolveWindowsGpuProfileFromFacts,
   type WindowsGpuAdapterInfo,
@@ -33,8 +32,8 @@ function inventory(
   return { schemaVersion: 1, backend, deviceNames, totalMemoryBytes };
 }
 
-function facts(adapters: WindowsGpuAdapterInfo[], installedMemoryBytes = 32 * GiB): WindowsGpuInfo {
-  return { schemaVersion: 1, installedMemoryBytes, adapters };
+function facts(adapters: WindowsGpuAdapterInfo[]): WindowsGpuInfo {
+  return { schemaVersion: 1, adapters };
 }
 
 function probe(
@@ -47,24 +46,22 @@ function probe(
   };
 }
 
-describe("Windows integrated GPU budgets", () => {
-  it.each([
-    [24 * GiB - 1, 16 * GiB, undefined],
-    [24 * GiB, 16 * GiB - 1, undefined],
-    [24 * GiB, 16 * GiB, 16 * GiB],
-  ])(
-    "maps installed bytes %d and detected bytes %d to the safe budget",
-    (installed, detected, budget) => {
-      expect(resolveIntegratedGpuBudget(installed, detected)).toBe(budget);
-    },
-  );
+describe("Windows integrated GPU budget", () => {
+  it("uses the GPU floor and reserves the budget in system memory", () => {
+    const floor = INFERENCE_PROFILE.minimumGpuMemoryBytes;
+    expect(resolveWindowsGpuMemoryProfile(true, 16 * GiB, floor - 1)).toBeUndefined();
+    expect(resolveWindowsGpuMemoryProfile(true, 16 * GiB, floor)).toEqual({
+      memoryBudgetBytes: floor,
+      hostMemoryReservationBytes: floor,
+    });
+  });
 });
 
 describe("Windows dedicated GPU budget", () => {
   it("admits a large card only while its usable memory clears the floor", () => {
-    const floor = INFERENCE_PROFILE.minimumDedicatedMemoryBytes;
-    expect(resolveWindowsGpuMemoryProfile(false, 16 * GiB, 32 * GiB, floor - 1)).toBeUndefined();
-    expect(resolveWindowsGpuMemoryProfile(false, 16 * GiB, 32 * GiB, floor)).toMatchObject({
+    const floor = INFERENCE_PROFILE.minimumGpuMemoryBytes;
+    expect(resolveWindowsGpuMemoryProfile(false, 16 * GiB, floor - 1)).toBeUndefined();
+    expect(resolveWindowsGpuMemoryProfile(false, 16 * GiB, floor)).toMatchObject({
       memoryBudgetBytes: floor,
     });
   });
@@ -123,7 +120,7 @@ describe("Windows integrated GPU fallback", () => {
     "uses the unified policy for %s without a vendor rule",
     async (name) => {
       const selected = await resolveWindowsGpuProfileFromFacts(
-        facts([adapter("integrated", name, true)], 24 * GiB),
+        facts([adapter("integrated", name, true)]),
         [inventory("hip", [name])],
         probe({ "hip:0": { name, memory: 16 * GiB } }),
       );
