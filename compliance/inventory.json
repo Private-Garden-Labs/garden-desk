@@ -243,7 +243,7 @@
   "toolsAndInputs": [
     {
       "name": "Node.js",
-      "version": "24.18.0",
+      "version": "24.22.0",
       "license": "MIT",
       "use": "runtime_and_sidecar"
     },

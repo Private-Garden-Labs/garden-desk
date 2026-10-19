@@ -4,7 +4,7 @@ This committed shell validates the native boundary only. It is not product UI.
 
 ## Selected Sidecar Path
 
-The sidecar is a Node 24.18.0 Single Executable Application. `esbuild` bundles the fixed TypeScript fixture to one CommonJS file, Node creates a SEA blob, and the Node-maintained `postject` tool injects it into the exact pinned Node executable. Injection invalidates existing platform signatures, so signing always happens afterward.
+The sidecar is a Node 24.22.0 Single Executable Application. `esbuild` bundles the fixed TypeScript fixture to one CommonJS file, Node creates a SEA blob, and the Node-maintained `postject` tool injects it into the exact pinned Node executable. Injection invalidates existing platform signatures, so signing always happens afterward.
 
 The build enforces the pinned Node version and records the source Node executable SHA-256, `pnpm-lock.yaml` SHA-256, final executable SHA-256, target triple, and signing mode in the uncommitted `.generated/build-record.json`. Tauri receives the executable under its required target-triple name. The fixture accepts no arguments and opens no endpoint.
 

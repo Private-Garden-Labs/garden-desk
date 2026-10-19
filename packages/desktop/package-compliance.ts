@@ -52,7 +52,7 @@ async function files(root: string, directory = root): Promise<string[]> {
 }
 
 const hostPackages = [
-  { name: "Node.js", version: "24.18.0", license: "MIT" },
+  { name: "Node.js", version: "24.22.0", license: "MIT" },
   {
     name: "llama.cpp (PrismML fork)",
     version: "prism-b10754-2459f68",
