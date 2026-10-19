@@ -249,3 +249,19 @@ export const sampleMessages = new Map([
     ]),
   ],
 ]);
+
+export const demoCommands = [
+  {
+    name: "expenses",
+    description: "Check invoice and expense calculations, evidence, and supplied rules",
+  },
+  {
+    name: "obligations",
+    description: "Extract duties, deadlines, and renewal terms from agreements",
+  },
+  {
+    name: "reconcile",
+    description: "Match financial records and report amounts that differ",
+  },
+  { name: "review", description: "Review one attached document for inconsistencies" },
+];

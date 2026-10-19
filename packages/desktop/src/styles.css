@@ -1238,12 +1238,17 @@ select:focus-visible {
 }
 
 .suggestions {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 12px;
 }
 
 .suggestions button {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 calc((100% - 36px) / 4);
   min-height: 104px;
   padding: 18px;
   border: 1px solid var(--border-color);
@@ -1256,6 +1261,12 @@ select:focus-visible {
     border-color 160ms ease,
     background 160ms ease,
     transform 160ms ease;
+}
+
+.suggestion-command {
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .suggestions button:hover {
@@ -3795,8 +3806,8 @@ select:focus-visible {
 }
 
 @media (max-width: 960px) {
-  .suggestions {
-    grid-template-columns: repeat(2, 1fr);
+  .suggestions button {
+    flex-basis: calc((100% - 12px) / 2);
   }
 }
 

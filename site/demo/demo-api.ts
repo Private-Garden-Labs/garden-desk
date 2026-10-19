@@ -18,7 +18,14 @@ import {
   demoTime,
   uuid,
 } from "./demo-run.js";
-import { financeSession, folder, initialRun, sampleMessages, sessions } from "./fixtures.js";
+import {
+  demoCommands,
+  financeSession,
+  folder,
+  initialRun,
+  sampleMessages,
+  sessions,
+} from "./fixtures.js";
 
 const demoUnavailable = () => Promise.reject(new Error("Unavailable in the public demo"));
 const limitation =
@@ -60,7 +67,7 @@ export class DemoDesktopApi implements DesktopApi {
   async bootstrapDesktop() {
     return {
       catalogPath: "browser-memory://synthetic-demo",
-      commands: [],
+      commands: demoCommands,
       folders: [folder],
       globalSessions: { items: [], nextCursor: null },
       folderSessions: [
@@ -119,10 +126,8 @@ export class DemoDesktopApi implements DesktopApi {
   setSkillEnabled = demoUnavailable;
   openPromptFolder = demoUnavailable;
   setLawEnabled = demoUnavailable;
-
-  async listLaws() {
-    return [];
-  }
+  sampleFolderFiles = async () => ["bank-statement.csv", "ledger.xlsx", "transaction-review.md"];
+  listLaws = async () => [];
 
   async listSkills() {
     return demoSkills.map((skill) => ({ ...skill }));

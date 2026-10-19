@@ -1,6 +1,7 @@
 import type { Jurisdiction, LawJurisdictionSummary } from "@gardendesk/shared";
 import { useCallback, useEffect, useState } from "react";
 import type { DesktopApi } from "./api.js";
+import { t } from "./i18n/index.js";
 
 export interface LawsController {
   choose(id: Jurisdiction): void;
@@ -21,7 +22,7 @@ export function useLaws(api: DesktopApi, open: boolean): LawsController {
     try {
       setLaws(await api.listLaws());
     } catch {
-      setError("The law library could not be read.");
+      setError(t("laws.readError"));
     }
   }, [api]);
   useEffect(() => {
@@ -35,7 +36,7 @@ export function useLaws(api: DesktopApi, open: boolean): LawsController {
     try {
       await api.setLawEnabled(id, value);
     } catch {
-      setError("The law library could not be changed.");
+      setError(t("laws.changeError"));
     }
     await refresh();
     setWorking(false);

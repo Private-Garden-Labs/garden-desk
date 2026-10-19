@@ -1,5 +1,7 @@
-import { type Jurisdiction, LAW_DISCLAIMER } from "@gardendesk/shared";
+import type { Jurisdiction } from "@gardendesk/shared";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import { t } from "../i18n/index.js";
+import { lawName } from "../law-names.js";
 import type { LawsController } from "../laws.js";
 import { Icon } from "./icons.js";
 
@@ -15,7 +17,7 @@ function LawMenu({ laws, onChoose, onClose }: LawMenuProps) {
   return (
     <div className="effort-menu law-menu">
       <div
-        aria-label="Law"
+        aria-label={t("laws.label")}
         onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
           if (event.key === "Escape") onClose();
         }}
@@ -34,11 +36,11 @@ function LawMenu({ laws, onChoose, onClose }: LawMenuProps) {
             <span aria-hidden="true" className="effort-option-check">
               {law.id === laws.selected ? <Icon name="check" /> : null}
             </span>
-            {law.name}
+            {lawName(law)}
           </button>
         ))}
       </div>
-      <p className="law-menu-note">{LAW_DISCLAIMER}</p>
+      <p className="law-menu-note">{t("laws.disclaimer")}</p>
     </div>
   );
 }
@@ -76,17 +78,17 @@ export function LawControl({ disabled, laws }: { disabled: boolean; laws: LawsCo
       <button
         aria-expanded={open}
         aria-haspopup="listbox"
-        aria-label={`Law: ${selected.name}`}
+        aria-label={t("laws.selected", { name: lawName(selected) })}
         className="effort-control"
         disabled={disabled}
         onClick={() => setOpen(!open)}
         ref={control}
-        title={LAW_DISCLAIMER}
+        title={t("laws.disclaimer")}
         type="button"
       >
         <Icon name="read" />
-        <span className="effort-label">Law</span>
-        <span className="effort-value">{selected.name}</span>
+        <span className="effort-label">{t("laws.label")}</span>
+        <span className="effort-value">{lawName(selected)}</span>
         <span aria-hidden="true" className="effort-caret" />
       </button>
     </div>

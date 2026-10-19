@@ -25,6 +25,7 @@ Desktop (Tauri v2, React)
 - The main agent has up to 40 turns. Its tools are `bash`, `python`, `node`, `read`, `glob`, `grep`, `list`, `write`, `edit`, `image`, `skill`, `task`, `question`, and `review`. `read` returns numbered text for DOC, DOCX, and PDF through one fixed guest extraction.
 - `task` runs one specialist child at a time in the same VM. The specialists are general, explore, matter chronology, contract obligations, document comparison, and financial review.
 - `/review` reviews one attached document in a single model call with no tools. `/obligations`, `/reconcile`, and `/expenses` run a specialist directly.
+- To suggest commands in an empty chat, Core lists the names of up to 10 files in the selected folder; hidden files and links are skipped.
 - Packaged skills are prompt-only. A person can also add, edit, or turn off skill files in the workspace `skills/` folder.
 - The app includes a US federal and an EU law library in one read-only SQLite file. The Laws page turns each jurisdiction on or off, and the chat picks one at a time. With a jurisdiction picked, the main agent gets a `laws` tool and `/review` gets matching law sections. Search combines keyword (SQLite FTS5) and meaning (encoder vectors) results. Answers never call a document legal and always say they are not legal advice.
 - Every file created or changed under `/workspace` during a run is delivered to the user. Open uses a verified temporary copy. Save As uses a native dialog and an atomic Core write, and the webview never sees the destination path.

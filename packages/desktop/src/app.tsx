@@ -28,13 +28,16 @@ import { useDraftPersistence } from "./draft-persistence.js";
 import { t, useLocale } from "./i18n/index.js";
 import { useLaws } from "./laws.js";
 import { desktopPlatform } from "./platform.js";
+import { cancelRun } from "./run-polling.js";
 import { secureWorkspaceAllowsTasks } from "./secure-workspace.js";
+import { activeFolder } from "./session-state.js";
 import { useSkills } from "./skills.js";
 import { useDesktopBootstrap } from "./startup.js";
 import { desktopReducer, initialDesktopState } from "./state.js";
 import { selectStep } from "./step-selection.js";
 import { agentSteps, desktopThinking } from "./steps.js";
 import { useChildRun } from "./use-child-run.js";
+import { useFolderFiles } from "./use-folder-files.js";
 import { useSecureWorkspace } from "./use-secure-workspace.js";
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single desktop composition boundary.
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: single desktop composition boundary.
@@ -67,12 +70,8 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
     ? undefined
     : (capabilities.unavailableReason ?? t("demo.unavailable"));
   const generatedFileActions = artifactActions(api, state.activeSessionId, setDesktopError);
-  const activeFolder = state.folders.find(
-    (folder) =>
-      folder.id === state.newSessionFolderId ||
-      folder.sessions.some((session) => session.id === state.activeSessionId),
-  );
-  const folderName = activeFolder?.name;
+  const folder = activeFolder(state);
+  const folderFileNames = useFolderFiles(api, folder?.id);
   const running =
     submitting || state.activeRun?.state === "queued" || state.activeRun?.state === "running";
   useModelRefresh(api, state.loaded, running || model.state === "busy", setModel);
@@ -122,13 +121,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const detailDispatch = childOpen ? child.dispatch : dispatch;
   const steps = agentSteps(detailState.timeline, detailState.executions, detailState.traces);
   const { thinkingByStep, thinkingStepId } = desktopThinking(detailState);
-  const cancelTask = () => {
-    if (state.activeRun !== undefined) {
-      void api
-        .cancelAgent(state.activeRun.jobId)
-        .catch(() => setDesktopError(t("task.cancelFailed")));
-    }
-  };
+  const cancelTask = () => cancelRun(api, state.activeRun, setDesktopError);
   const closeChild = () => {
     const id = selectedChild?.id;
     setSelectedChild(undefined);
@@ -223,7 +216,9 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
             }}
             artifacts={state.artifacts}
             attachments={state.attachments}
-            folderName={folderName}
+            commands={state.commands}
+            folderFileNames={folderFileNames}
+            folderName={folder?.name}
             key={state.activeSessionId ?? `new:${state.newSessionFolderId ?? "global"}`}
             nativeActionMessage={nativeUnavailable}
             ready={state.loaded}
@@ -276,7 +271,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         artifacts={detailState.artifacts}
         catalogPath={state.catalogPath}
         executions={detailState.executions}
-        folderId={state.activeSessionId === undefined ? undefined : activeFolder?.id}
+        folderId={state.activeSessionId === undefined ? undefined : folder?.id}
         key={`${childOpen ? selectedChild.id : (state.activeSessionId ?? `new:${state.newSessionFolderId ?? "global"}`)}:${technicalDetailsOpen ? "open" : "closed"}`}
         api={api}
         model={model}

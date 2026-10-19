@@ -32,6 +32,7 @@ export interface GardenDeskCorePorts extends InferenceService {
   listFolders(): Promise<FolderSummary[]>;
   reorderFolders(folderIds: string[]): Promise<FolderSummary[]>;
   resolveFolderPath(folderId: string): Promise<string>;
+  sampleFolderFiles(folderId: string): Promise<string[]>;
   revokeFolder(folderId: string): Promise<boolean>;
   createSession(folderId: string | null): Promise<SessionSummary>;
   deleteSession(sessionId: string): Promise<boolean>;
@@ -139,6 +140,7 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
     listFolders: () => ports.listFolders(),
     reorderFolders: (folderIds) => ports.reorderFolders(folderIds),
     resolveFolderPath: (folderId) => ports.resolveFolderPath(folderId),
+    sampleFolderFiles: (folderId) => ports.sampleFolderFiles(folderId),
     revokeFolder: (folderId) => ports.revokeFolder(folderId),
     createSession: (folderId) => ports.createSession(folderId),
     deleteSession: (sessionId) => ports.deleteSession(sessionId),

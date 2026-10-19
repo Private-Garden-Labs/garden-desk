@@ -112,6 +112,7 @@ export interface DesktopApi {
   setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
   skillLocations(): Promise<SkillLocations>;
   openPromptFolder(folder: PromptFolder): Promise<void>;
+  sampleFolderFiles(folderId: string): Promise<string[]>;
   listLaws(): Promise<LawJurisdictionSummary[]>;
   setLawEnabled(id: Jurisdiction, enabled: boolean): Promise<boolean>;
   listenForDroppedPaths?(listener: (event: NativeDropEvent) => void): Promise<() => void>;

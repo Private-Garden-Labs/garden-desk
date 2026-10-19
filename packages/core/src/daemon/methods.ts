@@ -66,6 +66,12 @@ async function resolveFolderPath(core: GardenDeskCore, request: RpcRequest): Pro
   return success(request, await core.resolveFolderPath(folderId.data));
 }
 
+async function sampleFolderFiles(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
+  const folderId = FolderIdSchema.safeParse(request.params.folderId);
+  if (!folderId.success) return failure(request, "invalid_request", "Invalid folder id.");
+  return success(request, await core.sampleFolderFiles(folderId.data));
+}
+
 async function appendMessage(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
   const sessionId = SessionIdSchema.safeParse(request.params.sessionId);
   const role = MessageRoleSchema.safeParse(request.params.role);
@@ -191,6 +197,8 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
       return reorderFolders(core, request);
     case "folders.resolvePath":
       return resolveFolderPath(core, request);
+    case "folders.sampleFiles":
+      return sampleFolderFiles(core, request);
     case "folders.revoke":
       return revokeFolder(core, request);
     case "sessions.create":
