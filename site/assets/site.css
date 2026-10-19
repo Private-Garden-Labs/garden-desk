@@ -1,3 +1,5 @@
+@import "./language.css";
+
 @font-face {
   font-family: "IBM Plex Sans";
   font-style: normal;
@@ -2643,5 +2645,42 @@ nudged by the pointer. */
 
   .post-card:hover {
     border-color: var(--leaf-soft);
+  }
+}
+
+@media (max-width: 1100px) {
+  .site-nav a:not(.nav-button):not(.nav-source) {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .site-nav {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-nav .nav-button .button-icon {
+    display: none;
+  }
+}
+
+@media (max-width: 430px) {
+  .site-nav .nav-button {
+    width: 42px;
+    padding: 0;
+  }
+
+  .site-nav .nav-button .button-icon {
+    display: block;
+  }
+
+  .site-nav .nav-button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 }

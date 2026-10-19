@@ -233,7 +233,6 @@ if (!/\.hidden\s*=\s*!1/u.test(homeBundle)) {
 for (const forbidden of [
   "@tauri-apps",
   "__TAURI",
-  "localStorage",
   "sessionStorage",
   "XMLHttpRequest",
   "sendBeacon",

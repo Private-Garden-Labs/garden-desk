@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="An AI coworker for your files that runs entirely on your computer. One download, nothing to configure, nothing tracked, and no way online."
-    />
+      content="An AI coworker for your files that runs entirely on your computer. One download, nothing to configure, nothing tracked, and no way online." data-i18n-attr="content=home.description" />
     <meta name="theme-color" content="#122b1d" />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href="https://gardendesk.ai/" />
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./assets/site.css" />
     <script type="module" src="./assets/motion.ts"></script>
+    <script type="module" src="./assets/i18n.ts"></script>
     <script type="module" src="./assets/scene.ts"></script>
     <script type="module" src="./demo-embed.ts"></script>
     <meta property="og:type" content="website" />
@@ -43,60 +43,60 @@
         "license": "https://www.apache.org/licenses/LICENSE-2.0"
       }
     </script>
-    <title>Garden Desk - Your work. Your space.</title>
+    <title data-i18n="home.title">Garden Desk - Your work. Your space.</title>
   </head>
   <body class="home">
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href="#main" data-i18n="nav.skip">Skip to content</a>
     <div class="leaf-field" data-leaf-field aria-hidden="true"></div>
     <header class="site-header" data-header>
       <a class="wordmark" href="./">
         <img src="./assets/favicon.svg" alt="" />
         Garden Desk
       </a>
-      <nav aria-label="Main navigation" class="site-nav">
-        <a href="#how-it-works">How it works</a>
-        <a href="#compare">Compare</a>
-        <a href="#requirements">Requirements</a>
-        <a href="./releases/">Releases</a>
-        <a href="./blog/">Blog</a>
+      <nav aria-label="Main navigation" class="site-nav" data-i18n-attr="aria-label=nav.main">
+        <a href="#how-it-works" data-i18n="nav.how">How it works</a>
+        <a href="#compare" data-i18n="nav.compare">Compare</a>
+        <a href="#requirements" data-i18n="nav.requirements">Requirements</a>
+        <a href="./releases/" data-i18n="nav.releases">Releases</a>
+        <a href="./blog/" data-i18n="nav.blog">Blog</a>
         <a class="nav-source" href="https://github.com/private-garden-labs/garden-desk">
           <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.2-3.09-.12-.29-.52-1.46.11-3.04 0 0 .98-.31 3.16 1.18A11 11 0 0 1 12 6.91c.98 0 1.94.13 2.85.38 2.18-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.75.11 3.04.75.8 1.2 1.83 1.2 3.09 0 4.42-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v2.47c0 .31.21.67.79.56A11.5 11.5 0 0 0 12 .7Z" /></svg><span>GitHub</span><span aria-hidden="true" class="nav-source-arrow">&#8599;</span>
         </a>
         <a class="nav-button" href="./demo/">
           <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-          <span>See it in action</span>
+          <span data-i18n="nav.demo">See it in action</span>
         </a>
       </nav>
     </header>
     <main id="main">
       <section class="garden">
         <div class="garden-copy">
-          <h1>Crowded cloud.<br />Private garden.</h1>
-          <p class="garden-lede">Cloud privacy has limits. Your AI coworker stays on your computer.</p>
+          <h1 data-i18n-html="home.h1">Crowded cloud.<br />Private garden.</h1>
+          <p class="garden-lede" data-i18n="home.lede">Cloud privacy has limits. Your AI coworker stays on your computer.</p>
           <div class="garden-actions">
             <a class="button button-primary" data-download-mac href="https://downloads.gardendesk.ai/v1.2.0/Garden-Desk-1.2.0-macos-arm64.dmg">
               <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.8c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8-.7 0-1.8-.8-2.9-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.8 1.1 9 .8 1.1 1.6 2.3 2.8 2.2 1.1 0 1.5-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 1.9-1.1 2.7-2.2.8-1.2 1.2-2.4 1.2-2.5-.1 0-2.3-.9-2.3-3.6zM14.2 5.9c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-.9 2.8 1 0 2-.5 2.6-1.3z" /></svg>
-              <span>Download for Mac</span>
+              <span data-i18n="home.downloadMac">Download for Mac</span>
             </a>
             <a class="button button-secondary" data-download-windows href="https://downloads.gardendesk.ai/v1.2.0/Garden-Desk-1.2.0-windows-x64.zip">
               <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.6l7.3-1v7.1H3V5.6zm0 12.8l7.3 1v-7h-7.3v6zM11.3 19.6L21 21v-8.5h-9.7v7.1zM11.3 3.4v7.3H21V2l-9.7 1.4z" /></svg>
-              <span>Download for Windows</span>
+              <span data-i18n="home.downloadWindows">Download for Windows</span>
             </a>
           </div>
           <p class="download-meta">
-            Version 1.2.0 · Apple silicon, or Windows with NVIDIA or AMD graphics ·
-            <a href="./releases/">All releases</a>
+            <span data-i18n="version">Version</span> 1.2.0 · <span data-i18n="home.platforms">Apple silicon, or Windows with NVIDIA or AMD graphics</span> ·
+            <a href="./releases/" data-i18n="home.allReleases">All releases</a>
           </p>
           <p class="open-source">
             <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.2-3.09-.12-.29-.52-1.46.11-3.04 0 0 .98-.31 3.16 1.18A11 11 0 0 1 12 6.91c.98 0 1.94.13 2.85.38 2.18-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.75.11 3.04.75.8 1.2 1.83 1.2 3.09 0 4.42-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v2.47c0 .31.21.67.79.56A11.5 11.5 0 0 0 12 .7Z" /></svg>
             <span
-              >Free and <strong>open source</strong> under Apache 2.0.
+               data-i18n-html="home.openSource">Free and <strong>open source</strong> under Apache 2.0.
               <a href="https://github.com/private-garden-labs/garden-desk">Read every line &#8599;</a></span
             >
           </p>
-          <p class="availability">No account. No sign-up. No keys.</p>
+          <p class="availability" data-i18n="home.availability">No account. No sign-up. No keys.</p>
         </div>
-        <div class="garden-scene" data-scene role="img" aria-label="A wooden desk and chair in a private Amsterdam townhouse roof garden, with a stair entrance, small trees, low shrubs, gabled houses, canals, bridges, and a distant sea view">
+        <div class="garden-scene" data-scene role="img" aria-label="A wooden desk and chair in a private Amsterdam townhouse roof garden, with a stair entrance, small trees, low shrubs, gabled houses, canals, bridges, and a distant sea view" data-i18n-attr="aria-label=home.sceneLabel">
         <svg class="garden-poster" viewBox="700 0 760 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <defs>
             <linearGradient id="sky-wash" x2="0" y2="1"><stop stop-color="#d5dbd4" /><stop offset="1" stop-color="#e8e8df" /></linearGradient>
@@ -225,14 +225,14 @@
           <rect x="700" y="510" width="760" height="190" fill="url(#threshold)" />
         </svg>
         </div>
-        <button class="garden-pause" type="button" data-garden-pause aria-pressed="false" hidden>Pause animation</button>
+        <button class="garden-pause" type="button" data-garden-pause aria-pressed="false" hidden><span data-i18n="home.pause">Pause animation</span><span data-i18n="home.resume" hidden>Resume animation</span></button>
       </section>
 
       <section class="section origin-section" aria-labelledby="origin-title">
         <div class="section-inner origin">
-          <h2 id="origin-title" data-reveal data-reveal-delay="70">Private, or simple.<br />Never both.</h2>
-          <p class="origin-line" data-reveal data-reveal-delay="140">So we built both.</p>
-          <p class="origin-note" data-reveal data-reveal-delay="200">
+          <h2 id="origin-title" data-reveal data-reveal-delay="70" data-i18n-html="home.originTitle">Private, or simple.<br />Never both.</h2>
+          <p class="origin-line" data-reveal data-reveal-delay="140" data-i18n="home.originLine">So we built both.</p>
+          <p class="origin-note" data-reveal data-reveal-delay="200" data-i18n="home.originNote">
             The private tools we found were made for developers: install a runtime, pick a model,
             wire it together. Everything simple sent the work to a cloud. Garden Desk is one
             download that asks nothing of you.
@@ -241,26 +241,26 @@
       </section>
 
       <section class="claims" aria-labelledby="claims-title">
-        <h2 class="visually-hidden" id="claims-title">What makes Garden Desk different</h2>
+        <h2 class="visually-hidden" id="claims-title" data-i18n="home.claimsTitle">What makes Garden Desk different</h2>
         <ul class="claim-list">
           <li class="claim">
-            <h3>One download</h3>
-            <p>The app and the model, together.</p>
+            <h3 data-i18n="home.claim.one.title">One download</h3>
+            <p data-i18n="home.claim.one.text">The app and the model, together.</p>
           </li>
           <li class="claim">
-            <h3>Nothing to configure</h3>
-            <p>Open it. Point it at a folder.</p>
+            <h3 data-i18n="home.claim.config.title">Nothing to configure</h3>
+            <p data-i18n="home.claim.config.text">Open it. Point it at a folder.</p>
           </li>
           <li class="claim">
-            <h3>Nothing tracked</h3>
-            <p>No analytics. No crash reports. No telemetry.</p>
+            <h3 data-i18n="home.claim.tracked.title">Nothing tracked</h3>
+            <p data-i18n="home.claim.tracked.text">No analytics. No crash reports. No telemetry.</p>
           </li>
           <li class="claim">
-            <h3>No way online</h3>
-            <p>The model has no route to the internet.</p>
+            <h3 data-i18n="home.claim.online.title">No way online</h3>
+            <p data-i18n="home.claim.online.text">The model has no route to the internet.</p>
           </li>
         </ul>
-        <p class="claims-note">
+        <p class="claims-note" data-i18n="home.claimsNote">
           Garden Desk makes no network calls of its own. There is no telemetry, no error report,
           not even an update check. The agent works inside a virtual machine with no network
           connection at all, and the folder you select is mounted read-only. The model cannot
@@ -272,33 +272,33 @@
         <div class="section-inner">
           <div class="section-heading">
             <div>
-              <h2 data-reveal data-reveal-delay="70">Open it. Point it. Ask it.</h2>
+              <h2 data-reveal data-reveal-delay="70" data-i18n="home.stepsTitle">Open it. Point it. Ask it.</h2>
             </div>
-            <p data-reveal data-reveal-delay="140">That’s the whole onboarding. There is no step four.</p>
+            <p data-reveal data-reveal-delay="140" data-i18n="home.stepsLede">That’s the whole onboarding. There is no step four.</p>
           </div>
           <div class="step-grid">
             <article class="step-card" data-reveal>
               <span>1</span>
-              <h3>Open Garden Desk</h3>
-              <p>No account. No key. The model is already there.</p>
+              <h3 data-i18n="home.step.1.title">Open Garden Desk</h3>
+              <p data-i18n="home.step.1.text">No account. No key. The model is already there.</p>
             </article>
             <article class="step-card" data-reveal data-reveal-delay="90">
               <span>2</span>
-              <h3>Point at your work</h3>
-              <p>Pick a folder or attach files. Your source stays read-only.</p>
+              <h3 data-i18n="home.step.2.title">Point at your work</h3>
+              <p data-i18n="home.step.2.text">Pick a folder or attach files. Your source stays read-only.</p>
             </article>
             <article class="step-card" data-reveal data-reveal-delay="180">
               <span>3</span>
-              <h3>Ask, then check the receipts</h3>
-              <p>Describe the outcome. Inspect the answer, the files, every step.</p>
+              <h3 data-i18n="home.step.3.title">Ask, then check the receipts</h3>
+              <p data-i18n="home.step.3.text">Describe the outcome. Inspect the answer, the files, every step.</p>
             </article>
           </div>
         </div>
       </section>
 
       <section class="format-strip" aria-labelledby="format-strip-title">
-        <p id="format-strip-title">Familiar files, handled locally</p>
-        <ul class="format-list" aria-label="Common supported file formats">
+        <p id="format-strip-title" data-i18n="home.formatsTitle">Familiar files, handled locally</p>
+        <ul class="format-list" aria-label="Common supported file formats" data-i18n-attr="aria-label=home.formatsLabel">
           <li class="format-item format-docx">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M6 3h8l4 4v14H6z" />
@@ -325,14 +325,14 @@
               <rect x="4" y="5" width="16" height="14" rx="2" />
               <path d="m6 16 4-4 3 3 2-2 3 3M15.5 9h.01" />
             </svg>
-            <span><strong>Images</strong><small>JPG</small></span>
+            <span><strong data-i18n="home.format.images">Images</strong><small>JPG</small></span>
           </li>
           <li class="format-item format-csv">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <rect x="4" y="5" width="16" height="14" rx="2" />
               <path d="M4 10h16M9 5v14M15 5v14" />
             </svg>
-            <span><strong>Data</strong><small>CSV</small></span>
+            <span><strong data-i18n="home.format.data">Data</strong><small>CSV</small></span>
           </li>
         </ul>
       </section>
@@ -341,17 +341,17 @@
         <div class="section-inner">
           <div class="section-heading">
             <div>
-              <h2 data-reveal data-reveal-delay="70">Click around the real interface.</h2>
+              <h2 data-reveal data-reveal-delay="70" data-i18n="home.demoTitle">Click around the real interface.</h2>
             </div>
-            <p data-reveal data-reveal-delay="140">
+            <p data-reveal data-reveal-delay="140" data-i18n="home.demoLede">
               The actual desktop app, on invented data. Runs in browser memory: no model, no
               upload, nothing saved.
             </p>
           </div>
           <div class="demo-wrap" data-reveal>
             <div class="demo-toolbar">
-              <span>Interactive demo with synthetic sample data</span>
-              <a href="./demo/">Open full demo</a>
+              <span data-i18n="home.demoToolbar">Interactive demo with synthetic sample data</span>
+              <a href="./demo/" data-i18n="home.demoOpen">Open full demo</a>
             </div>
             <div class="demo-viewport">
               <iframe
@@ -362,7 +362,7 @@
                 inert
                 aria-hidden="true"
                 tabindex="-1"
-              ></iframe>
+               data-i18n-attr="title=home.demoFrame"></iframe>
             </div>
           </div>
         </div>
@@ -371,19 +371,19 @@
       <section class="section model-section">
         <div class="section-inner model-panel" data-reveal>
           <div class="model-copy">
-            <h2>Ternary Bonsai 2 runs on your computer.</h2>
-            <p>
+            <h2 data-i18n="home.modelTitle">Ternary Bonsai 2 runs on your computer.</h2>
+            <p data-i18n="home.modelText">
               It runs completely offline. Text, image inspection, and file tasks stay on your computer.
             </p>
             <p>
-              <small>V1 model: Ternary Bonsai 2 27B, an Apache-2.0 open model built from Qwen3.8-27B. Verified on macOS and on Windows.</small>
+              <small data-i18n="home.modelSmall">V1 model: Ternary Bonsai 2 27B, an Apache-2.0 open model built from Qwen3.8-27B. Verified on macOS and on Windows.</small>
             </p>
           </div>
           <dl class="model-facts">
-            <div><dt>Model</dt><dd>Ternary Bonsai 2 27B</dd></div>
-            <div><dt>Context</dt><dd>Up to 128K tokens</dd></div>
-            <div><dt>Operation</dt><dd>Completely offline</dd></div>
-            <div><dt>Setup</dt><dd>No configuration</dd></div>
+            <div><dt data-i18n="home.fact.model">Model</dt><dd>Ternary Bonsai 2 27B</dd></div>
+            <div><dt data-i18n="home.fact.context">Context</dt><dd data-i18n="home.fact.contextValue">Up to 128K tokens</dd></div>
+            <div><dt data-i18n="home.fact.operation">Operation</dt><dd data-i18n="home.fact.operationValue">Completely offline</dd></div>
+            <div><dt data-i18n="home.fact.setup">Setup</dt><dd data-i18n="home.fact.setupValue">No configuration</dd></div>
           </dl>
         </div>
       </section>
@@ -392,9 +392,9 @@
         <div class="section-inner">
           <div class="section-heading">
             <div>
-              <h2 data-reveal data-reveal-delay="70">Everything else is assembly required.</h2>
+              <h2 data-reveal data-reveal-delay="70" data-i18n="home.compareTitle">Everything else is assembly required.</h2>
             </div>
-            <p data-reveal data-reveal-delay="140">
+            <p data-reveal data-reveal-delay="140" data-i18n="home.compareLede">
               Seven ways to get the work done. The same nine questions. Checked against public
               documentation in September 2026.
             </p>
@@ -402,7 +402,7 @@
           <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: a horizontally scrollable table must be reachable with the keyboard -->
           <section class="compare-scroll" data-reveal tabindex="0" aria-labelledby="compare-caption">
             <table class="compare-table">
-              <caption class="visually-hidden" id="compare-caption">Garden Desk compared with six other ways to get AI work done</caption>
+              <caption class="visually-hidden" id="compare-caption" data-i18n="home.compareCaption">Garden Desk compared with six other ways to get AI work done</caption>
               <colgroup>
                 <col class="compare-label" />
                 <col class="compare-ours" />
@@ -427,111 +427,111 @@
               </thead>
               <tbody>
                 <tr>
-                  <th scope="row">What you install</th>
-                  <td class="is-ours">One app</td>
-                  <td>App and account</td>
-                  <td>Web and mobile</td>
-                  <td>App and account</td>
-                  <td>App and server</td>
-                  <td>App and models</td>
-                  <td>Two programs</td>
+                  <th scope="row" data-i18n="home.row.WhatYouInstall">What you install</th>
+                  <td class="is-ours" data-i18n="home.cell.OneApp">One app</td>
+                  <td data-i18n="home.cell.AppAndAccount">App and account</td>
+                  <td data-i18n="home.cell.WebAndMobile">Web and mobile</td>
+                  <td data-i18n="home.cell.AppAndAccount">App and account</td>
+                  <td data-i18n="home.cell.AppAndServer">App and server</td>
+                  <td data-i18n="home.cell.AppAndModels">App and models</td>
+                  <td data-i18n="home.cell.TwoPrograms">Two programs</td>
                 </tr>
                 <tr>
-                  <th scope="row">Where the model runs</th>
-                  <td class="is-ours">Local only<sup>1</sup></td>
-                  <td>Cloud only</td>
-                  <td>Cloud only</td>
-                  <td>Hybrid<sup>2</sup></td>
-                  <td>Hybrid<sup>2</sup></td>
-                  <td>Hybrid<sup>2</sup></td>
-                  <td>Local only<sup>3</sup></td>
+                  <th scope="row" data-i18n="home.row.WhereTheModelRuns">Where the model runs</th>
+                  <td class="is-ours"><span data-i18n="home.cell.LocalOnly">Local only</span><sup>1</sup></td>
+                  <td data-i18n="home.cell.CloudOnly">Cloud only</td>
+                  <td data-i18n="home.cell.CloudOnly">Cloud only</td>
+                  <td><span data-i18n="home.cell.Hybrid">Hybrid</span><sup>2</sup></td>
+                  <td><span data-i18n="home.cell.Hybrid">Hybrid</span><sup>2</sup></td>
+                  <td><span data-i18n="home.cell.Hybrid">Hybrid</span><sup>2</sup></td>
+                  <td><span data-i18n="home.cell.LocalOnly">Local only</span><sup>3</sup></td>
                 </tr>
                 <tr>
-                  <th scope="row">Tuned for one model</th>
-                  <td class="is-ours">Yes<sup>4</sup></td>
-                  <td>Yes</td>
-                  <td>Yes</td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>No</td>
+                  <th scope="row" data-i18n="home.row.TunedForOneModel">Tuned for one model</th>
+                  <td class="is-ours"><span data-i18n="home.cell.Yes">Yes</span><sup>4</sup></td>
+                  <td data-i18n="home.cell.Yes">Yes</td>
+                  <td data-i18n="home.cell.Yes">Yes</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
                 </tr>
                 <tr>
-                  <th scope="row">Works with no internet</th>
-                  <td class="is-ours">Yes</td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>Partly<sup>5</sup></td>
-                  <td>Partly<sup>5</sup></td>
-                  <td>Yes</td>
-                  <td>Yes</td>
+                  <th scope="row" data-i18n="home.row.WorksWithNoInternet">Works with no internet</th>
+                  <td class="is-ours" data-i18n="home.cell.Yes">Yes</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td><span data-i18n="home.cell.Partly">Partly</span><sup>5</sup></td>
+                  <td><span data-i18n="home.cell.Partly">Partly</span><sup>5</sup></td>
+                  <td data-i18n="home.cell.Yes">Yes</td>
+                  <td data-i18n="home.cell.Yes">Yes</td>
                 </tr>
                 <tr>
-                  <th scope="row">Sealed, no-network sandbox</th>
-                  <td class="is-ours">Yes<sup>6</sup></td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>No</td>
+                  <th scope="row" data-i18n="home.row.SealedNoNetworkSandbox">Sealed, no-network sandbox</th>
+                  <td class="is-ours"><span data-i18n="home.cell.Yes">Yes</span><sup>6</sup></td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
                 </tr>
                 <tr>
-                  <th scope="row">Your files stay read-only</th>
-                  <td class="is-ours">Yes<sup>7</sup></td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>No</td>
-                  <td>No</td>
+                  <th scope="row" data-i18n="home.row.YourFilesStayReadOnly">Your files stay read-only</th>
+                  <td class="is-ours"><span data-i18n="home.cell.Yes">Yes</span><sup>7</sup></td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
+                  <td data-i18n="home.cell.No">No</td>
                 </tr>
                 <tr>
-                  <th scope="row">Telemetry</th>
-                  <td class="is-ours">None</td>
-                  <td>Yes<sup>8</sup></td>
-                  <td>Yes<sup>8</sup></td>
-                  <td>Yes</td>
-                  <td>On by default<sup>9</sup></td>
-                  <td>Not for local use</td>
-                  <td>No analytics<sup>10</sup></td>
+                  <th scope="row" data-i18n="home.row.Telemetry">Telemetry</th>
+                  <td class="is-ours" data-i18n="home.cell.None">None</td>
+                  <td><span data-i18n="home.cell.Yes">Yes</span><sup>8</sup></td>
+                  <td><span data-i18n="home.cell.Yes">Yes</span><sup>8</sup></td>
+                  <td data-i18n="home.cell.Yes">Yes</td>
+                  <td><span data-i18n="home.cell.OnByDefault">On by default</span><sup>9</sup></td>
+                  <td data-i18n="home.cell.NotForLocalUse">Not for local use</td>
+                  <td><span data-i18n="home.cell.NoAnalytics">No analytics</span><sup>10</sup></td>
                 </tr>
                 <tr>
-                  <th scope="row">Price</th>
-                  <td class="is-ours">Free</td>
-                  <td>$20 to $200 a month</td>
-                  <td>$25+ a seat<sup>11</sup></td>
-                  <td>$20 or $200 a month</td>
-                  <td>Free</td>
-                  <td>Free, or $20+<sup>12</sup></td>
-                  <td>Free</td>
+                  <th scope="row" data-i18n="home.row.Price">Price</th>
+                  <td class="is-ours" data-i18n="home.cell.Free">Free</td>
+                  <td data-i18n="home.cell.20To200AMonth">$20 to $200 a month</td>
+                  <td><span data-i18n="home.cell.25ASeat">$25+ a seat</span><sup>11</sup></td>
+                  <td data-i18n="home.cell.20Or200AMonth">$20 or $200 a month</td>
+                  <td data-i18n="home.cell.Free">Free</td>
+                  <td><span data-i18n="home.cell.FreeOr20">Free, or $20+</span><sup>12</sup></td>
+                  <td data-i18n="home.cell.Free">Free</td>
                 </tr>
                 <tr>
-                  <th scope="row">Source code</th>
-                  <td class="is-ours">Open source</td>
-                  <td>Closed</td>
-                  <td>Closed</td>
-                  <td>Closed</td>
-                  <td>Open source</td>
-                  <td>Closed, partly open</td>
-                  <td>Open source</td>
+                  <th scope="row" data-i18n="home.row.SourceCode">Source code</th>
+                  <td class="is-ours" data-i18n="home.cell.OpenSource">Open source</td>
+                  <td data-i18n="home.cell.Closed">Closed</td>
+                  <td data-i18n="home.cell.Closed">Closed</td>
+                  <td data-i18n="home.cell.Closed">Closed</td>
+                  <td data-i18n="home.cell.OpenSource">Open source</td>
+                  <td data-i18n="home.cell.ClosedPartlyOpen">Closed, partly open</td>
+                  <td data-i18n="home.cell.OpenSource">Open source</td>
                 </tr>
               </tbody>
             </table>
           </section>
           <ol class="compare-notes">
-            <li>The model ships inside the download and runs on your computer. There is nothing to pick or install.</li>
-            <li>You choose a local or a cloud model, and you install and select it yourself.</li>
-            <li>You run a local model server and point the tool at it.</li>
-            <li>Prompts, skills, and workflows are tuned end to end for one model. A tool that accepts any model cannot tune for each one.</li>
-            <li>The model can run locally, but the app still calls vendor services.</li>
-            <li>Agent commands run inside a virtual machine that has no network interface at all. The other tools run commands on your computer or on vendor servers, with a network.</li>
-            <li>The folder you select is mounted read-only. The agent writes only to a separate workspace, so it cannot change your originals.</li>
-            <li>An account service. Your work runs on the vendor's computers.</li>
-            <li>Set <code>DISABLE_TELEMETRY=true</code> to turn it off.</li>
-            <li>Update and model-catalog checks still run until you turn them off.</li>
-            <li>ChatGPT Business is $25 for each seat each month, or $20 when you pay yearly. Premium is $125, or $100 yearly. Business needs two seats or more.</li>
-            <li>Local models are free. Bionic+ is $20 each month and Pro is $100.</li>
+            <li data-i18n="home.note.1">The model ships inside the download and runs on your computer. There is nothing to pick or install.</li>
+            <li data-i18n="home.note.2">You choose a local or a cloud model, and you install and select it yourself.</li>
+            <li data-i18n="home.note.3">You run a local model server and point the tool at it.</li>
+            <li data-i18n="home.note.4">Prompts, skills, and workflows are tuned end to end for one model. A tool that accepts any model cannot tune for each one.</li>
+            <li data-i18n="home.note.5">The model can run locally, but the app still calls vendor services.</li>
+            <li data-i18n="home.note.6">Agent commands run inside a virtual machine that has no network interface at all. The other tools run commands on your computer or on vendor servers, with a network.</li>
+            <li data-i18n="home.note.7">The folder you select is mounted read-only. The agent writes only to a separate workspace, so it cannot change your originals.</li>
+            <li data-i18n="home.note.8">An account service. Your work runs on the vendor's computers.</li>
+            <li data-i18n-html="home.note.9">Set <code>DISABLE_TELEMETRY=true</code> to turn it off.</li>
+            <li data-i18n="home.note.10">Update and model-catalog checks still run until you turn them off.</li>
+            <li data-i18n="home.note.11">ChatGPT Business is $25 for each seat each month, or $20 when you pay yearly. Premium is $125, or $100 yearly. Business needs two seats or more.</li>
+            <li data-i18n="home.note.12">Local models are free. Bionic+ is $20 each month and Pro is $100.</li>
           </ol>
         </div>
       </section>
@@ -540,9 +540,9 @@
         <div class="section-inner">
           <div class="section-heading">
             <div>
-              <h2 data-reveal data-reveal-delay="70">Real privacy costs real silicon.</h2>
+              <h2 data-reveal data-reveal-delay="70" data-i18n="home.reqTitle">Real privacy costs real silicon.</h2>
             </div>
-            <p data-reveal data-reveal-delay="140">
+            <p data-reveal data-reveal-delay="140" data-i18n="home.reqLede">
               No datacenter. Your computer does the work. V1 targets:
             </p>
           </div>
@@ -556,9 +556,9 @@
               </span>
               <div>
                 <small>macOS</small>
-                <h3>Apple silicon Mac</h3>
-                <p><strong>16 GB unified memory</strong> or more</p>
-                <span class="status-pill">Version 1.2.0</span>
+                <h3 data-i18n="home.req.macTitle">Apple silicon Mac</h3>
+                <p data-i18n-html="home.req.macText"><strong>16 GB unified memory</strong> or more</p>
+                <span class="status-pill"><span data-i18n="version">Version</span> 1.2.0</span>
               </div>
             </article>
             <article class="requirement-card" data-reveal data-reveal-delay="90" data-tilt>
@@ -571,9 +571,9 @@
               </span>
               <div>
                 <small>Windows</small>
-                <h3>PC with NVIDIA or AMD graphics</h3>
-                <p><strong>12 GB dedicated VRAM</strong> or more</p>
-                <span class="status-pill">Version 1.2.0</span>
+                <h3 data-i18n="home.req.winTitle">PC with NVIDIA or AMD graphics</h3>
+                <p data-i18n-html="home.req.winText"><strong>12 GB dedicated VRAM</strong> or more</p>
+                <span class="status-pill"><span data-i18n="version">Version</span> 1.2.0</span>
               </div>
             </article>
           </div>
@@ -583,43 +583,43 @@
       <section class="section source-section">
         <div class="section-inner open-source-panel" data-reveal>
           <div>
-            <h2>Do not trust us. Read the code.</h2>
-            <p>
+            <h2 data-i18n="home.sourceTitle">Do not trust us. Read the code.</h2>
+            <p data-i18n="home.sourceText">
               Every claim on this page is about software you can open. Apache 2.0, fully public. Go
               find the telemetry. There is none.
             </p>
             <div class="section-actions">
               <a class="button button-primary" href="https://github.com/private-garden-labs/garden-desk">
                 <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.2-3.09-.12-.29-.52-1.46.11-3.04 0 0 .98-.31 3.16 1.18A11 11 0 0 1 12 6.91c.98 0 1.94.13 2.85.38 2.18-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.75.11 3.04.75.8 1.2 1.83 1.2 3.09 0 4.42-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v2.47c0 .31.21.67.79.56A11.5 11.5 0 0 0 12 .7Z" /></svg>
-                <span>Browse on GitHub</span>
+                <span data-i18n="home.sourceGithub">Browse on GitHub</span>
               </a>
               <a class="button button-secondary" href="https://github.com/private-garden-labs/garden-desk/blob/main/LICENSE"
-                ><svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h8l4 4v14H6zM14 3v5h5M9 13h6M9 17h6" /></svg><span>Read the license</span></a
+                ><svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h8l4 4v14H6zM14 3v5h5M9 13h6M9 17h6" /></svg><span data-i18n="home.sourceLicense">Read the license</span></a
               >
             </div>
           </div>
           <div class="open-source-meta">
-            <div><strong>License</strong><span>Apache License 2.0</span></div>
-            <div><strong>Development</strong><span>Public repository and issue tracker</span></div>
-            <div><strong>Security</strong><span>Private reporting policy for vulnerabilities</span></div>
-            <div><strong>If we disappear</strong><span>It keeps working. It never needed us online.</span></div>
+            <div><strong data-i18n="home.meta.license">License</strong><span data-i18n="home.meta.licenseValue">Apache License 2.0</span></div>
+            <div><strong data-i18n="home.meta.development">Development</strong><span data-i18n="home.meta.developmentValue">Public repository and issue tracker</span></div>
+            <div><strong data-i18n="home.meta.security">Security</strong><span data-i18n="home.meta.securityValue">Private reporting policy for vulnerabilities</span></div>
+            <div><strong data-i18n="home.meta.disappear">If we disappear</strong><span data-i18n="home.meta.disappearValue">It keeps working. It never needed us online.</span></div>
           </div>
         </div>
       </section>
 
     </main>
     <footer class="site-footer">
-      <span>Garden Desk project · Local-first software · Version 1.2.0</span>
-      <nav aria-label="Legal and project links" class="footer-links">
-        <a href="#how-it-works">How it works</a>
-        <a href="#compare">Compare</a>
-        <a href="#requirements">Requirements</a>
-        <a href="./releases/">Releases</a>
-        <a href="./blog/">Blog</a>
-        <a href="./supporters/">Supporters</a>
-        <a href="./privacy/">Privacy</a>
-        <a href="./terms/">Terms</a>
-        <a href="./security/">Security</a>
+      <span><span data-i18n="footer.tagline">Garden Desk project · Local-first software</span> · <span data-i18n="version">Version</span> 1.2.0</span>
+      <nav aria-label="Legal and project links" class="footer-links" data-i18n-attr="aria-label=footer.nav">
+        <a href="#how-it-works" data-i18n="nav.how">How it works</a>
+        <a href="#compare" data-i18n="nav.compare">Compare</a>
+        <a href="#requirements" data-i18n="nav.requirements">Requirements</a>
+        <a href="./releases/" data-i18n="nav.releases">Releases</a>
+        <a href="./blog/" data-i18n="nav.blog">Blog</a>
+        <a href="./supporters/" data-i18n="nav.supporters">Supporters</a>
+        <a href="./privacy/" data-i18n="nav.privacy">Privacy</a>
+        <a href="./terms/" data-i18n="nav.terms">Terms</a>
+        <a href="./security/" data-i18n="nav.security">Security</a>
         <a href="https://github.com/private-garden-labs/garden-desk">GitHub</a>
       </nav>
     </footer>

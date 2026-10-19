@@ -37,7 +37,7 @@ async function index(env: Env): Promise<Response> {
   const entries = await posts(env);
   const cards =
     entries.length === 0
-      ? "<section><p>The first post is on its way.</p></section>"
+      ? '<section><p data-i18n="blog.empty">The first post is on its way.</p></section>'
       : entries
           .map(
             (entry) =>
@@ -48,7 +48,7 @@ async function index(env: Env): Promise<Response> {
     title: "Blog",
     description: "Notes and news from the Garden Desk team.",
     path: "/blog/",
-    body: `<h1>From the Garden Desk team</h1><p class="lede">Notes, news, and useful ways to work with your files. Follow along with the <a href="/blog/feed.xml">RSS feed</a>.</p>${cards}`,
+    body: `<h1 data-i18n="blog.h1">From the Garden Desk team</h1><p class="lede" data-i18n-html="blog.lede">Notes, news, and useful ways to work with your files. Follow along with the <a href="/blog/feed.xml">RSS feed</a>.</p>${cards}`,
   });
 }
 
@@ -72,7 +72,7 @@ function article(env: Env, entry: Post): Promise<Response> {
     description: entry.description,
     path: `/blog/${entry.slug}/`,
     schema,
-    body: `<p class="page-meta">${time(entry.published_at)} · Garden Desk team</p><h1>${escapeHtml(entry.title)}</h1><p class="lede">${escapeHtml(entry.description)}</p><section class="prose">${markdown(entry.markdown)}</section><p class="post-links"><a href="/blog/">All posts</a><a href="/blog/${entry.slug}.md">Read as Markdown</a></p>`,
+    body: `<p class="page-meta">${time(entry.published_at)} · <span data-i18n="blog.team">Garden Desk team</span></p><h1>${escapeHtml(entry.title)}</h1><p class="lede">${escapeHtml(entry.description)}</p><section class="prose">${markdown(entry.markdown)}</section><p class="post-links"><a href="/blog/" data-i18n="blog.all">All posts</a><a href="/blog/${entry.slug}.md" data-i18n="blog.markdown">Read as Markdown</a></p>`,
   });
 }
 
