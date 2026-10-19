@@ -518,39 +518,110 @@ select:focus-visible {
   background: var(--navigation-hover);
 }
 
-.sidebar-menu-language {
-  display: grid;
-  gap: 4px;
-  padding: 6px 10px 4px;
-  color: var(--ink-soft);
-  font-size: 11px;
+.sidebar-settings-main {
+  display: contents;
 }
 
-.sidebar-menu-language select {
-  width: 100%;
-  min-height: 32px;
-  padding: 0 8px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+.language-trigger {
+  display: flex;
+  width: 44px;
+  min-height: 40px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin-inline-start: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
   color: var(--ink);
-  background: var(--reading-raised);
-  font: inherit;
-  font-size: 13px;
+  background: transparent;
   cursor: pointer;
+  transition:
+    background 160ms ease,
+    transform 120ms ease-out;
 }
 
-.sidebar-menu-language select:hover {
-  border-color: var(--accent);
-  color: var(--accent-strong);
+.language-trigger:active {
+  transform: scale(0.97);
 }
 
-.sidebar-menu-language select:active {
+.language-trigger[aria-expanded="true"] {
   background: var(--navigation-hover);
 }
 
-.sidebar-menu-language select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.language-flag {
+  flex: 0 0 auto;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 14%);
+}
+
+.language-globe {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.language-list {
+  position: absolute;
+  z-index: 12;
+  right: 12px;
+  bottom: calc(100% - 6px);
+  left: 12px;
+  display: grid;
+  max-height: min(420px, calc(100vh - 160px));
+  padding: 5px;
+  overflow-y: auto;
+  gap: 2px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--reading-raised);
+  box-shadow: 0 16px 40px rgb(3 16 20 / 26%);
+  transform-origin: bottom right;
+  animation: sidebar-menu-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+:root[dir="rtl"] .language-list {
+  transform-origin: bottom left;
+}
+
+.language-option {
+  display: flex;
+  width: 100%;
+  min-height: 32px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--ink);
+  background: transparent;
+  font-size: 13px;
+  text-align: start;
+  cursor: pointer;
+}
+
+.language-option:focus-visible {
+  outline-offset: -2px;
+}
+
+.language-option-check {
+  display: flex;
+  width: 18px;
+  flex: 0 0 auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .language-trigger:hover,
+  .language-option:hover {
+    color: var(--accent-strong);
+    background: var(--navigation-hover);
+  }
 }
 
 .sidebar-menu-version {
@@ -4044,6 +4115,7 @@ select:focus-visible {
   }
 
   .sidebar-menu,
+  .language-list,
   .skills-page {
     animation: none;
   }
