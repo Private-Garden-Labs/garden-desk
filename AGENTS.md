@@ -35,7 +35,7 @@ Tests exist for architecture boundaries, business logic, and bugs. Not for the m
 
 Model misbehavior is not a bug. Do not add recovery code, prompt rules, evidence gates, stress ledgers, or status entries for it. Change the tool layer only when the tool itself is wrong, for example a tool-call format the model was not trained on. When a golden task fails because of the model, record nothing and move on.
 
-Ternary Bonsai 2 27B is strong at tool calls, code, and math, and weak at non-English writing, expert knowledge, and long documents such as a full contract. Design for it as an operator, not an author: keep generations short and build long documents from templates. Better drafting needs a larger local model or an opt-in remote model; both are owner decisions. The primary prompt states these limits.
+Ternary Bonsai 2 27B is good at tool calls, code, math, conversation, and reviewing or verifying documents. It is weak at writing prose from scratch, such as stories or long documents, especially outside English. Do not build features that write long documents from scratch yet; start from an existing document, or review and verify one. Better drafting needs a larger local model or an opt-in remote model; both are owner decisions. The primary prompt states these limits.
 
 ## Minimum Implementation Rule
 
