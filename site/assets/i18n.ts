@@ -1,42 +1,11 @@
 import { flags } from "./language-flags";
+import { languages, rightToLeft } from "./languages";
 
 const storageKey = "gardendesk.locale";
 const globeIcon =
   '<svg width="20" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>';
 
-const languages = [
-  ["en", "English (US)"],
-  ["cs", "Čeština"],
-  ["da", "Dansk"],
-  ["de", "Deutsch (DE)"],
-  ["es-419", "Español (Latinoamérica)"],
-  ["es-ES", "Español (España)"],
-  ["fil", "Filipino"],
-  ["fr", "Français (FR)"],
-  ["id", "Indonesia"],
-  ["it", "Italiano (IT)"],
-  ["ms", "Melayu"],
-  ["nl", "Nederlands (NL)"],
-  ["nb", "Norsk bokmål (NO)"],
-  ["pl", "Polski"],
-  ["pt-BR", "Português (BR)"],
-  ["ro", "Română"],
-  ["fi", "Suomi"],
-  ["sv", "Svenska"],
-  ["tr", "Türkçe"],
-  ["he", "עברית"],
-  ["ar", "العربية (SA)"],
-  ["fa", "فارسی"],
-  ["hi", "हिन्दी"],
-  ["bn", "বাংলা"],
-  ["th", "ไทย"],
-  ["ko", "한국어"],
-  ["zh-CN", "中文 (CN)"],
-  ["ja", "日本語"],
-] as const;
-
 const codes: readonly string[] = languages.map(([code]) => code);
-const rightToLeft = new Set(["he", "ar", "fa"]);
 const regionalDefaults: Record<string, string> = {
   es: "es-419",
   pt: "pt-BR",
@@ -80,15 +49,15 @@ function saveLocale(code: string): void {
   }
 }
 
-function linkedLocale(): string | undefined {
-  const linked = new URLSearchParams(location.search).get("lang");
-  return linked !== null && codes.includes(linked) ? linked : undefined;
+function pathLocale(): string | undefined {
+  const code = location.pathname.split("/")[1] ?? "";
+  return code !== "en" && codes.includes(code) ? code : undefined;
 }
 
-function linkLocale(code: string): void {
-  const url = new URL(location.href);
-  url.searchParams.set("lang", code);
-  history.replaceState(history.state, "", url);
+function localePath(code: string): string {
+  const current = pathLocale();
+  const path = location.pathname.slice(current === undefined ? 0 : current.length + 1);
+  return `${code === "en" ? "" : `/${code}`}${path}${location.search}${location.hash}`;
 }
 
 function flagImage(code: string): Node {
@@ -236,8 +205,7 @@ function collectSlots(): Slot[] {
 
 const showSelected = mountPicker((code) => {
   saveLocale(code);
-  linkLocale(code);
-  void apply(code);
+  location.assign(localePath(code));
 });
 const slots = collectSlots();
 
@@ -250,8 +218,11 @@ async function apply(code: string): Promise<void> {
   showSelected?.(code, strings.language ?? "Language");
 }
 
-const linked = linkedLocale();
+const linked = pathLocale();
 if (linked !== undefined) saveLocale(linked);
 const initial = linked ?? savedLocale() ?? resolveLocale(navigator.languages);
 showSelected?.(initial, "Language");
-if (initial !== "en") void apply(initial);
+if (initial !== "en") {
+  void apply(initial);
+  if (linked === undefined) history.replaceState(history.state, "", localePath(initial));
+}

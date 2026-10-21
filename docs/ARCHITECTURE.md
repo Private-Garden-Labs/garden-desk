@@ -58,7 +58,7 @@ packages/desktop   Tauri and React app, packaging, Windows Hyper-V setup helper;
 packages/cli       daemon health client
 packages/eval      fixtures, platform gates, golden tasks, model comparison
 prompts/           agent, command, skill, and system prompts
-site/              website, admin, and blog; page copy in 28 languages in site/locales
+site/              website, admin, and blog; page copy in 28 languages in site/locales, served under /<code>/ addresses
 ```
 
 - State is one schema-versioned SQLite catalog, plus immutable content-addressed artifacts and per-session workspace manifests. To change the schema, add the next numbered migration in `packages/core/src/workspace/migrations/`. Never edit an existing one.
