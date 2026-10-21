@@ -1,72 +1,53 @@
-import type { AgentRunSnapshot, ConversationMessage, SessionSummary } from "@gardendesk/shared";
+import type {
+  AgentRunSummary,
+  AttachmentSummary,
+  ConversationMessage,
+  SessionSummary,
+  ThinkingLevel,
+} from "@gardendesk/shared";
 import {
   AgentRunSnapshotSchema,
   AgentRunSummarySchema,
   AgentTraceSchema,
+  AttachmentSummarySchema,
   ConversationMessageSchema,
+  INFERENCE_PROFILE,
   SessionDraftSchema,
   SessionSummarySchema,
 } from "@gardendesk/shared";
-import type { DesktopApi } from "../../packages/desktop/src/api.js";
-import { responseFor } from "./demo-content.js";
-import {
-  createRunSummary,
-  demoEvents,
-  demoExecution,
-  demoPerformance,
-  demoState,
-  demoTime,
-  uuid,
-} from "./demo-run.js";
-import { financeSession, folder, initialRun, sampleMessages, sessions } from "./fixtures.js";
+import type { DesktopApi, NativeDropEvent } from "../../packages/desktop/src/api.js";
+import { contentHash, listenForBrowserDrops, pickFiles } from "./demo-files.js";
+import { REVIEW_DURATION_MS, type ReviewRun, reviewProgress, uuid } from "./review-run.js";
+import { reviewScript } from "./review-script.js";
 
-const demoUnavailable = () => Promise.reject(new Error("Unavailable in the public demo"));
-const limitation =
-  "The public demo does not run a model or send your text anywhere. Choose one of the guided examples above to see a deterministic sample result.";
-const demoSkills = [
-  {
-    description: "Review a document for obligations, risks, and missing sections.",
-    enabled: true,
-    name: "document-review",
-    path: "browser-memory://synthetic-demo/skills/document-review/SKILL.md",
-    source: "built-in" as const,
-    valid: true,
-  },
-  {
-    description: "Reconcile financial records and explain every difference.",
-    enabled: true,
-    name: "financial-records-reconciliation",
-    path: "browser-memory://synthetic-demo/skills/financial-records-reconciliation/SKILL.md",
-    source: "built-in" as const,
-    valid: true,
-  },
-];
+const demoUnavailable = () => Promise.reject(new Error("Unavailable in the demo"));
+const CONTEXT_TOKENS = 65_536;
 
-interface DynamicRun {
-  polls: number;
-  response: string;
-  snapshot: AgentRunSnapshot;
-  completed: boolean;
+interface DemoRun extends ReviewRun {
+  sessionId: string;
+  jobId: string;
+  prompt: string;
+  answered: boolean;
 }
 
 export class DemoDesktopApi implements DesktopApi {
-  private readonly messages = new Map<string, ConversationMessage[]>(
-    [...sampleMessages].map(([sessionId, items]) => [sessionId, [...items]]),
-  );
-  private readonly runs = new Map<string, DynamicRun>();
-  private readonly sessionList: SessionSummary[] = [...sessions];
+  private readonly attachments = new Map<string, AttachmentSummary[]>();
+  private readonly drafts = new Map<string, string>();
+  private readonly files = new Map<string, File>();
+  private readonly messages = new Map<string, ConversationMessage[]>();
+  private readonly runs = new Map<string, DemoRun>();
+  private readonly sessions: SessionSummary[] = [];
   private sequence = 100;
+
+  constructor(private readonly now: () => number = Date.now) {}
 
   async bootstrapDesktop() {
     return {
-      catalogPath: "browser-memory://synthetic-demo",
+      catalogPath: "",
       commands: [],
-      folders: [folder],
+      folders: [],
       globalSessions: { items: [], nextCursor: null },
-      folderSessions: [
-        { folderId: folder.id, page: { items: this.sessionList, nextCursor: null } },
-      ],
-      initialSessionId: financeSession.id,
+      folderSessions: [],
       model: await this.getModelStatus(),
     };
   }
@@ -76,88 +57,122 @@ export class DemoDesktopApi implements DesktopApi {
   }
 
   async configureSecureWorkspace() {
-    return {
-      outcome: "not_needed" as const,
-      status: { state: "ready" as const },
-    };
+    return { outcome: "not_needed" as const, status: { state: "ready" as const } };
   }
 
   async getModelStatus() {
+    const runs = [...this.runs.values()];
+    const busy = runs.some((run) => this.now() - run.startedAt < REVIEW_DURATION_MS);
+    const idle = runs.length > 0 ? ("ready" as const) : ("unloaded" as const);
     return {
-      modelId: "public-demo",
-      name: "Garden Desk demo",
-      state: "ready" as const,
-      message: "Synthetic responses only",
-      thinkingSupported: false,
+      modelId: INFERENCE_PROFILE.modelId,
+      name: INFERENCE_PROFILE.name,
+      state: busy ? ("busy" as const) : idle,
+      thinkingSupported: true,
+      contextSizeTokens: CONTEXT_TOKENS,
     };
   }
 
   unloadModel = demoUnavailable;
   chooseFolder = demoUnavailable;
-  classifyDroppedPaths = demoUnavailable;
   addFolders = demoUnavailable;
   reorderFolders = demoUnavailable;
   revokeFolder = demoUnavailable;
   openFolder = demoUnavailable;
+  openCatalogFolder = demoUnavailable;
   deleteSession = demoUnavailable;
   renameSession = demoUnavailable;
-  chooseFiles = demoUnavailable;
-  addFiles = demoUnavailable;
-  openAttachment = demoUnavailable;
   openArtifact = demoUnavailable;
   saveArtifact = demoUnavailable;
-  removeAttachment = demoUnavailable;
   answerQuestion = demoUnavailable;
   dismissQuestion = demoUnavailable;
   createDebugSnapshot = demoUnavailable;
   revealDebugSnapshot = demoUnavailable;
-  openCatalogFolder = demoUnavailable;
+  openReleasePage = demoUnavailable;
   chooseSkillFiles = demoUnavailable;
   addSkillFiles = demoUnavailable;
+  readSkill = demoUnavailable;
   writeSkill = demoUnavailable;
   removeSkill = demoUnavailable;
   setSkillEnabled = demoUnavailable;
   openPromptFolder = demoUnavailable;
 
   async listSkills() {
-    return demoSkills.map((skill) => ({ ...skill }));
-  }
-
-  async readSkill(name: string) {
-    const skill = demoSkills.find((item) => item.name === name);
-    if (skill === undefined) throw new Error("Unavailable in the public demo");
-    return `---\nname: ${skill.name}\ndescription: ${skill.description}\n---\n${limitation}`;
+    return [];
   }
 
   async skillLocations() {
-    return {
-      builtInSkillsPath: "browser-memory://synthetic-demo/skills",
-      skillsPath: "browser-memory://synthetic-demo/my-skills",
-      systemPromptsPath: "browser-memory://synthetic-demo/system",
-    };
+    return { builtInSkillsPath: "", skillsPath: "", systemPromptsPath: "" };
   }
 
-  async openReleasePage() {
-    window.open("https://gardendesk.ai/releases", "_blank", "noopener");
+  async listenForDroppedPaths(listener: (event: NativeDropEvent) => void) {
+    return listenForBrowserDrops(listener, (files) => {
+      for (const file of files) this.files.set(file.name, file);
+    });
+  }
+
+  async classifyDroppedPaths(paths: string[]) {
+    return { files: paths, folders: [] };
+  }
+
+  async chooseFiles(sessionId: string) {
+    const picked = await pickFiles();
+    for (const file of picked) this.files.set(file.name, file);
+    return this.addFiles(sessionId, [...new Set(picked.map((file) => file.name))]);
+  }
+
+  async addFiles(sessionId: string, paths: string[]) {
+    const files = paths.flatMap((name) => this.files.get(name) ?? []);
+    const added = await Promise.all(
+      files.map(async (file) =>
+        AttachmentSummarySchema.parse({
+          id: uuid(6, ++this.sequence),
+          sessionId,
+          name: file.name,
+          mediaType: file.type || "application/octet-stream",
+          byteLength: file.size,
+          contentHash: await contentHash(file),
+          createdAt: new Date(this.now()).toISOString(),
+        }),
+      ),
+    );
+    this.attachments.set(sessionId, [...(this.attachments.get(sessionId) ?? []), ...added]);
+    return added;
+  }
+
+  async listAttachments(sessionId: string) {
+    return [...(this.attachments.get(sessionId) ?? [])];
+  }
+
+  async openAttachment(sessionId: string, attachmentId: string) {
+    const attachment = this.attachments.get(sessionId)?.find((item) => item.id === attachmentId);
+    const file = attachment === undefined ? undefined : this.files.get(attachment.name);
+    if (file !== undefined) window.open(URL.createObjectURL(file), "_blank", "noopener");
+  }
+
+  async removeAttachment(sessionId: string, attachmentId: string) {
+    const kept = (this.attachments.get(sessionId) ?? []).filter((item) => item.id !== attachmentId);
+    this.attachments.set(sessionId, kept);
+    return true;
   }
 
   async createSession(folderId: string | null) {
-    this.sequence += 1;
+    const time = new Date(this.now()).toISOString();
     const session = SessionSummarySchema.parse({
-      id: uuid(2, this.sequence),
+      id: uuid(2, ++this.sequence),
       folderId,
       title: "New chat",
-      createdAt: demoTime,
-      updatedAt: demoTime,
+      createdAt: time,
+      updatedAt: time,
     });
-    this.sessionList.unshift(session);
+    this.sessions.unshift(session);
     this.messages.set(session.id, []);
     return session;
   }
 
   async listSessions(folderId: string | null) {
     return {
-      items: this.sessionList.filter((session) => session.folderId === folderId),
+      items: this.sessions.filter((session) => session.folderId === folderId),
       nextCursor: null,
     };
   }
@@ -167,121 +182,117 @@ export class DemoDesktopApi implements DesktopApi {
   }
 
   async appendUserMessage(sessionId: string, content: string) {
-    const message = ConversationMessageSchema.parse({
-      id: uuid(5, ++this.sequence),
-      sessionId,
-      role: "user",
-      content,
-      runId: null,
-      createdAt: demoTime,
-    });
-    this.messages.set(sessionId, [...(this.messages.get(sessionId) ?? []), message]);
-    return message;
-  }
-
-  async listAttachments() {
-    return [];
+    return this.addMessage(sessionId, "user", content, null);
   }
 
   async saveDraft(sessionId: string, content: string) {
-    return SessionDraftSchema.parse({ sessionId, content, updatedAt: demoTime });
-  }
-
-  async loadDraft() {
-    return undefined;
-  }
-
-  async startAgent(sessionId: string, task: string) {
-    const user = await this.appendUserMessage(sessionId, task);
-    const summary = createRunSummary(sessionId, ++this.sequence);
-    const sampleResponse = responseFor(task);
-    const response = sampleResponse ?? limitation;
-    const guided = sampleResponse !== undefined;
-    const run = guided
-      ? summary
-      : AgentRunSummarySchema.parse({
-          ...summary,
-          state: "succeeded",
-          response,
-          performance: null,
-        });
-    const messages = this.messages.get(sessionId) ?? [user];
-    if (!guided) {
-      this.messages.set(sessionId, [
-        ...messages,
-        this.assistantMessage(sessionId, run.id, response),
-      ]);
-    }
-    this.runs.set(run.id, {
-      polls: 0,
-      response,
-      completed: !guided,
-      snapshot: AgentRunSnapshotSchema.parse({
-        run,
-        events: demoEvents(run.id, run.state),
-        executions: [],
-        artifacts: [],
-        thinking: null,
-      }),
-    });
-    return run;
-  }
-
-  private assistantMessage(sessionId: string, runId: string, content: string): ConversationMessage {
-    return ConversationMessageSchema.parse({
-      id: uuid(5, ++this.sequence),
+    this.drafts.set(sessionId, content);
+    return SessionDraftSchema.parse({
       sessionId,
-      role: "assistant",
       content,
-      runId,
-      createdAt: demoTime,
+      updatedAt: new Date(this.now()).toISOString(),
     });
+  }
+
+  async loadDraft(sessionId: string) {
+    const content = this.drafts.get(sessionId);
+    return content === undefined ? undefined : this.saveDraft(sessionId, content);
+  }
+
+  async startAgent(sessionId: string, task: string, thinking: ThinkingLevel) {
+    const sequence = ++this.sequence;
+    const run: DemoRun = {
+      attachmentName: this.attachments.get(sessionId)?.at(-1)?.name ?? reviewScript().sampleFile,
+      answered: false,
+      jobId: uuid(10, sequence),
+      prompt: task,
+      runId: uuid(9, sequence),
+      sequence,
+      sessionId,
+      startedAt: this.now(),
+      thinking,
+    };
+    this.runs.set(run.runId, run);
+    this.addMessage(sessionId, "user", task, run.runId);
+    return this.summary(run, "queued", null);
   }
 
   async getAgentRun(runId: string) {
-    if (runId === initialRun.run.id) return initialRun;
-    const dynamic = this.runs.get(runId);
-    if (dynamic === undefined) throw new Error("Unknown demo run");
-    if (dynamic.completed) return dynamic.snapshot;
-    dynamic.polls += 1;
-    const state = demoState(dynamic.polls);
-    const run = AgentRunSummarySchema.parse({
-      ...dynamic.snapshot.run,
-      state,
-      response: state === "succeeded" ? dynamic.response : null,
-      performance: demoPerformance(state),
-    });
-    dynamic.snapshot = AgentRunSnapshotSchema.parse({
-      run,
-      events: demoEvents(runId, state),
-      executions: state === "succeeded" ? [demoExecution(runId)] : [],
-      artifacts: [],
-      thinking: state === "running" ? "Formatting a fixed synthetic example…" : null,
-    });
-    if (state === "succeeded") {
-      dynamic.completed = true;
-      const messages = this.messages.get(run.sessionId) ?? [];
-      this.messages.set(run.sessionId, [
-        ...messages,
-        this.assistantMessage(run.sessionId, run.id, dynamic.response),
-      ]);
+    const run = this.runs.get(runId);
+    if (run === undefined) throw new Error("Unknown demo run");
+    const progress = reviewProgress(run, this.now() - run.startedAt);
+    if (progress.state === "succeeded" && !run.answered && progress.response !== null) {
+      run.answered = true;
+      this.addMessage(run.sessionId, "assistant", progress.response, run.runId);
     }
-    return dynamic.snapshot;
+    return AgentRunSnapshotSchema.parse({
+      run: this.summary(run, progress.state, progress.response),
+      sessionTitle: run.prompt.replace(/\s+/g, " ").trim().slice(0, 60),
+      events: progress.events,
+      executions: progress.executions,
+      artifacts: [],
+      thinking: progress.thinking,
+      contextUsedTokens: progress.contextUsedTokens,
+      contextAllocatedTokens: progress.contextUsedTokens === null ? null : CONTEXT_TOKENS,
+    });
   }
 
-  // The demo runs no model, so no prompt or decision was ever recorded for a run.
   async getAgentTrace(runId: string) {
     return AgentTraceSchema.parse({ runId, captureVersion: 0, status: "not_recorded", turns: [] });
   }
 
   async listAgentRuns(sessionId: string) {
-    const runs = [...this.runs.values()]
-      .map((item) => item.snapshot.run)
-      .filter((run) => run.sessionId === sessionId);
-    return sessionId === initialRun.run.sessionId ? [initialRun.run, ...runs] : runs;
+    const runs = [...this.runs.values()].filter((run) => run.sessionId === sessionId);
+    return Promise.all(runs.map(async (run) => (await this.getAgentRun(run.runId)).run));
   }
 
   async cancelAgent() {
-    return true;
+    return false;
+  }
+
+  private summary(
+    run: DemoRun,
+    state: AgentRunSummary["state"],
+    response: string | null,
+  ): AgentRunSummary {
+    return AgentRunSummarySchema.parse({
+      id: run.runId,
+      sessionId: run.sessionId,
+      jobId: run.jobId,
+      state,
+      response,
+      error: null,
+      performance:
+        state === "succeeded"
+          ? {
+              promptTokens: 7_412,
+              outputTokens: 846,
+              tokensPerSecond: 26.4,
+              promptTokensPerSecond: 352.8,
+              totalDurationMs: REVIEW_DURATION_MS,
+              thinking: run.thinking,
+            }
+          : null,
+      createdAt: new Date(run.startedAt).toISOString(),
+      updatedAt: new Date(this.now()).toISOString(),
+    });
+  }
+
+  private addMessage(
+    sessionId: string,
+    role: "user" | "assistant",
+    content: string,
+    runId: string | null,
+  ): ConversationMessage {
+    const message = ConversationMessageSchema.parse({
+      id: uuid(5, ++this.sequence),
+      sessionId,
+      role,
+      content,
+      runId,
+      createdAt: new Date(this.now()).toISOString(),
+    });
+    this.messages.set(sessionId, [...(this.messages.get(sessionId) ?? []), message]);
+    return message;
   }
 }

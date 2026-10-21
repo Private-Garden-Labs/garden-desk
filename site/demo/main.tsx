@@ -6,7 +6,7 @@ import { initLocale } from "../../packages/desktop/src/i18n/index.js";
 import "../../packages/desktop/src/styles.css";
 import "./demo.css";
 import { DemoDesktopApi } from "./demo-api.js";
-import { guidedExamples } from "./demo-content.js";
+import { prefillComposerOnFocus } from "./demo-prompt.js";
 
 if (new URLSearchParams(window.location.search).has("embedded")) {
   document.body.classList.add("embedded-demo");
@@ -16,11 +16,9 @@ if (new URLSearchParams(window.location.search).has("embedded")) {
 const root = document.getElementById("root");
 if (root === null) throw new Error("Demo root element is missing.");
 
-const capabilities: DesktopCapabilities = {
-  nativeActions: false,
-  guidedExamples,
-};
+const capabilities: DesktopCapabilities = { nativeActions: true };
 
+prefillComposerOnFocus();
 void initLocale().then(() =>
   createRoot(root).render(
     <StrictMode>
