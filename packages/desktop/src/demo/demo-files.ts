@@ -1,4 +1,4 @@
-import type { NativeDropEvent } from "../../packages/desktop/src/api.js";
+import type { NativeDropEvent } from "../api.js";
 
 export function pickFiles(): Promise<File[]> {
   return new Promise((resolve) => {

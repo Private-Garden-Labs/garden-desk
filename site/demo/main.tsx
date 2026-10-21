@@ -5,8 +5,8 @@ import type { DesktopCapabilities } from "../../packages/desktop/src/capabilitie
 import { initLocale } from "../../packages/desktop/src/i18n/index.js";
 import "../../packages/desktop/src/styles.css";
 import "./demo.css";
-import { DemoDesktopApi } from "./demo-api.js";
-import { prefillComposerOnFocus } from "./demo-prompt.js";
+import { DemoDesktopApi } from "../../packages/desktop/src/demo/demo-api.js";
+import { prefillComposerOnFocus } from "../../packages/desktop/src/demo/demo-prompt.js";
 
 if (new URLSearchParams(window.location.search).has("embedded")) {
   document.body.classList.add("embedded-demo");

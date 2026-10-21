@@ -15,13 +15,14 @@ import {
   SessionDraftSchema,
   SessionSummarySchema,
 } from "@gardendesk/shared";
-import type { DesktopApi, NativeDropEvent } from "../../packages/desktop/src/api.js";
+import type { DesktopApi, NativeDropEvent } from "../api.js";
 import { contentHash, listenForBrowserDrops, pickFiles } from "./demo-files.js";
 import { REVIEW_DURATION_MS, type ReviewRun, reviewProgress, uuid } from "./review-run.js";
 import { reviewScript } from "./review-script.js";
 
 const demoUnavailable = () => Promise.reject(new Error("Unavailable in the demo"));
 const CONTEXT_TOKENS = 65_536;
+type DropListener = NonNullable<DesktopApi["listenForDroppedPaths"]>;
 
 interface DemoRun extends ReviewRun {
   sessionId: string;
@@ -39,7 +40,10 @@ export class DemoDesktopApi implements DesktopApi {
   private readonly sessions: SessionSummary[] = [];
   private sequence = 100;
 
-  constructor(private readonly now: () => number = Date.now) {}
+  constructor(
+    private readonly now: () => number = Date.now,
+    private readonly nativeDrops?: DropListener,
+  ) {}
 
   async bootstrapDesktop() {
     return {
@@ -97,15 +101,11 @@ export class DemoDesktopApi implements DesktopApi {
   setSkillEnabled = demoUnavailable;
   openPromptFolder = demoUnavailable;
 
-  async listSkills() {
-    return [];
-  }
-
-  async skillLocations() {
-    return { builtInSkillsPath: "", skillsPath: "", systemPromptsPath: "" };
-  }
+  listSkills = async () => [];
+  skillLocations = async () => ({ builtInSkillsPath: "", skillsPath: "", systemPromptsPath: "" });
 
   async listenForDroppedPaths(listener: (event: NativeDropEvent) => void) {
+    if (this.nativeDrops !== undefined) return this.nativeDrops(listener);
     return listenForBrowserDrops(listener, (files) => {
       for (const file of files) this.files.set(file.name, file);
     });
@@ -122,7 +122,9 @@ export class DemoDesktopApi implements DesktopApi {
   }
 
   async addFiles(sessionId: string, paths: string[]) {
-    const files = paths.flatMap((name) => this.files.get(name) ?? []);
+    const files = paths.map(
+      (path) => this.files.get(path) ?? new File([], path.split(/[\\/]/u).at(-1) ?? path),
+    );
     const added = await Promise.all(
       files.map(async (file) =>
         AttachmentSummarySchema.parse({
@@ -246,9 +248,7 @@ export class DemoDesktopApi implements DesktopApi {
     return Promise.all(runs.map(async (run) => (await this.getAgentRun(run.runId)).run));
   }
 
-  async cancelAgent() {
-    return false;
-  }
+  cancelAgent = async () => false;
 
   private summary(
     run: DemoRun,

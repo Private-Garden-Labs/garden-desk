@@ -1,4 +1,4 @@
-import { currentLocale } from "../../packages/desktop/src/i18n/index.js";
+import { currentLocale } from "../i18n/index.js";
 
 export interface ReviewScript {
   prompt: string;
