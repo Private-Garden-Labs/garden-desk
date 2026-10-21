@@ -136,6 +136,17 @@ function saveLocale(code: string): void {
   }
 }
 
+function linkedLocale(): string | undefined {
+  const linked = new URLSearchParams(location.search).get("lang");
+  return linked !== null && codes.includes(linked) ? linked : undefined;
+}
+
+function linkLocale(code: string): void {
+  const url = new URL(location.href);
+  url.searchParams.set("lang", code);
+  history.replaceState(history.state, "", url);
+}
+
 function flagImage(code: string): Node {
   const url = flags[code];
   if (url !== undefined) {
@@ -281,6 +292,7 @@ function collectSlots(): Slot[] {
 
 const showSelected = mountPicker((code) => {
   saveLocale(code);
+  linkLocale(code);
   void apply(code);
 });
 const slots = collectSlots();
@@ -294,6 +306,8 @@ async function apply(code: string): Promise<void> {
   showSelected?.(code, strings.language ?? "Language");
 }
 
-const initial = savedLocale() ?? resolveLocale(navigator.languages);
+const linked = linkedLocale();
+if (linked !== undefined) saveLocale(linked);
+const initial = linked ?? savedLocale() ?? resolveLocale(navigator.languages);
 showSelected?.(initial, "Language");
 if (initial !== "en") void apply(initial);
