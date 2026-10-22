@@ -1,5 +1,6 @@
 import { t } from "./i18n/index.js";
 import type { TimelineItem } from "./state-types.js";
+import { stepTitle } from "./step-titles.js";
 
 export type ActivityStatus = "running" | "done" | "failed";
 
@@ -113,12 +114,17 @@ function rowKind(item: TimelineItem, thinking: string | undefined): ActivityRow[
   return PLANNING_EVENTS.has(item.eventType ?? "") && hasThinking ? "thinking" : "tool";
 }
 
+function rowTitle(kind: ActivityRow["kind"], item: TimelineItem): string {
+  if (kind === "thinking") return thinkingTitle(item.durationMs);
+  return kind === "subagent" ? item.text : stepTitle(item.text);
+}
+
 function newRow(key: string, item: TimelineItem, thinking: string | undefined): ActivityRow {
   const kind = rowKind(item, thinking);
   return {
     id: key,
     kind,
-    title: kind === "thinking" ? thinkingTitle(item.durationMs) : item.text,
+    title: rowTitle(kind, item),
     status:
       kind === "thinking" && item.durationMs !== undefined
         ? "done"
@@ -137,7 +143,7 @@ function mergeRow(row: ActivityRow, item: TimelineItem): void {
   // A running event never downgrades a settled row; a completed event always wins.
   if (next !== "running") row.status = next;
   if (item.eventType === "tool.completed" || item.eventType === "subagent.completed") {
-    row.title = row.kind === "subagent" ? row.title : item.text;
+    row.title = row.kind === "subagent" ? row.title : stepTitle(item.text);
   }
   if (item.detail !== undefined) {
     row.detail = row.detail === undefined ? item.detail : `${row.detail}\n\n${item.detail}`;

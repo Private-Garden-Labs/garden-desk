@@ -1,5 +1,6 @@
 import type { AgentExecutionSnapshot, AgentInferenceTurn, AgentTrace } from "@gardendesk/shared";
 import type { DesktopState, TimelineItem } from "./state.js";
+import { stepTitle } from "./step-titles.js";
 
 export interface AgentStep {
   id: string;
@@ -74,7 +75,7 @@ export function agentSteps(
       runId,
       ordinal: index + 1,
       kind,
-      title: item.text,
+      title: kind === "subagent" ? item.text : stepTitle(item.text),
       ...(item.detail === undefined ? {} : { detail: item.detail }),
       ...(execution === undefined ? {} : { execution }),
       ...(turn === undefined ? {} : { turn }),
