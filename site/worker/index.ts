@@ -1,6 +1,7 @@
 import { isOwner } from "./access";
 import { admin } from "./admin";
 import { blog } from "./blog";
+import { localized } from "./locale";
 import { stats } from "./stats";
 
 interface Statement {
@@ -34,7 +35,14 @@ export default {
     if (url.hostname === "downloads.gardendesk.ai")
       return serveDownload(request, url, env, context);
     if (url.hostname === "admin.gardendesk.ai") return serveAdmin(request, env);
-    return servePage(request, env, context, await blog(request, env));
+    const page = async (pageRequest: Request) =>
+      (await blog(pageRequest, env)) ?? env.ASSETS.fetch(pageRequest);
+    return servePage(
+      request,
+      env,
+      context,
+      (await localized(request, page)) ?? (await page(request)),
+    );
   },
 };
 
@@ -68,9 +76,8 @@ async function servePage(
   request: Request,
   env: Env,
   context: Context,
-  served?: Response,
+  response: Response,
 ): Promise<Response> {
-  const response = served ?? (await env.ASSETS.fetch(request));
   const page = response.headers.get("content-type")?.startsWith("text/html") === true;
   const framed = request.headers.get("sec-fetch-dest") === "iframe";
   if (counted(request) && page && !framed && response.status === 200) {

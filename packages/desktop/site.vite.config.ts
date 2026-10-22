@@ -3,11 +3,24 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 const siteRoot = resolve(import.meta.dirname, "../../site");
+const localeCode = /^(?!en$)[a-z]{2,3}(?:-[A-Z0-9]{2,3})?$/u;
 
 export default defineConfig({
   appType: "mpa",
   base: "/",
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: "locale-paths",
+      configureServer(server) {
+        server.middlewares.use((request, _response, next) => {
+          const [, code = "", ...rest] = (request.url ?? "").split("/");
+          if (localeCode.test(code)) request.url = `/${rest.join("/")}`;
+          next();
+        });
+      },
+    },
+  ],
   resolve: {
     alias: {
       "@gardendesk/shared": resolve(import.meta.dirname, "../shared/src/index.ts"),
