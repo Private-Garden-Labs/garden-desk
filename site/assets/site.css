@@ -2836,7 +2836,15 @@ html:has(> body.home) {
   --format-color: var(--leaf-soft);
 }
 
-.home :is(.step-card, .requirement-card, .model-panel, .open-source-panel, .model-facts div, .open-source-meta div) {
+.home
+  :is(
+    .step-card,
+    .requirement-card,
+    .model-panel,
+    .open-source-panel,
+    .model-facts div,
+    .open-source-meta div
+  ) {
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -2875,7 +2883,14 @@ html:has(> body.home) {
   color: var(--ink);
 }
 
-.home :is(.step-card p, .requirement-card p, .model-copy > p, .open-source-panel p, .open-source-meta span) {
+.home
+  :is(
+    .step-card p,
+    .requirement-card p,
+    .model-copy > p,
+    .open-source-panel p,
+    .open-source-meta span
+  ) {
   color: var(--ink);
   font-size: 17px;
   line-height: 1.6;
