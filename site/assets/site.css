@@ -446,12 +446,6 @@ html.motion-ready [data-reveal].is-revealed {
   margin-top: 32px;
 }
 
-.availability {
-  margin: 17px 0 0;
-  color: var(--ink-faint);
-  font-size: 13px;
-}
-
 .format-strip {
   position: relative;
   width: min(1040px, calc(100% - 40px));
@@ -1855,13 +1849,6 @@ body {
   max-width: 26ch;
 }
 
-.garden .availability {
-  color: var(--leaf-soft);
-  font-size: 0.92rem;
-  max-width: 34ch;
-  opacity: 0.85;
-}
-
 .garden .garden-start {
   display: grid;
   gap: 10px;
@@ -1998,7 +1985,7 @@ body {
 
 .origin-note {
   max-width: 54ch;
-  margin: 28px 0 0;
+  margin: 48px 0 0;
   color: var(--ink);
   font-size: 17px;
   line-height: 1.6;
@@ -2037,22 +2024,6 @@ body {
 
 .origin-block li::marker {
   color: var(--leaf);
-}
-
-.origin-lists + .origin-note {
-  margin-top: 48px;
-}
-
-@media (max-width: 767px) {
-  .origin-lists + .origin-note {
-    margin-top: 40px;
-  }
-
-  .origin-lists {
-    grid-template-columns: 1fr;
-    gap: 40px;
-    margin-top: 40px;
-  }
 }
 
 .garden-claims {
@@ -2096,6 +2067,16 @@ body {
 }
 
 @media (max-width: 767px) {
+  .origin-note {
+    margin-top: 40px;
+  }
+
+  .origin-lists {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    margin-top: 40px;
+  }
+
   .claim-list {
     width: calc(100% - 40px);
   }
@@ -2783,8 +2764,13 @@ html:has(> body.home) {
   --leaf-soft: #2a5640;
   --line: rgb(20 50 30 / 14%);
   --line-strong: rgb(20 50 30 / 24%);
+  --focus: #2a5640;
   color: var(--ink);
   background: none;
+}
+
+.home .footer-links a:hover {
+  color: var(--leaf-soft);
 }
 
 .home::before,
@@ -2807,6 +2793,7 @@ html:has(> body.home) {
   --leaf-soft: #9dc4b0;
   --line: rgb(240 237 227 / 13%);
   --line-strong: rgb(240 237 227 / 24%);
+  --focus: #c8a64b;
   color: var(--ink);
 }
 
@@ -2826,7 +2813,6 @@ html:has(> body.home) {
 
 .home .garden .download-meta {
   max-width: 42ch;
-  color: var(--leaf-soft);
   font-size: 15px;
   opacity: 1;
 }
@@ -2885,7 +2871,6 @@ html:has(> body.home) {
 }
 
 .home .model-panel,
-.home .model-copy > p:not(.eyebrow),
 .home .model-facts dd {
   color: var(--ink);
 }
@@ -2988,7 +2973,7 @@ html:has(> body.home) {
   .home .format-item {
     grid-area: 1 / 1;
     opacity: 0;
-    animation: carousel-four 16s ease-in-out infinite both;
+    animation: carousel-four 16s ease-out infinite both;
   }
 
   .home .format-item {
