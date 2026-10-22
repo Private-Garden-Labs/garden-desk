@@ -19,7 +19,6 @@ else:
     raise ValueError('Supported review files: DOC, DOCX, PDF, TXT, MD.')
 if not text.strip():
     raise ValueError('The document has no readable text.')
-text = '\\n'.join(f'{number}: {line}' for number, line in enumerate(text.splitlines(), 1))
 Path(${JSON.stringify(outputPath)}).write_text(text, encoding='utf-8')
 print(text)
 `;
