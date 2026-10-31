@@ -19,13 +19,13 @@ import {
 } from "./law-search.js";
 
 const QUERY_INSTRUCTION =
-  "Instruct: Given a contract clause or legal question, retrieve the law sections that govern it\nQuery: ";
+  "Instruct: Given a contract provision, retrieve statutory rights, duties and prohibitions that determine whether it is enforceable\nQuery: ";
 const QUERY_CHARACTERS = 1_000;
 const SEARCH_RESULTS = 5;
 const DOCUMENT_PASSAGES = 24;
 const SECTION_CHARACTERS = 4_000;
 const DOCUMENT_SECTION_CHARACTERS = 2_000;
-const DOCUMENT_LAW_CHARACTERS = 48_000;
+const DOCUMENT_LAW_CHARACTERS = 96_000;
 
 export interface LawSection {
   citation: string;
