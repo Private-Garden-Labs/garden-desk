@@ -12,6 +12,7 @@ import type {
 import type { CommandInvocation } from "../commands/library.js";
 import { runCommand } from "../commands/run.js";
 import type { JobStore } from "../jobs/jobs.js";
+import type { LawContext } from "../laws/law-library.js";
 import type { InferenceService } from "../runtime/inference.js";
 import type { DatabasePort } from "../workspace/database.js";
 import { agentSkillReader } from "./agent-skills.js";
@@ -36,6 +37,7 @@ interface PrimaryRunInput {
   definitions: MarkdownDefinitionLibrary;
   history: { messages: ConversationMessage[]; summary?: string };
   jobs: JobStore;
+  laws?: LawContext;
   run: AgentRunSummary;
   sessions: AgentSessionManager;
   signal: AbortSignal;
@@ -105,7 +107,8 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
     mediaType: item.mediaType,
   }));
   const agentInput: ChatAgentInput = {
-    agent: primary,
+    agent: input.laws === undefined ? primary : { ...primary, tools: [...primary.tools, "laws"] },
+    ...(input.laws === undefined ? {} : { laws: input.laws }),
     contextTokens: input.contextTokens,
     ...(input.knownContextTokens === undefined
       ? {}

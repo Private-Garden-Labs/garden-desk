@@ -1238,12 +1238,17 @@ select:focus-visible {
 }
 
 .suggestions {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 12px;
 }
 
 .suggestions button {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 calc((100% - 36px) / 4);
   min-height: 104px;
   padding: 18px;
   border: 1px solid var(--border-color);
@@ -1256,6 +1261,12 @@ select:focus-visible {
     border-color 160ms ease,
     background 160ms ease,
     transform 160ms ease;
+}
+
+.suggestion-command {
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .suggestions button:hover {
@@ -2041,6 +2052,19 @@ select:focus-visible {
 .effort-option-check svg {
   width: 14px;
   height: 14px;
+}
+
+.law-menu {
+  width: 280px;
+}
+
+.law-menu-note {
+  margin: 6px 0 0;
+  padding: 8px 10px 4px;
+  border-top: 1px solid var(--reading-border);
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .question-prompt {
@@ -3353,6 +3377,56 @@ select:focus-visible {
   transform: translateX(16px);
 }
 
+.law-disclaimer {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--reading-border);
+  border-radius: 12px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.law-list {
+  margin-top: 14px;
+}
+
+.law-row {
+  align-items: flex-start;
+}
+
+.law-sources {
+  margin-top: 6px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.law-sources summary {
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.law-sources summary:hover {
+  color: var(--ink);
+}
+
+.law-sources summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.law-sources ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.law-sources li span {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
 .skill-drop-zone {
   display: grid;
   margin-top: 10px;
@@ -3732,8 +3806,8 @@ select:focus-visible {
 }
 
 @media (max-width: 960px) {
-  .suggestions {
-    grid-template-columns: repeat(2, 1fr);
+  .suggestions button {
+    flex-basis: calc((100% - 12px) / 2);
   }
 }
 

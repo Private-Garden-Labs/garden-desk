@@ -4,9 +4,11 @@ import { createReadStream } from "node:fs";
 import { chmod, copyFile, cp, mkdir, readFile, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { LAW_PACK_DIRECTORIES } from "@gardendesk/shared";
 import { signExecutable } from "./build-signing.js";
 import { writePackageCompliance, writePackageIdentity } from "./package-compliance.js";
 import { installImageModelResources, installRuntimeResources } from "./package-image-resources.js";
+import { copyLawLibrary } from "./package-law-resources.js";
 import { reportDevelopmentResourceStage } from "./src/dev-resource-progress.js";
 import * as model from "./src/package-model-contract.js";
 import { packagedMigrationNames } from "./src/package-resource-contract.js";
@@ -160,6 +162,29 @@ export async function installInferenceResources(
 function productBuild(): boolean {
   return !process.argv.includes("--check") && ["darwin", "win32"].includes(process.platform);
 }
+
+async function installLawLibrary(mode: "development" | "production"): Promise<void> {
+  const destinationRoot = join(resourcesRoot, "data-packs");
+  for (const directory of Object.values(LAW_PACK_DIRECTORIES)) {
+    const source = join(repositoryRoot, "data-packs", directory);
+    const destination = join(destinationRoot, directory);
+    await mkdir(destination, { recursive: true });
+    try {
+      await copyLawLibrary(
+        join(source, "law-library.sqlite"),
+        join(destination, "law-library.sqlite"),
+      );
+      await copyFile(join(source, "sources.json"), join(destination, "sources.json"));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      if (productBuild() && mode === "production") {
+        throw new Error(
+          `Missing data-packs/${directory}. Run pnpm laws:build --vectors before packaging.`,
+        );
+      }
+    }
+  }
+}
 async function installProductResources(
   mode: "development" | "production",
 ): Promise<Omit<ResourceHashes, "migrations">> {
@@ -208,6 +233,7 @@ export async function installResources(
     await copyFile(source, destination);
     migrations[name] = await sha256(destination);
   }
+  await installLawLibrary(mode);
   const windowsPipeGuard = await installWindowsPipeGuard();
   const productResources = productBuild() ? await installProductResources(mode) : {};
   await writePackageIdentity(resourcesRoot, {

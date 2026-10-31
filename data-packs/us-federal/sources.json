@@ -1,0 +1,361 @@
+{
+  "jurisdictions": [
+    {
+      "id": "us",
+      "name": "United States (federal)",
+      "currentAsOf": "U.S. Code 2024 edition (laws through 2025-01-06), with later amendments to included sections through P.L. 119-118 (2026-09-30); eCFR as of 2026-10-05",
+      "tiers": {
+        "core": [
+          {
+            "id": "us-constitution",
+            "title": "Constitution of the United States, with all amendments",
+            "version": "House Document 110-50 (2007)",
+            "format": "constitution",
+            "url": "https://www.govinfo.gov/content/pkg/CDOC-110hdoc50/html/CDOC-110hdoc50.htm",
+            "sha256": "e8a9606e762ea07e1975dad91574e1c69b42b0caf37d8f6e3d193b207e8721da",
+            "citation": "U.S. Const."
+          },
+          {
+            "id": "us-9-usc-arbitration",
+            "title": "Federal Arbitration Act (FAA), with the New York and Panama Convention chapters, 9 U.S.C.",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title9/html/USCODE-2024-title9.htm",
+            "sha256": "67fb04b2af6d2215ff710fc7bf20882efb93efe102d50a617b852befcaa57bc7",
+            "citation": "9 U.S.C.",
+            "paths": [""]
+          },
+          {
+            "id": "us-15-usc-ch1-antitrust",
+            "title": "Sherman Act and Clayton Act (antitrust), 15 U.S.C. chapter 1",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 1/"]
+          },
+          {
+            "id": "us-15-usc-ftc-act",
+            "title": "Federal Trade Commission Act (FTC Act), 15 U.S.C. chapter 2, subchapter I",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 2/SUBCHAPTER I/"]
+          },
+          {
+            "id": "us-15-usc-e-sign",
+            "title": "Electronic Signatures in Global and National Commerce Act (E-SIGN), 15 U.S.C. chapter 96",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 96/"]
+          },
+          {
+            "id": "us-15-usc-fcpa",
+            "title": "Foreign Corrupt Practices Act (FCPA) anti-bribery provisions, 15 U.S.C. 78dd-1 to 78dd-3",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 2B/Sec. 78dd-"]
+          },
+          {
+            "id": "us-11-usc-365",
+            "title": "Bankruptcy Code: executory contracts and unexpired leases, 11 U.S.C. 365",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title11/html/USCODE-2024-title11.htm",
+            "sha256": "9ffa6b789edac684679f93cda99b28ccb9e94786aefe80008acf0eb9bcbaca12",
+            "citation": "11 U.S.C.",
+            "paths": ["CHAPTER 3/SUBCHAPTER IV/Sec. 365"]
+          },
+          {
+            "id": "us-42-usc-1981",
+            "title": "Equal rights to make and enforce contracts, and damages for intentional employment discrimination, 42 U.S.C. 1981 and 1981a",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title42/html/USCODE-2024-title42.htm",
+            "sha256": "b1cc6f3ffc2ee4993038437795a9057085f20196fbe13e731833f9c37ba52be5",
+            "citation": "42 U.S.C.",
+            "paths": ["CHAPTER 21/SUBCHAPTER I/Sec. 1981"]
+          },
+          {
+            "id": "us-50-usc-ieepa",
+            "title": "International Emergency Economic Powers Act (IEEPA, sanctions), 50 U.S.C. chapter 35",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title50/html/USCODE-2024-title50.htm",
+            "sha256": "ccab6e1743ed19de3fc70e5db3b57eaf8c982e39bc8ff33c9b182abc51d70a15",
+            "citation": "50 U.S.C.",
+            "paths": ["CHAPTER 35/"]
+          },
+          {
+            "id": "us-cisg",
+            "title": "United Nations Convention on Contracts for the International Sale of Goods (CISG), Vienna 1980",
+            "version": "1980 text, Justice Laws Canada XML",
+            "format": "cisg",
+            "url": "https://laws-lois.justice.gc.ca/eng/XML/I-20.4.xml",
+            "sha256": "1a12d9e34bfdadb72ea33fc1fb13ccd85cbc02f4524482e6a71220b689b2b302",
+            "citation": "CISG"
+          }
+        ],
+        "consumer": [
+          {
+            "id": "us-15-usc-ccpa",
+            "title": "Consumer Credit Protection Act (Truth in Lending, Fair Credit Reporting, Fair Debt Collection Practices, Equal Credit Opportunity, Electronic Fund Transfer), 15 U.S.C. chapter 41",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 41/"]
+          },
+          {
+            "id": "us-15-usc-magnuson-moss",
+            "title": "Magnuson-Moss Warranty Act, 15 U.S.C. chapter 50",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 50/"]
+          },
+          {
+            "id": "us-15-usc-rosca",
+            "title": "Restore Online Shoppers' Confidence Act (ROSCA, online subscriptions), 15 U.S.C. chapter 110",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 110/"]
+          },
+          {
+            "id": "us-16-cfr-429",
+            "title": "FTC Cooling-Off Rule for door-to-door sales, 16 CFR part 429",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=429",
+            "sha256": "9efb1e1da9970b2473ac91451cbbeff699ce6a2eb9d35029988db2e5fe6eb309",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-433",
+            "title": "FTC Holder in Due Course Rule (preservation of consumers' claims and defenses), 16 CFR part 433",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=433",
+            "sha256": "df7caff274c8ccc946904c00b6b4c333de2238a239c6455d2dd6ede11794b34b",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-444",
+            "title": "FTC Credit Practices Rule, 16 CFR part 444",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=444",
+            "sha256": "2468a8e6b1f114ac6f1617b58690a30cee718ff1ba5990672670ea3c4cb98937",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-700",
+            "title": "Interpretations of the Magnuson-Moss Warranty Act, 16 CFR part 700",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=700",
+            "sha256": "2e9082dbde4c0bf4dc3c783256243814a17fb13e984fb37277b3f58d4fc5c416",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-701",
+            "title": "Disclosure of written consumer product warranty terms and conditions, 16 CFR part 701",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=701",
+            "sha256": "44cec512301992927ee10d2c60041a6ee95abadc0ee76c34ce0eb590de73def0",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-702",
+            "title": "Pre-sale availability of written warranty terms, 16 CFR part 702",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=702",
+            "sha256": "892548e45c894638546a3697e0ff32153bb69a8b9e0cc7fc5768ccd7452a7afe",
+            "citation": "16 CFR"
+          },
+          {
+            "id": "us-16-cfr-703",
+            "title": "Informal dispute settlement procedures for warranties, 16 CFR part 703",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-16.xml?part=703",
+            "sha256": "cba9e3c1683b8a4bda29796d8b08bda848d8344e3ca7cd2c6f1573ed935789b8",
+            "citation": "16 CFR"
+          }
+        ],
+        "employment": [
+          {
+            "id": "us-29-usc-nlra",
+            "title": "National Labor Relations Act (NLRA), 29 U.S.C. chapter 7, subchapter II",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm",
+            "sha256": "e96eb2f9d3108d9fbaa91d35c25cbcd1db72fbeeadb7bbbc52c2fe8ab41796d1",
+            "citation": "29 U.S.C.",
+            "paths": ["CHAPTER 7/SUBCHAPTER II/"]
+          },
+          {
+            "id": "us-29-usc-flsa",
+            "title": "Fair Labor Standards Act (FLSA, minimum wage and overtime), 29 U.S.C. chapter 8",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm",
+            "sha256": "e96eb2f9d3108d9fbaa91d35c25cbcd1db72fbeeadb7bbbc52c2fe8ab41796d1",
+            "citation": "29 U.S.C.",
+            "paths": ["CHAPTER 8/"]
+          },
+          {
+            "id": "us-29-usc-adea",
+            "title": "Age Discrimination in Employment Act (ADEA), 29 U.S.C. chapter 14",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm",
+            "sha256": "e96eb2f9d3108d9fbaa91d35c25cbcd1db72fbeeadb7bbbc52c2fe8ab41796d1",
+            "citation": "29 U.S.C.",
+            "paths": ["CHAPTER 14/"]
+          },
+          {
+            "id": "us-29-usc-fmla",
+            "title": "Family and Medical Leave Act (FMLA), 29 U.S.C. chapter 28",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm",
+            "sha256": "e96eb2f9d3108d9fbaa91d35c25cbcd1db72fbeeadb7bbbc52c2fe8ab41796d1",
+            "citation": "29 U.S.C.",
+            "paths": ["CHAPTER 28/"]
+          },
+          {
+            "id": "us-42-usc-title-vii",
+            "title": "Title VII of the Civil Rights Act of 1964 (equal employment opportunity), 42 U.S.C. chapter 21, subchapter VI",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title42/html/USCODE-2024-title42.htm",
+            "sha256": "b1cc6f3ffc2ee4993038437795a9057085f20196fbe13e731833f9c37ba52be5",
+            "citation": "42 U.S.C.",
+            "paths": ["CHAPTER 21/SUBCHAPTER VI/"]
+          },
+          {
+            "id": "us-42-usc-ada",
+            "title": "Americans with Disabilities Act (ADA), 42 U.S.C. chapter 126",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title42/html/USCODE-2024-title42.htm",
+            "sha256": "b1cc6f3ffc2ee4993038437795a9057085f20196fbe13e731833f9c37ba52be5",
+            "citation": "42 U.S.C.",
+            "paths": ["CHAPTER 126/"]
+          },
+          {
+            "id": "us-18-usc-trade-secrets",
+            "title": "Economic Espionage Act and Defend Trade Secrets Act (trade secrets), 18 U.S.C. chapter 90",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18.htm",
+            "sha256": "96637a8d5f1c3ae6f13d3f88f8b268d253afb01fe8c59ea05ceb136b5bf8eb10",
+            "citation": "18 U.S.C.",
+            "paths": ["PART I/CHAPTER 90/"]
+          }
+        ],
+        "ip-and-data": [
+          {
+            "id": "us-17-usc-copyright",
+            "title": "Copyright Act: subject matter, ownership, duration and infringement, 17 U.S.C. chapters 1, 2, 3 and 5",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title17/html/USCODE-2024-title17.htm",
+            "sha256": "5e42106e930d973551182ccf2b122311aff6a6a42642e269509b14527b250acd",
+            "citation": "17 U.S.C.",
+            "paths": ["CHAPTER 1/", "CHAPTER 2/", "CHAPTER 3/", "CHAPTER 5/"]
+          },
+          {
+            "id": "us-35-usc-patent-ownership",
+            "title": "Patent Act: ownership and assignment, 35 U.S.C. chapter 26",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title35/html/USCODE-2024-title35.htm",
+            "sha256": "33417d938bc88cb36125b765e96a87618299c869c6a9b206a7290657f17055de",
+            "citation": "35 U.S.C.",
+            "paths": ["PART III/CHAPTER 26/"]
+          },
+          {
+            "id": "us-15-usc-lanham",
+            "title": "Lanham Act (trademarks), 15 U.S.C. chapter 22",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 22/"]
+          },
+          {
+            "id": "us-15-usc-glba",
+            "title": "Gramm-Leach-Bliley Act (GLBA) financial privacy, 15 U.S.C. chapter 94",
+            "version": "2024 edition",
+            "format": "uscode",
+            "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15.htm",
+            "sha256": "770faed14deac26d8391eb658de7c3a228e705e2d9d3b440604b00aa2e6f21c4",
+            "citation": "15 U.S.C.",
+            "paths": ["CHAPTER 94/"]
+          },
+          {
+            "id": "us-45-cfr-164",
+            "title": "HIPAA Privacy, Security and Breach Notification Rules, 45 CFR part 164",
+            "version": "eCFR 2026-10-05",
+            "format": "ecfr",
+            "url": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-05/title-45.xml?part=164",
+            "sha256": "233fec3ad4a05762fd58d636fafc24c51ae60fa48f1be8354ea17a790b364f2e",
+            "citation": "45 CFR"
+          }
+        ]
+      }
+    }
+  ],
+  "amendments": [
+    {
+      "section": "15 U.S.C. 1681b",
+      "law": "P.L. 119-36",
+      "date": "2025-09-05",
+      "provision": "/us/pl/119/36/s2/a",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ36/uslm/PLAW-119publ36.xml",
+      "sha256": "12927229213de3ef8789b11da248e1c804ed4230c7e5d535d0d667d6292498b5"
+    },
+    {
+      "section": "17 U.S.C. 105",
+      "law": "P.L. 119-60",
+      "date": "2025-12-18",
+      "provision": "/us/pl/119/60/dA/tXVII/s1702",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ60/uslm/PLAW-119publ60.xml",
+      "sha256": "7eb2742dc8b011fa6a7a6ec17daf459749e546a432b054e1966b6f567c216713"
+    }
+  ],
+  "aliases": {
+    "15 U.S.C. 1": "price fixing, bid rigging, market allocation, cartel, agreement between competitors, group boycott",
+    "15 U.S.C. 2": "monopolization, attempted monopolization, abuse of monopoly power",
+    "15 U.S.C. 1691": "credit discrimination, lending discrimination, national origin, place of birth, race, sex, age, marital status",
+    "42 U.S.C. 1981": "racial discrimination in contracts, alienage, equal right to make and enforce contracts",
+    "9 U.S.C. 2": "arbitration agreement, arbitration clause enforceable, class action waiver",
+    "15 U.S.C. 8403": "automatic renewal, subscription, negative option, free trial, simple cancellation",
+    "15 U.S.C. 45b": "non-disparagement clause, gag clause, ban on negative customer reviews, review penalty",
+    "15 U.S.C. 45": "unfair or deceptive acts or practices, unfair methods of competition",
+    "15 U.S.C. 2302": "warranty tie-in, warranty void if other brand parts or service are used",
+    "15 U.S.C. 1638": "closed-end credit disclosures, installment plan, annual percentage rate, finance charge disclosure",
+    "15 U.S.C. 7001": "electronic signatures, electronic records, consumer consent to electronic disclosures",
+    "CISG Article 1": "scope of the convention, international sale of goods between parties in different states"
+  }
+}

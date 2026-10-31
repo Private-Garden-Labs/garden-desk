@@ -233,11 +233,17 @@ pub(crate) async fn start_agent(
     session_id: String,
     task: String,
     thinking: String,
+    jurisdiction: Option<String>,
 ) -> Result<Value, String> {
     crate::windows_setup::require_ready()?;
     core.call(
         "agent.start",
-        json!({ "sessionId": session_id, "task": task, "thinking": thinking }),
+        json!({
+            "sessionId": session_id,
+            "task": task,
+            "thinking": thinking,
+            "jurisdiction": jurisdiction,
+        }),
     )
 }
 

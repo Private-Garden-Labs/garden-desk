@@ -30,6 +30,7 @@
     "guest:build:agent": "node --import tsx packages/workers/images/build.ts --agent --arch aarch64",
     "guest:build:agent:windows": "node --import tsx packages/workers/images/build.ts --agent --arch x86_64",
     "model:fetch": "node --import tsx packages/eval/src/gates/fetch-model.ts",
+    "laws:build": "node --import tsx scripts/law-library/build.ts",
     "model:compare": "node --import tsx packages/eval/src/gates/model-comparison.ts",
     "model:compare:agent": "node --import tsx packages/eval/src/gates/run-model-comparison-agent.ts",
     "model:compare:report": "node --import tsx packages/eval/src/gates/model-comparison-report.ts",

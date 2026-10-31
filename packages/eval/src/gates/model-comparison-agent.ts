@@ -146,7 +146,7 @@ async function run(task: SpecialistCase) {
     await prepareSpecialistFiles(source, task.addedAfterGrant ?? {});
     const session = await core.createSession(folder.id);
     const prompt = `${task.request}\nUse the source files in /source. Write a concise final report to /workspace/result.md with the facts requested and source file references with page, paragraph, or row locations. Return a short summary. Do not change the source files.`;
-    const started = await core.startAgent(session.id, prompt, DEFAULT_THINKING_LEVEL);
+    const started = await core.startAgent(session.id, prompt, DEFAULT_THINKING_LEVEL, null);
     return await score(core, task, await terminal(core, started.id, started.jobId), began);
   } finally {
     await core.close();

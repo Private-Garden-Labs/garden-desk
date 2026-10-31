@@ -59,6 +59,16 @@ Use this only as a last resort, and only after the owner approves the exact comm
 - `assets/inference-runtime.json` pins a `stagedSha256` per platform. Packaging stops on a mismatch. A file that already carries a valid vendor signature keeps it.
 - macOS development builds sign ad hoc. A production build sets `APPLE_SIGNING_IDENTITY` to the Developer ID Application identity. It signs the sidecar, inference runtime, and VZ helper with the hardened runtime, then notarizes and staples the DMG with the `garden-desk` notary profile. Create that profile once with `xcrun notarytool store-credentials garden-desk --key <AuthKey_ID.p8> --key-id <key ID> --issuer <issuer ID>`. Allow the terminal to control Finder for the DMG layout, or set `CI=true` to skip the layout.
 
+## Law Library
+
+Each folder under `data-packs/` contains its own `sources.json`, `.cache/`, and `law-library.sqlite` with text and vectors. The source manifest pins each text by URL and SHA-256. `pnpm laws:build` rebuilds text without vectors for both packs; add `--pack us-federal` or `--pack eu` to build one. Use the command below to include vectors. Source files and SQLite outputs stay outside Git. To update a text, change its `url` and `sha256`. `aliases` adds common names to section headings. A production build stops when a pack is missing or any section has no vectors.
+
+The search vectors (numbers that let Core find sections by meaning) need the encoder model, so this is a real run that needs owner approval:
+
+```bash
+pnpm laws:build --vectors --llama-server packages/eval/.generated/inference/macos-arm64/llama-server --encoder packages/eval/.generated/models/qwen3-embedding-0.6b-q8_0.gguf
+```
+
 ## Publish A Release
 
 A download link must not go live before its file and SHA-256 exist.
