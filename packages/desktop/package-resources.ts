@@ -4,6 +4,7 @@ import { createReadStream } from "node:fs";
 import { chmod, copyFile, cp, mkdir, readFile, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { LAW_PACK_DIRECTORIES } from "@gardendesk/shared";
 import { signExecutable } from "./build-signing.js";
 import { writePackageCompliance, writePackageIdentity } from "./package-compliance.js";
 import { installImageModelResources, installRuntimeResources } from "./package-image-resources.js";
@@ -163,16 +164,25 @@ function productBuild(): boolean {
 }
 
 async function installLawLibrary(mode: "development" | "production"): Promise<void> {
-  await mkdir(join(resourcesRoot, "laws"), { recursive: true });
-  try {
-    await copyLawLibrary(
-      join(repositoryRoot, "laws", "law-library.sqlite"),
-      join(resourcesRoot, "laws", "law-library.sqlite"),
-    );
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-    if (productBuild() && mode === "production") {
-      throw new Error("Missing laws/law-library.sqlite. Run `pnpm laws:build`, then build again.");
+  const destinationRoot = join(resourcesRoot, "data-packs");
+  await rm(destinationRoot, { recursive: true, force: true });
+  for (const directory of Object.values(LAW_PACK_DIRECTORIES)) {
+    const source = join(repositoryRoot, "data-packs", directory);
+    const destination = join(destinationRoot, directory);
+    await mkdir(destination, { recursive: true });
+    try {
+      await copyLawLibrary(
+        join(source, "law-library.sqlite"),
+        join(destination, "law-library.sqlite"),
+      );
+      await copyFile(join(source, "sources.json"), join(destination, "sources.json"));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      if (productBuild() && mode === "production") {
+        throw new Error(
+          `Missing data-packs/${directory}. Run pnpm laws:build --vectors before packaging.`,
+        );
+      }
     }
   }
 }

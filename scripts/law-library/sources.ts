@@ -44,11 +44,10 @@ export interface Section {
   text: string;
 }
 
-export const lawsRoot = resolve(import.meta.dirname, "../../laws");
-const cacheRoot = join(lawsRoot, ".cache");
+export const packsRoot = resolve(import.meta.dirname, "../../data-packs");
 
-export async function readLawSources(): Promise<LawSources> {
-  return JSON.parse(await readFile(join(lawsRoot, "sources.json"), "utf8")) as LawSources;
+export async function readLawSources(packRoot: string): Promise<LawSources> {
+  return JSON.parse(await readFile(join(packRoot, "sources.json"), "utf8")) as LawSources;
 }
 
 function sha256(data: Uint8Array): string {
@@ -69,8 +68,8 @@ async function download(url: string): Promise<Buffer> {
   return Buffer.from(await response.arrayBuffer());
 }
 
-/** Returns the pinned file's text, downloading it into laws/.cache when missing. */
-export async function pinnedText(pin: Pin): Promise<string> {
+export async function pinnedText(pin: Pin, packRoot: string): Promise<string> {
+  const cacheRoot = join(packRoot, ".cache");
   const path = join(cacheRoot, pin.sha256);
   const stored = await cached(path);
   const data = stored ?? (await download(pin.url));

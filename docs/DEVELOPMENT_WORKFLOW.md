@@ -61,7 +61,7 @@ Use this only as a last resort, and only after the owner approves the exact comm
 
 ## Law Library
 
-`laws/sources.json` pins each law text by URL and SHA-256. `pnpm laws:build` downloads the texts into `laws/.cache/`, checks each hash, and writes `laws/law-library.sqlite`. To update a text, change its `url` and `sha256`. A mismatch error shows the hash it found. `aliases` adds common names, such as "price fixing", to a section's heading, so both searches find the section by those names. A production build stops when the library file is missing or any section has no vectors.
+Each folder under `data-packs/` contains its own `sources.json`, `.cache/`, and `law-library.sqlite` with text and vectors. The source manifest pins each text by URL and SHA-256. `pnpm laws:build` builds both packs; add `--pack us-federal` or `--pack eu` to build one. Source files and SQLite outputs stay outside Git. To update a text, change its `url` and `sha256`. `aliases` adds common names to section headings. A production build stops when a pack is missing or any section has no vectors.
 
 The search vectors (numbers that let Core find sections by meaning) need the encoder model, so this is a real run that needs owner approval:
 

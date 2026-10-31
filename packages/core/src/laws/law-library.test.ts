@@ -1,8 +1,8 @@
-import { mkdtemp } from "node:fs/promises";
+import { mkdir, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { INFERENCE_PROFILE } from "@gardendesk/shared";
+import { INFERENCE_PROFILE, LAW_PACK_DIRECTORIES } from "@gardendesk/shared";
 import { describe, expect, it } from "vitest";
 import { type Embed, LawLibrary } from "./law-library.js";
 
@@ -11,8 +11,27 @@ async function library(
   seed?: (database: DatabaseSync) => void,
 ): Promise<LawLibrary> {
   const root = await mkdtemp(join(tmpdir(), "garden-desk-laws-"));
-  const path = join(root, "law-library.sqlite");
-  const database = new DatabaseSync(path);
+  for (const [id, directory] of Object.entries(LAW_PACK_DIRECTORIES)) {
+    await mkdir(join(root, directory));
+    const database = new DatabaseSync(join(root, directory, "law-library.sqlite"));
+    seedLibrary(database, seed);
+    database
+      .prepare(
+        "DELETE FROM chunks WHERE section_id IN (SELECT id FROM sections WHERE jurisdiction <> ?)",
+      )
+      .run(id);
+    database.prepare("DELETE FROM sections WHERE jurisdiction <> ?").run(id);
+    database.prepare("DELETE FROM sources WHERE jurisdiction <> ?").run(id);
+    database.prepare("DELETE FROM jurisdictions WHERE id <> ?").run(id);
+    database.exec(
+      "INSERT INTO sections_fts (rowid, citation, heading, title, text) SELECT id, citation, heading, '', text FROM sections;",
+    );
+    database.close();
+  }
+  return new LawLibrary(root, join(root, "settings.json"), embed);
+}
+
+function seedLibrary(database: DatabaseSync, seed?: (database: DatabaseSync) => void): void {
   database.exec(`
     CREATE TABLE jurisdictions (id TEXT PRIMARY KEY, name TEXT NOT NULL, current_as_of TEXT NOT NULL);
     CREATE TABLE sources (id TEXT PRIMARY KEY, jurisdiction TEXT NOT NULL, title TEXT NOT NULL, version TEXT NOT NULL, url TEXT NOT NULL, sha256 TEXT NOT NULL, position INTEGER NOT NULL);
@@ -23,12 +42,9 @@ async function library(
     INSERT INTO sources VALUES ('sherman', 'us', 'Sherman Act', '2024', '', '', 0), ('vber', 'eu', 'VBER', '2022', '', '', 0);
     INSERT INTO sections VALUES (1, 'sherman', 'us', '15 U.S.C. 1', '', 'Every contract fixing resale price is illegal.'),
       (2, 'vber', 'eu', 'Regulation (EU) 2022/720, Article 4', '', 'Fixing a minimum resale price is a hardcore restriction.');
-    INSERT INTO sections_fts (rowid, citation, heading, title, text) SELECT id, citation, heading, '', text FROM sections;
   `);
   database.prepare("INSERT INTO chunks VALUES (?, ?), (?, ?)").run(1, unit(), 2, unit());
   seed?.(database);
-  database.close();
-  return new LawLibrary(path, join(root, "settings.json"), embed);
 }
 
 function unit(): Uint8Array {

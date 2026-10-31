@@ -1,7 +1,9 @@
+import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import {
   type Jurisdiction,
   JurisdictionSchema,
+  LAW_PACK_DIRECTORIES,
   type LawJurisdictionSummary,
 } from "@gardendesk/shared";
 import { promptDirectoryExists, readPromptFile, writePromptFile } from "../prompt-files.js";
@@ -56,7 +58,7 @@ function withinCharacters(sections: LawSection[], limit: number): LawSection[] {
 }
 
 export class LawLibrary {
-  private database: DatabaseSync | undefined;
+  private readonly databases = new Map<Jurisdiction, DatabaseSync>();
   private readonly vectors = new Map<Jurisdiction, SectionVectors>();
   constructor(
     private readonly path: string,
@@ -65,22 +67,26 @@ export class LawLibrary {
   ) {}
 
   list(): LawJurisdictionSummary[] {
-    const database = this.open();
-    if (database === undefined) return [];
     const disabled = this.disabled();
-    const rows = database
-      .prepare("SELECT id, name, current_as_of FROM jurisdictions ORDER BY rowid")
-      .all() as JurisdictionRow[];
-    const sources = database.prepare(
-      "SELECT title, version FROM sources WHERE jurisdiction = ? ORDER BY position",
-    );
-    return rows.map((row) => ({
-      id: JurisdictionSchema.parse(row.id),
-      name: row.name,
-      currentAsOf: row.current_as_of,
-      enabled: !disabled.has(row.id),
-      sources: sources.all(row.id) as LawJurisdictionSummary["sources"],
-    }));
+    return JurisdictionSchema.options.flatMap((id) => {
+      const database = this.open(id);
+      if (database === undefined) return [];
+      const row = database
+        .prepare("SELECT id, name, current_as_of FROM jurisdictions WHERE id = ?")
+        .get(id) as JurisdictionRow;
+      const sources = database.prepare(
+        "SELECT title, version FROM sources WHERE jurisdiction = ? ORDER BY position",
+      );
+      return [
+        {
+          id,
+          name: row.name,
+          currentAsOf: row.current_as_of,
+          enabled: !disabled.has(id),
+          sources: sources.all(id) as LawJurisdictionSummary["sources"],
+        },
+      ];
+    });
   }
 
   setEnabled(id: Jurisdiction, enabled: boolean): boolean {
@@ -102,6 +108,7 @@ export class LawLibrary {
       search: async (query, signal) => {
         searched = true;
         return this.sections(
+          id,
           interleave([await this.rank(id, query, signal)]).slice(0, SEARCH_RESULTS),
           SECTION_CHARACTERS,
         );
@@ -112,7 +119,7 @@ export class LawLibrary {
         for (const passage of documentPassages(text, DOCUMENT_PASSAGES))
           rankings.push(await this.rank(id, passage, signal));
         return withinCharacters(
-          this.sections(interleave(rankings), DOCUMENT_SECTION_CHARACTERS),
+          this.sections(id, interleave(rankings), DOCUMENT_SECTION_CHARACTERS),
           DOCUMENT_LAW_CHARACTERS,
         );
       },
@@ -129,7 +136,7 @@ export class LawLibrary {
   private keywordRanks(id: Jurisdiction, text: string): number[] {
     const query = keywordQuery(text);
     if (query === undefined) return [];
-    const rows = this.required()
+    const rows = this.required(id)
       .prepare(
         `SELECT sections_fts.rowid AS id FROM sections_fts
          JOIN sections ON sections.id = sections_fts.rowid
@@ -143,7 +150,7 @@ export class LawLibrary {
   private sectionVectors(id: Jurisdiction): SectionVectors {
     const cached = this.vectors.get(id);
     if (cached !== undefined) return cached;
-    const rows = this.required()
+    const rows = this.required(id)
       .prepare(
         `SELECT chunks.section_id AS id, chunks.vector AS vector FROM chunks
          JOIN sections ON sections.id = chunks.section_id WHERE sections.jurisdiction = ?
@@ -166,8 +173,12 @@ export class LawLibrary {
     return vectors;
   }
 
-  private sections(picked: ReadonlyArray<[number, number]>, characters: number): LawSection[] {
-    const statement = this.required().prepare(
+  private sections(
+    id: Jurisdiction,
+    picked: ReadonlyArray<[number, number]>,
+    characters: number,
+  ): LawSection[] {
+    const statement = this.required(id).prepare(
       `SELECT sections.citation, sections.heading, sources.title AS source, sections.text
        FROM sections JOIN sources ON sources.id = sections.source_id WHERE sections.id = ?`,
     );
@@ -177,14 +188,15 @@ export class LawLibrary {
     });
   }
 
-  private open(): DatabaseSync | undefined {
-    if (this.database === undefined && promptDirectoryExists(this.path))
-      this.database = new DatabaseSync(this.path, { readOnly: true, allowExtension: false });
-    return this.database;
+  private open(id: Jurisdiction): DatabaseSync | undefined {
+    const path = join(this.path, LAW_PACK_DIRECTORIES[id], "law-library.sqlite");
+    if (!this.databases.has(id) && promptDirectoryExists(path))
+      this.databases.set(id, new DatabaseSync(path, { readOnly: true, allowExtension: false }));
+    return this.databases.get(id);
   }
 
-  private required(): DatabaseSync {
-    const database = this.open();
+  private required(id: Jurisdiction): DatabaseSync {
+    const database = this.open(id);
     if (database === undefined) throw new Error("law_library_unavailable");
     return database;
   }
@@ -196,7 +208,7 @@ export class LawLibrary {
   }
 
   close(): void {
-    this.database?.close();
-    this.database = undefined;
+    for (const database of this.databases.values()) database.close();
+    this.databases.clear();
   }
 }

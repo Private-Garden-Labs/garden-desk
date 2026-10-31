@@ -1,13 +1,14 @@
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
+import { LAW_PACK_DIRECTORIES } from "../../packages/shared/src/laws.js";
 import { cisgSections } from "./cisg.js";
 import { createLibrary, finishLibrary, insertJurisdiction, insertSource } from "./database.js";
 import { euSections } from "./eu.js";
 import { euTextSections } from "./eu-text.js";
 import {
   type Amendment,
-  lawsRoot,
+  packsRoot,
   pinnedText,
   readLawSources,
   type Section,
@@ -25,18 +26,25 @@ const parsers: Record<Source["format"], (text: string, source: Source) => Sectio
   cisg: cisgSections,
 };
 
-async function amendmentNotes(amendments: Amendment[]): Promise<Map<string, string>> {
+async function amendmentNotes(
+  amendments: Amendment[],
+  packRoot: string,
+): Promise<Map<string, string>> {
   const notes = new Map<string, string>();
   for (const amendment of amendments) {
-    const note = amendmentNote(await pinnedText(amendment), amendment);
+    const note = amendmentNote(await pinnedText(amendment, packRoot), amendment);
     const earlier = notes.get(amendment.section);
     notes.set(amendment.section, earlier === undefined ? note : `${earlier}\n\n${note}`);
   }
   return notes;
 }
 
-async function sourceSections(source: Source, notes: Map<string, string>): Promise<Section[]> {
-  const sections = parsers[source.format](await pinnedText(source), source);
+async function sourceSections(
+  source: Source,
+  notes: Map<string, string>,
+  packRoot: string,
+): Promise<Section[]> {
+  const sections = parsers[source.format](await pinnedText(source, packRoot), source);
   if (sections.length === 0) throw new Error(`No sections found in ${source.id}.`);
   return sections.map((section) => {
     const note = notes.get(section.citation);
@@ -46,30 +54,33 @@ async function sourceSections(source: Source, notes: Map<string, string>): Promi
   });
 }
 
-async function build(): Promise<void> {
-  const { values } = parseArgs({
-    options: {
-      vectors: { type: "boolean", default: false },
-      "llama-server": { type: "string" },
-      encoder: { type: "string" },
-    },
-  });
+const { values } = parseArgs({
+  options: {
+    vectors: { type: "boolean", default: false },
+    pack: { type: "string" },
+    "llama-server": { type: "string" },
+    encoder: { type: "string" },
+  },
+});
+
+async function build(directory: string): Promise<void> {
   const server = values["llama-server"];
   if (values.vectors && (server === undefined || values.encoder === undefined)) {
     throw new Error("--vectors needs --llama-server <path> and --encoder <path to the GGUF file>.");
   }
-  const library = await readLawSources();
-  const notes = await amendmentNotes(library.amendments);
+  const packRoot = join(packsRoot, directory);
+  const library = await readLawSources(packRoot);
+  const notes = await amendmentNotes(library.amendments, packRoot);
   const aliases = new Map(Object.entries(library.aliases));
   const named = new Set<string>();
-  const output = join(lawsRoot, "law-library.sqlite");
+  const output = join(packRoot, "law-library.sqlite");
   const database = await createLibrary(output);
   database.exec("BEGIN");
   for (const jurisdiction of library.jurisdictions) {
     insertJurisdiction(database, jurisdiction);
     const sources = Object.values(jurisdiction.tiers).flat();
     for (const [position, source] of sources.entries()) {
-      const sections = (await sourceSections(source, notes)).map((section) => {
+      const sections = (await sourceSections(source, notes, packRoot)).map((section) => {
         const alias = aliases.get(section.citation);
         if (alias === undefined) return section;
         named.add(section.citation);
@@ -91,4 +102,8 @@ async function build(): Promise<void> {
   console.log(`${output}: ${(await stat(output)).size} bytes`);
 }
 
-await build();
+const directories = Object.values(LAW_PACK_DIRECTORIES);
+if (values.pack !== undefined && !directories.some((directory) => directory === values.pack))
+  throw new Error(`Unknown law pack: ${values.pack}.`);
+for (const directory of directories)
+  if (values.pack === undefined || values.pack === directory) await build(directory);

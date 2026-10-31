@@ -96,7 +96,7 @@ const hostPackages = [
   },
   {
     name: "Law library texts",
-    version: "pinned in laws/sources.json",
+    version: "pinned in data-packs/*/sources.json",
     license: "LicenseRef-public-law-texts",
     notice:
       "U.S. federal texts are public domain (17 U.S.C. 105). EU texts are reused under Commission Decision 2011/833/EU; only the Official Journal text is authentic. The CISG text is reproduced from Justice Laws Canada under SI/97-5 and is not an official version.",

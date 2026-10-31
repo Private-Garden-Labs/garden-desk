@@ -201,7 +201,7 @@ export async function createGardenDeskCore(
           commands,
         );
   const laws = new LawLibrary(
-    resolve(promptDirectory, "..", "laws", "law-library.sqlite"),
+    resolve(promptDirectory, "..", "data-packs"),
     resolve(workspaceRoot, "laws", "settings.json"),
     async (input, signal) =>
       (

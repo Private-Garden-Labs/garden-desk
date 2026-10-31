@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const JurisdictionSchema = z.enum(["us", "eu"]);
 
+export const LAW_PACK_DIRECTORIES = { us: "us-federal", eu: "eu" } as const;
+
 export const LawSourceSummarySchema = z.object({
   title: z.string(),
   version: z.string(),
