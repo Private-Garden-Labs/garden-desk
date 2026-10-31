@@ -117,7 +117,7 @@ export class LawLibrary {
         searched = true;
         const rankings: Ranking[] = [];
         for (const passage of documentPassages(text, DOCUMENT_PASSAGES))
-          rankings.push(await this.rank(id, passage, signal));
+          rankings.push(await this.meaningRanks(id, passage, signal));
         return withinCharacters(
           this.sections(id, interleave(rankings), DOCUMENT_SECTION_CHARACTERS),
           DOCUMENT_LAW_CHARACTERS,
@@ -127,10 +127,23 @@ export class LawLibrary {
   }
 
   private async rank(id: Jurisdiction, text: string, signal?: AbortSignal): Promise<Ranking> {
-    const query = text.slice(0, QUERY_CHARACTERS);
-    const vector = await this.embed(`${QUERY_INSTRUCTION}${query}`, signal);
-    const meaning = vectorRanks(this.sectionVectors(id), Float32Array.from(vector));
-    return { ids: fuseRanks([this.keywordRanks(id, query), meaning.ids]), chunks: meaning.chunks };
+    const meaning = await this.meaningRanks(id, text, signal);
+    return {
+      ids: fuseRanks([this.keywordRanks(id, text.slice(0, QUERY_CHARACTERS)), meaning.ids]),
+      chunks: meaning.chunks,
+    };
+  }
+
+  private async meaningRanks(
+    id: Jurisdiction,
+    text: string,
+    signal?: AbortSignal,
+  ): Promise<Ranking> {
+    const vector = await this.embed(
+      `${QUERY_INSTRUCTION}${text.slice(0, QUERY_CHARACTERS)}`,
+      signal,
+    );
+    return vectorRanks(this.sectionVectors(id), Float32Array.from(vector));
   }
 
   private keywordRanks(id: Jurisdiction, text: string): number[] {
