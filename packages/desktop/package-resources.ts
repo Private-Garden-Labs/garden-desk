@@ -165,7 +165,6 @@ function productBuild(): boolean {
 
 async function installLawLibrary(mode: "development" | "production"): Promise<void> {
   const destinationRoot = join(resourcesRoot, "data-packs");
-  await rm(destinationRoot, { recursive: true, force: true });
   for (const directory of Object.values(LAW_PACK_DIRECTORIES)) {
     const source = join(repositoryRoot, "data-packs", directory);
     const destination = join(destinationRoot, directory);
