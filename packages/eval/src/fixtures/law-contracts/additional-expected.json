@@ -24,7 +24,12 @@
         {
           "clause": "3.2",
           "issue": "Requires retirement because of age without an applicable exception.",
-          "basis": ["29 U.S.C. 623"]
+          "basis": ["29 U.S.C. 623", "29 U.S.C. 631"]
+        },
+        {
+          "clause": "3.3",
+          "issue": "The employment confidentiality clause omits the required notice about immunity for protected trade-secret disclosures or a reference to a reporting policy supplied to the employee. This affects the employer's ability to recover certain damages and fees; it does not make ordinary confidentiality duties unlawful.",
+          "basis": ["18 U.S.C. 1833"]
         }
       ],
       "lawfulClauses": [
@@ -32,11 +37,6 @@
           "clause": "2.3",
           "why": "Direct deposit is optional and a paper check is available.",
           "basis": ["15 U.S.C. 1693k"]
-        },
-        {
-          "clause": "3.3",
-          "why": "Customer credentials remain confidential without restricting employee discussion of employment conditions.",
-          "basis": ["29 U.S.C. 157"]
         }
       ],
       "notCovered": [
@@ -56,7 +56,8 @@
         }
       ],
       "sourceLinks": [
-        "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm"
+        "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm",
+        "https://www.govinfo.gov/content/pkg/USCODE-2024-title18/html/USCODE-2024-title18.htm"
       ]
     },
     {
