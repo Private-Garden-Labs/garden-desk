@@ -16,7 +16,7 @@ Desktop (Tauri v2, React)
 
 - **Desktop.** The Rust host owns only the window, native dialogs, supervision of the exact packaged Core sidecar, and the connection to it. The webview has no shell, process, environment, network, or filesystem access. It handles opaque IDs, never host paths.
 - **Core.** Core is the only product authority. It owns folder grants, attachments, sessions, the agent loop, policy, audit, inference, worker supervision, and recovery. The desktop reaches it only over a current-user local connection: a Unix socket on macOS and a protected named pipe on Windows. There is no TCP. Core and the desktop never run as administrator.
-- **Inference worker.** This is one resident llama.cpp server on a private Unix socket. macOS confines it with Seatbelt. Windows runs it in a no-capability AppContainer inside a one-process job. It has no tools, network, credentials, or workspace.
+- **Inference worker.** Generation and encoding use separate resident llama.cpp servers, each on a private Unix socket. macOS confines each server with Seatbelt. Windows runs each server in a no-capability AppContainer inside a one-process job. They have no tools, network, credentials, or workspace.
 - **MicroVM.** Each conversation gets a VM with an immutable root image. The VM has Python, Node.js, `/bin/sh`, BusyBox, and a fixed set of offline libraries, and it cannot install packages. `/workspace` is saved as a content-addressed manifest and restored after eviction or restart. Idle VMs stay in a pool sized from installed RAM.
 
 ## Agent
