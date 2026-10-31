@@ -35,6 +35,8 @@ Tests exist for architecture boundaries, business logic, and bugs. Not for the m
 
 Model misbehavior is not a bug. Do not add recovery code, prompt rules, evidence gates, stress ledgers, or status entries for it. Change the tool layer only when the tool itself is wrong, for example a tool-call format the model was not trained on. When a golden task fails because of the model, record nothing and move on.
 
+Ternary Bonsai 2 27B is good at tool calls, code, math, conversation, and reviewing or verifying documents. It is weak at writing prose from scratch, such as stories or long documents, especially outside English. Do not build features that write long documents from scratch yet; start from an existing document, or review and verify one. Better drafting needs a larger local model or an opt-in remote model; both are owner decisions. This is product scope, not misbehavior recovery, so the primary prompt states these limits.
+
 ## Minimum Implementation Rule
 
 Garden Desk is a startup. Write the minimum clear code that delivers the requested behavior for the named use cases. Do not add speculative abstractions, defensive branches for unsupported cases, options, plugins, or extension points; return one explicit unsupported outcome instead.

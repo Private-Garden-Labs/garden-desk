@@ -30,6 +30,20 @@ Download signed builds for [Apple silicon macOS or Windows 11 x64](https://garde
 
 In a development comparison on 2026-09-23, local Bonsai 2 27B, Qwen3.8 27B, and Qwen3.8 Max each passed 18 of 18 tasks. See the [tasks, times, and tool errors](https://github.com/Private-Garden-Labs/garden-desk/issues/168). This result applies to that suite.
 
+## Citation
+
+Garden Desk runs Bonsai 2 27B by Prism ML. If you use it, please cite:
+
+```bibtex
+@techreport{bonsai2_27b,
+    title   = {Bonsai 2 27B: A 27B Ternary Reasoning Model},
+    author  = {Prism ML},
+    year    = {2026},
+    month   = {September},
+    url     = {https://prismml.com}
+}
+```
+
 ## Learn more
 
 Read the [architecture and security model](docs/ARCHITECTURE.md), [product principles](docs/PRODUCT.md), and [license](LICENSE). See the [website and demo](https://gardendesk.ai/).

@@ -1,98 +1,11 @@
-import flag_bd from "flag-icons/flags/4x3/bd.svg?no-inline";
-import flag_br from "flag-icons/flags/4x3/br.svg?no-inline";
-import flag_cn from "flag-icons/flags/4x3/cn.svg?no-inline";
-import flag_cz from "flag-icons/flags/4x3/cz.svg?no-inline";
-import flag_de from "flag-icons/flags/4x3/de.svg?no-inline";
-import flag_dk from "flag-icons/flags/4x3/dk.svg?no-inline";
-import flag_es from "flag-icons/flags/4x3/es.svg?no-inline";
-import flag_fi from "flag-icons/flags/4x3/fi.svg?no-inline";
-import flag_fr from "flag-icons/flags/4x3/fr.svg?no-inline";
-import flag_id from "flag-icons/flags/4x3/id.svg?no-inline";
-import flag_il from "flag-icons/flags/4x3/il.svg?no-inline";
-import flag_in from "flag-icons/flags/4x3/in.svg?no-inline";
-import flag_ir from "flag-icons/flags/4x3/ir.svg?no-inline";
-import flag_it from "flag-icons/flags/4x3/it.svg?no-inline";
-import flag_jp from "flag-icons/flags/4x3/jp.svg?no-inline";
-import flag_kr from "flag-icons/flags/4x3/kr.svg?no-inline";
-import flag_my from "flag-icons/flags/4x3/my.svg?no-inline";
-import flag_nl from "flag-icons/flags/4x3/nl.svg?no-inline";
-import flag_no from "flag-icons/flags/4x3/no.svg?no-inline";
-import flag_ph from "flag-icons/flags/4x3/ph.svg?no-inline";
-import flag_pl from "flag-icons/flags/4x3/pl.svg?no-inline";
-import flag_ro from "flag-icons/flags/4x3/ro.svg?no-inline";
-import flag_sa from "flag-icons/flags/4x3/sa.svg?no-inline";
-import flag_se from "flag-icons/flags/4x3/se.svg?no-inline";
-import flag_th from "flag-icons/flags/4x3/th.svg?no-inline";
-import flag_tr from "flag-icons/flags/4x3/tr.svg?no-inline";
-import flag_us from "flag-icons/flags/4x3/us.svg?no-inline";
+import { flags } from "./language-flags";
+import { languages, rightToLeft } from "./languages";
 
 const storageKey = "gardendesk.locale";
 const globeIcon =
   '<svg width="20" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>';
 
-const languages = [
-  ["en", "English (US)"],
-  ["cs", "Čeština"],
-  ["da", "Dansk"],
-  ["de", "Deutsch (DE)"],
-  ["es-419", "Español (Latinoamérica)"],
-  ["es-ES", "Español (España)"],
-  ["fil", "Filipino"],
-  ["fr", "Français (FR)"],
-  ["id", "Indonesia"],
-  ["it", "Italiano (IT)"],
-  ["ms", "Melayu"],
-  ["nl", "Nederlands (NL)"],
-  ["nb", "Norsk bokmål (NO)"],
-  ["pl", "Polski"],
-  ["pt-BR", "Português (BR)"],
-  ["ro", "Română"],
-  ["fi", "Suomi"],
-  ["sv", "Svenska"],
-  ["tr", "Türkçe"],
-  ["he", "עברית"],
-  ["ar", "العربية (SA)"],
-  ["fa", "فارسی"],
-  ["hi", "हिन्दी"],
-  ["bn", "বাংলা"],
-  ["th", "ไทย"],
-  ["ko", "한국어"],
-  ["zh-CN", "中文 (CN)"],
-  ["ja", "日本語"],
-] as const;
-
-const flags: Record<string, string> = {
-  en: flag_us,
-  cs: flag_cz,
-  da: flag_dk,
-  de: flag_de,
-  "es-ES": flag_es,
-  fil: flag_ph,
-  fr: flag_fr,
-  id: flag_id,
-  it: flag_it,
-  ms: flag_my,
-  nl: flag_nl,
-  nb: flag_no,
-  pl: flag_pl,
-  "pt-BR": flag_br,
-  ro: flag_ro,
-  fi: flag_fi,
-  sv: flag_se,
-  tr: flag_tr,
-  he: flag_il,
-  ar: flag_sa,
-  fa: flag_ir,
-  hi: flag_in,
-  bn: flag_bd,
-  th: flag_th,
-  ko: flag_kr,
-  "zh-CN": flag_cn,
-  ja: flag_jp,
-};
-
 const codes: readonly string[] = languages.map(([code]) => code);
-const rightToLeft = new Set(["he", "ar", "fa"]);
 const regionalDefaults: Record<string, string> = {
   es: "es-419",
   pt: "pt-BR",
@@ -134,6 +47,17 @@ function saveLocale(code: string): void {
   } catch {
     return;
   }
+}
+
+function pathLocale(): string | undefined {
+  const code = location.pathname.split("/")[1] ?? "";
+  return code !== "en" && codes.includes(code) ? code : undefined;
+}
+
+function localePath(code: string): string {
+  const current = pathLocale();
+  const path = location.pathname.slice(current === undefined ? 0 : current.length + 1);
+  return `${code === "en" ? "" : `/${code}`}${path}${location.search}${location.hash}`;
 }
 
 function flagImage(code: string): Node {
@@ -281,7 +205,7 @@ function collectSlots(): Slot[] {
 
 const showSelected = mountPicker((code) => {
   saveLocale(code);
-  void apply(code);
+  location.assign(localePath(code));
 });
 const slots = collectSlots();
 
@@ -294,6 +218,11 @@ async function apply(code: string): Promise<void> {
   showSelected?.(code, strings.language ?? "Language");
 }
 
-const initial = savedLocale() ?? resolveLocale(navigator.languages);
+const linked = pathLocale();
+if (linked !== undefined) saveLocale(linked);
+const initial = linked ?? savedLocale() ?? resolveLocale(navigator.languages);
 showSelected?.(initial, "Language");
-if (initial !== "en") void apply(initial);
+if (initial !== "en") {
+  void apply(initial);
+  if (linked === undefined) history.replaceState(history.state, "", localePath(initial));
+}

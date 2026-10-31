@@ -82,7 +82,7 @@ A download link must not go live before its file and SHA-256 exist.
 
 ## Website Languages
 
-English text lives in the HTML and in `site/locales/en.json`. Mark text with `data-i18n="key"` (plain text), `data-i18n-html="key"` (text with links or emphasis), or `data-i18n-attr="attribute=key"`, then add the key to every file in `site/locales`. A missing key shows English. Legal page bodies, blog posts, and the demo stay in English. The chosen language is saved in browser storage under `gardendesk.locale`. It is the only browser storage the site may use, and `pnpm site:check` fails on any other `localStorage` use.
+English text lives in the HTML and in `site/locales/en.json`. Mark text with `data-i18n="key"` (plain text), `data-i18n-html="key"` (text with links or emphasis), or `data-i18n-attr="attribute=key"`, then add the key to every file in `site/locales`. A missing key shows English. Legal page bodies, blog posts, and the demo stay in English. Each language has its own address, such as `https://gardendesk.ai/ro/privacy/`; English has no prefix. The Worker in `site/worker/locale.ts` translates those pages before sending them, so link previews show the language too. Opening a language address saves it in browser storage under `gardendesk.locale`, ahead of the browser language; on an address without a prefix, a saved or browser language other than English switches the address to its prefix. To try language addresses with the Worker locally, run `pnpm site:admin`. `gardendesk.locale` is the only browser storage the site may use, and `pnpm site:check` fails on any other `localStorage` use.
 
 ## Website Admin And Blog
 

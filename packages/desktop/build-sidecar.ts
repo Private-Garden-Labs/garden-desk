@@ -83,8 +83,8 @@ async function buildBundle(mode: DesktopBuildMode): Promise<string> {
 }
 
 async function prepareSea(bundle: string): Promise<string> {
-  if (process.version !== "v24.18.0") {
-    throw new Error(`Expected Node v24.18.0, received ${process.version}.`);
+  if (process.version !== "v24.22.0") {
+    throw new Error(`Expected Node v24.22.0, received ${process.version}.`);
   }
   const blob = join(generatedRoot, "garden-desk-core.blob");
   const executable = join(

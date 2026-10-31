@@ -1,3 +1,4 @@
+import { posix } from "node:path";
 import type {
   AgentEvent,
   AgentEventDetail,
@@ -137,6 +138,8 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
         input: agentInput,
         chat: input.chat,
         path,
+        displayName:
+          attachments.find((item) => item.path === path)?.displayName ?? posix.basename(path),
       });
     },
     attachments,

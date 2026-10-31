@@ -125,8 +125,9 @@ export async function runInternalReview(request: {
   input: ChatAgentInput;
   chat: InferenceService["chat"];
   path: string;
+  displayName: string;
 }): Promise<ToolExecutionResult> {
-  const { ports, command, input, chat, path } = request;
+  const { ports, command, input, chat, path, displayName } = request;
   const child = createReviewChild(ports, command.arguments);
   const directory = `.garden-desk-tools/review-${child.id}`;
   const output: ToolExecutionResult = { content: "", failed: false, guestExecutionsStarted: 0 };
@@ -135,7 +136,7 @@ export async function runInternalReview(request: {
       command,
       { ...childReviewInput(ports, input, child, output), task: command.arguments },
       chat,
-      { attachment: { path, displayName: path }, directory },
+      { attachment: { path, displayName }, directory },
     );
     completeReviewChild(ports, child, result);
     output.childResponse = result.response;
