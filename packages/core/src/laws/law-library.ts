@@ -25,7 +25,7 @@ const SEARCH_RESULTS = 5;
 const DOCUMENT_PASSAGES = 24;
 const SECTION_CHARACTERS = 4_000;
 const DOCUMENT_SECTION_CHARACTERS = 2_000;
-const DOCUMENT_LAW_CHARACTERS = 96_000;
+const DOCUMENT_LAW_CHARACTERS = 48_000;
 
 export interface LawSection {
   citation: string;
