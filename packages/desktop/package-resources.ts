@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { signExecutable } from "./build-signing.js";
 import { writePackageCompliance, writePackageIdentity } from "./package-compliance.js";
 import { installImageModelResources, installRuntimeResources } from "./package-image-resources.js";
+import { copyLawLibrary } from "./package-law-resources.js";
 import { reportDevelopmentResourceStage } from "./src/dev-resource-progress.js";
 import * as model from "./src/package-model-contract.js";
 import { packagedMigrationNames } from "./src/package-resource-contract.js";
@@ -164,7 +165,7 @@ function productBuild(): boolean {
 async function installLawLibrary(mode: "development" | "production"): Promise<void> {
   await mkdir(join(resourcesRoot, "laws"), { recursive: true });
   try {
-    await copyFile(
+    await copyLawLibrary(
       join(repositoryRoot, "laws", "law-library.sqlite"),
       join(resourcesRoot, "laws", "law-library.sqlite"),
     );
