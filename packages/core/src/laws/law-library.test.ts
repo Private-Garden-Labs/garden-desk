@@ -5,6 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 import { INFERENCE_PROFILE, LAW_PACK_DIRECTORIES } from "@gardendesk/shared";
 import { describe, expect, it } from "vitest";
 import { type Embed, LawLibrary } from "./law-library.js";
+import { chunkText, sectionExcerpt } from "./law-search.js";
 
 async function library(
   embed: Embed = async () => [1, 0],
@@ -50,6 +51,17 @@ function seedLibrary(database: DatabaseSync, seed?: (database: DatabaseSync) => 
 function unit(): Uint8Array {
   return new Uint8Array(Float32Array.from([1, 0]).buffer);
 }
+
+it("keeps the opening rule beside a matched exception within the excerpt budget", () => {
+  const rule = "A covered employee must receive overtime pay after forty hours.";
+  const exception = "A narrow exception applies to this specific group.";
+  const filler = "Other conditions apply. ".repeat(100);
+  const text = [rule, filler, filler, exception].join("\n");
+  const excerpt = sectionExcerpt(text, chunkText(text).length - 1, 2_000);
+  expect(excerpt).toContain(rule);
+  expect(excerpt).toContain(exception);
+  expect(excerpt.length).toBeLessThanOrEqual(2_000);
+});
 
 describe("law library", () => {
   it("searches only the selected jurisdiction and refuses a disabled one", async () => {

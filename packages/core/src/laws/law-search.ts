@@ -42,13 +42,21 @@ export function chunkText(text: string): string[] {
   return current === "" ? chunks : [...chunks, current];
 }
 
-/** Shows a long section from the chunk that matched, so the reader sees the rule the search found. */
+/** Keeps the opening context beside the matching part of a long section. */
 export function sectionExcerpt(text: string, chunk: number, limit: number): string {
   if (text.length <= limit) return text;
-  const shown = chunkText(text).slice(chunk).join("\n");
-  const omitted = chunk > 0 ? "[earlier text omitted]\n" : "";
-  const continues = shown.length > limit ? " [section continues]" : "";
-  return `${omitted}${shown.slice(0, limit)}${continues}`;
+  const chunks = chunkText(text);
+  const shown = chunks.slice(chunk).join("\n");
+  const opening = chunk > 0 ? (chunks[0] ?? "").slice(0, 800) : "";
+  const gap =
+    chunk === 0
+      ? ""
+      : chunk === 1 && opening === chunks[0]
+        ? "\n"
+        : "\n[intervening text omitted]\n";
+  const continues = " [section continues]";
+  const available = limit - opening.length - gap.length - continues.length;
+  return `${opening}${gap}${shown.slice(0, available)}${shown.length > available ? continues : ""}`;
 }
 
 export function keywordQuery(text: string): string | undefined {
