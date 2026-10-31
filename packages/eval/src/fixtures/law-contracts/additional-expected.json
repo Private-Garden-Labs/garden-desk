@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "note": "Fictional manual review examples. Expectations use the included federal and EU texts; national implementation and state law still need separate checks. These files are not automated model tests.",
+  "contracts": [
+    {
+      "file": "us-employment-offer.md",
+      "jurisdiction": "us",
+      "lawFindings": [
+        {
+          "clause": "1.3",
+          "issue": "Waives overtime for a covered non-exempt employee working more than 40 hours.",
+          "basis": ["29 U.S.C. 207"]
+        },
+        {
+          "clause": "2.2",
+          "issue": "Pays an adult covered employee below the federal minimum wage without a stated exception.",
+          "basis": ["29 U.S.C. 206"]
+        },
+        {
+          "clause": "3.1",
+          "issue": "Prohibits protected employee discussion of wages and working conditions.",
+          "basis": ["29 U.S.C. 157", "29 U.S.C. 158"]
+        },
+        {
+          "clause": "3.2",
+          "issue": "Requires retirement because of age without an applicable exception.",
+          "basis": ["29 U.S.C. 623"]
+        }
+      ],
+      "lawfulClauses": [
+        {
+          "clause": "2.3",
+          "why": "Direct deposit is optional and a paper check is available.",
+          "basis": ["15 U.S.C. 1693k"]
+        },
+        {
+          "clause": "3.3",
+          "why": "Customer credentials remain confidential without restricting employee discussion of employment conditions.",
+          "basis": ["29 U.S.C. 157"]
+        }
+      ],
+      "notCovered": [
+        {
+          "clause": "4.1",
+          "why": "The pack cannot determine the effect of an at-will term under Colorado law."
+        }
+      ],
+      "otherMistakes": [
+        {
+          "clause": "2.1",
+          "issue": "40 hours at $18 is $720, not $740."
+        },
+        {
+          "clause": "Start date",
+          "issue": "November has no 31st day."
+        }
+      ],
+      "sourceLinks": [
+        "https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29.htm"
+      ]
+    },
+    {
+      "file": "eu-appliance-order.md",
+      "jurisdiction": "eu",
+      "lawFindings": [
+        {
+          "clause": "2.1",
+          "issue": "Cuts the seller's liability for defects in new goods to 90 days.",
+          "basis": ["Directive (EU) 2019/771, Article 10", "Directive (EU) 2019/771, Article 21"]
+        },
+        {
+          "clause": "2.2",
+          "issue": "Charges the buyer for remedies that must be provided without charge.",
+          "basis": ["Directive (EU) 2019/771, Article 14"]
+        },
+        {
+          "clause": "2.3",
+          "issue": "Makes the buyer pay return transport after valid termination for a defect.",
+          "basis": ["Directive (EU) 2019/771, Article 16"]
+        },
+        {
+          "clause": "3.1",
+          "issue": "Reduces the normal withdrawal period for an online goods purchase to five days.",
+          "basis": ["Directive 2011/83/EU, Article 9"]
+        }
+      ],
+      "lawfulClauses": [
+        {
+          "clause": "2.4",
+          "why": "Repair or replacement can be chosen subject to impossibility and disproportionate cost.",
+          "basis": ["Directive (EU) 2019/771, Article 13"]
+        },
+        {
+          "clause": "3.2",
+          "why": "A consumer can bear disclosed direct return costs for an ordinary withdrawal.",
+          "basis": ["Directive 2011/83/EU, Article 14"]
+        }
+      ],
+      "notCovered": [
+        {
+          "clause": "4.2",
+          "why": "The pack cannot establish the German statutory rate for late consumer payments."
+        }
+      ],
+      "otherMistakes": [
+        {
+          "clause": "1.1",
+          "issue": "Three appliances at EUR 200 cost EUR 600, not EUR 620."
+        },
+        {
+          "clause": "4.1",
+          "issue": "Clause 8.3 does not exist."
+        }
+      ],
+      "sourceLinks": [
+        "https://publications.europa.eu/resource/cellar/9fb0f204-640a-11f1-9b18-01aa75ed71a1.0007.02/DOC_1",
+        "https://publications.europa.eu/resource/cellar/82067e60-3e52-11f1-814f-01aa75ed71a1.0006.03/DOC_1"
+      ]
+    }
+  ]
+}
