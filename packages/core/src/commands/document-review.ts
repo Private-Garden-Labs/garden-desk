@@ -173,9 +173,9 @@ export async function reviewDocument(
           text: JSON.stringify({
             source: extracted.attachment.displayName,
             extractedText: extracted.result.stdout,
+            ...law,
           }),
         },
-        ...(law === undefined ? [] : [{ role: "user" as const, text: JSON.stringify(law) }]),
       ],
       currentTimeContext(input.systemPrompt("current-time")),
     ),
