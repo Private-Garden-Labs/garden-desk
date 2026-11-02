@@ -78,10 +78,16 @@ function startArticle(state: State, source: Source, label: string): void {
 
 const HEADING = new RegExp(`^${MARK}([A-Z]+) ([^${MARK}]*)(?:${MARK}(.*))?$`, "u");
 
+/** Roman-numbered points such as "II. Transmiterea proprietății" divide a section below its paragraphs. */
+function subdivision(kind: string, label: string): boolean {
+  return kind === "PCT" && /^[IVXL]+\. \p{Lu}/u.test(label);
+}
+
 function readLine(state: State, source: Source, line: string): void {
   const [, kind = "", label = "", name = ""] = HEADING.exec(line) ?? [];
   const level = LEVELS.indexOf(kind);
   if (level >= 0) startLevel(state, level, name);
+  else if (!state.inAnnex && subdivision(kind, label)) startLevel(state, LEVELS.length, label);
   else if (kind === "ANX") startAnnex(state, source, label);
   else if (kind === "ART") startArticle(state, source, label);
   else addText(state, kind === "" ? line : `${label}${name}`.trim());
