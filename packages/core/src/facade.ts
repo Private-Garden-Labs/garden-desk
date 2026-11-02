@@ -78,7 +78,7 @@ export interface GardenDeskCorePorts extends InferenceService {
   setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
   skillLocations(): Promise<SkillLocations>;
   listLaws(): Promise<LawJurisdictionSummary[]>;
-  setLawEnabled(id: Jurisdiction, enabled: boolean): Promise<boolean>;
+  setLawEnabled(id: Jurisdiction, enabled: boolean, source?: string): Promise<boolean>;
   verifyAudit(): Promise<boolean>;
   close(): Promise<void>;
 }
@@ -106,7 +106,8 @@ function skillPorts(ports: GardenDeskCorePorts) {
     setSkillEnabled: (name: string, enabled: boolean) => ports.setSkillEnabled(name, enabled),
     skillLocations: () => ports.skillLocations(),
     listLaws: () => ports.listLaws(),
-    setLawEnabled: (id: Jurisdiction, enabled: boolean) => ports.setLawEnabled(id, enabled),
+    setLawEnabled: (id: Jurisdiction, enabled: boolean, source?: string) =>
+      ports.setLawEnabled(id, enabled, source),
   };
 }
 

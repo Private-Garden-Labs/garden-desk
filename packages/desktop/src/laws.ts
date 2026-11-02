@@ -9,7 +9,7 @@ export interface LawsController {
   error: string | undefined;
   laws: LawJurisdictionSummary[] | undefined;
   selected: Jurisdiction | null;
-  setEnabled(id: Jurisdiction, enabled: boolean): void;
+  setEnabled(id: Jurisdiction, enabled: boolean, source?: string): void;
   working: boolean;
 }
 
@@ -30,11 +30,11 @@ export function useLaws(api: DesktopApi, open: boolean): LawsController {
     void refresh();
   }, [open, refresh]);
   const enabled = laws?.filter((law) => law.enabled) ?? [];
-  const setEnabled = async (id: Jurisdiction, value: boolean) => {
+  const setEnabled = async (id: Jurisdiction, value: boolean, source?: string) => {
     setWorking(true);
     setError(undefined);
     try {
-      await api.setLawEnabled(id, value);
+      await api.setLawEnabled(id, value, source);
     } catch {
       setError(t("laws.changeError"));
     }
@@ -48,6 +48,6 @@ export function useLaws(api: DesktopApi, open: boolean): LawsController {
     working,
     choose: setChosen,
     selected: (enabled.find((law) => law.id === chosen) ?? enabled[0])?.id ?? null,
-    setEnabled: (id, value) => void setEnabled(id, value),
+    setEnabled: (id, value, source) => void setEnabled(id, value, source),
   };
 }

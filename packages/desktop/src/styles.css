@@ -3417,12 +3417,34 @@ select:focus-visible {
 
 .law-sources ul {
   margin: 6px 0 0;
-  padding-left: 18px;
+  padding: 0;
+  list-style: none;
   color: var(--ink);
   line-height: 1.6;
 }
 
-.law-sources li span {
+.law-sources label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.law-sources input {
+  accent-color: var(--accent);
+}
+
+.law-sources input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.law-sources input:disabled,
+.law-sources input:disabled + * {
+  cursor: default;
+}
+
+.law-source-version {
   color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
 }

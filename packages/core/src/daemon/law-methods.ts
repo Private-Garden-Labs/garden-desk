@@ -8,8 +8,11 @@ export async function dispatchLawMethod(
 ): Promise<RpcResponse> {
   if (request.method === "laws.list") return success(request, await core.listLaws());
   const id = JurisdictionSchema.safeParse(request.params.id);
-  const { enabled } = request.params;
-  if (!id.success || typeof enabled !== "boolean")
+  const { enabled, source } = request.params;
+  const validSource = source === undefined || source === null || typeof source === "string";
+  if (!id.success || typeof enabled !== "boolean" || !validSource)
     return failure(request, "invalid_request", "Invalid law setting.");
-  return success(request, { changed: await core.setLawEnabled(id.data, enabled) });
+  return success(request, {
+    changed: await core.setLawEnabled(id.data, enabled, source ?? undefined),
+  });
 }

@@ -45,6 +45,12 @@ export interface LawContext {
 export type Embed = (text: string, signal?: AbortSignal) => Promise<number[]>;
 
 type JurisdictionRow = { id: string; name: string; current_as_of: string };
+type Settings = { disabled: string[]; disabledSources: string[] };
+
+function toggled(values: string[], value: string, enabled: boolean): string[] {
+  const kept = values.filter((item) => item !== value);
+  return (enabled ? kept : [...kept, value]).sort();
+}
 
 function withinCharacters(sections: LawSection[], limit: number): LawSection[] {
   const kept: LawSection[] = [];
@@ -67,33 +73,44 @@ export class LawLibrary {
   ) {}
 
   list(): LawJurisdictionSummary[] {
-    const disabled = this.disabled();
+    const { disabled, disabledSources } = this.settings();
     return JurisdictionSchema.options.flatMap((id) => {
       const database = this.open(id);
       if (database === undefined) return [];
       const row = database
         .prepare("SELECT id, name, current_as_of FROM jurisdictions WHERE id = ?")
         .get(id) as JurisdictionRow;
-      const sources = database.prepare(
-        "SELECT title, version FROM sources WHERE jurisdiction = ? ORDER BY position",
-      );
+      const sources = database
+        .prepare("SELECT id, title, version FROM sources WHERE jurisdiction = ? ORDER BY position")
+        .all(id) as Array<{ id: string; title: string; version: string }>;
       return [
         {
           id,
           name: row.name,
           currentAsOf: row.current_as_of,
-          enabled: !disabled.has(id),
-          sources: sources.all(id) as LawJurisdictionSummary["sources"],
+          enabled: !disabled.includes(id),
+          sources: sources.map((source) => ({
+            ...source,
+            enabled: !disabledSources.includes(source.id),
+          })),
         },
       ];
     });
   }
 
-  setEnabled(id: Jurisdiction, enabled: boolean): boolean {
-    const disabled = this.disabled();
-    if (enabled) disabled.delete(id);
-    else disabled.add(id);
-    writePromptFile(this.settingsPath, `${JSON.stringify({ disabled: [...disabled].sort() })}\n`);
+  setEnabled(id: Jurisdiction, enabled: boolean, source?: string): boolean {
+    const settings = this.settings();
+    if (source === undefined) {
+      settings.disabled = toggled(settings.disabled, id, enabled);
+    } else {
+      const known = this.list().some(
+        (law) => law.id === id && law.sources.some((item) => item.id === source),
+      );
+      if (!known) return false;
+      settings.disabledSources = toggled(settings.disabledSources, source, enabled);
+      this.vectors.delete(id);
+    }
+    writePromptFile(this.settingsPath, `${JSON.stringify(settings)}\n`);
     return true;
   }
 
@@ -154,9 +171,10 @@ export class LawLibrary {
         `SELECT sections_fts.rowid AS id FROM sections_fts
          JOIN sections ON sections.id = sections_fts.rowid
          WHERE sections_fts MATCH ? AND sections.jurisdiction = ?
+         AND sections.source_id NOT IN (SELECT value FROM json_each(?))
          ORDER BY bm25(sections_fts, 10.0, 4.0, 2.0, 1.0) LIMIT 40`,
       )
-      .all(query, id) as Array<{ id: number }>;
+      .all(query, id, this.disabledSources()) as Array<{ id: number }>;
     return rows.map((row) => row.id);
   }
 
@@ -167,9 +185,10 @@ export class LawLibrary {
       .prepare(
         `SELECT chunks.section_id AS id, chunks.vector AS vector FROM chunks
          JOIN sections ON sections.id = chunks.section_id WHERE sections.jurisdiction = ?
+         AND sections.source_id NOT IN (SELECT value FROM json_each(?))
          ORDER BY chunks.rowid`,
       )
-      .all(id) as Array<{ id: number; vector: Uint8Array }>;
+      .all(id, this.disabledSources()) as Array<{ id: number; vector: Uint8Array }>;
     const dimensions = (rows[0]?.vector.byteLength ?? 0) / 4;
     const values = new Float32Array(rows.length * dimensions);
     rows.forEach((row, index) => {
@@ -214,10 +233,15 @@ export class LawLibrary {
     return database;
   }
 
-  private disabled(): Set<string> {
-    if (!promptDirectoryExists(this.settingsPath)) return new Set();
-    const parsed = JSON.parse(readPromptFile(this.settingsPath)) as { disabled?: unknown };
-    return new Set(Array.isArray(parsed.disabled) ? parsed.disabled.map(String) : []);
+  private settings(): Settings {
+    if (!promptDirectoryExists(this.settingsPath)) return { disabled: [], disabledSources: [] };
+    const parsed = JSON.parse(readPromptFile(this.settingsPath)) as Record<string, unknown>;
+    const strings = (value: unknown) => (Array.isArray(value) ? value.map(String) : []);
+    return { disabled: strings(parsed.disabled), disabledSources: strings(parsed.disabledSources) };
+  }
+
+  private disabledSources(): string {
+    return JSON.stringify(this.settings().disabledSources);
   }
 
   close(): void {

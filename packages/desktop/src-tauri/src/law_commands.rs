@@ -12,6 +12,10 @@ pub(crate) async fn set_law_enabled(
     core: State<'_, CoreBridge>,
     id: String,
     enabled: bool,
+    source: Option<String>,
 ) -> Result<Value, String> {
-    core.call("laws.setEnabled", json!({ "id": id, "enabled": enabled }))
+    core.call(
+        "laws.setEnabled",
+        json!({ "id": id, "enabled": enabled, "source": source }),
+    )
 }

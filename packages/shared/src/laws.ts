@@ -5,8 +5,10 @@ export const JurisdictionSchema = z.enum(["us", "eu", "ro"]);
 export const LAW_PACK_DIRECTORIES = { us: "us-federal", eu: "eu", ro: "romania" } as const;
 
 export const LawSourceSummarySchema = z.object({
+  id: z.string(),
   title: z.string(),
   version: z.string(),
+  enabled: z.boolean(),
 });
 
 export const LawJurisdictionSummarySchema = z.object({

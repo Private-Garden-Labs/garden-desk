@@ -11,11 +11,23 @@ function LawRow({ controller, law }: { controller: LawsController; law: LawJuris
         <p className="skill-row-name">{lawName(law)}</p>
         <p className="skill-row-description">{t("laws.current", { date: law.currentAsOf })}</p>
         <details className="law-sources">
-          <summary>{t("laws.sources", { count: law.sources.length })}</summary>
+          <summary>
+            {t("laws.sources", { count: law.sources.filter((source) => source.enabled).length })}
+          </summary>
           <ul>
             {law.sources.map((source) => (
-              <li key={`${source.title} ${source.version}`}>
-                {source.title} <span>{source.version}</span>
+              <li key={source.id}>
+                <label>
+                  <input
+                    checked={source.enabled}
+                    disabled={controller.working || !law.enabled}
+                    onChange={() => controller.setEnabled(law.id, !source.enabled, source.id)}
+                    type="checkbox"
+                  />
+                  <span>
+                    {source.title} <span className="law-source-version">{source.version}</span>
+                  </span>
+                </label>
               </li>
             ))}
           </ul>

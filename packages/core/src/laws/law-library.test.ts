@@ -39,7 +39,7 @@ function seedLibrary(database: DatabaseSync, seed?: (database: DatabaseSync) => 
     CREATE TABLE sections (id INTEGER PRIMARY KEY, source_id TEXT NOT NULL, jurisdiction TEXT NOT NULL, citation TEXT NOT NULL, heading TEXT NOT NULL, text TEXT NOT NULL);
     CREATE VIRTUAL TABLE sections_fts USING fts5(citation, heading, title, text, content='');
     CREATE TABLE chunks (section_id INTEGER NOT NULL, vector BLOB NOT NULL);
-    INSERT INTO jurisdictions VALUES ('us', 'United States (federal)', '2026'), ('eu', 'European Union', '2026');
+    INSERT INTO jurisdictions VALUES ('us', 'United States (federal)', '2026'), ('eu', 'European Union', '2026'), ('ro', 'Romania', '2026');
     INSERT INTO sources VALUES ('sherman', 'us', 'Sherman Act', '2024', '', '', 0), ('vber', 'eu', 'VBER', '2022', '', '', 0);
     INSERT INTO sections VALUES (1, 'sherman', 'us', '15 U.S.C. 1', '', 'Every contract fixing resale price is illegal.'),
       (2, 'vber', 'eu', 'Regulation (EU) 2022/720, Article 4', '', 'Fixing a minimum resale price is a hardcore restriction.');
@@ -72,6 +72,15 @@ describe("law library", () => {
     ]);
     laws.setEnabled("us", false);
     expect(() => laws.context("us")).toThrow("law_jurisdiction_unavailable");
+    laws.close();
+  });
+
+  it("leaves a turned-off act out of both searches", async () => {
+    const laws = await library();
+    expect(laws.setEnabled("eu", false, "sherman")).toBe(false);
+    expect(laws.setEnabled("eu", false, "vber")).toBe(true);
+    expect(laws.list().find((law) => law.id === "eu")?.sources[0]?.enabled).toBe(false);
+    expect(await laws.context("eu").search("minimum resale price")).toEqual([]);
     laws.close();
   });
 

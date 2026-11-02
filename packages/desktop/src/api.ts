@@ -114,6 +114,6 @@ export interface DesktopApi {
   openPromptFolder(folder: PromptFolder): Promise<void>;
   sampleFolderFiles(folderId: string): Promise<string[]>;
   listLaws(): Promise<LawJurisdictionSummary[]>;
-  setLawEnabled(id: Jurisdiction, enabled: boolean): Promise<boolean>;
+  setLawEnabled(id: Jurisdiction, enabled: boolean, source?: string): Promise<boolean>;
   listenForDroppedPaths?(listener: (event: NativeDropEvent) => void): Promise<() => void>;
 }
