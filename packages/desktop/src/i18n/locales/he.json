@@ -54,6 +54,7 @@
   "laws.disclaimer": "זו אינה ייעוץ משפטי. Garden Desk בודק רק את החוקים הכלולים בו ועלול לטעות. בדקו כל ממצא מול הנוסח הרשמי או עם עורך דין.",
   "laws.name.us": "ארצות הברית (פדרלי)",
   "laws.name.eu": "האיחוד האירופי",
+  "laws.name.ro": "רומניה",
   "settings.releasesTitle": "Garden Desk לא בודק עדכונים. הפעולה פותחת את gardendesk.ai/releases בדפדפן.",
   "settings.releases": "פתיחת דף הגרסאות",
   "settings.version": "גרסה {version}",

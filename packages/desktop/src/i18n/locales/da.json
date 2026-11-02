@@ -54,6 +54,7 @@
   "laws.disclaimer": "Ikke juridisk rådgivning. Garden Desk kontrollerer kun de love, det indeholder, og kan begå fejl. Kontrollér hvert fund mod den officielle tekst, eller spørg en advokat.",
   "laws.name.us": "USA (føderalt)",
   "laws.name.eu": "Den Europæiske Union",
+  "laws.name.ro": "Rumænien",
   "settings.releasesTitle": "Garden Desk søger ikke efter opdateringer. Dette åbner gardendesk.ai/releases i din browser.",
   "settings.releases": "Åbn siden med udgivelser",
   "settings.version": "Version {version}",

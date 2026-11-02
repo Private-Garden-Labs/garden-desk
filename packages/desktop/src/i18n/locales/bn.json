@@ -54,6 +54,7 @@
   "laws.disclaimer": "এটি আইনি পরামর্শ নয়। Garden Desk শুধু তার অন্তর্ভুক্ত আইনগুলো যাচাই করে এবং ভুল করতে পারে। প্রতিটি সিদ্ধান্ত সরকারি পাঠের সঙ্গে মিলিয়ে নিন বা আইনজীবীর পরামর্শ নিন।",
   "laws.name.us": "যুক্তরাষ্ট্র (ফেডারেল)",
   "laws.name.eu": "ইউরোপীয় ইউনিয়ন",
+  "laws.name.ro": "রোমানিয়া",
   "settings.releasesTitle": "Garden Desk আপডেট খোঁজে না। এটি আপনার ব্রাউজারে gardendesk.ai/releases খোলে।",
   "settings.releases": "রিলিজ পেজ খুলুন",
   "settings.version": "সংস্করণ {version}",

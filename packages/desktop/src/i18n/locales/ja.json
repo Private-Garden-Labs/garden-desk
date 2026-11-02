@@ -54,6 +54,7 @@
   "laws.disclaimer": "法的助言ではありません。Garden Deskが確認するのは収録している法律のみで、誤りを含む場合があります。すべての指摘を公式の条文で確認するか、弁護士にご相談ください。",
   "laws.name.us": "アメリカ合衆国（連邦）",
   "laws.name.eu": "欧州連合",
+  "laws.name.ro": "ルーマニア",
   "settings.releasesTitle": "Garden Desk は更新を確認しません。ブラウザで gardendesk.ai/releases を開きます。",
   "settings.releases": "リリースページを開く",
   "settings.version": "バージョン {version}",

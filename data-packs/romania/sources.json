@@ -1,0 +1,118 @@
+{
+  "jurisdictions": [
+    {
+      "id": "ro",
+      "name": "Romania",
+      "currentAsOf": "Portal Legislativ consolidated texts as of 2026-11-02",
+      "tiers": {
+        "constitution": [
+          {
+            "id": "ro-constitutie",
+            "title": "Constituția României",
+            "version": "Republicarea din 31.10.2003",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/47355",
+            "sha256": "e7549f45fee858a4c28ba3d957bca47f9773df815eae7c3f155b8029ad68fb4f",
+            "citation": "Constituția României"
+          }
+        ],
+        "codes": [
+          {
+            "id": "ro-cod-civil",
+            "title": "Codul civil (Legea nr. 287/2009)",
+            "version": "Consolidarea din 03.05.2026",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/309285",
+            "sha256": "0e7ecf44f804dfc3d400ba29f551be25fc3e32b48b2a1885fa65a0493644950e",
+            "citation": "Codul civil"
+          },
+          {
+            "id": "ro-cod-procedura-civila",
+            "title": "Codul de procedură civilă (Legea nr. 134/2010)",
+            "version": "Consolidarea din 14.12.2025",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/304485",
+            "sha256": "e59d3348aaecaddbace0bd939b56d55ef3f44ad235e453625b1f3db184d40b58",
+            "citation": "Codul de procedură civilă"
+          },
+          {
+            "id": "ro-cod-muncii",
+            "title": "Codul muncii (Legea nr. 53/2003)",
+            "version": "Consolidarea din 27.04.2026",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/309240",
+            "sha256": "f6962ab54268c4efb46a485a871c49d5980f35e20bc4562adf0dd3674843eaee",
+            "citation": "Codul muncii"
+          },
+          {
+            "id": "ro-cod-fiscal",
+            "title": "Codul fiscal (Legea nr. 227/2015)",
+            "version": "Consolidarea din 25.10.2026",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/315385",
+            "sha256": "ea5160cc0d5bbe692b149035d309ebdde1a6fbb7ad590f85d5947c195a92e876",
+            "citation": "Codul fiscal"
+          },
+          {
+            "id": "ro-cod-procedura-fiscala",
+            "title": "Codul de procedură fiscală (Legea nr. 207/2015)",
+            "version": "Consolidarea din 08.08.2026",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/312603",
+            "sha256": "27d66162b06268ec613f12d75bd4f8ba4fec11ce9e5c40ddabe28eddc6094498",
+            "citation": "Codul de procedură fiscală"
+          },
+          {
+            "id": "ro-cod-administrativ",
+            "title": "Codul administrativ (OUG nr. 57/2019)",
+            "version": "Consolidarea din 20.10.2026",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/215925",
+            "sha256": "39283b9152ed40e598139059dcf983bd248c41f971cde1b28569dcfd3ae892f9",
+            "citation": "Codul administrativ"
+          },
+          {
+            "id": "ro-cod-penal",
+            "title": "Codul penal (Legea nr. 286/2009)",
+            "version": "Consolidarea din 18.10.2026",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/314314",
+            "sha256": "f05adee80aa09fe81dd166c04f23daaf73c4d1bc05e365ed0a5589a67fd6545a",
+            "citation": "Codul penal"
+          },
+          {
+            "id": "ro-cod-procedura-penala",
+            "title": "Codul de procedură penală (Legea nr. 135/2010)",
+            "version": "Consolidarea din 13.06.2026",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/310738",
+            "sha256": "b9b99fafc1d1af4187d81116329f34362f076f1b3bc93db171ea161082504538",
+            "citation": "Codul de procedură penală"
+          }
+        ],
+        "laws": [
+          {
+            "id": "ro-legea-31-1990",
+            "title": "Legea societăților nr. 31/1990",
+            "version": "Consolidarea din 18.12.2025",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/798",
+            "sha256": "36df091a2daa714903bc453d06407cccd7a3bb3cabc66381957eafc5069301de",
+            "citation": "Legea nr. 31/1990"
+          },
+          {
+            "id": "ro-legea-190-2018",
+            "title": "Legea nr. 190/2018 (punerea în aplicare a GDPR)",
+            "version": "Consolidarea din 01.12.2019",
+            "format": "legislatie",
+            "url": "https://legislatie.just.ro/Public/DetaliiDocument/203151",
+            "sha256": "0751599aaf04f992ab09530ee71555a4f80f3019e6738090bc46c87ba1660aa3",
+            "citation": "Legea nr. 190/2018"
+          }
+        ]
+      }
+    }
+  ],
+  "amendments": [],
+  "aliases": {}
+}

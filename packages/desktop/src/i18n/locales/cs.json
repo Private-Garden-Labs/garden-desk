@@ -54,6 +54,7 @@
   "laws.disclaimer": "Nejde o právní poradenství. Garden Desk kontroluje pouze zákony, které obsahuje, a může dělat chyby. Každé zjištění ověřte podle úředního znění nebo u právníka.",
   "laws.name.us": "Spojené státy (federální)",
   "laws.name.eu": "Evropská unie",
+  "laws.name.ro": "Rumunsko",
   "settings.releasesTitle": "Garden Desk nekontroluje aktualizace. Otevře se stránka gardendesk.ai/releases ve vašem prohlížeči.",
   "settings.releases": "Otevřít stránku s verzemi",
   "settings.version": "Verze {version}",

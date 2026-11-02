@@ -54,6 +54,7 @@
   "laws.disclaimer": "本内容不构成法律意见。Garden Desk 只检查其收录的法律，也可能出错。请对照官方文本或咨询律师核实每一项结果。",
   "laws.name.us": "美国（联邦）",
   "laws.name.eu": "欧盟",
+  "laws.name.ro": "罗马尼亚",
   "settings.releasesTitle": "Garden Desk 不会检查更新。此操作会在浏览器中打开 gardendesk.ai/releases。",
   "settings.releases": "打开发布页面",
   "settings.version": "版本 {version}",

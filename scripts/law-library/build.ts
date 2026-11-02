@@ -6,6 +6,7 @@ import { cisgSections } from "./cisg.js";
 import { createLibrary, finishLibrary, insertJurisdiction, insertSource } from "./database.js";
 import { euSections } from "./eu.js";
 import { euTextSections } from "./eu-text.js";
+import { romanianSections } from "./romania.js";
 import {
   type Amendment,
   packsRoot,
@@ -24,6 +25,7 @@ const parsers: Record<Source["format"], (text: string, source: Source) => Sectio
   eurlex: euSections,
   "eurlex-text": euTextSections,
   cisg: cisgSections,
+  legislatie: romanianSections,
 };
 
 async function amendmentNotes(

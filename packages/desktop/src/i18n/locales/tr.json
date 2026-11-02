@@ -54,6 +54,7 @@
   "laws.disclaimer": "Hukuki tavsiye değildir. Garden Desk yalnızca içerdiği kanunları kontrol eder ve hata yapabilir. Her bulguyu resmî metinle veya bir avukatla doğrulayın.",
   "laws.name.us": "Amerika Birleşik Devletleri (federal)",
   "laws.name.eu": "Avrupa Birliği",
+  "laws.name.ro": "Romanya",
   "settings.releasesTitle": "Garden Desk güncellemeleri denetlemez. Bu, gardendesk.ai/releases sayfasını tarayıcınızda açar.",
   "settings.releases": "Sürümler sayfasını aç",
   "settings.version": "Sürüm {version}",

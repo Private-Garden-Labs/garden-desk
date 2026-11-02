@@ -54,6 +54,7 @@
   "laws.disclaimer": "Not legal advice. Garden Desk checks only the laws it includes and can make mistakes. Check every finding against the official text or with a lawyer.",
   "laws.name.us": "United States (federal)",
   "laws.name.eu": "European Union",
+  "laws.name.ro": "Romania",
   "settings.releasesTitle": "Garden Desk does not check for updates. This opens gardendesk.ai/releases in your browser.",
   "settings.releases": "Open the releases page",
   "settings.version": "Version {version}",

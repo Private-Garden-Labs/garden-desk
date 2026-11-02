@@ -54,6 +54,7 @@
   "laws.disclaimer": "법률 자문이 아닙니다. Garden Desk는 포함된 법률만 확인하며 오류가 있을 수 있습니다. 모든 결과를 공식 원문으로 확인하거나 변호사와 상담하세요.",
   "laws.name.us": "미국 (연방)",
   "laws.name.eu": "유럽 연합",
+  "laws.name.ro": "루마니아",
   "settings.releasesTitle": "Garden Desk는 업데이트를 확인하지 않습니다. 브라우저에서 gardendesk.ai/releases를 엽니다.",
   "settings.releases": "릴리스 페이지 열기",
   "settings.version": "버전 {version}",

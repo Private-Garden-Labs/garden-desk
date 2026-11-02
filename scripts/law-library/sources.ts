@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { printableForm } from "./romania.js";
 
 export interface Pin {
   url: string;
@@ -11,7 +12,7 @@ export interface Source extends Pin {
   id: string;
   title: string;
   version: string;
-  format: "uscode" | "constitution" | "ecfr" | "eurlex" | "eurlex-text" | "cisg";
+  format: "uscode" | "constitution" | "ecfr" | "eurlex" | "eurlex-text" | "cisg" | "legislatie";
   citation: string;
   paths?: string[];
   until?: string;
@@ -25,7 +26,7 @@ export interface Amendment extends Pin {
 }
 
 export interface Jurisdiction {
-  id: "us" | "eu";
+  id: "us" | "eu" | "ro";
   name: string;
   currentAsOf: string;
   tiers: Record<string, Source[]>;
@@ -68,11 +69,15 @@ async function download(url: string): Promise<Buffer> {
   return Buffer.from(await response.arrayBuffer());
 }
 
-export async function pinnedText(pin: Pin, packRoot: string): Promise<string> {
+export async function pinnedText(pin: Pin | Source, packRoot: string): Promise<string> {
   const cacheRoot = join(packRoot, ".cache");
   const path = join(cacheRoot, pin.sha256);
   const stored = await cached(path);
-  const data = stored ?? (await download(pin.url));
+  const data =
+    stored ??
+    ("format" in pin && pin.format === "legislatie"
+      ? await printableForm(pin.url, pin.version, download)
+      : await download(pin.url));
   const actual = sha256(data);
   if (actual !== pin.sha256) {
     throw new Error(`SHA-256 mismatch for ${pin.url}: pinned ${pin.sha256}, found ${actual}.`);

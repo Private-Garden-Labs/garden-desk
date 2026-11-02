@@ -54,6 +54,7 @@
   "laws.disclaimer": "Ei ole oikeudellista neuvontaa. Garden Desk tarkistaa vain sisältämänsä lait ja voi tehdä virheitä. Tarkista jokainen havainto virallisesta tekstistä tai lakimieheltä.",
   "laws.name.us": "Yhdysvallat (liittovaltio)",
   "laws.name.eu": "Euroopan unioni",
+  "laws.name.ro": "Romania",
   "settings.releasesTitle": "Garden Desk ei tarkista päivityksiä. Tämä avaa sivun gardendesk.ai/releases selaimessa.",
   "settings.releases": "Avaa julkaisusivu",
   "settings.version": "Versio {version}",
