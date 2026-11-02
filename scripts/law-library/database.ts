@@ -1,5 +1,6 @@
 import { rm } from "node:fs/promises";
 import { DatabaseSync } from "node:sqlite";
+import { keywordText } from "../../packages/core/src/laws/law-search.js";
 import { INFERENCE_PROFILE } from "../../packages/shared/src/inference-profile.js";
 import type { Jurisdiction, Section, Source } from "./sources.js";
 
@@ -66,7 +67,10 @@ export function insertSource(
       item.heading,
       item.text,
     );
-    search.run(lastInsertRowid, item.citation, item.heading, source.title, item.text);
+    const indexed = [item.citation, item.heading, source.title, item.text].map((text) =>
+      keywordText(text, source.jurisdiction),
+    );
+    search.run(lastInsertRowid, ...indexed);
   }
 }
 

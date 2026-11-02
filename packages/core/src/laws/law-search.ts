@@ -1,8 +1,31 @@
+import type { Jurisdiction } from "@gardendesk/shared";
+
 const RANK_DEPTH = 40;
 const FUSION_OFFSET = 5;
 const QUERY_WORDS = 64;
 const CHUNK_CHARACTERS = 1_500;
 const CLAUSE_CHARACTERS = 60;
+const ROMANIAN_ENDINGS = [
+  "urilor",
+  "itatea",
+  "ilor",
+  "elor",
+  "ului",
+  "atea",
+  "ile",
+  "ele",
+  "iei",
+  "uri",
+  "ul",
+  "ii",
+  "ea",
+  "ei",
+  "ia",
+  "a",
+  "e",
+  "i",
+  "u",
+];
 
 export interface SectionVectors {
   sectionIds: Int32Array;
@@ -57,6 +80,25 @@ export function sectionExcerpt(text: string, chunk: number, limit: number): stri
   const continues = " [section continues]";
   const available = limit - opening.length - gap.length - continues.length;
   return `${opening}${gap}${shown.slice(0, available)}${shown.length > available ? continues : ""}`;
+}
+
+function romanianStem(word: string): string {
+  if (/\d/u.test(word)) return word;
+  const ending = ROMANIAN_ENDINGS.find(
+    (suffix) => word.endsWith(suffix) && word.length - suffix.length >= 4,
+  );
+  return ending === undefined ? word : word.slice(0, -ending.length);
+}
+
+/** Text as the keyword index stores it: Romanian words lose their plural and article endings, and "1.350" stays one number. */
+export function keywordText(text: string, jurisdiction: Jurisdiction): string {
+  if (jurisdiction !== "ro") return text;
+  return text
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/\b(\d{1,3})\.(\d{3})\b/gu, "$1$2")
+    .replace(/\p{L}+/gu, romanianStem);
 }
 
 export function keywordQuery(text: string): string | undefined {

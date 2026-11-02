@@ -12,6 +12,7 @@ import {
   fuseRanks,
   interleave,
   keywordQuery,
+  keywordText,
   type Ranking,
   type SectionVectors,
   sectionExcerpt,
@@ -164,7 +165,7 @@ export class LawLibrary {
   }
 
   private keywordRanks(id: Jurisdiction, text: string): number[] {
-    const query = keywordQuery(text);
+    const query = keywordQuery(keywordText(text, id));
     if (query === undefined) return [];
     const rows = this.required(id)
       .prepare(
