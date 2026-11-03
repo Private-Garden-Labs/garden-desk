@@ -50,7 +50,7 @@ Read the [architecture and security model](docs/ARCHITECTURE.md), [product princ
 
 ## Supporters
 
-Every feature stays free for everyone.
+Every feature stays free for everyone. US federal and EU law data packs are free; other country data packs and their verified updates are paid.
 
 **Company sponsors:** none yet.
 

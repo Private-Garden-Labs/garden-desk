@@ -14,4 +14,5 @@ Garden Desk is a free desktop agent for private work with local files. It is for
 
 - The community app is Apache-2.0 and free for personal and commercial use. It has no usage limits and is never a restricted demo.
 - Paid offerings may add support, installation, certified computers, and office controls such as accounts, roles, backup, and fleet management. They stay separate modules and never limit the community app.
+- Data packs, such as law libraries, download from the app. US federal and EU packs are free. Other country packs need a key; customers pay only for those packs and their verified updates.
 - A purchased version keeps working permanently. Renewals pay for support and updates, not for access.
