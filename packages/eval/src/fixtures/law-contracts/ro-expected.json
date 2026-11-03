@@ -212,8 +212,8 @@
         },
         {
           "clause": "6.2",
-          "issue": "Entering the home at any time without notice breaches the landlord's duty to ensure the tenant's quiet use of the home.",
-          "basis": ["Codul civil, art. 1.786"]
+          "issue": "Entering the home at any time without notice goes beyond inspection at reasonable intervals and breaches the landlord's duty to ensure the tenant's quiet use of the home.",
+          "basis": ["Codul civil, art. 1.804", "Codul civil, art. 1.786"]
         }
       ],
       "lawfulClauses": [
