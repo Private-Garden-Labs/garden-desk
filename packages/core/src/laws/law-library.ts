@@ -258,6 +258,12 @@ export class LawLibrary {
     return JSON.stringify(this.settings().disabledSources);
   }
 
+  release(id: Jurisdiction): void {
+    this.databases.get(id)?.close();
+    this.databases.delete(id);
+    this.vectors.delete(id);
+  }
+
   close(): void {
     for (const database of this.databases.values()) database.close();
     this.databases.clear();

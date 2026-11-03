@@ -13,6 +13,7 @@ import { ConversationStore } from "./conversations/store.js";
 import { createFacade, type GardenDeskCore } from "./facade.js";
 import { JobStore } from "./jobs/jobs.js";
 import { createLawPorts } from "./law-ports.js";
+import { DATA_PACK_SIGNING_KEY, DataPackStore } from "./laws/data-packs.js";
 import { LawLibrary } from "./laws/law-library.js";
 import { createInferenceService, unavailableInference } from "./runtime/compose.js";
 import type { InferenceSupervisor } from "./runtime/supervisor.js";
@@ -47,6 +48,7 @@ interface CoreServices {
   inference: InferenceSupervisor | ReturnType<typeof unavailableInference>;
   skills: SkillStore;
   laws: LawLibrary;
+  dataPacks: DataPackStore;
   agent?: AgentService;
 }
 
@@ -60,7 +62,7 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
   return createFacade({
     listCommands: async () => services.commands.list(),
     ...createSkillPorts(services.skills, audit),
-    ...createLawPorts(services.laws, audit),
+    ...createLawPorts(services.laws, services.dataPacks, audit),
     status: async () => ({
       workspace,
       catalogSchemaVersion: catalog.schemaVersion,
@@ -200,8 +202,9 @@ export async function createGardenDeskCore(
           new MarkdownDefinitionLibrary(promptDirectory, skills),
           commands,
         );
+  const packsRoot = resolve(workspaceRoot, "data-packs");
   const laws = new LawLibrary(
-    resolve(promptDirectory, "..", "data-packs"),
+    packsRoot,
     resolve(workspaceRoot, "laws", "settings.json"),
     async (input, signal) =>
       (
@@ -214,6 +217,18 @@ export async function createGardenDeskCore(
           signal,
         )
       ).vector,
+  );
+  const dataPacks = new DataPackStore(
+    packsRoot,
+    DATA_PACK_SIGNING_KEY,
+    (pack) => laws.release(pack.jurisdiction),
+    ({ pack, failure }) =>
+      audit.append({
+        type: "data_pack.installed",
+        outcome: failure === undefined ? "succeeded" : "failed",
+        metadata:
+          failure === undefined ? { id: pack.id, sha256: pack.sha256 } : { id: pack.id, failure },
+      }),
   );
   const restoredSessionId = conversations.mostRecentSessionId();
   if (agent !== undefined && restoredSessionId !== undefined) {
@@ -230,6 +245,7 @@ export async function createGardenDeskCore(
     inference,
     skills,
     laws,
+    dataPacks,
     ...(agent === undefined ? {} : { agent }),
   });
 }

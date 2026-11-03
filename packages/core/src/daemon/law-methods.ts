@@ -7,6 +7,13 @@ export async function dispatchLawMethod(
   request: RpcRequest,
 ): Promise<RpcResponse> {
   if (request.method === "laws.list") return success(request, await core.listLaws());
+  if (request.method === "dataPacks.list") return success(request, await core.listDataPacks());
+  if (request.method === "dataPacks.saveKey") return saveKey(core, request);
+  if (request.method === "dataPacks.install") {
+    const { id } = request.params;
+    if (typeof id !== "string") return failure(request, "invalid_request", "Invalid data pack.");
+    return success(request, { started: await core.installDataPack(id).catch(() => false) });
+  }
   const id = JurisdictionSchema.safeParse(request.params.id);
   const { enabled, source } = request.params;
   const validSource = source === undefined || source === null || typeof source === "string";
@@ -15,4 +22,15 @@ export async function dispatchLawMethod(
   return success(request, {
     changed: await core.setLawEnabled(id.data, enabled, source ?? undefined),
   });
+}
+
+async function saveKey(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
+  const key = typeof request.params.key === "string" ? request.params.key.trim() : "";
+  if (!/^GD-[A-Z0-9-]{1,64}$/u.test(key)) return success(request, { status: "rejected" });
+  try {
+    const accepted = await core.saveDataPackKey(key);
+    return success(request, { status: accepted ? "accepted" : "rejected" });
+  } catch {
+    return success(request, { status: "offline" });
+  }
 }

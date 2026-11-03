@@ -24,3 +24,29 @@ export const LAW_DISCLAIMER =
 
 export type Jurisdiction = z.infer<typeof JurisdictionSchema>;
 export type LawJurisdictionSummary = z.infer<typeof LawJurisdictionSummarySchema>;
+
+export const DataPackSchema = z.object({
+  id: z.string().regex(/^[a-z0-9-]+$/u),
+  jurisdiction: JurisdictionSchema,
+  name: z.string(),
+  currentAsOf: z.string(),
+  access: z.enum(["free", "key"]),
+  file: z.string().regex(/^[a-z0-9-]+\.zip$/u),
+  bytes: z.number().int().positive(),
+  sha256: z.string().regex(/^[a-f0-9]{64}$/u),
+});
+
+export const DataPackStatusSchema = DataPackSchema.omit({ file: true, sha256: true }).extend({
+  state: z.enum(["available", "downloading", "installed", "update"]),
+  failure: z.enum(["key", "unavailable", "invalid"]).optional(),
+});
+
+export const DataPacksSchema = z.object({
+  keySaved: z.boolean(),
+  online: z.boolean(),
+  packs: z.array(DataPackStatusSchema),
+});
+
+export type DataPack = z.infer<typeof DataPackSchema>;
+export type DataPackStatus = z.infer<typeof DataPackStatusSchema>;
+export type DataPacks = z.infer<typeof DataPacksSchema>;

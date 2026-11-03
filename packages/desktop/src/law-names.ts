@@ -7,6 +7,6 @@ const names = {
   ro: "laws.name.ro",
 } as const satisfies Record<Jurisdiction, TranslationKey>;
 
-export function lawName(law: LawJurisdictionSummary): string {
+export function lawName(law: Pick<LawJurisdictionSummary, "id">): string {
   return t(names[law.id]);
 }

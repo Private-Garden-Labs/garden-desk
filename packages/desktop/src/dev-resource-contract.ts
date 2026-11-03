@@ -24,7 +24,6 @@ function commonInputs(desktopRoot: string, repositoryRoot: string): string[] {
     join(repositoryRoot, "packages", "core", "package.json"),
     join(repositoryRoot, "packages", "core", "src"),
     join(repositoryRoot, "prompts"),
-    join(repositoryRoot, "data-packs"),
     join(repositoryRoot, "packages", "workers", "package.json"),
     join(repositoryRoot, "packages", "workers", "src"),
     join(repositoryRoot, "packages", "workers", "images", "build.ts"),

@@ -43,7 +43,7 @@ export async function initializeEmptyModelStore(root: string): Promise<void> {
     if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
   }
 }
-async function digest(path: string, signal?: AbortSignal): Promise<string> {
+export async function digest(path: string, signal?: AbortSignal): Promise<string> {
   const hash = createHash("sha256");
   for await (const chunk of createReadStream(path)) {
     signal?.throwIfAborted();

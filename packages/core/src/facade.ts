@@ -5,6 +5,7 @@ import type {
   AttachmentSummary,
   CommandSummary,
   ConversationMessage,
+  DataPacks,
   FolderSummary,
   Jurisdiction,
   LawJurisdictionSummary,
@@ -79,6 +80,9 @@ export interface GardenDeskCorePorts extends InferenceService {
   skillLocations(): Promise<SkillLocations>;
   listLaws(): Promise<LawJurisdictionSummary[]>;
   setLawEnabled(id: Jurisdiction, enabled: boolean, source?: string): Promise<boolean>;
+  listDataPacks(): Promise<DataPacks>;
+  saveDataPackKey(key: string): Promise<boolean>;
+  installDataPack(id: string): Promise<boolean>;
   verifyAudit(): Promise<boolean>;
   close(): Promise<void>;
 }
@@ -108,6 +112,9 @@ function skillPorts(ports: GardenDeskCorePorts) {
     listLaws: () => ports.listLaws(),
     setLawEnabled: (id: Jurisdiction, enabled: boolean, source?: string) =>
       ports.setLawEnabled(id, enabled, source),
+    listDataPacks: () => ports.listDataPacks(),
+    saveDataPackKey: (key: string) => ports.saveDataPackKey(key),
+    installDataPack: (id: string) => ports.installDataPack(id),
   };
 }
 

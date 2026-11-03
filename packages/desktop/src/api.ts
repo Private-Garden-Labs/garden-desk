@@ -5,6 +5,7 @@ import type {
   AttachmentSummary,
   CommandSummary,
   ConversationMessage,
+  DataPacks,
   FolderSummary,
   Jurisdiction,
   LawJurisdictionSummary,
@@ -59,6 +60,8 @@ export interface SecureWorkspaceSetupResult {
   outcome: "completed" | "existing_membership" | "cancelled" | "not_needed";
   status: SecureWorkspaceStatus;
 }
+
+export type DataPackKeyStatus = "accepted" | "rejected" | "offline";
 
 export interface DesktopApi {
   bootstrapDesktop(): Promise<DesktopBootstrap>;
@@ -115,5 +118,8 @@ export interface DesktopApi {
   sampleFolderFiles(folderId: string): Promise<string[]>;
   listLaws(): Promise<LawJurisdictionSummary[]>;
   setLawEnabled(id: Jurisdiction, enabled: boolean, source?: string): Promise<boolean>;
+  listDataPacks(): Promise<DataPacks>;
+  saveDataPackKey(key: string): Promise<DataPackKeyStatus>;
+  installDataPack(id: string): Promise<boolean>;
   listenForDroppedPaths?(listener: (event: NativeDropEvent) => void): Promise<() => void>;
 }

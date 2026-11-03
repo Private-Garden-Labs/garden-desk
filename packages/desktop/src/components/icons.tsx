@@ -21,6 +21,7 @@ interface IconProps {
     | "external"
     | "folder"
     | "glob"
+    | "key"
     | "list"
     | "message"
     | "pencil"
@@ -62,6 +63,7 @@ const paths: Record<IconProps["name"], string> = {
   external: "M12 5H5v14h14v-7M14 4h6v6M20 4l-9 9",
   folder: "M3 7h6l2 2h10v10H3z",
   glob: "M5 6h14M5 12h14M5 18h9",
+  key: "M15 5a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM12 11l-8 8M7 16l2 2",
   list: "M4 6h16M4 12h16M4 18h16",
   message: "M4 5h16v11H8l-4 4z",
   pencil: "M4 20h4L18.5 9.5a2 2 0 0 0-3-3L5 17v3zM14 6l3 3",

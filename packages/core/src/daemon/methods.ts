@@ -259,6 +259,9 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
       return dispatchSkillMethod(core, request);
     case "laws.list":
     case "laws.setEnabled":
+    case "dataPacks.list":
+    case "dataPacks.saveKey":
+    case "dataPacks.install":
       return dispatchLawMethod(core, request);
     default:
       return failure(request, "unsupported", `Unsupported method: ${request.method}`);
