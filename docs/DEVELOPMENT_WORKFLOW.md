@@ -61,7 +61,7 @@ Use this only as a last resort, and only after the owner approves the exact comm
 
 ## Data Packs
 
-Data packs are built, signed, and published from the private `garden-desk-data` repository. The app downloads them from `https://packs.gardendesk.ai`; none are packaged with it.
+Data packs are built, signed, and published outside this repository. The app downloads them from `https://packs.gardendesk.ai`; none are packaged with it.
 
 ## Publish A Release
 
