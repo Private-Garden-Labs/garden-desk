@@ -38,7 +38,7 @@ it("keeps the document last and its request immediately before it when laws are 
       forDocument: async () => sections,
     });
     expect((await terminal(service, run.id)).run.state).toBe("succeeded");
-    const messages = requests[0]?.messages ?? [];
+    const messages = requests.at(-1)?.messages ?? [];
     const last = messages.at(-1);
     if (last?.role !== "user") throw new Error("Missing review source.");
     expect(JSON.parse(last.text)).toMatchObject({ source: "review.md", extractedText: text });

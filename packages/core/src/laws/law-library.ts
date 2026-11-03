@@ -27,6 +27,7 @@ const DOCUMENT_PASSAGES = 24;
 const SECTION_CHARACTERS = 4_000;
 const DOCUMENT_SECTION_CHARACTERS = 2_000;
 const DOCUMENT_LAW_CHARACTERS = 48_000;
+const DOCUMENT_PHRASE_CHARACTERS = DOCUMENT_LAW_CHARACTERS / 2;
 
 export interface LawSection {
   citation: string;
@@ -40,7 +41,11 @@ export interface LawContext {
   currentAsOf: string;
   searched(): boolean;
   search(query: string, signal?: AbortSignal): Promise<LawSection[]>;
-  forDocument(text: string, signal?: AbortSignal): Promise<LawSection[]>;
+  forDocument(
+    text: string,
+    phrases: readonly string[],
+    signal?: AbortSignal,
+  ): Promise<LawSection[]>;
 }
 
 export type Embed = (text: string, signal?: AbortSignal) => Promise<number[]>;
@@ -131,13 +136,21 @@ export class LawLibrary {
           SECTION_CHARACTERS,
         );
       },
-      forDocument: async (text, signal) => {
+      forDocument: async (text, phrases, signal) => {
         searched = true;
+        const found: Ranking[] = [];
+        for (const phrase of phrases) found.push(await this.rank(id, phrase, signal));
         const rankings: Ranking[] = [];
         for (const passage of documentPassages(text, DOCUMENT_PASSAGES))
           rankings.push(await this.meaningRanks(id, passage, signal));
+        const fromPhrases = withinCharacters(
+          this.sections(id, interleave(found), DOCUMENT_SECTION_CHARACTERS),
+          DOCUMENT_PHRASE_CHARACTERS,
+        );
+        const taken = new Set(fromPhrases.map((section) => section.citation));
+        const fromPassages = this.sections(id, interleave(rankings), DOCUMENT_SECTION_CHARACTERS);
         return withinCharacters(
-          this.sections(id, interleave(rankings), DOCUMENT_SECTION_CHARACTERS),
+          [...fromPhrases, ...fromPassages.filter((section) => !taken.has(section.citation))],
           DOCUMENT_LAW_CHARACTERS,
         );
       },
