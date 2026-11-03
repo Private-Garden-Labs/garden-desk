@@ -8,6 +8,7 @@ import {
   DEFAULT_THINKING_LEVEL,
   INFERENCE_PROFILE,
   JobIdSchema,
+  LAW_DISCLAIMER,
 } from "@gardendesk/shared";
 import type { InferenceService } from "../runtime/inference.js";
 import { artifactCandidateNames } from "./artifact-results.js";
@@ -26,6 +27,11 @@ export type { ChatAgentInput } from "./chat-loop-input.js";
 
 const HARD_TURN_LIMIT = 40;
 const COMPACTION_RATIO = 0.8;
+
+function withLawDisclaimer(input: ChatAgentInput, response: string): string {
+  if (input.laws?.searched() !== true || response.includes(LAW_DISCLAIMER)) return response;
+  return `${response}\n\n${LAW_DISCLAIMER}`;
+}
 
 function inferenceStepSummary(turn: number, modelNeedsLoad: boolean | undefined): string {
   if (turn > 0) return "Choosing the next action.";
@@ -161,8 +167,9 @@ export class ChatAgentLoop {
     input: ChatAgentInput,
     state: ChatToolState,
     performance: ReturnType<typeof emptyPerformance>,
-    response: string,
+    generatedResponse: string,
   ): AgentRunResult {
+    const response = withLawDisclaimer(input, generatedResponse);
     input.onResponse?.(response);
     input.onEvent?.("assistant.completed", "Response completed.");
     return AgentRunResultSchema.parse({

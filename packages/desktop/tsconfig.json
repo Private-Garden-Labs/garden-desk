@@ -19,6 +19,7 @@
     "build-signing.ts",
     "package-compliance.ts",
     "package-image-resources.ts",
+    "package-law-resources.ts",
     "package-output-cleanup.ts",
     "prepare-dev-assets.ts",
     "prepare-dev-runtime.ts",

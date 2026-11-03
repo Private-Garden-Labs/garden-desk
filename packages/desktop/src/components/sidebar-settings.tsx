@@ -6,6 +6,7 @@ import { LanguagePicker } from "./language-picker.js";
 interface SidebarSettingsProps {
   active: boolean;
   appVersion: string | undefined;
+  onOpenLaws(): void;
   onOpenReleases(): void;
   onOpenSkills(): void;
 }
@@ -23,12 +24,55 @@ function useDismissOnOutsideClick(open: boolean, close: () => void) {
   return container;
 }
 
-export function SidebarSettings({
-  active,
+type SettingsMenuProps = Omit<SidebarSettingsProps, "active"> & {
+  choose(action: () => void): void;
+};
+
+function SettingsMenu({
   appVersion,
+  choose,
+  onOpenLaws,
   onOpenReleases,
   onOpenSkills,
-}: SidebarSettingsProps) {
+}: SettingsMenuProps) {
+  return (
+    <div aria-label={t("settings.menu")} className="sidebar-menu" role="menu">
+      <button
+        className="sidebar-menu-item"
+        onClick={() => choose(onOpenSkills)}
+        role="menuitem"
+        type="button"
+      >
+        <Icon name="skill" />
+        {t("settings.skills")}
+      </button>
+      <button
+        className="sidebar-menu-item"
+        onClick={() => choose(onOpenLaws)}
+        role="menuitem"
+        type="button"
+      >
+        <Icon name="read" />
+        {t("settings.laws")}
+      </button>
+      <button
+        className="sidebar-menu-item"
+        onClick={() => choose(onOpenReleases)}
+        role="menuitem"
+        title={t("settings.releasesTitle")}
+        type="button"
+      >
+        <Icon name="external" />
+        {t("settings.releases")}
+      </button>
+      {appVersion === undefined ? null : (
+        <p className="sidebar-menu-version">{t("settings.version", { version: appVersion })}</p>
+      )}
+    </div>
+  );
+}
+
+export function SidebarSettings({ active, ...menu }: SidebarSettingsProps) {
   const [open, setOpen] = useState(false);
   const container = useDismissOnOutsideClick(open, () => setOpen(false));
   const choose = (action: () => void) => {
@@ -44,34 +88,7 @@ export function SidebarSettings({
       }}
     >
       <div className="sidebar-settings-main" ref={container}>
-        {open ? (
-          <div aria-label={t("settings.menu")} className="sidebar-menu" role="menu">
-            <button
-              className="sidebar-menu-item"
-              onClick={() => choose(onOpenSkills)}
-              role="menuitem"
-              type="button"
-            >
-              <Icon name="skill" />
-              {t("settings.skills")}
-            </button>
-            <button
-              className="sidebar-menu-item"
-              onClick={() => choose(onOpenReleases)}
-              role="menuitem"
-              title={t("settings.releasesTitle")}
-              type="button"
-            >
-              <Icon name="external" />
-              {t("settings.releases")}
-            </button>
-            {appVersion === undefined ? null : (
-              <p className="sidebar-menu-version">
-                {t("settings.version", { version: appVersion })}
-              </p>
-            )}
-          </div>
-        ) : null}
+        {open ? <SettingsMenu {...menu} choose={choose} /> : null}
         <button
           aria-current={active ? "page" : undefined}
           aria-expanded={open}

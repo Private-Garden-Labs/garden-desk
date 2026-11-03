@@ -59,6 +59,10 @@ Use this only as a last resort, and only after the owner approves the exact comm
 - `assets/inference-runtime.json` pins a `stagedSha256` per platform. Packaging stops on a mismatch. A file that already carries a valid vendor signature keeps it.
 - macOS development builds sign ad hoc. A production build sets `APPLE_SIGNING_IDENTITY` to the Developer ID Application identity. It signs the sidecar, inference runtime, and VZ helper with the hardened runtime, then notarizes and staples the DMG with the `garden-desk` notary profile. Create that profile once with `xcrun notarytool store-credentials garden-desk --key <AuthKey_ID.p8> --key-id <key ID> --issuer <issuer ID>`. Allow the terminal to control Finder for the DMG layout, or set `CI=true` to skip the layout.
 
+## Data Packs
+
+Data packs are built, signed, and published from the private `garden-desk-data` repository. A local build reads each pack from `data-packs/<pack>/law-library.sqlite`.
+
 ## Publish A Release
 
 A download link must not go live before its file and SHA-256 exist.

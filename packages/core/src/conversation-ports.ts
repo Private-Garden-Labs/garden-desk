@@ -1,5 +1,6 @@
 import type { AgentService } from "./agent/service.js";
 import type { AuditLog } from "./audit/log.js";
+import { sampleFolderFileNames } from "./conversations/folder-files.js";
 import {
   addFolderGrant,
   deleteConversationSession,
@@ -23,6 +24,7 @@ export function createConversationPorts(
   | "listFolders"
   | "reorderFolders"
   | "resolveFolderPath"
+  | "sampleFolderFiles"
   | "revokeFolder"
   | "createSession"
   | "deleteSession"
@@ -46,6 +48,8 @@ export function createConversationPorts(
       return folders;
     },
     resolveFolderPath: async (folderId) => conversations.resolveFolderPath(folderId),
+    sampleFolderFiles: async (folderId) =>
+      sampleFolderFileNames(conversations.resolveFolderPath(folderId), 10),
     async revokeFolder(folderId) {
       for (const sessionId of conversations.sessionIdsForFolder(folderId)) {
         await agent?.closeSession(sessionId);

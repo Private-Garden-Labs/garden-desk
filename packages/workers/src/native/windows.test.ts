@@ -72,6 +72,21 @@ it("caps the Windows inference process above the GPU budget and reserves less ho
   });
 });
 
+it("gives a server that runs on no device no GPU", () => {
+  const arguments_ = windowsNativeWorkerArguments(
+    {
+      workerEntryPath: "unused",
+      memoryBudgetBytes: 2 * 1024 ** 3,
+      serverArguments: ["--device", "none", "--embedding"],
+    },
+    "scratch",
+    "/packaged/llama-server.exe",
+    { gpu: { backend: "cuda", deviceIndex: 0, memoryKind: "dedicated" } },
+  );
+  expect(arguments_).not.toContain("--gpu-backend");
+  expect(arguments_[arguments_.indexOf("--memory") + 1]).toBe(String(2 * 1024 ** 3));
+});
+
 describe("Windows native worker launch arguments", () => {
   it("uses the dedicated packaged Node runtime", () => {
     const arguments_ = windowsNativeWorkerArguments(

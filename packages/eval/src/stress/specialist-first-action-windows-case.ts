@@ -167,7 +167,12 @@ async function waitForFirstSpecialistAction(
 
 async function warmModel(core: GardenDeskCore, folderId: string): Promise<void> {
   const session = await core.createSession(folderId);
-  const started = await core.startAgent(session.id, "Reply with only the word ready.", "none");
+  const started = await core.startAgent(
+    session.id,
+    "Reply with only the word ready.",
+    "none",
+    null,
+  );
   const deadline = Date.now() + 120_000;
   while (Date.now() < deadline) {
     const snapshot = await core.getAgentRun(started.id);
@@ -189,7 +194,7 @@ async function run(task: SpecialistFirstActionCase): Promise<void> {
     await warmModel(core, folder.id);
     const session = await core.createSession(folder.id);
     startedAt = Date.now();
-    started = await core.startAgent(session.id, task.request, DEFAULT_THINKING_LEVEL);
+    started = await core.startAgent(session.id, task.request, DEFAULT_THINKING_LEVEL, null);
     const selected = await waitForFirstSpecialistAction(core, started.id, task, startedAt);
     console.log(
       JSON.stringify({

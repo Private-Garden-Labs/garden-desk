@@ -73,16 +73,18 @@ fn environment(scratch: &Path, profile: &Path, gpu: GpuEnvironment) -> Vec<u16> 
         "LLAMA_ARG_OFFLINE=1".to_owned(),
         "GARDEN_DESK_APPCONTAINER_LOCKED=1".to_owned(),
     ];
-    if let Some(device_index) = gpu.device_index {
-        match gpu.backend {
-            Some(GpuBackend::Cuda) => {
-                values.push(format!("CUDA_VISIBLE_DEVICES={device_index}"));
-            }
-            Some(GpuBackend::Hip) => {
-                values.push(format!("HIP_VISIBLE_DEVICES={device_index}"));
-            }
-            None => {}
+    match (gpu.backend, gpu.device_index) {
+        (None, _) => {
+            values.push("CUDA_VISIBLE_DEVICES=-1".to_owned());
+            values.push("HIP_VISIBLE_DEVICES=-1".to_owned());
         }
+        (Some(GpuBackend::Cuda), Some(device_index)) => {
+            values.push(format!("CUDA_VISIBLE_DEVICES={device_index}"));
+        }
+        (Some(GpuBackend::Hip), Some(device_index)) => {
+            values.push(format!("HIP_VISIBLE_DEVICES={device_index}"));
+        }
+        (Some(_), None) => {}
     }
     values.sort_by_key(|value| value.to_ascii_uppercase());
     values.join("\0").encode_utf16().chain([0, 0]).collect()

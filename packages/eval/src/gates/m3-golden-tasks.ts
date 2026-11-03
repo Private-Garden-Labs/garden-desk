@@ -108,7 +108,7 @@ async function runOneTask(core: Core, root: string, task: GoldenTask): Promise<G
     await task.prepare(sourceDir);
     const folder = await core.addFolder(sourceDir);
     const session = await core.createSession(folder.id);
-    const run = await core.startAgent(session.id, task.prompt, DEFAULT_THINKING_LEVEL);
+    const run = await core.startAgent(session.id, task.prompt, DEFAULT_THINKING_LEVEL, null);
     const snapshot = await awaitTerminalRun(core, run.id);
     if (snapshot.run.state !== "succeeded" || snapshot.artifacts.length === 0) {
       return {

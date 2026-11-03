@@ -1,0 +1,1 @@
+Write law search phrases for the supplied document. For each clause that may break a rule of the named jurisdiction's law, write one to three short phrases of 3 to 8 words that name the rule, right, or duty it may break, in the document's language and in the law's own terms. Do not include article numbers or clause numbers. Return only a JSON array of at most 30 strings.

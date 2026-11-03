@@ -10,12 +10,13 @@ import { artifactActions } from "./artifact-actions.js";
 import type { DesktopCapabilities } from "./capabilities.js";
 import { AppChatControls } from "./components/app-chat-controls.js";
 import { AppChatHeader } from "./components/app-chat-header.js";
-import { AppSidebar } from "./components/app-sidebar.js";
+import { AppSidebar, type SettingsPage } from "./components/app-sidebar.js";
 import { ActiveConfirmation, type ConfirmationRequest } from "./components/confirmation.js";
 import { Conversation } from "./components/conversation.js";
 import { DropOverlay } from "./components/drop-overlay.js";
 import { ErrorBanner } from "./components/error-banner.js";
 import { GuidedExamples } from "./components/guided-examples.js";
+import { LawsPage } from "./components/laws-page.js";
 import { SecureWorkspaceBanner } from "./components/secure-workspace-banner.js";
 import { SkillsPage } from "./components/skills-page.js";
 import { SpecialistView } from "./components/specialist-view.js";
@@ -25,14 +26,18 @@ import { type DropIntent, useNativeDrop } from "./desktop-drop.js";
 import { initialModelStatus, unloadModel, useModelRefresh } from "./desktop-model.js";
 import { useDraftPersistence } from "./draft-persistence.js";
 import { t, useLocale } from "./i18n/index.js";
+import { useLaws } from "./laws.js";
 import { desktopPlatform } from "./platform.js";
+import { cancelRun } from "./run-polling.js";
 import { secureWorkspaceAllowsTasks } from "./secure-workspace.js";
+import { activeFolder } from "./session-state.js";
 import { useSkills } from "./skills.js";
 import { useDesktopBootstrap } from "./startup.js";
 import { desktopReducer, initialDesktopState } from "./state.js";
 import { selectStep } from "./step-selection.js";
 import { agentSteps, desktopThinking } from "./steps.js";
 import { useChildRun } from "./use-child-run.js";
+import { useFolderFiles } from "./use-folder-files.js";
 import { useSecureWorkspace } from "./use-secure-workspace.js";
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single desktop composition boundary.
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: single desktop composition boundary.
@@ -43,7 +48,8 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const [desktopError, setDesktopError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [technicalDetailsOpen, setTechnicalDetailsOpen] = useState(false);
-  const [skillsOpen, setSkillsOpen] = useState(false);
+  const [settingsPage, setSettingsPage] = useState<SettingsPage>();
+  const skillsOpen = settingsPage === "skills";
   const [selectedChild, setSelectedChild] = useState<AgentRunSummary>();
   useEffect(() => {
     setSelectedChild((current) =>
@@ -59,23 +65,13 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const [appVersion, setAppVersion] = useState<string>();
   const [thinking, setThinking] = useState<ThinkingLevel>(DEFAULT_THINKING_LEVEL);
   const secureWorkspace = useSecureWorkspace(api, setConfirmation, setDesktopError);
-  useDesktopBootstrap({
-    api,
-    dispatch,
-    setAppVersion,
-    setError: setDesktopError,
-    setModel,
-  });
+  useDesktopBootstrap({ api, dispatch, setAppVersion, setError: setDesktopError, setModel });
   const nativeUnavailable = capabilities.nativeActions
     ? undefined
     : (capabilities.unavailableReason ?? t("demo.unavailable"));
   const generatedFileActions = artifactActions(api, state.activeSessionId, setDesktopError);
-  const activeFolder = state.folders.find(
-    (folder) =>
-      folder.id === state.newSessionFolderId ||
-      folder.sessions.some((session) => session.id === state.activeSessionId),
-  );
-  const folderName = activeFolder?.name;
+  const folder = activeFolder(state);
+  const folderFileNames = useFolderFiles(api, folder?.id);
   const running =
     submitting || state.activeRun?.state === "queued" || state.activeRun?.state === "running";
   useModelRefresh(api, state.loaded, running || model.state === "busy", setModel);
@@ -84,6 +80,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const tasksAllowed = secureWorkspaceAllowsTasks(secureWorkspace.status);
   const draftPersistence = useDraftPersistence(api, setDesktopError);
   const skills = useSkills(api, skillsOpen);
+  const laws = useLaws(api, settingsPage === "laws");
   useNativeDrop({
     api,
     context: {
@@ -94,7 +91,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
       ...(skillsOpen ? { addSkills: skills.addPaths } : {}),
     },
     dispatch,
-    enabled: capabilities.nativeActions && !childOpen,
+    enabled: capabilities.nativeActions && !childOpen && settingsPage !== "laws",
     setDropIntent,
     setError: setDesktopError,
   });
@@ -112,6 +109,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
       api,
       text,
       thinking,
+      jurisdiction: laws.selected,
       activeSessionId: state.activeSessionId,
       newSessionFolderId: state.newSessionFolderId,
       dispatch,
@@ -123,13 +121,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const detailDispatch = childOpen ? child.dispatch : dispatch;
   const steps = agentSteps(detailState.timeline, detailState.executions, detailState.traces);
   const { thinkingByStep, thinkingStepId } = desktopThinking(detailState);
-  const cancelTask = () => {
-    if (state.activeRun !== undefined) {
-      void api
-        .cancelAgent(state.activeRun.jobId)
-        .catch(() => setDesktopError(t("task.cancelFailed")));
-    }
-  };
+  const cancelTask = () => cancelRun(api, state.activeRun, setDesktopError);
   const closeChild = () => {
     const id = selectedChild?.id;
     setSelectedChild(undefined);
@@ -162,10 +154,10 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         dispatch={dispatch}
         dropIntent={dropIntent}
         nativeActionMessage={nativeUnavailable}
-        onSkillsOpenChange={setSkillsOpen}
+        onSettingsPageChange={setSettingsPage}
         setConfirmation={setConfirmation}
         setError={setDesktopError}
-        skillsOpen={skillsOpen}
+        settingsPage={settingsPage}
         state={state}
       />
       {skillsOpen ? (
@@ -173,8 +165,10 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
           controller={skills}
           dropActive={dropIntent !== undefined}
           nativeActionMessage={nativeUnavailable}
-          onBack={() => setSkillsOpen(false)}
+          onBack={() => setSettingsPage(undefined)}
         />
+      ) : settingsPage === "laws" ? (
+        <LawsPage controller={laws} onBack={() => setSettingsPage(undefined)} />
       ) : (
         <main aria-busy={!desktopReady} className="workspace">
           <div aria-hidden="true" className="window-drag-region" data-tauri-drag-region="" />
@@ -222,7 +216,9 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
             }}
             artifacts={state.artifacts}
             attachments={state.attachments}
-            folderName={folderName}
+            commands={state.commands}
+            folderFileNames={folderFileNames}
+            folderName={folder?.name}
             key={state.activeSessionId ?? `new:${state.newSessionFolderId ?? "global"}`}
             nativeActionMessage={nativeUnavailable}
             ready={state.loaded}
@@ -257,6 +253,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
             disabled={!desktopReady || model.state === "unsupported" || !tasksAllowed}
             dispatch={dispatch}
             dropIntent={dropIntent}
+            laws={laws}
             nativeActionMessage={nativeUnavailable}
             onCancel={cancelTask}
             onChange={changeDraft}
@@ -274,13 +271,13 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         artifacts={detailState.artifacts}
         catalogPath={state.catalogPath}
         executions={detailState.executions}
-        folderId={state.activeSessionId === undefined ? undefined : activeFolder?.id}
+        folderId={state.activeSessionId === undefined ? undefined : folder?.id}
         key={`${childOpen ? selectedChild.id : (state.activeSessionId ?? `new:${state.newSessionFolderId ?? "global"}`)}:${technicalDetailsOpen ? "open" : "closed"}`}
         api={api}
         model={model}
         nativeActionMessage={nativeUnavailable}
         onClose={() => setTechnicalDetailsOpen(false)}
-        open={technicalDetailsOpen && !skillsOpen}
+        open={technicalDetailsOpen && settingsPage === undefined}
         onSelectStep={onSelectStep}
         contextUsedTokens={detailState.contextUsedTokens}
         contextAllocatedTokens={detailState.contextAllocatedTokens}

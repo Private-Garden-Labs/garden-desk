@@ -225,7 +225,7 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
     for (const name of attachments) await core.addAttachment(session.id, join(source, name));
     const prompt =
       task.command === undefined || plainPrompts ? task.prompt : `/${task.command} ${task.prompt}`;
-    const started = await core.startAgent(session.id, prompt, thinking);
+    const started = await core.startAgent(session.id, prompt, thinking, null);
     const watched = await watch({
       core,
       taskId: task.id,

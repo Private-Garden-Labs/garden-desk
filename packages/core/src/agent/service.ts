@@ -14,6 +14,7 @@ import type { AuditLog } from "../audit/log.js";
 import { CommandLibrary } from "../commands/library.js";
 import type { ConversationStore } from "../conversations/store.js";
 import type { JobStore } from "../jobs/jobs.js";
+import type { LawContext } from "../laws/law-library.js";
 import type { InferenceService } from "../runtime/inference.js";
 import type { ArtifactStore } from "../workspace/artifacts.js";
 import type { DatabasePort } from "../workspace/database.js";
@@ -133,7 +134,12 @@ export class AgentService {
       this.audit.append({ type: "agent.close_failed", outcome: "failed", metadata: { sessionId } });
     });
   }
-  start(sessionId: string, task: string, thinking = DEFAULT_THINKING_LEVEL): AgentRunSummary {
+  start(
+    sessionId: string,
+    task: string,
+    thinking = DEFAULT_THINKING_LEVEL,
+    laws?: LawContext,
+  ): AgentRunSummary {
     if (this.closed) throw new Error("agent_service_closed");
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
       throw new Error("agent_busy");
@@ -145,7 +151,7 @@ export class AgentService {
     })();
     const controller = new AbortController();
     const finished = Promise.resolve()
-      .then(async () => await this.execute(run, task, thinking, controller.signal))
+      .then(async () => await this.execute(run, { task, thinking, laws }, controller.signal))
       .finally(() => {
         this.active.delete(run.jobId);
       });
@@ -206,10 +212,10 @@ export class AgentService {
   // biome-ignore lint/complexity/noExcessiveLinesPerFunction: the run lifecycle stays linear so cleanup and terminal persistence remain paired.
   private async execute(
     run: AgentRunSummary,
-    task: string,
-    thinking: ThinkingLevel,
+    request: { task: string; thinking: ThinkingLevel; laws: LawContext | undefined },
     signal: AbortSignal,
   ): Promise<void> {
+    const { task, thinking, laws } = request;
     let releaseCapacity: (() => void) | undefined;
     let measuredContextTokens: number | undefined;
     try {
@@ -240,6 +246,7 @@ export class AgentService {
         history: agentHistory(messages, anchored),
         inspectImage: this.images.forRun(run.sessionId, signal),
         jobs: this.jobs,
+        ...(laws === undefined ? {} : { laws }),
         ...(await inferenceRunContext(this.inference)),
         onThinking: (thinking) => this.updateActive(run.jobId, { thinking }),
         onResponse: (response) => this.updateActive(run.jobId, { response }),

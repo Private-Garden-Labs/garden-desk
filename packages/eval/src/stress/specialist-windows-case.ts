@@ -97,7 +97,7 @@ async function run(task: SpecialistCase): Promise<void> {
       : `Use the ${task.agentId} specialist for this work.`;
     const prompt = `${selection}\n${task.request}\nUse the source files in /source. Write a concise final report to /workspace/result.md with the facts requested and source file references with page, paragraph, or row locations. Return a short summary. Do not change the source files.`;
     console.log(JSON.stringify({ case: task.id, stage: "starting", root }));
-    const started = await core.startAgent(session.id, prompt, DEFAULT_THINKING_LEVEL);
+    const started = await core.startAgent(session.id, prompt, DEFAULT_THINKING_LEVEL, null);
     await inspectReport(core, task, await terminal(core, started.id, started.jobId));
   } finally {
     await core.close();
