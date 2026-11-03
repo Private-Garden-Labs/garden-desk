@@ -1,4 +1,5 @@
 import type { ComponentProps, KeyboardEvent, PointerEvent } from "react";
+import { t } from "../i18n/index.js";
 import { Icon } from "./icons.js";
 
 interface SidebarItemRowProps {
@@ -57,7 +58,7 @@ function DragHandle(props: SidebarItemRowProps) {
           event.currentTarget.releasePointerCapture(event.pointerId);
         }
       }}
-      title="Drag to reorder; use arrow keys while focused"
+      title={t("sidebar.reorderHint")}
       type="button"
     >
       <Icon name="drag" />
@@ -100,7 +101,11 @@ export function SidebarItemRow(props: SidebarItemRowProps) {
       >
         <span title={props.label}>{props.label}</span>
         {props.working ? (
-          <i aria-label="Working" className="sidebar-working-indicator" role="status" />
+          <i
+            aria-label={t("sidebar.working")}
+            className="sidebar-working-indicator"
+            role="status"
+          />
         ) : null}
       </button>
       {props.working ? null : (

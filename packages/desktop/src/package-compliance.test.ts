@@ -56,7 +56,7 @@ describe("package compliance dependency records", () => {
         name: "Microsoft windows-rs",
         version: "0.61.3",
         license: "MIT OR Apache-2.0",
-        purpose: "DXCore GPU and installed-memory discovery in the Windows inference helper",
+        purpose: "DXCore GPU discovery in the Windows inference helper",
       });
     } else {
       expect(dependency).toBeUndefined();

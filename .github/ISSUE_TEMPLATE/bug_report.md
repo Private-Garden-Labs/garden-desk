@@ -26,7 +26,6 @@ assignees: ""
 - Garden Desk version or commit:
 - Operating system and version:
 - Hardware profile, when relevant:
-- Active milestone, for development builds:
 
 ## Evidence
 

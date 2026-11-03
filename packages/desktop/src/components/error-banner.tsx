@@ -1,3 +1,5 @@
+import { t } from "../i18n/index.js";
+
 export function ErrorBanner({
   message,
   onDismiss,
@@ -9,7 +11,7 @@ export function ErrorBanner({
   return (
     <div className="error-banner" role="alert">
       <span>{message}</span>
-      <button aria-label="Dismiss error" onClick={onDismiss} type="button">
+      <button aria-label={t("error.dismiss")} onClick={onDismiss} type="button">
         ×
       </button>
     </div>

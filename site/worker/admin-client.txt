@@ -1,0 +1,99 @@
+const form = document.querySelector("#post-form");
+const status = document.querySelector("#save-status");
+const field = (name) => form.elements.namedItem(name);
+let dirty = false;
+let slugEdited = form.dataset.existing === "true";
+let previewTimer;
+let previewRequest = 0;
+
+window.addEventListener("beforeunload", (event) => {
+  if (dirty) event.preventDefault();
+});
+
+form.addEventListener("input", (event) => {
+  dirty = true;
+  status.textContent = "";
+  const name = event.target.name;
+  if (name === "slug") slugEdited = true;
+  if (name === "title") {
+    document.querySelector("#preview-title").textContent = field("title").value;
+    if (!slugEdited) field("slug").value = slugFrom(field("title").value);
+  }
+  if (name === "description")
+    document.querySelector("#preview-description").textContent = field("description").value;
+  if (name === "markdown") {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(refreshPreview, 400);
+  }
+});
+
+function slugFrom(title) {
+  return title
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gu, "-")
+    .slice(0, 100)
+    .replace(/^-+|-+$/gu, "");
+}
+
+async function send(path, method, body) {
+  const response = await fetch(path, {
+    method,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (
+    response.redirected ||
+    !response.headers.get("content-type")?.startsWith("application/json")
+  ) {
+    throw new Error("Your login has expired. Copy your text before you sign in again.");
+  }
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error ?? "The request failed. Your text is still here.");
+  return result;
+}
+
+async function refreshPreview() {
+  const request = ++previewRequest;
+  try {
+    const { html } = await send("/api/preview", "POST", { markdown: field("markdown").value });
+    if (request === previewRequest) document.querySelector("#preview").innerHTML = html;
+  } catch (error) {
+    status.textContent = error.message;
+  }
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const action = event.submitter?.value ?? "save";
+  if (
+    action === "unpublish" &&
+    !window.confirm("Remove this post from the website? It stays here as a draft.")
+  )
+    return;
+  const publish = action === "publish" || (action === "save" && form.dataset.published === "true");
+  const buttons = form.querySelectorAll("button");
+  status.textContent = "Saving…";
+  for (const button of buttons) button.disabled = true;
+  try {
+    const result = await send(
+      `/api/posts/${field("slug").value}`,
+      form.dataset.existing === "true" ? "PUT" : "POST",
+      {
+        title: field("title").value,
+        description: field("description").value,
+        markdown: field("markdown").value,
+        publish,
+      },
+    );
+    dirty = false;
+    if (form.dataset.existing !== "true" || String(publish) !== form.dataset.published)
+      return window.location.assign(result.url);
+    status.textContent = "Saved.";
+  } catch (error) {
+    status.textContent = error.message;
+  }
+  for (const button of buttons) button.disabled = false;
+  event.submitter?.focus();
+});

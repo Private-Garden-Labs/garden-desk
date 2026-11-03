@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { FolderSummarySchema, SessionSummarySchema } from "@gardendesk/shared";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -32,6 +33,7 @@ const sidebarRowProps = {
   dispatch: () => undefined,
   folders: [{ ...folder, expanded: true, nextCursor: null, sessions: [folderSession] }],
   globalSessions: [globalSession],
+  globalNextCursor: "next",
   workingSessionIds: [folderSession.id],
   onAddFolder: () => undefined,
   onNewSession: () => undefined,
@@ -43,7 +45,37 @@ const sidebarRowProps = {
   onReorderFolders: () => undefined,
   onSelectSession: () => undefined,
   onShowMore: () => undefined,
+  onShowLess: () => undefined,
 };
+
+it("keeps Show more beside Show less after the final chat page", () => {
+  const globalSessions = Array.from({ length: 6 }, (_, index) =>
+    SessionSummarySchema.parse({
+      ...globalSession,
+      id: `${globalSession.id.slice(0, -1)}${index}`,
+    }),
+  );
+  const folderSessions = Array.from({ length: 6 }, (_, index) =>
+    SessionSummarySchema.parse({
+      ...folderSession,
+      id: `${folderSession.id.slice(0, -1)}${index}`,
+    }),
+  );
+  const expanded = renderToStaticMarkup(
+    createElement(Sidebar, {
+      ...sidebarRowProps,
+      globalSessions,
+      folders: [{ ...folder, expanded: true, nextCursor: null, sessions: folderSessions }],
+    }),
+  );
+  expect(expanded.match(/aria-label="Show less"/gu)).toHaveLength(2);
+  expect(expanded.match(/class="show-more"/gu)).toHaveLength(2);
+  expect(expanded.match(/class="show-more" disabled=""/gu)).toHaveLength(1);
+  expect(expanded.match(/icon-chevron-up/gu)).toHaveLength(2);
+
+  const collapsed = renderToStaticMarkup(createElement(Sidebar, sidebarRowProps));
+  expect(collapsed).not.toContain('aria-label="Show less"');
+});
 
 describe("sidebar rows", () => {
   it("uses the same row controls for chats and folders, with an icon only on folders", () => {
@@ -62,6 +94,7 @@ describe("sidebar rows", () => {
     expect(markup.match(/icon-trash/gu)).toHaveLength(1);
     expect(markup.match(/icon-unmount/gu)).toHaveLength(1);
     expect(markup).toContain("Add folder");
+    expect(markup).toContain("Show more");
     expect(markup).toContain('aria-label="Open Project folder"');
     expect(markup).toContain('aria-label="Unmount Project"');
     expect(markup).toContain('class="sidebar-item-delete sidebar-item-unmount"');
@@ -70,6 +103,19 @@ describe("sidebar rows", () => {
     expect(markup.match(/sidebar-item-deletable/gu) ?? []).toHaveLength(2);
     expect(markup).toContain('aria-label="Working"');
     expect(markup).not.toContain('aria-label="Delete Folder chat"');
+  });
+
+  it("keeps disabled delete buttons hidden so they do not cover row titles", () => {
+    const styles = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
+    const hiddenSelectors = [...styles.matchAll(/([^{}]+)\{[^}]*opacity:\s*0;/gu)]
+      .flatMap((match) => (match[1] ?? "").split(","))
+      .map((selector) => selector.trim())
+      .filter((selector) => selector.endsWith(".sidebar-item-delete"));
+    const classLevel = (selector: string) => selector.match(/[.:[]/gu)?.length ?? 0;
+
+    expect(Math.max(0, ...hiddenSelectors.map(classLevel))).toBeGreaterThan(
+      classLevel("button:disabled"),
+    );
   });
 });
 

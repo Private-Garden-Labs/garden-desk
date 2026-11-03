@@ -5,12 +5,14 @@ import {
   type AgentEvent,
   type AgentExecutionSnapshot,
   type AgentRunSummary,
+  type AgentSessionSummary,
   type AttachmentSummary,
   type ConversationMessage,
   type SessionDraft,
   SessionIdSchema,
   type SessionSummary,
 } from "@gardendesk/shared";
+import { LATEST_SCHEMA_VERSION } from "../workspace/catalog.js";
 import { DebugSessionError, debugStateInvalid } from "./errors.js";
 import { safeDatabasePath } from "./files.js";
 import {
@@ -27,10 +29,9 @@ import {
   runFromRow,
   sessionDraftFromRow,
   sessionFromRow,
+  sessionSummaryFromRow,
   text,
 } from "./records.js";
-
-const CATALOG_SCHEMA_VERSION = 10;
 
 export interface TraceTurnRecord extends Row {
   prompt_hash: string;
@@ -54,6 +55,7 @@ export interface DebugCatalogRecords {
   session: SessionSummary;
   folder: DebugFolder | null;
   draft: SessionDraft | null;
+  summary: AgentSessionSummary | null;
   attachments: AttachmentSummary[];
   messages: ConversationMessage[];
   runs: DebugRunRecords[];
@@ -90,7 +92,7 @@ function readRun(database: DatabaseSync, row: Row): DebugRunRecords {
 function catalogVersion(database: DatabaseSync): number {
   const row = database.prepare("PRAGMA user_version").get() as Row;
   const version = Object.values(row)[0];
-  if (version !== CATALOG_SCHEMA_VERSION) {
+  if (version !== LATEST_SCHEMA_VERSION) {
     throw new DebugSessionError("debug_schema_unsupported");
   }
   return version;
@@ -131,6 +133,9 @@ function readCatalog(
   const draftRow = database
     .prepare("SELECT * FROM session_drafts WHERE session_id = ?")
     .get(sessionId) as Row | undefined;
+  const summaryRow = database
+    .prepare("SELECT * FROM agent_session_summaries WHERE session_id = ?")
+    .get(sessionId) as Row | undefined;
   return {
     databasePath,
     internalRoot: dirname(databasePath),
@@ -138,6 +143,7 @@ function readCatalog(
     session,
     folder: folderRow === undefined ? null : folderFromRow(folderRow),
     draft: draftRow === undefined ? null : sessionDraftFromRow(draftRow),
+    summary: summaryRow === undefined ? null : sessionSummaryFromRow(summaryRow),
     attachments: relatedRows(database, "session_attachments", sessionId).map(attachmentFromRow),
     messages: relatedRows(database, "conversation_messages", sessionId).map(messageFromRow),
     runs: relatedRows(database, "agent_runs", sessionId).map((row) => readRun(database, row)),

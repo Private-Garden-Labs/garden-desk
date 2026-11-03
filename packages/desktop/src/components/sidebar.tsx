@@ -7,9 +7,10 @@ import {
   useRef,
   useState,
 } from "react";
+import { t } from "../i18n/index.js";
 import type { DesktopAction, FolderGroup } from "../state.js";
 import { Icon } from "./icons.js";
-import { SessionList } from "./session-list.js";
+import { GlobalSessionList, SessionList } from "./session-list.js";
 import { SidebarItemRow } from "./sidebar-item-row.js";
 import { SidebarSettings } from "./sidebar-settings.js";
 
@@ -21,6 +22,7 @@ interface SidebarProps {
   dispatch: Dispatch<DesktopAction>;
   folders: FolderGroup[];
   globalSessions: SessionSummary[];
+  globalNextCursor: string | null;
   workingSessionIds: string[];
   nativeActionMessage?: string | undefined;
   onAddFolder(): void;
@@ -32,7 +34,8 @@ interface SidebarProps {
   onRevokeFolder(folderId: string): void;
   onReorderFolders(folderIds: string[]): void;
   onSelectSession(sessionId: string): void;
-  onShowMore(folderId: string): void;
+  onShowMore(folderId: string | null): void;
+  onShowLess(folderId: string | null): void;
   settingsActive?: boolean | undefined;
 }
 
@@ -76,7 +79,7 @@ function useSidebarResize() {
 function SidebarResizeHandle({ resize }: { resize: ReturnType<typeof useSidebarResize> }) {
   return (
     <hr
-      aria-label="Resize navigation sidebar"
+      aria-label={t("sidebar.resize")}
       aria-orientation="vertical"
       aria-valuemax={SIDEBAR_MAX_WIDTH}
       aria-valuemin={SIDEBAR_MIN_WIDTH}
@@ -152,7 +155,7 @@ function FolderSection(props: SidebarProps) {
   const [draggingId, setDraggingId] = useState<string>();
   const [drop, setDrop] = useState<{ after: boolean; folderId: string }>();
   if (props.folders.length === 0) {
-    return <p className="sidebar-empty">Add a folder to start a group of private sessions.</p>;
+    return <p className="sidebar-empty">{t("sidebar.emptyFolders")}</p>;
   }
   const folderIds = props.folders.map((folder) => folder.id);
   return (
@@ -167,9 +170,9 @@ function FolderSection(props: SidebarProps) {
           >
             <SidebarItemRow
               deleteIcon="unmount"
-              deleteLabel={`Unmount ${folder.name}`}
+              deleteLabel={t("sidebar.unmount", { name: folder.name })}
               disabled={props.disabled}
-              dragLabel={`Reorder ${folder.name}`}
+              dragLabel={t("sidebar.reorder", { name: folder.name })}
               expanded={folder.expanded}
               label={folder.name}
               nativeActionMessage={props.nativeActionMessage}
@@ -205,7 +208,7 @@ function FolderSection(props: SidebarProps) {
               }}
               onSelect={() => props.dispatch({ type: "folder.toggle", folderId: folder.id })}
               onStartAction={() => props.onOpenFolder(folder.id)}
-              startActionLabel={`Open ${folder.name} folder`}
+              startActionLabel={t("sidebar.openFolder", { name: folder.name })}
               startIcon="folder"
             />
             {folder.expanded ? (
@@ -219,6 +222,7 @@ function FolderSection(props: SidebarProps) {
                 onDeleteSession={props.onDeleteSession}
                 onSelectSession={props.onSelectSession}
                 onShowMore={props.onShowMore}
+                onShowLess={props.onShowLess}
               />
             ) : null}
           </li>
@@ -239,7 +243,7 @@ export function Sidebar(props: SidebarProps) {
       <div aria-hidden="true" className="window-drag-region" data-tauri-drag-region="" />
       <div className="brand">Garden Desk</div>
       <div className="sidebar-content">
-        <h2 className="sidebar-label">Chats</h2>
+        <h2 className="sidebar-label">{t("sidebar.chats")}</h2>
         <button
           className="nav-action"
           disabled={props.disabled}
@@ -247,24 +251,10 @@ export function Sidebar(props: SidebarProps) {
           type="button"
         >
           <Icon name="message" />
-          New chat
+          {t("sidebar.newChat")}
         </button>
-        <div className="session-list global-session-list">
-          {props.globalSessions.map((session) => (
-            <SidebarItemRow
-              active={session.id === props.activeSessionId}
-              deleteLabel={`Delete ${session.title}`}
-              disabled={props.disabled}
-              key={session.id}
-              label={session.title}
-              working={props.workingSessionIds.includes(session.id)}
-              nativeActionMessage={props.nativeActionMessage}
-              onDelete={() => props.onDeleteSession(session)}
-              onSelect={() => props.onSelectSession(session.id)}
-            />
-          ))}
-        </div>
-        <h2 className="sidebar-label">Folders</h2>
+        <GlobalSessionList {...props} />
+        <h2 className="sidebar-label">{t("sidebar.folders")}</h2>
         <button
           className="nav-action"
           disabled={props.disabled || props.nativeActionMessage !== undefined}
@@ -273,7 +263,7 @@ export function Sidebar(props: SidebarProps) {
           type="button"
         >
           <Icon name="add" />
-          Add folder
+          {t("sidebar.addFolder")}
         </button>
         {props.nativeActionMessage === undefined ? null : (
           <p className="demo-unavailable-note">{props.nativeActionMessage}</p>

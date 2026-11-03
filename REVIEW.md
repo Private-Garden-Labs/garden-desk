@@ -30,9 +30,9 @@ Select the tier one time before a lens agent starts. Both tiers use the same len
 
 - Agent runs that can end non-terminal, ignore cancellation, or fail to recover after a Core restart
 - `packages/shared` contract changes with an unupdated consumer, fixture, or test
-- Changes to completed M0-M2 contracts, or post-V1 scope, not stated in the PR
+- Changes to shipped V1 contracts, or new scope, not stated in the PR
 - Platform evidence inferred across platforms or from fake inference
-- Behavior, default, or command changes without the matching update in `AGENTS.md`, `docs/IMPLEMENTATION_PLAN.md`, or `docs/M3_STATUS.md`
+- Behavior, default, or command changes without the matching update in `AGENTS.md`, `docs/ARCHITECTURE.md`, or `docs/DEVELOPMENT_WORKFLOW.md`
 
 `[performance]`
 
@@ -58,13 +58,13 @@ Select the tier one time before a lens agent starts. Both tiers use the same len
 - Flag test helpers, fixtures, builders, or parameterized matrices introduced for a single test
 - Flag a missing test only when the Test Rule in `AGENTS.md` requires one for a bug, architecture boundary, or business rule; otherwise never request more tests
 - For guest security, one focused isolation-boundary test is enough. Never request a security test matrix for command, URL, path, file-content, or format variations contained by the microVM.
-- Never suggest coverage for edge cases the active milestone does not support; an explicit unsupported outcome is the correct behavior
+- Never suggest coverage for edge cases the shipped product does not support; an explicit unsupported outcome is the correct behavior
 
 **Skip these:**
 
 - Anything `pnpm verify` enforces: Biome, TypeScript, clippy, rustfmt, source limits
 - Lockfiles, `.generated/`, `dist/`, `target/`, Tauri `gen/` and `binaries/`, pinned version bumps
-- Prose-only edits in `docs/research/`, `docs/strategy/`, and `site/`
+- Prose-only edits in `docs/research/`, `docs/PRODUCT.md`, and `site/`
 - Test-only code that intentionally violates production rules
 - Explicit unsupported outcomes in place of hypothetical case handling
 - Requests to filter or validate guest command text and file contents when the no-network microVM and read-only `/source` mount contain them
@@ -89,7 +89,7 @@ Explanation with a `file:line` citation traced through the actual call path.
 **Severities:** CRITICAL (blocks merge), WARNING (should fix), SUGGESTION (nice to have)
 
 - CRITICAL: isolation, authorization, privacy, audit, recovery, evidence, or shared-contract breaks; catalog migration defects
-- WARNING: over-engineering, over-testing, milestone-scope creep, performance regressions with a cited call path, stale authoritative docs
+- WARNING: over-engineering, over-testing, scope creep, performance regressions with a cited call path, stale authoritative docs
 - SUGGESTION: everything else; report at most six and count the rest in the summary
 
 After the first review of a PR, post CRITICAL and WARNING findings only. Never suggest adding abstractions, options, defensive code, or tests beyond what the current change needs.

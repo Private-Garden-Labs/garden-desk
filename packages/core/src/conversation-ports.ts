@@ -5,6 +5,7 @@ import {
   deleteConversationSession,
   warmConversationSession,
 } from "./conversations/lifecycle.js";
+import { canDeleteConversationSession } from "./conversations/session-delete.js";
 import { renameConversationSession } from "./conversations/session-rename.js";
 import type { ConversationStore } from "./conversations/store.js";
 import type { GardenDeskCorePorts } from "./facade.js";
@@ -70,9 +71,11 @@ export function createConversationPorts(
     },
     async deleteSession(sessionId) {
       await agent?.closeSession(sessionId);
-      const deleted = deleteConversationSession(conversations, audit, database, sessionId);
-      if (deleted) await agent?.closeSession(sessionId, true);
-      return deleted;
+      if (!canDeleteConversationSession(database, sessionId)) {
+        return deleteConversationSession(conversations, audit, database, sessionId);
+      }
+      await agent?.closeSession(sessionId, true);
+      return deleteConversationSession(conversations, audit, database, sessionId);
     },
     async renameSession(sessionId, title) {
       return renameConversationSession(audit, database, { sessionId, title });

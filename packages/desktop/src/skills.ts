@@ -1,17 +1,16 @@
 import type { SkillLocations, SkillSummary } from "@gardendesk/shared";
 import { useCallback, useEffect, useState } from "react";
 import type { DesktopApi, PromptFolder } from "./api.js";
+import { t } from "./i18n/index.js";
 
 type SetError = (message: string | undefined) => void;
-
-const FOLDER_FAILURE = "The folder could not be opened.";
 
 export async function showPromptFolder(api: DesktopApi, folder: PromptFolder, setError: SetError) {
   setError(undefined);
   try {
     await api.openPromptFolder(folder);
   } catch {
-    setError(FOLDER_FAILURE);
+    setError(t("error.folderOpen"));
   }
 }
 
@@ -54,10 +53,6 @@ export interface SkillsController {
   working: boolean;
 }
 
-const LOAD_FAILURE = "The skills could not be read.";
-const SAVE_FAILURE =
-  "The skill was not saved. Each skill file starts with a name and a description.";
-
 function useSkillRequests(api: DesktopApi, setError: SetError) {
   const [skills, setSkills] = useState<SkillSummary[]>();
   const [working, setWorking] = useState(false);
@@ -65,7 +60,7 @@ function useSkillRequests(api: DesktopApi, setError: SetError) {
     try {
       setSkills(await api.listSkills());
     } catch {
-      setError(LOAD_FAILURE);
+      setError(t("error.skillsLoad"));
     }
   }, [api, setError]);
   const run = useCallback(
@@ -100,9 +95,9 @@ export function useSkills(api: DesktopApi, open: boolean): SkillsController {
     error,
     skills,
     working,
-    addFiles: () => void run(() => api.chooseSkillFiles(), SAVE_FAILURE),
+    addFiles: () => void run(() => api.chooseSkillFiles(), t("error.skillSave")),
     addPaths: async (paths) => {
-      await run(() => api.addSkillFiles(paths), SAVE_FAILURE);
+      await run(() => api.addSkillFiles(paths), t("error.skillSave"));
     },
     cancelEdit: () => setDraft(undefined),
     edit: (skill) => {
@@ -112,19 +107,19 @@ export function useSkills(api: DesktopApi, open: boolean): SkillsController {
         .then((content) =>
           setDraft({ content, name: skill.name, path: skill.path, source: skill.source }),
         )
-        .catch(() => setError("The skill file could not be opened."));
+        .catch(() => setError(t("error.skillOpen")));
     },
     openFolder: () => {
       void showPromptFolder(api, "skills", setError);
     },
-    remove: (name) => void run(() => api.removeSkill(name), "The skill could not be removed."),
+    remove: (name) => void run(() => api.removeSkill(name), t("error.skillRemove")),
     save: (content) => {
       const name = draft?.name;
       if (name === undefined) return;
       setDraft(undefined);
-      void run(() => api.writeSkill(name, content), SAVE_FAILURE);
+      void run(() => api.writeSkill(name, content), t("error.skillSave"));
     },
     setEnabled: (name, enabled) =>
-      void run(() => api.setSkillEnabled(name, enabled), "The skill could not be changed."),
+      void run(() => api.setSkillEnabled(name, enabled), t("error.skillChange")),
   };
 }

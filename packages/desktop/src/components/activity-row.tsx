@@ -1,11 +1,10 @@
 import { type RefObject, useLayoutEffect, useRef, useState } from "react";
 import type { ActivityRow } from "../activity-rows.js";
+import { t } from "../i18n/index.js";
 import { followsThinkingText, followThinkingText } from "../thinking-scroll.js";
 import { Icon } from "./icons.js";
 
 type IconName = Parameters<typeof Icon>[0]["name"];
-const UNAVAILABLE_THINKING =
-  "Thinking text is kept only in memory until the app restarts, so it is not available.";
 
 function iconFor(row: ActivityRow): IconName {
   if (row.status === "failed") return "error";
@@ -91,11 +90,13 @@ export function ActivityRowView({
 
 function rowDetail(row: ActivityRow, live: boolean): string | undefined {
   if (row.detail !== undefined && row.detail.length > 0) return row.detail;
-  return row.kind === "thinking" && !live ? UNAVAILABLE_THINKING : undefined;
+  return row.kind === "thinking" && !live ? t("activity.thinkingUnavailable") : undefined;
 }
 
 function rowTitle(row: ActivityRow, live: boolean): string {
-  return row.kind === "thinking" && !live && row.status === "running" ? "Thought" : row.title;
+  return row.kind === "thinking" && !live && row.status === "running"
+    ? t("activity.thought")
+    : row.title;
 }
 
 function activityRowState(row: ActivityRow, live: boolean, opened: boolean) {
@@ -135,7 +136,7 @@ function ActivityDetail({
 }) {
   return (
     <div className="activity-row-detail">
-      <section aria-label={`${title} details`}>
+      <section aria-label={t("activity.details", { title })}>
         <pre
           tabIndex={0}
           className={thinking ? "thinking-log" : undefined}
@@ -146,7 +147,7 @@ function ActivityDetail({
         </pre>
       </section>
       <button className="activity-row-open" onClick={() => onOpenDetails(row)} type="button">
-        View in Technical details
+        {t("activity.viewInTechnical")}
       </button>
     </div>
   );

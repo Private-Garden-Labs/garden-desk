@@ -1,4 +1,5 @@
 import { type KeyboardEvent, type PointerEvent, useRef, useState } from "react";
+import { t } from "../i18n/index.js";
 
 export const DRAWER_MIN_WIDTH = 320;
 export const DRAWER_MAX_WIDTH = 720;
@@ -81,7 +82,7 @@ export function useDrawerResize(): DrawerResize {
 export function DrawerResizeHandle({ resize }: { resize: DrawerResize }) {
   return (
     <hr
-      aria-label="Resize technical details"
+      aria-label={t("technical.resize")}
       aria-orientation="vertical"
       aria-valuemax={DRAWER_MAX_WIDTH}
       aria-valuemin={DRAWER_MIN_WIDTH}

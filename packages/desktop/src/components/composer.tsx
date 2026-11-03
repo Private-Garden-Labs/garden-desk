@@ -6,6 +6,7 @@ import type {
 } from "@gardendesk/shared";
 import { type FormEvent, type KeyboardEvent, useEffect, useLayoutEffect, useRef } from "react";
 import type { DevelopmentModelApi } from "../api.js";
+import { t } from "../i18n/index.js";
 import { AttachmentChip } from "./attachment-chip.js";
 import { CommandMenu, useCommandMenu } from "./command-menu.js";
 import { DevelopmentModelControl } from "./development-model-control.js";
@@ -81,7 +82,7 @@ function AttachmentList({
 >) {
   if (attachments.length === 0) return null;
   return (
-    <ul aria-label="Attached files" className="attachment-list">
+    <ul aria-label={t("composer.attachedFiles")} className="attachment-list">
       {attachments.map((item) => (
         <AttachmentChip
           attachment={item}
@@ -184,7 +185,7 @@ export function Composer({
       />
       <textarea
         aria-keyshortcuts="Meta+Enter"
-        aria-label="Message"
+        aria-label={t("composer.message")}
         disabled={disabled}
         aria-autocomplete="list"
         aria-controls={menu.open ? menu.id : undefined}
@@ -198,14 +199,14 @@ export function Composer({
         onKeyDown={(event) => {
           if (!menu.onKeyDown(event)) handleComposerKeyDown(event, canSend);
         }}
-        placeholder="Ask Garden Desk to do anything, or type / for commands"
+        placeholder={t("composer.placeholder")}
         ref={textarea}
         rows={2}
         value={draft}
       />
       <div className="composer-actions">
         <button
-          aria-label="Attach files"
+          aria-label={t("composer.attachFiles")}
           className="icon-button"
           disabled={disabled || running || nativeActionMessage !== undefined}
           onClick={onAttach}
@@ -228,17 +229,17 @@ export function Composer({
           />
           {running ? (
             <button
-              aria-label="Cancel task"
+              aria-label={t("composer.cancelTask")}
               className="stop-button"
               disabled={disabled}
               onClick={onCancel}
               type="button"
             >
-              Stop
+              {t("composer.stop")}
             </button>
           ) : (
             <button
-              aria-label="Send message"
+              aria-label={t("composer.send")}
               className="send-button"
               disabled={!canSend}
               type="submit"

@@ -6,6 +6,7 @@ import type {
 } from "@gardendesk/shared";
 import { useLayoutEffect, useRef } from "react";
 import type { ArtifactSaveResult } from "../artifact-actions.js";
+import { t } from "../i18n/index.js";
 import type { TimelineItem } from "../state.js";
 import { EmptyConversation } from "./empty-conversation.js";
 import { attachmentsByUserMessage } from "./message-attachments.js";
@@ -111,7 +112,7 @@ export function Conversation({
   const lastAssistantId = timeline.findLast((item) => item.kind === "assistant")?.id;
   return (
     <section
-      aria-label="Conversation"
+      aria-label={t("conversation.label")}
       aria-live="polite"
       className="conversation-scroll"
       hidden={hidden}

@@ -27,7 +27,11 @@ class GardenHero {
     window.addEventListener("pageshow", this.update);
     button.addEventListener("click", () => {
       this.paused = !this.paused;
-      button.textContent = this.paused ? "Resume animation" : "Pause animation";
+      const [pause, resume] = button.querySelectorAll("span");
+      if (pause !== undefined && resume !== undefined) {
+        pause.hidden = this.paused;
+        resume.hidden = !this.paused;
+      }
       button.setAttribute("aria-pressed", String(this.paused));
       this.setRunning();
     });

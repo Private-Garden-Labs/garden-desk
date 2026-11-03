@@ -7,7 +7,6 @@ use windows::Win32::Graphics::DXCore::{
     DedicatedSystemMemory, DriverDescription, IDXCoreAdapter, IDXCoreAdapterFactory,
     IDXCoreAdapterList, InstanceLuid, IsHardware, IsIntegrated, SharedSystemMemory,
 };
-use windows::Win32::System::SystemInformation::GetPhysicallyInstalledSystemMemory;
 
 const MAX_ADAPTERS: u32 = 64;
 const MAX_DESCRIPTION_BYTES: usize = 4_096;
@@ -111,11 +110,6 @@ fn adapter_json(adapter: &AdapterInfo) -> String {
 }
 
 pub(crate) fn report() -> Result<String, Box<dyn Error>> {
-    let mut installed_kib = 0_u64;
-    unsafe { GetPhysicallyInstalledSystemMemory(&mut installed_kib)? };
-    let installed_memory_bytes = installed_kib
-        .checked_mul(1_024)
-        .ok_or("Installed memory size is too large.")?;
     let factory: IDXCoreAdapterFactory = unsafe { DXCoreCreateAdapterFactory()? };
     let list: IDXCoreAdapterList =
         unsafe { factory.CreateAdapterList(&[DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS])? };
@@ -135,7 +129,5 @@ pub(crate) fn report() -> Result<String, Box<dyn Error>> {
         .map(adapter_json)
         .collect::<Vec<_>>()
         .join(",");
-    Ok(format!(
-        "{{\"schemaVersion\":1,\"installedMemoryBytes\":{installed_memory_bytes},\"adapters\":[{values}]}}"
-    ))
+    Ok(format!("{{\"schemaVersion\":1,\"adapters\":[{values}]}}"))
 }

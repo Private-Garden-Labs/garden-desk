@@ -21,6 +21,7 @@ import { openAttachment, send } from "./desktop-actions.js";
 import { type DropIntent, useNativeDrop } from "./desktop-drop.js";
 import { initialModelStatus, unloadModel, useModelRefresh } from "./desktop-model.js";
 import { useDraftPersistence } from "./draft-persistence.js";
+import { t, useLocale } from "./i18n/index.js";
 import { desktopPlatform } from "./platform.js";
 import { secureWorkspaceAllowsTasks } from "./secure-workspace.js";
 import { useSkills } from "./skills.js";
@@ -33,6 +34,7 @@ import { useSecureWorkspace } from "./use-secure-workspace.js";
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single desktop composition boundary.
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: single desktop composition boundary.
 export function App({ api, capabilities }: { api: DesktopApi; capabilities: DesktopCapabilities }) {
+  useLocale();
   const appearance = useAppearance();
   const [state, dispatch] = useReducer(desktopReducer, initialDesktopState);
   const [desktopError, setDesktopError] = useState<string>();
@@ -63,7 +65,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   });
   const nativeUnavailable = capabilities.nativeActions
     ? undefined
-    : (capabilities.unavailableReason ?? "Unavailable in the public demo");
+    : (capabilities.unavailableReason ?? t("demo.unavailable"));
   const generatedFileActions = artifactActions(api, state.activeSessionId, setDesktopError);
   const activeFolder = state.folders.find(
     (folder) =>
@@ -99,7 +101,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   };
   const runTask = (text: string) => {
     if (!tasksAllowed) {
-      setDesktopError("Set up the secure workspace before starting a new task.");
+      setDesktopError(t("error.setupBeforeTask"));
       return;
     }
     draftPersistence.cancel();
@@ -123,7 +125,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
     if (state.activeRun !== undefined) {
       void api
         .cancelAgent(state.activeRun.jobId)
-        .catch(() => setDesktopError("The task could not be cancelled."));
+        .catch(() => setDesktopError(t("task.cancelFailed")));
     }
   };
   const closeChild = () => {
@@ -169,7 +171,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
           controller={skills}
           dropActive={dropIntent !== undefined}
           nativeActionMessage={nativeUnavailable}
-          onDone={() => setSkillsOpen(false)}
+          onBack={() => setSkillsOpen(false)}
         />
       ) : (
         <main aria-busy={!desktopReady} className="workspace">

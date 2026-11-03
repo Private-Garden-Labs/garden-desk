@@ -1,12 +1,6 @@
 import type { DropIntent } from "../desktop-drop.js";
+import { t } from "../i18n/index.js";
 import { Icon } from "./icons.js";
-
-const labels: Record<DropIntent, string> = {
-  checking: "Drop files or folders",
-  files: "Drop files to attach",
-  folders: "Drop folders to add workspaces",
-  mixed: "Drop to add files and folders",
-};
 
 export function DropOverlay({ intent }: { intent: DropIntent | undefined }) {
   if (intent === undefined) return null;
@@ -27,8 +21,8 @@ export function DropOverlay({ intent }: { intent: DropIntent | undefined }) {
             </span>
           ) : null}
         </div>
-        <h2>{labels[intent]}</h2>
-        <p>Release anywhere</p>
+        <h2>{t(`drop.${intent}`)}</h2>
+        <p>{t("drop.release")}</p>
       </section>
     </div>
   );

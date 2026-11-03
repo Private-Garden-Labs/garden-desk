@@ -1,5 +1,6 @@
 import type { AgentArtifactSummary, AgentExecutionSnapshot } from "@gardendesk/shared";
 import { useEffect, useRef, useState } from "react";
+import { t } from "../i18n/index.js";
 import { sessionTranscript, transcriptHasContent } from "../session-transcript.js";
 import type { TimelineItem } from "../state.js";
 import { Icon } from "./icons.js";
@@ -63,12 +64,12 @@ function disabled(
   timeline: TimelineItem[],
 ): string | undefined {
   if (nativeActionMessage !== undefined) return nativeActionMessage;
-  if (!transcriptHasContent(timeline)) return "The transcript appears after a task runs.";
+  if (!transcriptHasContent(timeline)) return t("transcript.unavailable");
   return undefined;
 }
 
 function label(state: CopyState): string {
-  if (state === "copied") return "Copied";
-  if (state === "failed") return "Copy failed";
-  return "Copy session transcript";
+  if (state === "copied") return t("copy.copied");
+  if (state === "failed") return t("copy.failed");
+  return t("transcript.copy");
 }

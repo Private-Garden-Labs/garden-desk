@@ -18,10 +18,8 @@ function adapter(description = "GPU") {
 describe("Windows GPU helper output", () => {
   it("accepts the bounded fact schema", () => {
     expect(
-      parseWindowsGpuInfo(
-        JSON.stringify({ schemaVersion: 1, installedMemoryBytes: 1, adapters: [adapter()] }),
-      ),
-    ).toMatchObject({ installedMemoryBytes: 1, adapters: [{ description: "GPU" }] });
+      parseWindowsGpuInfo(JSON.stringify({ schemaVersion: 1, adapters: [adapter()] })),
+    ).toMatchObject({ adapters: [{ description: "GPU" }] });
   });
 
   it("rejects oversized adapter data", () => {
@@ -29,7 +27,6 @@ describe("Windows GPU helper output", () => {
       parseWindowsGpuInfo(
         JSON.stringify({
           schemaVersion: 1,
-          installedMemoryBytes: 1,
           adapters: [adapter("x".repeat(513))],
         }),
       ),

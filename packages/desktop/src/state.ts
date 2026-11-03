@@ -15,7 +15,13 @@ import type {
 import { applyAgentSnapshot } from "./agent-state.js";
 import type { DesktopBootstrap } from "./api.js";
 import { appendMessage } from "./message-state.js";
-import { deleteSession, loadMessages, loadSession, renameSession } from "./session-state.js";
+import {
+  deleteSession,
+  globalSessionPage,
+  loadMessages,
+  loadSession,
+  renameSession,
+} from "./session-state.js";
 import { emptyConversation } from "./state-initial.js";
 import type { FolderGroup, TimelineItem } from "./state-types.js";
 
@@ -27,6 +33,7 @@ export interface DesktopState {
   commands: CommandSummary[];
   folders: FolderGroup[];
   globalSessions: SessionSummary[];
+  globalNextCursor: string | null;
   activeSessionId: string | undefined;
   pendingSessionId: string | undefined;
   newSessionFolderId: string | null | undefined;
@@ -57,6 +64,8 @@ export type DesktopAction =
   | { type: "folder.toggle"; folderId: string }
   | { type: "folder.page"; folderId: string; page: SessionPage }
   | { type: "folder.refresh"; folderId: string; page: SessionPage }
+  | { type: "global.page"; page: SessionPage }
+  | { type: "global.refresh"; page: SessionPage }
   | { type: "session.created"; session: SessionSummary }
   | { type: "session.deleted"; sessionId: string }
   | { type: "session.renamed"; sessionId: string; title: string }
@@ -106,6 +115,7 @@ function hydrate(state: DesktopState, snapshot: DesktopBootstrap): DesktopState 
       };
     }),
     globalSessions: snapshot.globalSessions.items,
+    globalNextCursor: snapshot.globalSessions.nextCursor,
   };
 }
 
@@ -123,7 +133,7 @@ function addSession(state: DesktopState, session: SessionSummary): DesktopState 
       ...state,
       ...emptyConversation(undefined),
       activeSessionId: session.id,
-      globalSessions: [session, ...state.globalSessions].slice(0, 5),
+      globalSessions: [session, ...state.globalSessions],
     };
   }
   return {
@@ -197,6 +207,8 @@ export function desktopReducer(state: DesktopState, action: DesktopAction): Desk
     };
   }
   if (action.type === "folder.page") return appendFolderPage(state, action.folderId, action.page);
+  if (action.type === "global.page") return globalSessionPage(state, action.page, false);
+  if (action.type === "global.refresh") return globalSessionPage(state, action.page, true);
   if (action.type === "folder.refresh") {
     return {
       ...state,

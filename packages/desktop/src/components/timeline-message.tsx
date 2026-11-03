@@ -7,9 +7,10 @@ import { useEffect, useRef, useState } from "react";
 import Markdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ArtifactSaveResult } from "../artifact-actions.js";
+import { t } from "../i18n/index.js";
 import type { TimelineItem } from "../state.js";
 import { stableStreamingMarkdown } from "../streaming-markdown.js";
-import { THINKING_LABELS } from "./effort-control.js";
+import { thinkingLabel } from "./effort-control.js";
 import { GeneratedFiles } from "./generated-files.js";
 import { Icon } from "./icons.js";
 import { copyUserMessage, UserMessage } from "./user-message.js";
@@ -22,22 +23,22 @@ function formatDuration(milliseconds: number): string {
 }
 function ResponseMetrics({ performance }: { performance: AgentRunPerformance }) {
   return (
-    <footer className="response-metrics">
+    <div className="response-metrics">
       <span>
-        <strong>{performance.promptTokensPerSecond.toFixed(1)}</strong> prompt tok/s
+        <strong>{performance.promptTokensPerSecond.toFixed(1)}</strong> {t("metrics.prompt")}
       </span>
       <span>
-        <strong>{performance.tokensPerSecond.toFixed(1)}</strong> generation tok/s
+        <strong>{performance.tokensPerSecond.toFixed(1)}</strong> {t("metrics.generation")}
       </span>
       <span>
-        <strong>{formatDuration(performance.totalDurationMs)}</strong> total
+        <strong>{formatDuration(performance.totalDurationMs)}</strong> {t("metrics.total")}
       </span>
       {performance.thinking === undefined ? null : (
         <span>
-          <strong>{THINKING_LABELS[performance.thinking]}</strong> effort
+          <strong>{thinkingLabel(performance.thinking)}</strong> {t("metrics.effort")}
         </span>
       )}
-    </footer>
+    </div>
   );
 }
 
@@ -45,14 +46,14 @@ function ResponseMetrics({ performance }: { performance: AgentRunPerformance }) 
 const assistantMarkdownComponents: Components = {
   pre({ children }) {
     return (
-      <section aria-label="Response code">
+      <section aria-label={t("response.code")}>
         <pre tabIndex={0}>{children}</pre>
       </section>
     );
   },
   table({ children }) {
     return (
-      <section aria-label="Response table" className="assistant-table-scroll" tabIndex={0}>
+      <section aria-label={t("response.table")} className="assistant-table-scroll" tabIndex={0}>
         <table>{children}</table>
       </section>
     );
@@ -95,14 +96,18 @@ function ResponseCopyButton({ text }: { text: string }) {
     if (resetTimer.current !== undefined) clearTimeout(resetTimer.current);
     resetTimer.current = setTimeout(() => setCopyState("idle"), 2_000);
   };
-  const label = copyState === "copied" ? "Copied" : copyState === "failed" ? "Copy failed" : "Copy";
+  const label = t(`copy.${copyState === "idle" ? "copy" : copyState}`);
   return (
-    <div className="response-actions">
-      <button aria-label={`${label} response`} onClick={copy} title={label} type="button">
-        <Icon name={copyState === "copied" ? "copy-check" : "copy"} />
-        <span aria-live="polite">{copyState === "idle" ? "" : label}</span>
-      </button>
-    </div>
+    <button
+      aria-label={t("copy.response", { label })}
+      className="response-copy"
+      onClick={copy}
+      title={label}
+      type="button"
+    >
+      <Icon name={copyState === "copied" ? "copy-check" : "copy"} />
+      <span aria-live="polite">{copyState === "idle" ? "" : label}</span>
+    </button>
   );
 }
 
@@ -132,6 +137,8 @@ export function TimelineMessage({
       <UserMessage attachments={attachments} item={item} onOpenAttachment={onOpenAttachment} />
     );
   }
+  const copyable = item.kind === "assistant" && item.streaming !== true;
+  const metrics = showMetrics && performance !== null;
   return (
     <article className={`timeline-item timeline-${item.kind}`}>
       <AssistantResponse streaming={item.streaming === true}>{item.text}</AssistantResponse>
@@ -141,10 +148,12 @@ export function TimelineMessage({
         onOpen={onOpenArtifact}
         onSave={onSaveArtifact}
       />
-      {item.kind === "assistant" && item.streaming !== true ? (
-        <ResponseCopyButton text={item.text} />
+      {copyable || metrics ? (
+        <footer className="response-footer">
+          {metrics ? <ResponseMetrics performance={performance} /> : null}
+          {copyable ? <ResponseCopyButton text={item.text} /> : null}
+        </footer>
       ) : null}
-      {showMetrics && performance !== null ? <ResponseMetrics performance={performance} /> : null}
     </article>
   );
 }

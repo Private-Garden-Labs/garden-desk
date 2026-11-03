@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { t } from "../i18n/index.js";
 
 type SourceLanguage = "node" | "python" | "plain";
 
@@ -157,14 +158,14 @@ export function SourceCode({
   source: string;
 }) {
   const syntax = sourceLanguage(language);
-  const label = syntax === "python" ? "Python" : syntax === "node" ? "Node.js" : "Command";
+  const label = t(`source.${syntax === "plain" ? "command" : syntax}`);
   return (
     <div className="source-code">
       <div className="source-code-header">
         <span>{path}</span>
         <span>{label}</span>
       </div>
-      <section aria-label={`${label} source for ${path}`}>
+      <section aria-label={t("source.label", { language: label, path })}>
         {/* biome-ignore lint/a11y/noNoninteractiveTabindex: Overflowing source needs a keyboard scroll target. */}
         <pre tabIndex={0}>
           <code>{highlightedSource(source, syntax)}</code>

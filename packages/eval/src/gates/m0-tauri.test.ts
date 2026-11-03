@@ -32,7 +32,7 @@ describe("M0 Tauri capability surface", () => {
 
   it("enforces the pinned Node version and records the source executable hash", async () => {
     const source = await readFile(join(smokeRoot, "build.ts"), "utf8");
-    expect(source).toContain('expectedNodeVersion = "v24.18.0"');
+    expect(source).toContain('expectedNodeVersion = "v24.22.0"');
     expect(source).toContain("nodeExecutableSha256");
   });
 });

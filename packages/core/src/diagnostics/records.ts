@@ -8,6 +8,8 @@ import {
   AgentRunPerformanceSchema,
   type AgentRunSummary,
   AgentRunSummarySchema,
+  type AgentSessionSummary,
+  AgentSessionSummarySchema,
   type AttachmentSummary,
   AttachmentSummarySchema,
   type ConversationMessage,
@@ -92,6 +94,17 @@ export function sessionDraftFromRow(row: Row): SessionDraft {
   });
 }
 
+export function sessionSummaryFromRow(row: Row): AgentSessionSummary {
+  return parseDebugValue(AgentSessionSummarySchema, {
+    sessionId: row.session_id,
+    runId: row.run_id,
+    text: row.text,
+    coveredMessageId: row.covered_message_id,
+    coveredMessageCount: row.covered_message_count,
+    createdAt: row.created_at,
+  });
+}
+
 export function attachmentFromRow(row: Row): AttachmentSummary {
   return parseDebugValue(AttachmentSummarySchema, {
     id: row.id,
@@ -125,6 +138,9 @@ export function runFromRow(row: Row): { run: AgentRunSummary; traceVersion: numb
       id: row.id,
       sessionId: row.session_id,
       parentRunId: row.parent_run_id,
+      agentId: row.agent_id,
+      assignment: row.assignment,
+      parentToolCallId: row.parent_tool_call_id,
       jobId: row.job_id,
       state: row.state,
       response: row.response,

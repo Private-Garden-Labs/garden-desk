@@ -1,3 +1,5 @@
+import { t } from "./i18n/index.js";
+
 export interface DebugSnapshotState {
   creating: boolean;
   error: string | undefined;
@@ -9,10 +11,10 @@ export type DebugSnapshotAction =
   | { type: "session.reset" }
   | { type: "create.start" }
   | { type: "create.succeeded"; path: string }
-  | { type: "create.failed" }
+  | { type: "create.failed"; code: string }
   | { type: "reveal.start" }
   | { type: "reveal.succeeded" }
-  | { type: "reveal.failed" };
+  | { type: "reveal.failed"; code: string };
 
 export const initialDebugSnapshotState: DebugSnapshotState = {
   creating: false,
@@ -35,12 +37,16 @@ export function debugSnapshotReducer(
   if (action.type === "create.failed") {
     return {
       creating: false,
-      error: "The debug snapshot could not be created.",
+      error: t("snapshot.createFailed", { code: action.code }),
       path: undefined,
       revealing: false,
     };
   }
   if (action.type === "reveal.start") return { ...state, error: undefined, revealing: true };
   if (action.type === "reveal.succeeded") return { ...state, revealing: false };
-  return { ...state, error: "The debug snapshot could not be revealed.", revealing: false };
+  return {
+    ...state,
+    error: t("snapshot.revealFailed", { code: action.code }),
+    revealing: false,
+  };
 }

@@ -436,6 +436,7 @@ def execute(connection, request, previous):
         "HOME": str(WORKSPACE),
         "LANG": "C.UTF-8",
         "PATH": "/usr/bin:/bin",
+        "PYTHONSAFEPATH": "1",
         "TMPDIR": str(RUNTIME),
         "GARDEN_DESK_SOURCE_DIR": str(SOURCE),
         "GARDEN_DESK_INPUT_DIR": str(INPUTS),

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import capabilities from "../../../workers/images/agent/capabilities.json" with { type: "json" };
+import { t } from "../i18n/index.js";
 import { Icon } from "./icons.js";
 import { copyUserMessage } from "./user-message.js";
 
@@ -66,16 +67,10 @@ export function SkillHelp({ nativeActionMessage }: { nativeActionMessage: string
   };
   return (
     <details className="skill-help">
-      <summary>How to write a skill</summary>
-      <p>
-        A skill is one Markdown file named SKILL.md. It opens with a name and a one-line
-        description, then the instructions Garden Desk follows when it loads the skill.
-      </p>
+      <summary>{t("skills.howTo")}</summary>
+      <p>{t("skills.howToIntro")}</p>
       <pre>{EXAMPLE}</pre>
-      <p>
-        Garden Desk follows the open Agent Skills format. A coding agent can write one for you: copy
-        the prompt below, say what the skill is for, and save the answer as a Markdown file.
-      </p>
+      <p>{t("skills.howToFormat")}</p>
       <pre className="skill-help-prompt">{agentPrompt()}</pre>
       <button
         className="skills-action"
@@ -85,7 +80,7 @@ export function SkillHelp({ nativeActionMessage }: { nativeActionMessage: string
         type="button"
       >
         <Icon name={copied ? "copy-check" : "copy"} />
-        <span aria-live="polite">{copied ? "Prompt copied" : "Copy the prompt"}</span>
+        <span aria-live="polite">{copied ? t("skills.promptCopied") : t("skills.copyPrompt")}</span>
       </button>
     </details>
   );

@@ -14,7 +14,6 @@ export interface WindowsGpuAdapterInfo {
 
 export interface WindowsGpuInfo {
   schemaVersion: 1;
-  installedMemoryBytes: number;
   adapters: WindowsGpuAdapterInfo[];
 }
 
@@ -48,17 +47,14 @@ interface IsolatedVariant {
 }
 
 type Probe = (selection: WindowsGpuLaunch) => Promise<WindowsRuntimeProbeResult | undefined>;
-function safeInteger(value: unknown, allowZero = true): value is number {
-  return (
-    typeof value === "number" && Number.isSafeInteger(value) && (allowZero ? value >= 0 : value > 0)
-  );
+function safeInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
 }
 
 export function parseWindowsGpuInfo(output: string): WindowsGpuInfo {
   const value = JSON.parse(output) as Partial<WindowsGpuInfo>;
   if (
     value.schemaVersion !== 1 ||
-    !safeInteger(value.installedMemoryBytes, false) ||
     !Array.isArray(value.adapters) ||
     value.adapters.length > MAX_GPU_DEVICES
   ) {
@@ -97,38 +93,28 @@ export function normalizeGpuName(value: string): string {
     .trim();
 }
 
-export function resolveIntegratedGpuBudget(
-  installedMemoryBytes: number,
-  detectedMemoryBytes: number,
-): number | undefined {
-  return installedMemoryBytes >= INFERENCE_PROFILE.windowsIntegratedMemoryBytes &&
-    detectedMemoryBytes >= INFERENCE_PROFILE.memoryBudgetBytes
-    ? INFERENCE_PROFILE.memoryBudgetBytes
-    : undefined;
-}
-
 /**
- * The inference budget follows the memory the runtime reports as usable. A
- * dedicated GPU is supported only when that budget holds the model and the
- * smallest supported context, so an admitted GPU can always start the server.
+ * The inference budget follows the memory the runtime reports as usable. A GPU
+ * is supported only when that budget holds the model and the smallest supported
+ * context, so an admitted GPU can always start the server. An integrated GPU
+ * takes its budget from system memory.
  */
 export function resolveWindowsGpuMemoryProfile(
   integrated: boolean,
   detectedMemoryBytes: number,
-  installedMemoryBytes: number,
   availableMemoryBytes = detectedMemoryBytes,
 ): { hostMemoryReservationBytes: number; memoryBudgetBytes: number } | undefined {
-  const dedicatedBudgetBytes = Math.min(availableMemoryBytes, INFERENCE_PROFILE.memoryBudgetBytes);
-  const memoryBudgetBytes = integrated
-    ? resolveIntegratedGpuBudget(installedMemoryBytes, availableMemoryBytes)
-    : dedicatedBudgetBytes >= INFERENCE_PROFILE.minimumDedicatedMemoryBytes
-      ? dedicatedBudgetBytes
-      : undefined;
-  if (memoryBudgetBytes === undefined || detectedMemoryBytes < memoryBudgetBytes) return undefined;
+  const memoryBudgetBytes = Math.min(availableMemoryBytes, INFERENCE_PROFILE.memoryBudgetBytes);
+  if (
+    memoryBudgetBytes < INFERENCE_PROFILE.minimumGpuMemoryBytes ||
+    detectedMemoryBytes < memoryBudgetBytes
+  ) {
+    return undefined;
+  }
   return {
     memoryBudgetBytes,
     hostMemoryReservationBytes: integrated
-      ? INFERENCE_PROFILE.memoryBudgetBytes
+      ? memoryBudgetBytes
       : INFERENCE_PROFILE.windowsDedicatedHostMemoryBytes,
   };
 }
@@ -201,7 +187,6 @@ async function isolatedVariant(
 
 async function resolveCandidate(
   candidate: Candidate,
-  installedMemoryBytes: number,
   probe: Probe,
 ): Promise<WindowsGpuProfile | undefined> {
   const [cuda, hip] = await Promise.all([
@@ -213,7 +198,6 @@ async function resolveCandidate(
     const memory = resolveWindowsGpuMemoryProfile(
       candidate.adapter.integrated,
       generation.totalMemoryBytes,
-      installedMemoryBytes,
       generation.availableMemoryBytes,
     );
     if (memory === undefined) continue;
@@ -225,7 +209,6 @@ async function resolveCandidate(
         deviceIndex: generation.deviceIndex,
         detectedMemoryBytes: generation.totalMemoryBytes,
         expectedName: generation.expectedName,
-        installedMemoryBytes,
         memoryKind: candidate.adapter.integrated ? "unified" : "dedicated",
       },
     };
@@ -262,7 +245,7 @@ export async function resolveWindowsGpuProfileFromFacts(
   try {
     const profiles = await Promise.all(
       mappedCandidates(info.adapters, inventories).map(
-        async (candidate) => await resolveCandidate(candidate, info.installedMemoryBytes, probe),
+        async (candidate) => await resolveCandidate(candidate, probe),
       ),
     );
     const selected = selectPreferredWindowsGpuProfile(

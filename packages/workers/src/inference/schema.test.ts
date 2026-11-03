@@ -37,7 +37,7 @@ describe("generation context contract", () => {
   });
 });
 
-it("sends the selected thinking level as the reasoning effort with its thinking budget", () => {
+it("sends the selected thinking level as the reasoning effort without a thinking budget", () => {
   const chat = (thinking: ChatGenerationRequest["thinking"]) =>
     ChatGenerationRequestSchema.parse({
       ...request,
@@ -52,14 +52,13 @@ it("sends the selected thinking level as the reasoning effort with its thinking 
     });
   expect(chatBody(chat("medium"), {})).toMatchObject({
     chat_template_kwargs: { preserve_thinking: false, reasoning_effort: "medium" },
-    thinking_budget_tokens: 2048,
   });
-  expect(chatBody(chat("xhigh"), {}).thinking_budget_tokens).toBe(8192);
+  for (const thinking of ["medium", "xhigh", "none"] as const)
+    expect(Object.keys(chatBody(chat(thinking), {}))).not.toContain("thinking_budget_tokens");
   expect(chatBody(chat("none"), {}).chat_template_kwargs).toEqual({
     preserve_thinking: false,
     enable_thinking: false,
   });
-  expect(Object.keys(chatBody(chat("none"), {}))).not.toContain("thinking_budget_tokens");
 });
 
 it("uses the model card sampling values and the reasoning guardrail", () => {
@@ -79,7 +78,7 @@ it("uses the model card sampling values and the reasoning guardrail", () => {
     temperature: 1,
     top_p: 0.95,
     top_k: 20,
-    min_p: 0,
+    min_p: 0.05,
     presence_penalty: 0,
     repeat_penalty: 1,
   });
@@ -126,7 +125,7 @@ it("fits the context to the memory budget between the minimum and the product ma
     memoryBudgetBytes: 16 * 1024 ** 3,
     modelByteLength: 7_206_168_928,
   } as const;
-  const floor = INFERENCE_PROFILE.minimumDedicatedMemoryBytes;
+  const floor = INFERENCE_PROFILE.minimumGpuMemoryBytes;
   expect(fittedContextTokens(fit)).toBe(131_072);
   expect(fittedContextTokens({ ...fit, memoryBudgetBytes: 10 * 1024 ** 3 })).toBe(36_864);
   expect(fittedContextTokens({ ...fit, memoryBudgetBytes: floor })).toBe(32_768);

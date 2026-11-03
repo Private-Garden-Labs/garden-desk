@@ -9,8 +9,10 @@ const deploymentAssetPattern = /-[A-Za-z0-9_-]{8}\.(?:css|js|png|svg|woff2)$/u;
 const localAssetPattern = /(?:href|src)=["']([^"']+\.(?:css|js|png|svg|woff2))["']/giu;
 const routeFiles = [
   "index.html",
+  "alex/index.html",
   "demo/index.html",
   "releases/index.html",
+  "blog/index.html",
   "supporters/index.html",
   "privacy/index.html",
   "terms/index.html",
@@ -155,8 +157,8 @@ requireText(home, 'href="./releases/"', "home releases link");
 
 const releases = await text("releases/index.html");
 for (const download of [
-  "https://downloads.gardendesk.ai/v1.0.0/Garden-Desk-1.0.0-macos-arm64.dmg",
-  "https://downloads.gardendesk.ai/v1.0.0/Garden-Desk-1.0.0-windows-x64.zip",
+  "https://downloads.gardendesk.ai/v1.3.0/Garden-Desk-1.3.0-macos-arm64.dmg",
+  "https://downloads.gardendesk.ai/v1.3.0/Garden-Desk-1.3.0-windows-x64.zip",
 ]) {
   requireText(home, download, "home download");
   requireText(releases, download, "releases download");
@@ -185,7 +187,13 @@ if (socialCard.readUInt32BE(16) !== 1200 || socialCard.readUInt32BE(20) !== 630)
 }
 
 const assets = (await files(output)).filter((path) => [".js", ".css"].includes(extname(path)));
-const assetText = (await Promise.all(assets.map((path) => readFile(path, "utf8")))).join("\n");
+const assetTexts = await Promise.all(assets.map((path) => readFile(path, "utf8")));
+const assetText = assetTexts.join("\n");
+if (
+  assetTexts.some((text) => text.includes("localStorage") && !text.includes("gardendesk.locale"))
+) {
+  failures.push("bundle: uses localStorage for something other than the language choice");
+}
 const homeScript = home.match(/src="([^"]+\.js)"/u)?.[1];
 const homeBundle =
   homeScript === undefined
@@ -231,7 +239,6 @@ if (!/\.hidden\s*=\s*!1/u.test(homeBundle)) {
 for (const forbidden of [
   "@tauri-apps",
   "__TAURI",
-  "localStorage",
   "sessionStorage",
   "XMLHttpRequest",
   "sendBeacon",

@@ -1,0 +1,9 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Alecu;Alex;;;
+FN:Alex Alecu
+ORG:Garden Desk
+TITLE:Founder
+EMAIL;TYPE=INTERNET,WORK:developer@gardendesk.ai
+URL:https://gardendesk.ai/alex/
+END:VCARD

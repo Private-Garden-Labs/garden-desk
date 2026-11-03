@@ -5,6 +5,7 @@ export const initialDesktopState: DesktopState = {
   commands: [],
   folders: [],
   globalSessions: [],
+  globalNextCursor: null,
   activeSessionId: undefined,
   pendingSessionId: undefined,
   newSessionFolderId: undefined,

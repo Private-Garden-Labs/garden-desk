@@ -1,4 +1,5 @@
 import type { AgentQuestionRequest } from "@gardendesk/shared";
+import { t } from "../i18n/index.js";
 import { handleQuestionKey } from "../question-keyboard.js";
 import { type DisplayOption, useQuestionPrompt } from "../use-question-prompt.js";
 import { Icon } from "./icons.js";
@@ -21,7 +22,7 @@ export function QuestionPrompt({
   const controller = useQuestionPrompt(request, onAnswer, onDismiss);
   return (
     <section
-      aria-label="Clarifying question"
+      aria-label={t("question.label")}
       className="question-prompt"
       onKeyDown={(event) => handleQuestionKey(event, controller.dismiss, controller.advance)}
     >
@@ -45,7 +46,7 @@ export function QuestionPrompt({
         selected={controller.selected}
       />
       <QuestionFooter
-        advanceLabel={controller.last ? "Submit" : "Next"}
+        advanceLabel={controller.last ? t("question.submit") : t("question.next")}
         onAdvance={controller.advance}
         onSkip={controller.skip}
         onStop={onStop}
@@ -122,7 +123,7 @@ function QuestionHeader({ question, page, total, onPage, onDismiss }: QuestionHe
         {total > 1 ? (
           <div className="question-pager">
             <button
-              aria-label="Previous question"
+              aria-label={t("question.previous")}
               className="icon-button"
               disabled={page === 0}
               onClick={() => onPage(page - 1)}
@@ -130,9 +131,9 @@ function QuestionHeader({ question, page, total, onPage, onDismiss }: QuestionHe
             >
               <Icon name="chevron-left" />
             </button>
-            <span className="question-count">{`${page + 1} of ${total}`}</span>
+            <span className="question-count">{t("question.count", { page: page + 1, total })}</span>
             <button
-              aria-label="Next question"
+              aria-label={t("question.nextQuestion")}
               className="icon-button"
               disabled={page >= total - 1}
               onClick={() => onPage(page + 1)}
@@ -143,7 +144,7 @@ function QuestionHeader({ question, page, total, onPage, onDismiss }: QuestionHe
           </div>
         ) : null}
         <button
-          aria-label="Dismiss question"
+          aria-label={t("question.dismiss")}
           className="icon-button"
           onClick={onDismiss}
           type="button"
@@ -173,11 +174,11 @@ function QuestionFooter({
   return (
     <footer className="question-footer">
       <button className="question-stop" disabled={stopping} onClick={onStop} type="button">
-        Stop
+        {t("question.stop")}
       </button>
       <div className="question-footer-actions">
         <button className="question-skip" onClick={onSkip} type="button">
-          Skip
+          {t("question.skip")}
         </button>
         <button className="question-advance" onClick={onAdvance} type="button">
           {advanceLabel}
@@ -222,7 +223,9 @@ function OptionButton({
         <span className="question-option-label" title={label}>
           {label}
         </span>
-        {recommended ? <span className="question-option-badge">Recommended</span> : null}
+        {recommended ? (
+          <span className="question-option-badge">{t("question.recommended")}</span>
+        ) : null}
         {description.length > 0 ? (
           <span className="question-option-description" title={description}>
             {description}
@@ -256,7 +259,7 @@ function CustomRow({ editing, value, onEdit, onCommit, onInput }: CustomRowProps
             className="question-option-label question-custom-label"
             title={value.trim().length > 0 ? value : undefined}
           >
-            {value.trim().length > 0 ? value : "Type your own answer"}
+            {value.trim().length > 0 ? value : t("question.own")}
           </span>
         </span>
       </button>
@@ -268,7 +271,7 @@ function CustomRow({ editing, value, onEdit, onCommit, onInput }: CustomRowProps
         <Icon name="pencil" />
       </span>
       <textarea
-        aria-label="Type your own answer"
+        aria-label={t("question.own")}
         className="question-custom-input"
         maxLength={300}
         ref={(element) => element?.focus()}
@@ -280,7 +283,7 @@ function CustomRow({ editing, value, onEdit, onCommit, onInput }: CustomRowProps
             onCommit();
           }
         }}
-        placeholder="Type your own answer"
+        placeholder={t("question.own")}
         rows={1}
         value={value}
       />

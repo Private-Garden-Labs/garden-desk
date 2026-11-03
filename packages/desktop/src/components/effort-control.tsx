@@ -1,13 +1,9 @@
 import type { ThinkingLevel } from "@gardendesk/shared";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import { t } from "../i18n/index.js";
 import { Icon } from "./icons.js";
 
-export const THINKING_LABELS: Record<ThinkingLevel, string> = {
-  none: "None",
-  low: "Low",
-  medium: "Medium",
-  xhigh: "Extended",
-};
+export const thinkingLabel = (level: ThinkingLevel) => t(`effort.${level}`);
 
 const EFFORT_LEVELS: ThinkingLevel[] = ["none", "medium", "xhigh"];
 
@@ -30,7 +26,7 @@ function EffortMenu({
   useEffect(() => first.current?.focus(), []);
   return (
     <div
-      aria-label="Effort"
+      aria-label={t("effort.menu")}
       className="effort-menu"
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
         if (event.key === "Escape") onClose();
@@ -50,7 +46,7 @@ function EffortMenu({
           <span aria-hidden="true" className="effort-option-check">
             {level === thinking ? <Icon name="check" /> : null}
           </span>
-          {THINKING_LABELS[level]}
+          {thinkingLabel(level)}
         </button>
       ))}
     </div>
@@ -88,17 +84,17 @@ export function EffortControl({ disabled, thinking, onThinkingChange }: EffortCo
       <button
         aria-expanded={open}
         aria-haspopup="listbox"
-        aria-label={`Effort: ${THINKING_LABELS[thinking]}`}
+        aria-label={t("effort.control", { level: thinkingLabel(thinking) })}
         className="effort-control"
         disabled={disabled}
         onClick={() => setOpen(!open)}
         ref={control}
-        title="How much effort the model spends before it answers"
+        title={t("effort.title")}
         type="button"
       >
         <Icon name="thinking" />
-        <span className="effort-label">Effort</span>
-        <span className="effort-value">{THINKING_LABELS[thinking]}</span>
+        <span className="effort-label">{t("effort.label")}</span>
+        <span className="effort-value">{thinkingLabel(thinking)}</span>
         <span aria-hidden="true" className="effort-caret" />
       </button>
     </div>

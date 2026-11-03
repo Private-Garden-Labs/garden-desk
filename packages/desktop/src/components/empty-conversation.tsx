@@ -1,49 +1,61 @@
+import { t } from "../i18n/index.js";
+
 interface EmptyConversationProps {
   folderName?: string | undefined;
   onSuggestion(text: string): void;
   ready: boolean;
 }
 
+function WelcomeInFolder({ folderName }: { folderName: string }) {
+  const [before, after] = t("welcome.titleInFolder", { folder: "\u0000" }).split("\u0000");
+  return (
+    <>
+      {before}
+      <span className="welcome-folder">{folderName}</span>
+      {after}
+    </>
+  );
+}
+
 export function EmptyConversation({ folderName, onSuggestion, ready }: EmptyConversationProps) {
   return (
     <div className="welcome">
       <h1>
-        What should we work on{folderName === undefined ? "" : ` in `}
-        {folderName === undefined ? "" : <span className="welcome-folder">{folderName}</span>}?
+        {folderName === undefined ? (
+          t("welcome.title")
+        ) : (
+          <WelcomeInFolder folderName={folderName} />
+        )}
       </h1>
-      <p>
-        {ready
-          ? "Select a folder, attach files in New chat, or start with a question."
-          : "Starting your private workspace…"}
-      </p>
+      <p>{ready ? t("welcome.ready") : t("welcome.starting")}</p>
       <div className="suggestions">
         <button
           disabled={!ready}
-          onClick={() => onSuggestion("Explore and explain the selected files.")}
+          onClick={() => onSuggestion(t("welcome.explorePrompt"))}
           type="button"
         >
-          Explore and understand files
+          {t("welcome.explore")}
         </button>
         <button
           disabled={!ready}
-          onClick={() => onSuggestion("Review these files and suggest practical improvements.")}
+          onClick={() => onSuggestion(t("welcome.reviewPrompt"))}
           type="button"
         >
-          Review and suggest improvements
+          {t("welcome.review")}
         </button>
         <button
           disabled={!ready}
-          onClick={() => onSuggestion("Compare the selected documents or data.")}
+          onClick={() => onSuggestion(t("welcome.comparePrompt"))}
           type="button"
         >
-          Compare documents or data
+          {t("welcome.compare")}
         </button>
         <button
           disabled={!ready}
-          onClick={() => onSuggestion("Diagnose the issue in the selected files.")}
+          onClick={() => onSuggestion(t("welcome.diagnosePrompt"))}
           type="button"
         >
-          Diagnose an issue
+          {t("welcome.diagnose")}
         </button>
       </div>
     </div>

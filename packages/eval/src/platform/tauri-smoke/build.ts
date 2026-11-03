@@ -9,7 +9,7 @@ const smokeRoot = fileURLToPath(new URL(".", import.meta.url));
 const generatedRoot = join(smokeRoot, ".generated");
 const frontendRoot = join(generatedRoot, "frontend");
 const tauriRoot = join(smokeRoot, "src-tauri");
-const expectedNodeVersion = "v24.18.0";
+const expectedNodeVersion = "v24.22.0";
 
 function windowsPowerShell(): { executable: string; modulePath: string } {
   const windowsRoot = process.env.WINDIR ?? "C:\\Windows";

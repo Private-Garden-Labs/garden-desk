@@ -1,3 +1,4 @@
+import { t } from "../i18n/index.js";
 import type { AgentStep } from "../steps.js";
 import { StepDetails } from "./step-details.js";
 
@@ -31,9 +32,7 @@ function StepRow({
         onClick={() => onSelectStep(selected ? undefined : step.id)}
         type="button"
       >
-        <span>
-          Step {step.ordinal} · {step.title}
-        </span>
+        <span>{t("steps.titled", { ordinal: step.ordinal, title: step.title })}</span>
       </button>
       {selected ? (
         <div id={`step-${step.id}-details`}>
@@ -52,7 +51,7 @@ export function StepList({
   onSelectStep,
 }: StepListProps) {
   if (steps.length === 0) {
-    return <p className="technical-details-empty">Steps appear here while a task runs.</p>;
+    return <p className="technical-details-empty">{t("steps.empty")}</p>;
   }
   return (
     <>

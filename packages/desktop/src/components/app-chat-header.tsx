@@ -2,6 +2,7 @@ import type { ModelRuntimeStatus } from "@gardendesk/shared";
 import type { DesktopApi } from "../api.js";
 import type { AppearancePreference } from "../appearance.js";
 import { renameConversation } from "../conversation-rename.js";
+import { t } from "../i18n/index.js";
 import { activeSessionTitle } from "../session-state.js";
 import type { DesktopAction, DesktopState } from "../state.js";
 import { ChatHeader } from "./chat-header.js";
@@ -27,7 +28,7 @@ export function AppChatHeader(props: AppChatHeaderProps) {
   return (
     <ChatHeader
       appearance={props.appearance}
-      conversationTitle={activeSessionTitle(state) ?? "New chat"}
+      conversationTitle={activeSessionTitle(state) ?? t("chat.new")}
       model={props.model}
       nativeActionMessage={props.nativeActionMessage}
       onAppearanceChange={props.onAppearanceChange}
@@ -40,7 +41,7 @@ export function AppChatHeader(props: AppChatHeaderProps) {
       onUnload={props.onUnload}
       renameMessage={
         props.nativeActionMessage ??
-        (sessionId === undefined ? "Send a message to name this chat" : undefined)
+        (sessionId === undefined ? t("header.renameDisabled") : undefined)
       }
       specialistAgentId={props.specialistAgentId}
       technicalDetailsOpen={props.technicalDetailsOpen}

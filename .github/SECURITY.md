@@ -15,6 +15,6 @@ Do not include customer documents, live credentials, unrelated personal informat
 
 If private reporting is not yet available, do not publish sensitive details. Open a public issue containing only a request for private security contact and enough non-sensitive context for the maintainer to respond.
 
-Garden Desk has no released implementation or supported version before its v1 launch. Reports about the planned architecture are still welcome when they identify a concrete flaw in a documented security boundary.
+For released packages, see the [releases page](https://gardendesk.ai/releases/). Reports about the current implementation and planned security boundaries are welcome.
 
 The maintainer will acknowledge the report privately, assess severity and scope, coordinate remediation and verification, and publish details only after a safe disclosure point is agreed.

@@ -1,4 +1,5 @@
 import type { DesktopApi } from "./api.js";
+import { t } from "./i18n/index.js";
 
 export async function showReleasePage(
   api: DesktopApi,
@@ -8,6 +9,6 @@ export async function showReleasePage(
   try {
     await api.openReleasePage();
   } catch {
-    setError("The releases page could not be opened.");
+    setError(t("error.releasesPage"));
   }
 }

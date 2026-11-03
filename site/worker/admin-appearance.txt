@@ -1,0 +1,31 @@
+const labels = { system: "System", light: "Light", dark: "Dark" };
+const order = Object.keys(labels);
+const next = () => order[(order.indexOf(appearance) + 1) % order.length];
+let appearance = "system";
+try {
+  appearance = localStorage.getItem("appearance") ?? "system";
+} catch {}
+if (!order.includes(appearance)) appearance = "system";
+
+function apply() {
+  if (appearance === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.dataset.theme = appearance;
+  const button = document.querySelector("#appearance");
+  button?.setAttribute(
+    "aria-label",
+    `Appearance: ${labels[appearance]}. Switch to ${labels[next()]}`,
+  );
+  if (button) button.title = `Appearance: ${labels[appearance]}`;
+}
+
+apply();
+document.addEventListener("DOMContentLoaded", () => {
+  apply();
+  document.querySelector("#appearance").addEventListener("click", () => {
+    appearance = next();
+    try {
+      localStorage.setItem("appearance", appearance);
+    } catch {}
+    apply();
+  });
+});

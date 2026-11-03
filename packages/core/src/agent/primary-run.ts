@@ -1,3 +1,4 @@
+import { posix } from "node:path";
 import type {
   AgentEvent,
   AgentEventDetail,
@@ -23,7 +24,7 @@ import { runInternalReview } from "./review-run.js";
 import { createRunExecutor } from "./service-executor.js";
 import type { AgentSessionManager } from "./session-manager.js";
 import type { AgentStore } from "./store.js";
-import { runSubagent, specialistDefinition } from "./subagent-run.js";
+import { prepareSpecialistDirectory, runSubagent, specialistDefinition } from "./subagent-run.js";
 
 interface PrimaryRunInput {
   reviewCommand(): CommandInvocation | undefined;
@@ -134,6 +135,8 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
         input: agentInput,
         chat: input.chat,
         path,
+        displayName:
+          attachments.find((item) => item.path === path)?.displayName ?? posix.basename(path),
       });
     },
     attachments,
@@ -158,6 +161,7 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
     new ChatAgentLoop({ chat: input.chat }).run(request);
   if (specialist !== undefined) {
     const { askQuestion, inspectImage, reviewDocument, spawnTask, subagents, ...base } = agentInput;
+    await prepareSpecialistDirectory(specialist.agent, base.executor, run.id, input.signal);
     return runAgent({
       ...base,
       ...(specialist.agent.tools.includes("image") ? { inspectImage } : {}),
@@ -193,6 +197,7 @@ async function runPrimarySubagent(
       signal: input.signal,
       store: input.store,
       thinking: input.thinking,
+      userRequest: input.task,
     },
     request,
   );

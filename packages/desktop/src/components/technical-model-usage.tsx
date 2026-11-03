@@ -1,4 +1,5 @@
 import type { ModelRuntimeStatus } from "@gardendesk/shared";
+import { t } from "../i18n/index.js";
 import { contextMeter, gpuMemoryUsage } from "../model-usage.js";
 
 function formatTokens(tokens: number): string {
@@ -6,18 +7,26 @@ function formatTokens(tokens: number): string {
   return `${Number((tokens / 1_000).toFixed(1))}K`;
 }
 
+function gpuLabel(usage: ReturnType<typeof gpuMemoryUsage>): string {
+  if (usage === undefined) return t("usage.gpuMemory");
+  return usage.label === "VRAM" ? t("usage.vram") : t("usage.unified");
+}
+
 function GpuMemoryLine({ usage }: { usage: ReturnType<typeof gpuMemoryUsage> }) {
   const memory =
     usage === undefined
-      ? "Not available"
-      : `${usage.used ?? "Not available"} of ${usage.budget ?? "Not available"}`;
+      ? t("usage.notAvailable")
+      : t("usage.ofBudget", {
+          used: usage.used ?? t("usage.notAvailable"),
+          budget: usage.budget ?? t("usage.notAvailable"),
+        });
   const sequences =
     usage?.sequences !== undefined && usage.sequences > 1
-      ? ` · ${usage.sequences} parallel sequences`
+      ? t("usage.parallel", { count: usage.sequences })
       : "";
   return (
     <tr>
-      <th scope="row">{usage?.label ?? "GPU memory"}</th>
+      <th scope="row">{gpuLabel(usage)}</th>
       <td>
         {memory}
         {sequences}
@@ -29,7 +38,7 @@ function GpuMemoryLine({ usage }: { usage: ReturnType<typeof gpuMemoryUsage> }) 
 function ContextMeterRow({ meter }: { meter: NonNullable<ReturnType<typeof contextMeter>> }) {
   return (
     <tr className="technical-context-meter">
-      <th scope="row">Context</th>
+      <th scope="row">{t("usage.context")}</th>
       <td>
         <span className="context-meter-label">
           {formatTokens(meter.used)} / {formatTokens(meter.allocated)} · {meter.percent}%
@@ -62,8 +71,12 @@ export function TechnicalModelUsage({
       <GpuMemoryLine usage={gpuMemory} />
       {meter === undefined ? (
         <tr>
-          <th scope="row">Context</th>
-          <td>Not available{allocated === undefined ? "" : ` / ${formatTokens(allocated)}`}</td>
+          <th scope="row">{t("usage.context")}</th>
+          <td>
+            {allocated === undefined
+              ? t("usage.notAvailable")
+              : t("usage.contextOf", { tokens: formatTokens(allocated) })}
+          </td>
         </tr>
       ) : (
         <ContextMeterRow meter={meter} />

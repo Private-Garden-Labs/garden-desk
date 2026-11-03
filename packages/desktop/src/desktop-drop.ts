@@ -1,6 +1,7 @@
 import { type Dispatch, type MutableRefObject, useEffect, useRef } from "react";
 import type { DesktopApi, DroppedPaths, NativeDropEvent } from "./api.js";
 import { addDroppedFolders, attachDroppedFiles } from "./desktop-actions.js";
+import { t } from "./i18n/index.js";
 import type { DesktopAction } from "./state.js";
 
 export type DropIntent = "checking" | "files" | "folders" | "mixed";
@@ -93,7 +94,7 @@ export async function handleNativeDrop(
   try {
     await importDroppedPaths(await options.api.classifyDroppedPaths(event.paths), options);
   } catch {
-    options.setError("The dropped files or folders could not be read.");
+    options.setError(t("error.dropRead"));
   }
 }
 
@@ -119,7 +120,7 @@ export function useNativeDrop(options: UseNativeDropOptions) {
         if (disposed) stop();
         else unlisten = stop;
       })
-      .catch(() => setError("File and folder drop could not be started."));
+      .catch(() => setError(t("error.dropStart")));
     return () => {
       disposed = true;
       sequence.current += 1;
