@@ -265,3 +265,22 @@ export const demoCommands = [
   },
   { name: "review", description: "Review one attached document for inconsistencies" },
 ];
+
+export const demoSkills = [
+  {
+    description: "Review a document for obligations, risks, and missing sections.",
+    enabled: true,
+    name: "document-review",
+    path: "browser-memory://synthetic-demo/skills/document-review/SKILL.md",
+    source: "built-in" as const,
+    valid: true,
+  },
+  {
+    description: "Reconcile financial records and explain every difference.",
+    enabled: true,
+    name: "financial-records-reconciliation",
+    path: "browser-memory://synthetic-demo/skills/financial-records-reconciliation/SKILL.md",
+    source: "built-in" as const,
+    valid: true,
+  },
+];

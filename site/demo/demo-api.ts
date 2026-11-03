@@ -20,6 +20,7 @@ import {
 } from "./demo-run.js";
 import {
   demoCommands,
+  demoSkills,
   financeSession,
   folder,
   initialRun,
@@ -30,24 +31,6 @@ import {
 const demoUnavailable = () => Promise.reject(new Error("Unavailable in the public demo"));
 const limitation =
   "The public demo does not run a model or send your text anywhere. Choose one of the guided examples above to see a deterministic sample result.";
-const demoSkills = [
-  {
-    description: "Review a document for obligations, risks, and missing sections.",
-    enabled: true,
-    name: "document-review",
-    path: "browser-memory://synthetic-demo/skills/document-review/SKILL.md",
-    source: "built-in" as const,
-    valid: true,
-  },
-  {
-    description: "Reconcile financial records and explain every difference.",
-    enabled: true,
-    name: "financial-records-reconciliation",
-    path: "browser-memory://synthetic-demo/skills/financial-records-reconciliation/SKILL.md",
-    source: "built-in" as const,
-    valid: true,
-  },
-];
 
 interface DynamicRun {
   polls: number;
