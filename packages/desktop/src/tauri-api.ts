@@ -222,11 +222,12 @@ export const tauriDesktopApi: DesktopApi = {
       { sessionId },
     );
   },
-  async startAgent(sessionId, task, thinking) {
+  async startAgent(sessionId, task, thinking, language) {
     return invokeDesktop("start_agent", (value) => AgentRunSummarySchema.parse(value), {
       sessionId,
       task,
       thinking,
+      language,
     });
   },
   async getAgentRun(runId) {

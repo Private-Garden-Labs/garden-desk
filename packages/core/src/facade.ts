@@ -54,7 +54,12 @@ export interface GardenDeskCorePorts extends InferenceService {
   ): Promise<void>;
   exportArtifact(sessionId: string, artifactId: string, destination: string): Promise<void>;
   removeAttachment(sessionId: string, attachmentId: string): Promise<boolean>;
-  startAgent(sessionId: string, task: string, thinking: ThinkingLevel): Promise<AgentRunSummary>;
+  startAgent(
+    sessionId: string,
+    task: string,
+    thinking: ThinkingLevel,
+    replyLanguage?: string,
+  ): Promise<AgentRunSummary>;
   listAgentRuns(sessionId: string): Promise<AgentRunSummary[]>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;
@@ -143,7 +148,8 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
       ports.materializeAttachment(sessionId, attachmentId),
     ...artifactPorts(ports),
     removeAttachment: (sessionId, attachmentId) => ports.removeAttachment(sessionId, attachmentId),
-    startAgent: (sessionId, task, thinking) => ports.startAgent(sessionId, task, thinking),
+    startAgent: (sessionId, task, thinking, replyLanguage) =>
+      ports.startAgent(sessionId, task, thinking, replyLanguage),
     listAgentRuns: (sessionId) => ports.listAgentRuns(sessionId),
     getAgentRun: (runId) => ports.getAgentRun(runId),
     getAgentTrace: (runId) => ports.getAgentTrace(runId),

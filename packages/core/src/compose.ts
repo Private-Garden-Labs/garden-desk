@@ -93,8 +93,8 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     async removeAttachment(sessionId, attachmentId) {
       return agent?.removeAttachment(sessionId, attachmentId) ?? unavailableAgent();
     },
-    async startAgent(sessionId, task, thinking) {
-      return agent?.start(sessionId, task, thinking) ?? unavailableAgent();
+    async startAgent(sessionId, task, thinking, replyLanguage) {
+      return agent?.start(sessionId, task, thinking, replyLanguage) ?? unavailableAgent();
     },
     async listAgentRuns(sessionId) {
       return agent?.listRuns(sessionId) ?? unavailableAgent();

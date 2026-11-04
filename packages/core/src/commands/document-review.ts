@@ -7,6 +7,7 @@ import {
   JobIdSchema,
 } from "@gardendesk/shared";
 import { currentTimeContext, withCurrentTimeContext } from "../agent/chat-current-time.js";
+import { replyLanguagePrompt } from "../agent/chat-initial-messages.js";
 import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-input.js";
 import { streamCallbacks } from "../agent/chat-streaming.js";
 import { isSuccessfulExecution } from "../agent/execution-success.js";
@@ -151,7 +152,7 @@ export async function reviewDocument(
     tools: [],
     messages: withCurrentTimeContext(
       [
-        { role: "system", text: command.body },
+        { role: "system", text: [command.body, ...replyLanguagePrompt(input)].join("\n\n") },
         {
           role: "user",
           text: command.arguments || input.systemPrompt("document-review-request"),

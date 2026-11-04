@@ -255,6 +255,26 @@ it("uses the model review heading for a new chat and preserves it on later revie
   }
 });
 
+it("asks for the review in the selected interface language", async () => {
+  const chat = vi.fn().mockResolvedValue(chatResult("# Revizuire contract\n\nText.", []));
+  const { catalog, conversations, service } = await fixture({ chat }, async (request) =>
+    outputExecution(request, "1: Contract de prestări servicii."),
+  );
+  try {
+    const session = conversations.createSession(null);
+    await service.addAttachment(
+      session.id,
+      fileURLToPath(new URL("../../../../prompts/commands/review.md", import.meta.url)),
+    );
+    await terminal(service, service.start(session.id, "/review", "medium", "Romanian").id);
+    const input = chat.mock.calls[0]?.[0] as ChatInput;
+    expect(input.messages[0]).toMatchObject({ text: expect.stringContaining("Romanian") });
+  } finally {
+    await service.close();
+    catalog.close();
+  }
+});
+
 it("retains a complete streamed review title when the answer hits the output limit", async () => {
   let partialTitle: string | undefined;
   let streamedTitle: string | undefined;
