@@ -1,10 +1,12 @@
 import { createPublicKey, type KeyObject, verify } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
 import { mkdir, open, readFile, rename, rm, writeFile } from "node:fs/promises";
+import type { IncomingMessage } from "node:http";
+import { get } from "node:https";
 import { basename, join } from "node:path";
-import { PassThrough, Readable } from "node:stream";
+import { PassThrough } from "node:stream";
+import { text } from "node:stream/consumers";
 import { pipeline } from "node:stream/promises";
-import type { ReadableStream } from "node:stream/web";
 import { createInflateRaw } from "node:zlib";
 import {
   type DataPack,
@@ -32,6 +34,20 @@ export interface DataPackInstall {
 
 function authorization(key: string | undefined): Record<string, string> {
   return key === undefined ? {} : { authorization: `Bearer ${key}` };
+}
+
+function storeGet(
+  path: string,
+  key: string | undefined,
+  signal?: AbortSignal,
+): Promise<IncomingMessage> {
+  return new Promise((resolve, reject) => {
+    get(`${STORE}${path}`, { headers: authorization(key), signal }, (response) => {
+      if (response.statusCode === 200 || response.statusCode === 204) return resolve(response);
+      response.resume();
+      reject(new Error(response.statusCode === 401 ? "key" : "unavailable"));
+    }).on("error", reject);
+  });
 }
 
 function failureOf(error: unknown): Failure {
@@ -106,11 +122,12 @@ export class DataPackStore {
   }
 
   async saveKey(key: string): Promise<boolean> {
-    const response = await fetch(`${STORE}/key`, {
-      headers: authorization(key),
-      signal: AbortSignal.timeout(STORE_TIMEOUT_MS),
-    });
-    if (response.status !== 204) return false;
+    try {
+      (await storeGet("/key", key, AbortSignal.timeout(STORE_TIMEOUT_MS))).resume();
+    } catch (error) {
+      if (failureOf(error) === "key") return false;
+      throw error;
+    }
     await mkdir(this.root, { recursive: true });
     await writeFile(join(this.root, "key"), key);
     this.failures.clear();
@@ -151,17 +168,12 @@ export class DataPackStore {
 
   private async download(pack: DataPack): Promise<void> {
     const key = pack.access === "key" ? await this.key() : undefined;
-    const response = await fetch(`${STORE}/packs/${pack.file}`, { headers: authorization(key) });
-    if (response.status === 401) throw new Error("key");
-    if (!response.ok || response.body === null) throw new Error("unavailable");
+    const response = await storeGet(`/packs/${pack.file}`, key);
     await mkdir(this.root, { recursive: true });
     const archive = join(this.root, `${pack.id}.zip`);
     const staged = join(this.root, `${pack.id}.new`);
     try {
-      await pipeline(
-        Readable.fromWeb(response.body as ReadableStream<Uint8Array>),
-        createWriteStream(archive),
-      );
+      await pipeline(response, createWriteStream(archive));
       if ((await digest(archive)) !== pack.sha256) throw new Error("invalid");
       await rm(staged, { recursive: true, force: true });
       await extract(archive, staged);
@@ -180,11 +192,8 @@ export class DataPackStore {
   }
 
   private async catalog(): Promise<DataPack[]> {
-    const response = await fetch(`${STORE}/catalog`, {
-      signal: AbortSignal.timeout(STORE_TIMEOUT_MS),
-    });
-    if (!response.ok) throw new Error("unavailable");
-    const signed = (await response.json()) as { catalog?: unknown; signature?: unknown };
+    const response = await storeGet("/catalog", undefined, AbortSignal.timeout(STORE_TIMEOUT_MS));
+    const signed = JSON.parse(await text(response)) as { catalog?: unknown; signature?: unknown };
     if (
       typeof signed.catalog !== "string" ||
       typeof signed.signature !== "string" ||

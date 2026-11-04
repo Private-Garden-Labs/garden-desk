@@ -1,11 +1,14 @@
 import { generateKeyPairSync, sign } from "node:crypto";
+import { EventEmitter } from "node:events";
 import { mkdtemp, readdir } from "node:fs/promises";
+import { get } from "node:https";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, it, vi } from "vitest";
+import { Readable } from "node:stream";
+import { expect, it, vi } from "vitest";
 import { type DataPackInstall, DataPackStore } from "./data-packs.js";
 
-afterEach(() => vi.unstubAllGlobals());
+vi.mock("node:https", () => ({ get: vi.fn() }));
 
 it("installs nothing from a forged catalog or an archive that does not match it", async () => {
   const root = await mkdtemp(join(tmpdir(), "garden-desk-data-packs-"));
@@ -23,14 +26,20 @@ it("installs nothing from a forged catalog or an archive that does not match it"
   };
   const catalog = JSON.stringify({ packs: [pack] });
   let signer = forger.privateKey;
-  vi.stubGlobal("fetch", async (url: string) =>
-    url.endsWith("/catalog")
-      ? Response.json({
+  vi.mocked(get).mockImplementation(((
+    url: string,
+    _options: unknown,
+    respond: (response: Readable) => void,
+  ) => {
+    const body = url.endsWith("/catalog")
+      ? JSON.stringify({
           catalog,
           signature: sign(null, Buffer.from(catalog), signer).toString("base64"),
         })
-      : new Response("altered"),
-  );
+      : "altered";
+    respond(Object.assign(Readable.from([body]), { statusCode: 200 }));
+    return new EventEmitter();
+  }) as never);
   const results: DataPackInstall[] = [];
   const store = new DataPackStore(
     root,
