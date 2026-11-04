@@ -133,6 +133,15 @@ async function removeAttachment(core: GardenDeskCore, request: RpcRequest): Prom
   return success(request, { removed: await core.removeAttachment(sessionId, attachmentId.data) });
 }
 
+function languageName(code: unknown): string | undefined {
+  if (typeof code !== "string" || code.length > 35) return undefined;
+  try {
+    return new Intl.DisplayNames(["en"], { type: "language" }).of(code);
+  } catch {
+    return undefined;
+  }
+}
+
 async function startAgent(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
   const sessionId = sessionIdParam(request);
   const thinking = ThinkingLevelSchema.safeParse(request.params.thinking);
@@ -140,9 +149,11 @@ async function startAgent(core: GardenDeskCore, request: RpcRequest): Promise<Rp
     .default(null)
     .safeParse(request.params.jurisdiction);
   const task = typeof request.params.task === "string" ? request.params.task.trim() : "";
-  if (task.length === 0 || !thinking.success || !jurisdiction.success)
+  const language = languageName(request.params.language);
+  if (task.length === 0 || !thinking.success || !jurisdiction.success || language === undefined)
     return failure(request, "invalid_request", "Invalid task.");
-  return success(request, await core.startAgent(sessionId, task, thinking.data, jurisdiction.data));
+  const options = { jurisdiction: jurisdiction.data, replyLanguage: language };
+  return success(request, await core.startAgent(sessionId, task, thinking.data, options));
 }
 
 async function getAgentRun(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {

@@ -95,7 +95,7 @@ export interface DesktopApi {
     sessionId: string,
     task: string,
     thinking: ThinkingLevel,
-    jurisdiction: Jurisdiction | null,
+    options: { jurisdiction: Jurisdiction | null; language: string },
   ): Promise<AgentRunSummary>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;

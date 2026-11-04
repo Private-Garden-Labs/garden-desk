@@ -234,6 +234,7 @@ pub(crate) async fn start_agent(
     task: String,
     thinking: String,
     jurisdiction: Option<String>,
+    language: String,
 ) -> Result<Value, String> {
     crate::windows_setup::require_ready()?;
     core.call(
@@ -243,6 +244,7 @@ pub(crate) async fn start_agent(
             "task": task,
             "thinking": thinking,
             "jurisdiction": jurisdiction,
+            "language": language,
         }),
     )
 }

@@ -31,11 +31,13 @@ it("keeps the document last and its request immediately before it when laws are 
       fileURLToPath(new URL("../../../../prompts/commands/review.md", import.meta.url)),
     );
     const run = service.start(session.id, "/review Check the amounts.", "medium", {
-      name: "European Union",
-      currentAsOf: "2026",
-      searched: () => true,
-      search: async () => sections,
-      forDocument: async () => sections,
+      laws: {
+        name: "European Union",
+        currentAsOf: "2026",
+        searched: () => true,
+        search: async () => sections,
+        forDocument: async () => sections,
+      },
     });
     expect((await terminal(service, run.id)).run.state).toBe("succeeded");
     const messages = requests.at(-1)?.messages ?? [];

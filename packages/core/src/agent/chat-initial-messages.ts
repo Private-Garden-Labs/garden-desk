@@ -2,6 +2,14 @@ import type { ChatMessage } from "@gardendesk/shared";
 import { fillPrompt } from "../prompt-files.js";
 import type { ChatAgentInput } from "./chat-loop.js";
 
+export function replyLanguagePrompt(
+  input: Pick<ChatAgentInput, "replyLanguage" | "systemPrompt">,
+): string[] {
+  return input.replyLanguage === undefined
+    ? []
+    : [fillPrompt(input.systemPrompt("reply-language"), { language: input.replyLanguage })];
+}
+
 function systemText(input: ChatAgentInput): string {
   const skills = input.skills
     .metadata()
@@ -15,6 +23,7 @@ function systemText(input: ChatAgentInput): string {
     input.systemPrompt("environment"),
     ...(skills ? [fillPrompt(input.systemPrompt("skills"), { skills })] : []),
     ...(specialists ? [fillPrompt(input.systemPrompt("specialists"), { specialists })] : []),
+    ...replyLanguagePrompt(input),
   ].join("\n\n");
 }
 

@@ -44,6 +44,7 @@ interface PrimaryRunInput {
   store: AgentStore;
   task: string;
   thinking: ThinkingLevel;
+  replyLanguage?: string;
   chat: InferenceService["chat"];
   inspectImage(path: string, prompt: string): Promise<string>;
   modelNeedsLoad: boolean;
@@ -151,6 +152,7 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
     onSessionTitle: input.onSessionTitle,
     onContext: input.onContext,
     askQuestion: input.askQuestion,
+    ...(input.replyLanguage === undefined ? {} : { replyLanguage: input.replyLanguage }),
     signal: input.signal,
     subagents: definitions.agents.filter((agent) => agent.mode === "subagent"),
     skills: agentSkillReader(definitions, primary),
@@ -200,6 +202,7 @@ async function runPrimarySubagent(
       signal: input.signal,
       store: input.store,
       thinking: input.thinking,
+      ...(input.replyLanguage === undefined ? {} : { replyLanguage: input.replyLanguage }),
       userRequest: input.task,
     },
     request,

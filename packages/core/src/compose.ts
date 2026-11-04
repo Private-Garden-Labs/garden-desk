@@ -99,9 +99,9 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     async removeAttachment(sessionId, attachmentId) {
       return agent?.removeAttachment(sessionId, attachmentId) ?? unavailableAgent();
     },
-    async startAgent(sessionId, task, thinking, jurisdiction) {
+    async startAgent(sessionId, task, thinking, { jurisdiction, replyLanguage }) {
       const laws = jurisdiction === null ? undefined : services.laws.context(jurisdiction);
-      return agent?.start(sessionId, task, thinking, laws) ?? unavailableAgent();
+      return agent?.start(sessionId, task, thinking, { laws, replyLanguage }) ?? unavailableAgent();
     },
     async listAgentRuns(sessionId) {
       return agent?.listRuns(sessionId) ?? unavailableAgent();

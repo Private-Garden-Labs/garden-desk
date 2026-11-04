@@ -61,6 +61,7 @@ export interface ChatAgentInput {
   reviewDocument?: ToolContext["reviewDocument"];
   spawnTask?(request: SubagentRequest): Promise<Pick<AgentRunResult, "response" | "executions">>;
   askQuestion?(questions: AgentQuestion[]): Promise<AgentQuestionOutcome>;
+  replyLanguage?: string;
   systemPrompt(name: string): string;
   task: string;
   thinking?: ThinkingLevel;
