@@ -11,7 +11,7 @@ After cloning, run the setup command for your platform:
 
 Setup checks the required tools and asks before it installs a missing one. After you approve, it installs the locked packages, downloads missing model and runtime files, builds a missing guest image (Docker with Linux containers), and starts the app. The first setup needs an internet connection. If an installer asks you to restart, restart and run setup again. On Windows, after the helper adds you to Hyper-V Administrators, sign out and back in.
 
-Later, `pnpm start` runs `pnpm desktop:dev`. Run setup again when dependencies or required assets change. The development terminal shows WebView and Core output. That output is not stored and must never include prompts, messages, tool payloads, reasoning, or file contents.
+Later, `pnpm dev` or `pnpm start` runs `pnpm desktop:dev`. Run setup again when dependencies or required assets change. The development terminal shows WebView and Core output. That output is not stored and must never include prompts, messages, tool payloads, reasoning, or file contents.
 
 ## Make A Change
 
