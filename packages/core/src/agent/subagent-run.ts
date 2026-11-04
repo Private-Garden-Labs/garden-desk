@@ -30,6 +30,7 @@ interface SubagentPorts {
   signal: AbortSignal;
   store: AgentStore;
   thinking?: ThinkingLevel;
+  replyLanguage?: string;
   userRequest: string;
 }
 
@@ -158,6 +159,7 @@ export async function runSubagent(
       },
       signal: ports.signal,
       ...(ports.thinking === undefined ? {} : { thinking: ports.thinking }),
+      ...(ports.replyLanguage === undefined ? {} : { replyLanguage: ports.replyLanguage }),
       inferencePriority: "secondary",
       ...(definition.tools.includes("image") ? { inspectImage: ports.inspectImage } : {}),
       skills: agentSkillReader(ports.library, definition),
