@@ -16,6 +16,7 @@ import { Conversation } from "./components/conversation.js";
 import { DropOverlay } from "./components/drop-overlay.js";
 import { ErrorBanner } from "./components/error-banner.js";
 import { GuidedExamples } from "./components/guided-examples.js";
+import { LawReader } from "./components/law-reader.js";
 import { LawsPage } from "./components/laws-page.js";
 import { SecureWorkspaceBanner } from "./components/secure-workspace-banner.js";
 import { SkillsPage } from "./components/skills-page.js";
@@ -31,6 +32,7 @@ import { desktopPlatform } from "./platform.js";
 import { cancelRun } from "./run-polling.js";
 import { secureWorkspaceAllowsTasks } from "./secure-workspace.js";
 import { activeFolder } from "./session-state.js";
+import { useSidePanel } from "./side-panel.js";
 import { useSkills } from "./skills.js";
 import { useDesktopBootstrap } from "./startup.js";
 import { desktopReducer, initialDesktopState } from "./state.js";
@@ -47,7 +49,6 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const [state, dispatch] = useReducer(desktopReducer, initialDesktopState);
   const [desktopError, setDesktopError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
-  const [technicalDetailsOpen, setTechnicalDetailsOpen] = useState(false);
   const [settingsPage, setSettingsPage] = useState<SettingsPage>();
   const skillsOpen = settingsPage === "skills";
   const [selectedChild, setSelectedChild] = useState<AgentRunSummary>();
@@ -81,6 +82,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
   const draftPersistence = useDraftPersistence(api, setDesktopError);
   const skills = useSkills(api, skillsOpen);
   const laws = useLaws(api, settingsPage === "laws");
+  const { lawTarget, setTechnicalDetailsOpen, technicalDetailsOpen } = useSidePanel(api, laws.laws);
   useNativeDrop({
     api,
     context: {
@@ -289,6 +291,7 @@ export function App({ api, capabilities }: { api: DesktopApi; capabilities: Desk
         thinkingStepId={thinkingStepId}
         timeline={detailState.timeline}
       />
+      <LawReader api={api} target={lawTarget} />
       <ActiveConfirmation clear={() => setConfirmation(undefined)} request={confirmation} />
       <DropOverlay intent={skillsOpen ? undefined : dropIntent} />
     </div>

@@ -197,7 +197,7 @@ export function TechnicalDetails(props: TechnicalDetailsProps) {
           : ({ "--technical-details-width": `${resize.width}px` } as CSSProperties)
       }
     >
-      <DrawerResizeHandle resize={resize} />
+      <DrawerResizeHandle label={t("technical.resize")} resize={resize} />
       <header className="technical-details-header">
         <div>
           <h2>{t("header.technicalDetails")}</h2>

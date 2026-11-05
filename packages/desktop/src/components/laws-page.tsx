@@ -3,6 +3,7 @@ import { type FormEvent, useState } from "react";
 import { t } from "../i18n/index.js";
 import { lawName } from "../law-names.js";
 import type { LawsController } from "../laws.js";
+import { openLaw } from "../side-panel.js";
 import { fileSize } from "./generated-files.js";
 import { Icon } from "./icons.js";
 
@@ -121,18 +122,22 @@ function LawRow({
           </summary>
           <ul>
             {law.sources.map((source) => (
-              <li key={source.id}>
-                <label>
-                  <input
-                    checked={source.enabled}
-                    disabled={controller.working || !law.enabled}
-                    onChange={() => controller.setEnabled(law.id, !source.enabled, source.id)}
-                    type="checkbox"
-                  />
-                  <span>
-                    {source.title} <span className="law-source-version">{source.version}</span>
-                  </span>
-                </label>
+              <li className="law-source" key={source.id}>
+                <input
+                  aria-label={t("laws.include", { title: source.title })}
+                  checked={source.enabled}
+                  disabled={controller.working || !law.enabled}
+                  onChange={() => controller.setEnabled(law.id, !source.enabled, source.id)}
+                  type="checkbox"
+                />
+                <button
+                  onClick={() => openLaw({ jurisdiction: law.id, source: source.id })}
+                  type="button"
+                >
+                  <span>{source.title}</span>
+                  <span className="law-source-version">{source.version}</span>
+                </button>
+                <Icon name="read" />
               </li>
             ))}
           </ul>

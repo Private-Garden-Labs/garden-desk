@@ -14,7 +14,7 @@ import {
 } from "@gardendesk/shared";
 import type { GardenDeskCore } from "../facade.js";
 import { dispatchArtifactMethod } from "./artifact-methods.js";
-import { dispatchLawMethod } from "./law-methods.js";
+import { dispatchLawMethod, LAW_METHODS } from "./law-methods.js";
 import { dispatchQuestionMethod } from "./question-methods.js";
 import { failure, success } from "./responses.js";
 import { createSession, deleteSession, listSessions, renameSession } from "./session-methods.js";
@@ -195,6 +195,7 @@ async function cancelJob(core: GardenDeskCore, request: RpcRequest): Promise<Rpc
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: the exhaustive protocol switch keeps routing explicit.
 async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
+  if (LAW_METHODS.has(request.method)) return dispatchLawMethod(core, request);
   switch (request.method) {
     case "commands.list":
       return success(request, await core.listCommands());
@@ -268,12 +269,6 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
     case "skills.remove":
     case "skills.setEnabled":
       return dispatchSkillMethod(core, request);
-    case "laws.list":
-    case "laws.setEnabled":
-    case "dataPacks.list":
-    case "dataPacks.saveKey":
-    case "dataPacks.install":
-      return dispatchLawMethod(core, request);
     default:
       return failure(request, "unsupported", `Unsupported method: ${request.method}`);
   }

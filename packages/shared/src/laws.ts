@@ -8,6 +8,7 @@ export const LawSourceSummarySchema = z.object({
   id: z.string(),
   title: z.string(),
   version: z.string(),
+  url: z.string(),
   enabled: z.boolean(),
 });
 
@@ -19,11 +20,29 @@ export const LawJurisdictionSummarySchema = z.object({
   sources: z.array(LawSourceSummarySchema),
 });
 
+export const LawActSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  version: z.string(),
+  url: z.string(),
+  sections: z.array(z.object({ citation: z.string(), heading: z.string(), text: z.string() })),
+});
+
+export const LawCitationsSchema = z.array(
+  z.object({
+    jurisdiction: JurisdictionSchema,
+    source: z.string(),
+    citations: z.array(z.string()),
+  }),
+);
+
 export const LAW_DISCLAIMER =
   "Not legal advice. Garden Desk checks only the laws it includes and can make mistakes. Check every finding against the official text or with a lawyer.";
 
 export type Jurisdiction = z.infer<typeof JurisdictionSchema>;
 export type LawJurisdictionSummary = z.infer<typeof LawJurisdictionSummarySchema>;
+export type LawAct = z.infer<typeof LawActSchema>;
+export type LawCitations = z.infer<typeof LawCitationsSchema>;
 
 export const DataPackSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/u),

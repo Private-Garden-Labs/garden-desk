@@ -111,6 +111,9 @@ export class DemoDesktopApi implements DesktopApi {
   setLawEnabled = demoUnavailable;
   sampleFolderFiles = async () => ["bank-statement.csv", "ledger.xlsx", "transaction-review.md"];
   listLaws = async () => [];
+  readLaw = demoUnavailable;
+  listLawCitations = async () => [];
+  openLawSource = demoUnavailable;
   listDataPacks = async () => ({ keySaved: false, online: false, packs: [] });
   saveDataPackKey = async () => "offline" as const;
   installDataPack = async () => false;

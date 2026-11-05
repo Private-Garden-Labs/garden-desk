@@ -4,9 +4,12 @@ import {
   type Jurisdiction,
   JurisdictionSchema,
   LAW_PACK_DIRECTORIES,
+  type LawAct,
+  type LawCitations,
   type LawJurisdictionSummary,
 } from "@gardendesk/shared";
 import { promptDirectoryExists, readPromptFile, writePromptFile } from "../prompt-files.js";
+import { actCitations, readAct } from "./law-acts.js";
 import {
   documentPassages,
   fuseRanks,
@@ -87,8 +90,10 @@ export class LawLibrary {
         .prepare("SELECT id, name, current_as_of FROM jurisdictions WHERE id = ?")
         .get(id) as JurisdictionRow;
       const sources = database
-        .prepare("SELECT id, title, version FROM sources WHERE jurisdiction = ? ORDER BY position")
-        .all(id) as Array<{ id: string; title: string; version: string }>;
+        .prepare(
+          "SELECT id, title, version, url FROM sources WHERE jurisdiction = ? ORDER BY position",
+        )
+        .all(id) as Array<{ id: string; title: string; version: string; url: string }>;
       return [
         {
           id,
@@ -101,6 +106,18 @@ export class LawLibrary {
           })),
         },
       ];
+    });
+  }
+
+  read(id: Jurisdiction, source: string): LawAct | undefined {
+    const database = this.open(id);
+    return database === undefined ? undefined : readAct(database, source);
+  }
+
+  citations(): LawCitations {
+    return JurisdictionSchema.options.flatMap((id) => {
+      const database = this.open(id);
+      return database === undefined ? [] : actCitations(database, id);
     });
   }
 

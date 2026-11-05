@@ -8,6 +8,8 @@ import type {
   DataPacks,
   FolderSummary,
   Jurisdiction,
+  LawAct,
+  LawCitations,
   LawJurisdictionSummary,
   ModelRuntimeStatus,
   SessionDraft,
@@ -117,6 +119,9 @@ export interface DesktopApi {
   openPromptFolder(folder: PromptFolder): Promise<void>;
   sampleFolderFiles(folderId: string): Promise<string[]>;
   listLaws(): Promise<LawJurisdictionSummary[]>;
+  readLaw(id: Jurisdiction, source: string): Promise<LawAct>;
+  listLawCitations(): Promise<LawCitations>;
+  openLawSource(id: Jurisdiction, source: string): Promise<void>;
   setLawEnabled(id: Jurisdiction, enabled: boolean, source?: string): Promise<boolean>;
   listDataPacks(): Promise<DataPacks>;
   saveDataPackKey(key: string): Promise<DataPackKeyStatus>;

@@ -5,7 +5,14 @@ import type { LawLibrary } from "./laws/law-library.js";
 
 export type LawPorts = Pick<
   GardenDeskCorePorts,
-  "listLaws" | "setLawEnabled" | "listDataPacks" | "saveDataPackKey" | "installDataPack"
+  | "listLaws"
+  | "readLaw"
+  | "lawCitations"
+  | "lawSourceUrl"
+  | "setLawEnabled"
+  | "listDataPacks"
+  | "saveDataPackKey"
+  | "installDataPack"
 >;
 
 export function createLawPorts(
@@ -15,6 +22,13 @@ export function createLawPorts(
 ): LawPorts {
   return {
     listLaws: async () => laws.list(),
+    readLaw: async (id, source) => laws.read(id, source),
+    lawCitations: async () => laws.citations(),
+    lawSourceUrl: async (id, source) =>
+      laws
+        .list()
+        .find((law) => law.id === id)
+        ?.sources.find((item) => item.id === source)?.url,
     async setLawEnabled(id, enabled, source) {
       const changed = laws.setEnabled(id, enabled, source);
       audit.append({
