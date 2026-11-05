@@ -7,6 +7,7 @@ import {
   type ChatToolDefinition,
 } from "@gardendesk/shared";
 import type { AgentSessionExecution } from "@gardendesk/workers";
+import type { LawContext } from "../laws/law-library.js";
 import {
   AgentExecutionAttemptError,
   type AgentExecutor,
@@ -43,6 +44,7 @@ export interface ToolExecutionResult extends AgentToolResult {
 }
 export interface ToolContext {
   executor: AgentExecutor;
+  laws?: LawContext;
   skills: SkillReader;
   systemPrompt?(name: string): string;
   subagents?: readonly { name: string; description: string }[];

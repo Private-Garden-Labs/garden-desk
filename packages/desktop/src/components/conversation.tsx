@@ -3,6 +3,7 @@ import type {
   AgentRunPerformance,
   AgentRunSummary,
   AttachmentSummary,
+  CommandSummary,
 } from "@gardendesk/shared";
 import { useLayoutEffect, useRef } from "react";
 import type { ArtifactSaveResult } from "../artifact-actions.js";
@@ -15,6 +16,8 @@ import { type OrderedEntry, TimelineEntries } from "./timeline-entries.js";
 interface ConversationProps {
   artifacts: AgentArtifactSummary[];
   attachments?: AttachmentSummary[];
+  commands?: CommandSummary[];
+  folderFileNames?: string[];
   folderName?: string | undefined;
   ready: boolean;
   timeline: TimelineItem[];
@@ -67,6 +70,8 @@ export function isNearConversationBottom(
 export function Conversation({
   artifacts,
   attachments = [],
+  commands = [],
+  folderFileNames = [],
   folderName,
   ready,
   timeline,
@@ -107,7 +112,16 @@ export function Conversation({
     savedScroll.current = container.scrollTop;
   });
   if (entries.length === 0) {
-    return <EmptyConversation folderName={folderName} onSuggestion={onSuggestion} ready={ready} />;
+    return (
+      <EmptyConversation
+        attachmentNames={attachments.map((attachment) => attachment.name)}
+        commands={commands}
+        folderFileNames={folderFileNames}
+        folderName={folderName}
+        onSuggestion={onSuggestion}
+        ready={ready}
+      />
+    );
   }
   const lastAssistantId = timeline.findLast((item) => item.kind === "assistant")?.id;
   return (

@@ -241,46 +241,35 @@ export async function installRuntimeResources(
 
 export async function installImageModelResources(
   sha256: HashFile,
-): Promise<Pick<ResourceHashes, "generationModel" | "projectorModel">> {
+): Promise<Pick<ResourceHashes, "generationModel" | "projectorModel" | "encoderModel">> {
   reportDevelopmentResourceStage("model");
   const root = join(resourcesRoot, "models");
   await mkdir(root, { recursive: true });
-  const candidates = [
-    {
-      modelId: model.generationModelId,
-      storeKey: model.generationModelFileName,
-      source: model.canonicalGenerationModelPath(repositoryRoot),
-      runtimeBuild: INFERENCE_PROFILE.runtimeBuild,
-    },
-    {
-      modelId: model.projectorModelId,
-      storeKey: model.projectorModelFileName,
-      source: model.canonicalProjectorModelPath(repositoryRoot),
-      runtimeBuild: INFERENCE_PROFILE.runtimeBuild,
-    },
-  ] as const;
-  for (const candidate of candidates) {
-    await requireFetchedAsset(
-      candidate.source,
-      `pnpm model:fetch --id ${candidate.modelId} --destination ${candidate.source}`,
-    );
-  }
-  const [generation, projector] = await Promise.all(
-    candidates.map(async (candidate) => ({
-      modelId: candidate.modelId,
-      storeKey: candidate.storeKey,
-      byteLength: (await stat(candidate.source)).size,
-      sha256: await sha256(candidate.source),
-      runtimeBuild: candidate.runtimeBuild,
-      installedAt: "2026-08-15T00:00:00.000Z",
-    })),
+  const models = await Promise.all(
+    model.packagedModelFiles.map(async (file) => {
+      const source = model.canonicalModelPath(repositoryRoot, file.fileName);
+      await requireFetchedAsset(source, `pnpm model:fetch --id ${file.id} --destination ${source}`);
+      return {
+        modelId: file.id,
+        storeKey: file.fileName,
+        byteLength: (await stat(source)).size,
+        sha256: await sha256(source),
+        runtimeBuild: INFERENCE_PROFILE.runtimeBuild,
+        installedAt: "2026-08-15T00:00:00.000Z",
+      };
+    }),
   );
-  if (generation === undefined || projector === undefined) {
+  const [generation, projector, encoder] = models;
+  if (generation === undefined || projector === undefined || encoder === undefined) {
     throw new Error("Image model resource list is incomplete.");
   }
   await writeFile(
     join(root, "installed-models.json"),
-    `${JSON.stringify({ schemaVersion: 1, models: [generation, projector] })}\n`,
+    `${JSON.stringify({ schemaVersion: 1, models })}\n`,
   );
-  return { generationModel: generation.sha256, projectorModel: projector.sha256 };
+  return {
+    generationModel: generation.sha256,
+    projectorModel: projector.sha256,
+    encoderModel: encoder.sha256,
+  };
 }

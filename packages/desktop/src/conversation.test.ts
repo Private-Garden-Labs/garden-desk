@@ -130,10 +130,11 @@ function renderLiveThinking(): string {
 }
 
 describe("empty conversation presentation", () => {
-  it("includes folder context in the prompt and offers a review task", () => {
+  it("includes folder context in the prompt and offers the available review command", () => {
     const markup = renderToStaticMarkup(
       createElement(Conversation, {
         artifacts: [],
+        commands: [{ name: "review", description: "Review one attached document" }],
         folderName: "Client files",
         ready: true,
         timeline: [],
@@ -145,7 +146,8 @@ describe("empty conversation presentation", () => {
 
     expect(markup).toMatch(/What should we work on in\s*<span[^>]*>Client files<\/span>\?/);
     expect(markup).not.toContain("welcome-context");
-    expect(markup).toContain("Review and suggest improvements");
+    expect(markup).toContain("/review");
+    expect(markup).toContain("Review one attached document for inconsistencies");
     expect(markup).not.toContain("Build a small artifact");
   });
 });

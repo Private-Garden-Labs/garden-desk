@@ -11,7 +11,7 @@ After cloning, run the setup command for your platform:
 
 Setup checks the required tools and asks before it installs a missing one. After you approve, it installs the locked packages, downloads missing model and runtime files, builds a missing guest image (Docker with Linux containers), and starts the app. The first setup needs an internet connection. If an installer asks you to restart, restart and run setup again. On Windows, after the helper adds you to Hyper-V Administrators, sign out and back in.
 
-Later, `pnpm start` runs `pnpm desktop:dev`. Run setup again when dependencies or required assets change. The development terminal shows WebView and Core output. That output is not stored and must never include prompts, messages, tool payloads, reasoning, or file contents.
+Later, `pnpm dev` or `pnpm start` runs `pnpm desktop:dev`. Run setup again when dependencies or required assets change. The development terminal shows WebView and Core output. That output is not stored and must never include prompts, messages, tool payloads, reasoning, or file contents.
 
 ## Make A Change
 
@@ -58,6 +58,10 @@ Use this only as a last resort, and only after the owner approves the exact comm
 - Windows development builds sign with a disposable current-user identity. A production build sets `GARDEN_DESK_WINDOWS_SIGNING_MODE=production`, plus `GARDEN_DESK_WINDOWS_SIGNING_ENDPOINT`, `GARDEN_DESK_WINDOWS_SIGNING_ACCOUNT`, `GARDEN_DESK_WINDOWS_SIGNING_PROFILE`, and `GARDEN_DESK_WINDOWS_SIGNING_DLIB` (the path of `Azure.CodeSigning.Dlib.dll`). It signs with `signtool` and timestamps with `http://timestamp.acs.microsoft.com`. The signed-in Azure identity needs the Artifact Signing Certificate Profile Signer role. The build fails closed if a value or `signtool` is missing, or if verification fails.
 - `assets/inference-runtime.json` pins a `stagedSha256` per platform. Packaging stops on a mismatch. A file that already carries a valid vendor signature keeps it.
 - macOS development builds sign ad hoc. A production build sets `APPLE_SIGNING_IDENTITY` to the Developer ID Application identity. It signs the sidecar, inference runtime, and VZ helper with the hardened runtime, then notarizes and staples the DMG with the `garden-desk` notary profile. Create that profile once with `xcrun notarytool store-credentials garden-desk --key <AuthKey_ID.p8> --key-id <key ID> --issuer <issuer ID>`. Allow the terminal to control Finder for the DMG layout, or set `CI=true` to skip the layout.
+
+## Data Packs
+
+Data packs are built, signed, and published outside this repository. The app downloads them from `https://packs.gardendesk.ai`; none are packaged with it.
 
 ## Publish A Release
 

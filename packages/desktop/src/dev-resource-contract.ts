@@ -11,6 +11,7 @@ function modelInputs(repositoryRoot: string): string[] {
   return [
     join(root, `${INFERENCE_PROFILE.modelId}.gguf`),
     join(root, `${INFERENCE_PROFILE.projectorId}.gguf`),
+    join(root, `${INFERENCE_PROFILE.encoderId}.gguf`),
   ];
 }
 

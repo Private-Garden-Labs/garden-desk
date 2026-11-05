@@ -1,5 +1,4 @@
-import { type KeyboardEvent, type PointerEvent, useRef, useState } from "react";
-import { t } from "../i18n/index.js";
+import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState } from "react";
 
 export const DRAWER_MIN_WIDTH = 320;
 export const DRAWER_MAX_WIDTH = 720;
@@ -31,8 +30,29 @@ export interface DrawerResize {
   width: number | undefined;
 }
 
-export function useDrawerResize(): DrawerResize {
-  const [width, setWidth] = useState<number | undefined>(undefined);
+function storedWidth(storageKey: string | undefined): number | undefined {
+  if (storageKey === undefined) return undefined;
+  try {
+    const width = Number(localStorage.getItem(storageKey));
+    return width >= DRAWER_MIN_WIDTH && width <= DRAWER_MAX_WIDTH ? width : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function usePersistedWidth(storageKey: string | undefined) {
+  const [width, setWidth] = useState(() => storedWidth(storageKey));
+  useEffect(() => {
+    if (storageKey === undefined || width === undefined) return;
+    try {
+      localStorage.setItem(storageKey, String(Math.round(width)));
+    } catch {}
+  }, [storageKey, width]);
+  return [width, setWidth] as const;
+}
+
+export function useDrawerResize(storageKey?: string): DrawerResize {
+  const [width, setWidth] = usePersistedWidth(storageKey);
   const drag = useRef<
     | { availableWidth: number | undefined; pointerId: number; startWidth: number; startX: number }
     | undefined
@@ -79,10 +99,10 @@ export function useDrawerResize(): DrawerResize {
   return { begin, end, keyDown, move, width };
 }
 
-export function DrawerResizeHandle({ resize }: { resize: DrawerResize }) {
+export function DrawerResizeHandle({ label, resize }: { label: string; resize: DrawerResize }) {
   return (
     <hr
-      aria-label={t("technical.resize")}
+      aria-label={label}
       aria-orientation="vertical"
       aria-valuemax={DRAWER_MAX_WIDTH}
       aria-valuemin={DRAWER_MIN_WIDTH}

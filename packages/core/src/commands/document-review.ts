@@ -7,14 +7,16 @@ import {
   JobIdSchema,
 } from "@gardendesk/shared";
 import { currentTimeContext, withCurrentTimeContext } from "../agent/chat-current-time.js";
-import { replyLanguagePrompt } from "../agent/chat-initial-messages.js";
+import { replyLanguagePrompt, withLawDisclaimer } from "../agent/chat-initial-messages.js";
 import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-input.js";
 import { streamCallbacks } from "../agent/chat-streaming.js";
 import { isSuccessfulExecution } from "../agent/execution-success.js";
-import type { InferenceService } from "../runtime/inference.js";
+import type { ChatInput, InferenceService } from "../runtime/inference.js";
 import { inferenceFailureCode } from "../runtime/inference-errors.js";
 import type { CommandInvocation } from "./library.js";
 import { reviewExtractionSource } from "./review-extraction.js";
+
+const LAW_SEARCH_PHRASES = 30;
 
 async function extractDocument(
   input: ChatAgentInput,
@@ -49,6 +51,12 @@ function reviewResponse(result: ChatGenerationResult): string {
   const response = result.text.trim();
   if (!response) throw new Error("agent_empty_response");
   return response;
+}
+
+function reviewFailure(error: unknown): unknown {
+  return inferenceFailureCode(error) === "invalid_argument"
+    ? new Error("agent_review_input_unsupported")
+    : error;
 }
 
 function reviewStreams(input: ChatAgentInput) {
@@ -114,12 +122,58 @@ async function generateReview(
         turnId,
         input.signal?.aborted ? "cancelled" : received ? "invalid_response" : "inference_failed",
       );
-    if (inferenceFailureCode(error) === "invalid_argument")
-      throw new Error("agent_review_input_unsupported");
-    throw error;
+    throw reviewFailure(error);
   } finally {
     input.onThinking?.(null);
   }
+}
+
+async function lawSearchPhrases(
+  input: ChatAgentInput,
+  chat: InferenceService["chat"],
+  request: ChatInput,
+): Promise<string[]> {
+  input.onEvent?.("inference.started", "Finding the law that applies.");
+  const result = await chat(
+    request,
+    input.signal,
+    {},
+    { requestId: randomUUID(), jobId: JobIdSchema.parse(randomUUID()) },
+  ).catch((error: unknown) => {
+    throw reviewFailure(error);
+  });
+  try {
+    const phrases: unknown = JSON.parse(
+      result.text.slice(result.text.indexOf("["), result.text.lastIndexOf("]") + 1),
+    );
+    return Array.isArray(phrases)
+      ? phrases.filter((phrase) => typeof phrase === "string").slice(0, LAW_SEARCH_PHRASES)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+async function packagedLaw(
+  input: ChatAgentInput,
+  chat: InferenceService["chat"],
+  settings: Omit<ChatInput, "messages">,
+  text: string,
+) {
+  const laws = input.laws;
+  if (laws === undefined) return undefined;
+  const phrases = await lawSearchPhrases(input, chat, {
+    ...settings,
+    messages: [
+      { role: "system", text: input.systemPrompt("law-search-phrases") },
+      { role: "user", text: JSON.stringify({ jurisdiction: laws.name, extractedText: text }) },
+    ],
+  });
+  return {
+    jurisdiction: laws.name,
+    currentAsOf: laws.currentAsOf,
+    packagedLaw: await laws.forDocument(text, phrases, input.signal),
+  };
 }
 
 export async function runDocumentReview(
@@ -142,7 +196,7 @@ export async function reviewDocument(
 ): Promise<AgentRunResult> {
   const extracted = await extractDocument(input, source.attachment, source.directory);
   input.signal?.throwIfAborted();
-  const request = {
+  const settings = {
     modelId: input.modelId,
     contextSize: input.contextTokens,
     maxTokens:
@@ -150,6 +204,10 @@ export async function reviewDocument(
     temperature: 1,
     thinking: input.thinking ?? DEFAULT_THINKING_LEVEL,
     tools: [],
+  };
+  const law = await packagedLaw(input, chat, settings, extracted.result.stdout);
+  const request = {
+    ...settings,
     messages: withCurrentTimeContext(
       [
         { role: "system", text: [command.body, ...replyLanguagePrompt(input)].join("\n\n") },
@@ -162,6 +220,7 @@ export async function reviewDocument(
           text: JSON.stringify({
             source: extracted.attachment.displayName,
             extractedText: extracted.result.stdout,
+            ...law,
           }),
         },
       ],
@@ -169,7 +228,9 @@ export async function reviewDocument(
     ),
   };
   input.onEvent?.("inference.started", "Reviewing the extracted text.");
-  const { result, response } = await generateReview(input, chat, request);
+  const generated = await generateReview(input, chat, request);
+  const result = generated.result;
+  const response = withLawDisclaimer(input, generated.response);
   const allocated = result.memory.contextSizeTokens;
   if (allocated !== undefined) input.onContext?.(result.contextUsedTokens, allocated, true);
   input.onResponse?.(response);

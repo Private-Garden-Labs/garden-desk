@@ -14,6 +14,7 @@ import type { AuditLog } from "../audit/log.js";
 import { CommandLibrary } from "../commands/library.js";
 import type { ConversationStore } from "../conversations/store.js";
 import type { JobStore } from "../jobs/jobs.js";
+import type { LawContext } from "../laws/law-library.js";
 import type { InferenceService } from "../runtime/inference.js";
 import type { ArtifactStore } from "../workspace/artifacts.js";
 import type { DatabasePort } from "../workspace/database.js";
@@ -34,6 +35,8 @@ import { SessionSummaryQueue } from "./service-summary-queue.js";
 import { AgentSessionManager } from "./session-manager.js";
 import { SessionSummaryStore } from "./session-summary-store.js";
 import type { AgentStore } from "./store.js";
+
+type AgentRunOptions = { laws?: LawContext | undefined; replyLanguage?: string | undefined };
 
 export class AgentService {
   private readonly active = new Map<string, ActiveRun>();
@@ -137,7 +140,7 @@ export class AgentService {
     sessionId: string,
     task: string,
     thinking = DEFAULT_THINKING_LEVEL,
-    replyLanguage?: string,
+    options: AgentRunOptions = {},
   ): AgentRunSummary {
     if (this.closed) throw new Error("agent_service_closed");
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
@@ -150,9 +153,7 @@ export class AgentService {
     })();
     const controller = new AbortController();
     const finished = Promise.resolve()
-      .then(
-        async () => await this.execute(run, { task, thinking, replyLanguage }, controller.signal),
-      )
+      .then(async () => await this.execute(run, { task, thinking, ...options }, controller.signal))
       .finally(() => {
         this.active.delete(run.jobId);
       });
@@ -213,10 +214,10 @@ export class AgentService {
   // biome-ignore lint/complexity/noExcessiveLinesPerFunction: the run lifecycle stays linear so cleanup and terminal persistence remain paired.
   private async execute(
     run: AgentRunSummary,
-    request: { task: string; thinking: ThinkingLevel; replyLanguage: string | undefined },
+    request: { task: string; thinking: ThinkingLevel } & AgentRunOptions,
     signal: AbortSignal,
   ): Promise<void> {
-    const { task, thinking, replyLanguage } = request;
+    const { task, thinking, laws, replyLanguage } = request;
     let releaseCapacity: (() => void) | undefined;
     let measuredContextTokens: number | undefined;
     try {
@@ -247,6 +248,7 @@ export class AgentService {
         history: agentHistory(messages, anchored),
         inspectImage: this.images.forRun(run.sessionId, signal),
         jobs: this.jobs,
+        ...(laws === undefined ? {} : { laws }),
         ...(await inferenceRunContext(this.inference)),
         onThinking: (thinking) => this.updateActive(run.jobId, { thinking }),
         onResponse: (response) => this.updateActive(run.jobId, { response }),

@@ -18,29 +18,19 @@ import {
   demoTime,
   uuid,
 } from "./demo-run.js";
-import { financeSession, folder, initialRun, sampleMessages, sessions } from "./fixtures.js";
+import {
+  demoCommands,
+  demoSkills,
+  financeSession,
+  folder,
+  initialRun,
+  sampleMessages,
+  sessions,
+} from "./fixtures.js";
 
 const demoUnavailable = () => Promise.reject(new Error("Unavailable in the public demo"));
 const limitation =
   "The public demo does not run a model or send your text anywhere. Choose one of the guided examples above to see a deterministic sample result.";
-const demoSkills = [
-  {
-    description: "Review a document for obligations, risks, and missing sections.",
-    enabled: true,
-    name: "document-review",
-    path: "browser-memory://synthetic-demo/skills/document-review/SKILL.md",
-    source: "built-in" as const,
-    valid: true,
-  },
-  {
-    description: "Reconcile financial records and explain every difference.",
-    enabled: true,
-    name: "financial-records-reconciliation",
-    path: "browser-memory://synthetic-demo/skills/financial-records-reconciliation/SKILL.md",
-    source: "built-in" as const,
-    valid: true,
-  },
-];
 
 interface DynamicRun {
   polls: number;
@@ -60,7 +50,7 @@ export class DemoDesktopApi implements DesktopApi {
   async bootstrapDesktop() {
     return {
       catalogPath: "browser-memory://synthetic-demo",
-      commands: [],
+      commands: demoCommands,
       folders: [folder],
       globalSessions: { items: [], nextCursor: null },
       folderSessions: [
@@ -118,6 +108,15 @@ export class DemoDesktopApi implements DesktopApi {
   removeSkill = demoUnavailable;
   setSkillEnabled = demoUnavailable;
   openPromptFolder = demoUnavailable;
+  setLawEnabled = demoUnavailable;
+  sampleFolderFiles = async () => ["bank-statement.csv", "ledger.xlsx", "transaction-review.md"];
+  listLaws = async () => [];
+  readLaw = demoUnavailable;
+  listLawCitations = async () => [];
+  openLawSource = demoUnavailable;
+  listDataPacks = async () => ({ keySaved: false, online: false, packs: [] });
+  saveDataPackKey = async () => "offline" as const;
+  installDataPack = async () => false;
 
   async listSkills() {
     return demoSkills.map((skill) => ({ ...skill }));

@@ -8,7 +8,8 @@ export class ResourceScheduler {
   constructor(readonly budgetBytes: number) {}
 
   reserve(operation: InferenceOperation): { memoryBudgetBytes: number; release(): void } {
-    const requested = operation === "embed" ? 2 * GiB : this.budgetBytes;
+    if (operation === "embed") return { memoryBudgetBytes: 2 * GiB, release: () => undefined };
+    const requested = this.budgetBytes;
     if (this.reservedBytes + requested > this.budgetBytes) {
       throw new Error("inference_memory_budget_exceeded");
     }

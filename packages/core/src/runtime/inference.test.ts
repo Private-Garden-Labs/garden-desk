@@ -106,12 +106,12 @@ describe("M2 inference orchestration", () => {
     }
   });
 
-  it("prevents overlapping generation and embedding reservations", () => {
+  it("keeps the CPU encoder beside the full generation reservation", () => {
     const scheduler = new ResourceScheduler(16 * GiB);
     const lease = scheduler.reserve("generate");
-    expect(() => scheduler.reserve("embed")).toThrow("inference_memory_budget_exceeded");
-    lease.release();
     expect(() => scheduler.reserve("embed")).not.toThrow();
+    expect(() => scheduler.reserve("generate")).toThrow("inference_memory_budget_exceeded");
+    lease.release();
   });
 });
 

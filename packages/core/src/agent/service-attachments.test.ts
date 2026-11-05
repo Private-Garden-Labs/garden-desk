@@ -60,7 +60,10 @@ it("asks for the review in the selected interface language", async () => {
       session.id,
       fileURLToPath(new URL("../../../../prompts/commands/review.md", import.meta.url)),
     );
-    await terminal(service, service.start(session.id, "/review", "medium", "Romanian").id);
+    await terminal(
+      service,
+      service.start(session.id, "/review", "medium", { replyLanguage: "Romanian" }).id,
+    );
     const input = chat.mock.calls[0]?.[0] as ChatInput;
     expect(input.messages[0]).toMatchObject({ text: expect.stringContaining("Romanian") });
   } finally {

@@ -21,6 +21,8 @@ import type {
   SecureWorkspaceStatus,
 } from "./api.js";
 import { invokeDesktop, withDevelopmentError } from "./development-errors.js";
+import { tauriFolderApi } from "./tauri-folders.js";
+import { tauriLawApi } from "./tauri-laws.js";
 import { record } from "./tauri-parse.js";
 import { tauriSkillApi } from "./tauri-skills.js";
 
@@ -222,13 +224,9 @@ export const tauriDesktopApi: DesktopApi = {
       { sessionId },
     );
   },
-  async startAgent(sessionId, task, thinking, language) {
-    return invokeDesktop("start_agent", (value) => AgentRunSummarySchema.parse(value), {
-      sessionId,
-      task,
-      thinking,
-      language,
-    });
+  async startAgent(sessionId, task, thinking, options) {
+    const args = { sessionId, task, thinking, ...options };
+    return invokeDesktop("start_agent", (value) => AgentRunSummarySchema.parse(value), args);
   },
   async getAgentRun(runId) {
     return invokeDesktop("get_agent_run", (value) => AgentRunSnapshotSchema.parse(value), {
@@ -281,6 +279,8 @@ export const tauriDesktopApi: DesktopApi = {
     await invokeDesktop("open_release_page", () => undefined);
   },
   ...tauriSkillApi,
+  ...tauriLawApi,
+  ...tauriFolderApi,
   async listenForDroppedPaths(listener) {
     return await withDevelopmentError("listen_for_dropped_paths", async () =>
       getCurrentWebview().onDragDropEvent(({ payload }) => {

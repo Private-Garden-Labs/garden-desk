@@ -1,4 +1,6 @@
-import type { AgentRunSnapshot } from "@gardendesk/shared";
+import type { AgentRunSnapshot, AgentRunSummary } from "@gardendesk/shared";
+import type { DesktopApi } from "./api.js";
+import { t } from "./i18n/index.js";
 
 const POLL_INTERVAL_MS = 350;
 const RETRY_INTERVAL_MS = 250;
@@ -41,4 +43,13 @@ export async function waitForAgentRun(options: WaitForAgentRunOptions): Promise<
     if (snapshot.run.state !== "queued" && snapshot.run.state !== "running") return snapshot;
     await pause(POLL_INTERVAL_MS);
   }
+}
+
+export function cancelRun(
+  api: DesktopApi,
+  run: AgentRunSummary | undefined,
+  setError: (message: string) => void,
+) {
+  if (run !== undefined)
+    void api.cancelAgent(run.jobId).catch(() => setError(t("task.cancelFailed")));
 }

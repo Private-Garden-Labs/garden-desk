@@ -5,7 +5,12 @@ import type {
   AttachmentSummary,
   CommandSummary,
   ConversationMessage,
+  DataPacks,
   FolderSummary,
+  Jurisdiction,
+  LawAct,
+  LawCitations,
+  LawJurisdictionSummary,
   MessageRole,
   SessionDraft,
   SessionPage,
@@ -30,6 +35,7 @@ export interface GardenDeskCorePorts extends InferenceService {
   listFolders(): Promise<FolderSummary[]>;
   reorderFolders(folderIds: string[]): Promise<FolderSummary[]>;
   resolveFolderPath(folderId: string): Promise<string>;
+  sampleFolderFiles(folderId: string): Promise<string[]>;
   revokeFolder(folderId: string): Promise<boolean>;
   createSession(folderId: string | null): Promise<SessionSummary>;
   deleteSession(sessionId: string): Promise<boolean>;
@@ -58,7 +64,7 @@ export interface GardenDeskCorePorts extends InferenceService {
     sessionId: string,
     task: string,
     thinking: ThinkingLevel,
-    replyLanguage?: string,
+    options: { jurisdiction: Jurisdiction | null; replyLanguage?: string },
   ): Promise<AgentRunSummary>;
   listAgentRuns(sessionId: string): Promise<AgentRunSummary[]>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
@@ -74,6 +80,14 @@ export interface GardenDeskCorePorts extends InferenceService {
   removeSkill(name: string): Promise<boolean>;
   setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
   skillLocations(): Promise<SkillLocations>;
+  listLaws(): Promise<LawJurisdictionSummary[]>;
+  readLaw(id: Jurisdiction, source: string): Promise<LawAct | undefined>;
+  lawCitations(): Promise<LawCitations>;
+  lawSourceUrl(id: Jurisdiction, source: string): Promise<string | undefined>;
+  setLawEnabled(id: Jurisdiction, enabled: boolean, source?: string): Promise<boolean>;
+  listDataPacks(): Promise<DataPacks>;
+  saveDataPackKey(key: string): Promise<boolean>;
+  installDataPack(id: string): Promise<boolean>;
   verifyAudit(): Promise<boolean>;
   close(): Promise<void>;
 }
@@ -100,6 +114,15 @@ function skillPorts(ports: GardenDeskCorePorts) {
     removeSkill: (name: string) => ports.removeSkill(name),
     setSkillEnabled: (name: string, enabled: boolean) => ports.setSkillEnabled(name, enabled),
     skillLocations: () => ports.skillLocations(),
+    listLaws: () => ports.listLaws(),
+    readLaw: (id: Jurisdiction, source: string) => ports.readLaw(id, source),
+    lawCitations: () => ports.lawCitations(),
+    lawSourceUrl: (id: Jurisdiction, source: string) => ports.lawSourceUrl(id, source),
+    setLawEnabled: (id: Jurisdiction, enabled: boolean, source?: string) =>
+      ports.setLawEnabled(id, enabled, source),
+    listDataPacks: () => ports.listDataPacks(),
+    saveDataPackKey: (key: string) => ports.saveDataPackKey(key),
+    installDataPack: (id: string) => ports.installDataPack(id),
   };
 }
 
@@ -133,6 +156,7 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
     listFolders: () => ports.listFolders(),
     reorderFolders: (folderIds) => ports.reorderFolders(folderIds),
     resolveFolderPath: (folderId) => ports.resolveFolderPath(folderId),
+    sampleFolderFiles: (folderId) => ports.sampleFolderFiles(folderId),
     revokeFolder: (folderId) => ports.revokeFolder(folderId),
     createSession: (folderId) => ports.createSession(folderId),
     deleteSession: (sessionId) => ports.deleteSession(sessionId),
@@ -148,8 +172,8 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
       ports.materializeAttachment(sessionId, attachmentId),
     ...artifactPorts(ports),
     removeAttachment: (sessionId, attachmentId) => ports.removeAttachment(sessionId, attachmentId),
-    startAgent: (sessionId, task, thinking, replyLanguage) =>
-      ports.startAgent(sessionId, task, thinking, replyLanguage),
+    startAgent: (sessionId, task, thinking, options) =>
+      ports.startAgent(sessionId, task, thinking, options),
     listAgentRuns: (sessionId) => ports.listAgentRuns(sessionId),
     getAgentRun: (runId) => ports.getAgentRun(runId),
     getAgentTrace: (runId) => ports.getAgentTrace(runId),

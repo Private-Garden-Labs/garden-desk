@@ -16,6 +16,8 @@ mod core_arguments;
 mod core_transport;
 mod diagnostics;
 mod drop_commands;
+mod folder_commands;
+mod law_commands;
 mod package_integrity;
 mod question_commands;
 mod session_commands;
@@ -232,6 +234,15 @@ fn main() {
             commands::list_agent_runs,
             commands::list_attachments,
             commands::list_messages,
+            folder_commands::sample_folder_files,
+            law_commands::list_laws,
+            law_commands::read_law,
+            law_commands::list_law_citations,
+            law_commands::open_law_source,
+            law_commands::set_law_enabled,
+            law_commands::list_data_packs,
+            law_commands::save_data_pack_key,
+            law_commands::install_data_pack,
             session_commands::list_sessions,
             commands::load_draft,
             commands::model_status,

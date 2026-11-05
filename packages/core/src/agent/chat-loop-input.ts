@@ -5,6 +5,7 @@ import type {
   AgentRunResult,
   ThinkingLevel,
 } from "@gardendesk/shared";
+import type { LawContext } from "../laws/law-library.js";
 import type { AgentExecutor } from "./agent-executor.js";
 import type { ChatToolState } from "./chat-tool-turn.js";
 import type { ToolContext } from "./generic-tool-support.js";
@@ -56,6 +57,7 @@ export interface ChatAgentInput {
   subagents?: readonly { name: string; description: string }[];
   inferencePriority?: "primary" | "secondary";
   inspectImage?(path: string, prompt: string): Promise<string>;
+  laws?: LawContext;
   reviewDocument?: ToolContext["reviewDocument"];
   spawnTask?(request: SubagentRequest): Promise<Pick<AgentRunResult, "response" | "executions">>;
   askQuestion?(questions: AgentQuestion[]): Promise<AgentQuestionOutcome>;

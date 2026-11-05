@@ -8,6 +8,8 @@ import Markdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ArtifactSaveResult } from "../artifact-actions.js";
 import { t } from "../i18n/index.js";
+import { rehypeLawCitations } from "../law-citations.js";
+import { openCitation, useCitationIndex } from "../side-panel.js";
 import type { TimelineItem } from "../state.js";
 import { stableStreamingMarkdown } from "../streaming-markdown.js";
 import { thinkingLabel } from "./effort-control.js";
@@ -44,6 +46,14 @@ function ResponseMetrics({ performance }: { performance: AgentRunPerformance }) 
 
 // biome-ignore-start lint/a11y/noNoninteractiveTabindex: Overflowing response content needs a keyboard scroll target.
 const assistantMarkdownComponents: Components = {
+  cite({ children, node }) {
+    const citation = String(node?.properties.dataCitation ?? "");
+    return (
+      <button className="law-citation" onClick={() => openCitation(citation)} type="button">
+        {children}
+      </button>
+    );
+  },
   pre({ children }) {
     return (
       <section aria-label={t("response.code")}>
@@ -62,11 +72,13 @@ const assistantMarkdownComponents: Components = {
 // biome-ignore-end lint/a11y/noNoninteractiveTabindex: Overflowing response content needs a keyboard scroll target.
 
 function AssistantResponse({ children, streaming }: { children: string; streaming: boolean }) {
+  const citations = useCitationIndex();
   return (
     <div className={`assistant-markdown${streaming ? " assistant-markdown-streaming" : ""}`}>
       <Markdown
         components={assistantMarkdownComponents}
         disallowedElements={["a", "img"]}
+        rehypePlugins={[rehypeLawCitations(citations)]}
         remarkPlugins={[remarkGfm]}
         skipHtml
         unwrapDisallowed

@@ -38,6 +38,7 @@ const sidebarRowProps = {
   onAddFolder: () => undefined,
   onNewSession: () => undefined,
   onOpenFolder: () => undefined,
+  onOpenLaws: () => undefined,
   onOpenReleases: () => undefined,
   onOpenSkills: () => undefined,
   onDeleteSession: () => undefined,

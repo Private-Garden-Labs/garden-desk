@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import type { InferenceProfile, WorkspaceStatus } from "@gardendesk/shared";
+import { INFERENCE_PROFILE, type InferenceProfile, type WorkspaceStatus } from "@gardendesk/shared";
 import { createCodeAgentLauncher } from "./agent/launcher.js";
 import { MarkdownDefinitionLibrary } from "./agent/markdown-definition-library.js";
 import { AgentService } from "./agent/service.js";
@@ -12,6 +12,9 @@ import { warmConversationSession } from "./conversations/lifecycle.js";
 import { ConversationStore } from "./conversations/store.js";
 import { createFacade, type GardenDeskCore } from "./facade.js";
 import { JobStore } from "./jobs/jobs.js";
+import { createLawPorts } from "./law-ports.js";
+import { DATA_PACK_SIGNING_KEY, DataPackStore } from "./laws/data-packs.js";
+import { LawLibrary } from "./laws/law-library.js";
 import { createInferenceService, unavailableInference } from "./runtime/compose.js";
 import type { InferenceSupervisor } from "./runtime/supervisor.js";
 import { createSkillPorts } from "./skill-ports.js";
@@ -44,6 +47,8 @@ interface CoreServices {
   agentStore: AgentStore;
   inference: InferenceSupervisor | ReturnType<typeof unavailableInference>;
   skills: SkillStore;
+  laws: LawLibrary;
+  dataPacks: DataPackStore;
   agent?: AgentService;
 }
 
@@ -57,6 +62,7 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
   return createFacade({
     listCommands: async () => services.commands.list(),
     ...createSkillPorts(services.skills, audit),
+    ...createLawPorts(services.laws, services.dataPacks, audit),
     status: async () => ({
       workspace,
       catalogSchemaVersion: catalog.schemaVersion,
@@ -93,8 +99,9 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     async removeAttachment(sessionId, attachmentId) {
       return agent?.removeAttachment(sessionId, attachmentId) ?? unavailableAgent();
     },
-    async startAgent(sessionId, task, thinking, replyLanguage) {
-      return agent?.start(sessionId, task, thinking, replyLanguage) ?? unavailableAgent();
+    async startAgent(sessionId, task, thinking, { jurisdiction, replyLanguage }) {
+      const laws = jurisdiction === null ? undefined : services.laws.context(jurisdiction);
+      return agent?.start(sessionId, task, thinking, { laws, replyLanguage }) ?? unavailableAgent();
     },
     async listAgentRuns(sessionId) {
       return agent?.listRuns(sessionId) ?? unavailableAgent();
@@ -132,6 +139,7 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     async close() {
       await agent?.close();
       await inference.close();
+      services.laws.close();
       audit.append({ type: "core.closed", outcome: "succeeded", metadata: {} });
       catalog.close();
     },
@@ -194,6 +202,34 @@ export async function createGardenDeskCore(
           new MarkdownDefinitionLibrary(promptDirectory, skills),
           commands,
         );
+  const packsRoot = resolve(workspaceRoot, "data-packs");
+  const laws = new LawLibrary(
+    packsRoot,
+    resolve(workspaceRoot, "laws", "settings.json"),
+    async (input, signal) =>
+      (
+        await inference.embed(
+          {
+            modelId: INFERENCE_PROFILE.encoderId,
+            input,
+            contextSize: INFERENCE_PROFILE.encoderContextTokens,
+          },
+          signal,
+        )
+      ).vector,
+  );
+  const dataPacks = new DataPackStore(
+    packsRoot,
+    DATA_PACK_SIGNING_KEY,
+    (pack) => laws.release(pack.jurisdiction),
+    ({ pack, failure }) =>
+      audit.append({
+        type: "data_pack.installed",
+        outcome: failure === undefined ? "succeeded" : "failed",
+        metadata:
+          failure === undefined ? { id: pack.id, sha256: pack.sha256 } : { id: pack.id, failure },
+      }),
+  );
   const restoredSessionId = conversations.mostRecentSessionId();
   if (agent !== undefined && restoredSessionId !== undefined) {
     warmConversationSession(agent, audit, restoredSessionId);
@@ -208,6 +244,8 @@ export async function createGardenDeskCore(
     agentStore,
     inference,
     skills,
+    laws,
+    dataPacks,
     ...(agent === undefined ? {} : { agent }),
   });
 }

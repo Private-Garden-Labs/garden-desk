@@ -5,7 +5,12 @@ import type {
   AttachmentSummary,
   CommandSummary,
   ConversationMessage,
+  DataPacks,
   FolderSummary,
+  Jurisdiction,
+  LawAct,
+  LawCitations,
+  LawJurisdictionSummary,
   ModelRuntimeStatus,
   SessionDraft,
   SessionPage,
@@ -58,6 +63,8 @@ export interface SecureWorkspaceSetupResult {
   status: SecureWorkspaceStatus;
 }
 
+export type DataPackKeyStatus = "accepted" | "rejected" | "offline";
+
 export interface DesktopApi {
   bootstrapDesktop(): Promise<DesktopBootstrap>;
   getSecureWorkspaceStatus(): Promise<SecureWorkspaceStatus>;
@@ -90,7 +97,7 @@ export interface DesktopApi {
     sessionId: string,
     task: string,
     thinking: ThinkingLevel,
-    language: string,
+    options: { jurisdiction: Jurisdiction | null; language: string },
   ): Promise<AgentRunSummary>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;
@@ -110,5 +117,14 @@ export interface DesktopApi {
   setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
   skillLocations(): Promise<SkillLocations>;
   openPromptFolder(folder: PromptFolder): Promise<void>;
+  sampleFolderFiles(folderId: string): Promise<string[]>;
+  listLaws(): Promise<LawJurisdictionSummary[]>;
+  readLaw(id: Jurisdiction, source: string): Promise<LawAct>;
+  listLawCitations(): Promise<LawCitations>;
+  openLawSource(id: Jurisdiction, source: string): Promise<void>;
+  setLawEnabled(id: Jurisdiction, enabled: boolean, source?: string): Promise<boolean>;
+  listDataPacks(): Promise<DataPacks>;
+  saveDataPackKey(key: string): Promise<DataPackKeyStatus>;
+  installDataPack(id: string): Promise<boolean>;
   listenForDroppedPaths?(listener: (event: NativeDropEvent) => void): Promise<() => void>;
 }

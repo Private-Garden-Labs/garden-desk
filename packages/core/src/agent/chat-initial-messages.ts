@@ -1,6 +1,11 @@
-import type { ChatMessage } from "@gardendesk/shared";
+import { type ChatMessage, LAW_DISCLAIMER } from "@gardendesk/shared";
 import { fillPrompt } from "../prompt-files.js";
 import type { ChatAgentInput } from "./chat-loop.js";
+
+export function withLawDisclaimer(input: Pick<ChatAgentInput, "laws">, response: string): string {
+  if (input.laws?.searched() !== true || response.includes(LAW_DISCLAIMER)) return response;
+  return `${response}\n\n${LAW_DISCLAIMER}`;
+}
 
 export function replyLanguagePrompt(
   input: Pick<ChatAgentInput, "replyLanguage" | "systemPrompt">,
