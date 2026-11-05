@@ -24,6 +24,7 @@ export const DATA_PACK_SIGNING_KEY = createPublicKey({
   type: "spki",
 });
 const STORE_TIMEOUT_MS = 2_500;
+const STORE_STALL_MS = 30_000;
 
 type Failure = NonNullable<DataPackStatus["failure"]>;
 
@@ -42,12 +43,25 @@ function storeGet(
   signal?: AbortSignal,
 ): Promise<IncomingMessage> {
   return new Promise((resolve, reject) => {
-    get(`${STORE}${path}`, { headers: authorization(key), signal }, (response) => {
+    const options = { headers: authorization(key), signal, timeout: STORE_STALL_MS };
+    const request = get(`${STORE}${path}`, options, (response) => {
       if (response.statusCode === 200 || response.statusCode === 204) return resolve(response);
       response.resume();
       reject(new Error(response.statusCode === 401 ? "key" : "unavailable"));
-    }).on("error", reject);
+    });
+    request.on("timeout", () => request.destroy(new Error("unavailable"))).on("error", reject);
   });
+}
+
+function limitBytes(limit: number) {
+  return async function* (chunks: AsyncIterable<Buffer>) {
+    let received = 0;
+    for await (const chunk of chunks) {
+      received += chunk.length;
+      if (received > limit) throw new Error("invalid");
+      yield chunk;
+    }
+  };
 }
 
 function failureOf(error: unknown): Failure {
@@ -173,7 +187,7 @@ export class DataPackStore {
     const archive = join(this.root, `${pack.id}.zip`);
     const staged = join(this.root, `${pack.id}.new`);
     try {
-      await pipeline(response, createWriteStream(archive));
+      await pipeline(response, limitBytes(pack.bytes), createWriteStream(archive));
       if ((await digest(archive)) !== pack.sha256) throw new Error("invalid");
       await rm(staged, { recursive: true, force: true });
       await extract(archive, staged);
@@ -183,7 +197,10 @@ export class DataPackStore {
       await rm(previous, { recursive: true, force: true });
       this.release(pack);
       await rename(target, previous).catch(() => undefined);
-      await rename(staged, target);
+      await rename(staged, target).catch(async (error: unknown) => {
+        await rename(previous, target).catch(() => undefined);
+        throw error;
+      });
       this.release(pack);
       await rm(previous, { recursive: true, force: true });
     } finally {

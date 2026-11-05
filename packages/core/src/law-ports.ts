@@ -25,7 +25,15 @@ export function createLawPorts(
       return changed;
     },
     listDataPacks: () => dataPacks.list(),
-    saveDataPackKey: (key) => dataPacks.saveKey(key),
+    async saveDataPackKey(key) {
+      const saved = await dataPacks.saveKey(key);
+      audit.append({
+        type: "data_pack.key_saved",
+        outcome: saved ? "succeeded" : "failed",
+        metadata: {},
+      });
+      return saved;
+    },
     installDataPack: (id) => dataPacks.install(id),
   };
 }
