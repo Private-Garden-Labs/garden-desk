@@ -116,32 +116,6 @@ function LawRow({
         ) : (
           <PackDetails pack={pack} />
         )}
-        <details className="law-sources">
-          <summary>
-            {t("laws.sources", { count: law.sources.filter((source) => source.enabled).length })}
-          </summary>
-          <ul>
-            {law.sources.map((source) => (
-              <li className="law-source" key={source.id}>
-                <input
-                  aria-label={t("laws.include", { title: source.title })}
-                  checked={source.enabled}
-                  disabled={controller.working || !law.enabled}
-                  onChange={() => controller.setEnabled(law.id, !source.enabled, source.id)}
-                  type="checkbox"
-                />
-                <button
-                  onClick={() => openLaw({ jurisdiction: law.id, source: source.id })}
-                  type="button"
-                >
-                  <span>{source.title}</span>
-                  <span className="law-source-version">{source.version}</span>
-                </button>
-                <Icon name="read" />
-              </li>
-            ))}
-          </ul>
-        </details>
       </div>
       <div className="skill-row-actions">
         {pack === undefined ? null : <PackAction controller={controller} pack={pack} />}
@@ -157,6 +131,33 @@ function LawRow({
           <span />
         </button>
       </div>
+      <details className="law-sources">
+        <summary>
+          {t("laws.sources", { count: law.sources.filter((source) => source.enabled).length })}
+        </summary>
+        <ul>
+          {law.sources.map((source) => (
+            <li className="law-source" key={source.id}>
+              <input
+                aria-label={t("laws.include", { title: source.title })}
+                checked={source.enabled}
+                disabled={controller.working || !law.enabled}
+                onChange={() => controller.setEnabled(law.id, !source.enabled, source.id)}
+                type="checkbox"
+              />
+              <button
+                data-hint={t("laws.open")}
+                onClick={() => openLaw({ jurisdiction: law.id, source: source.id })}
+                type="button"
+              >
+                <span>{source.title}</span>
+                <span className="law-source-version">{source.version}</span>
+              </button>
+              <Icon name="read" />
+            </li>
+          ))}
+        </ul>
+      </details>
     </li>
   );
 }

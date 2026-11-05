@@ -6,6 +6,7 @@ import type { LawTarget } from "../law-citations.js";
 import { closeLaw } from "../side-panel.js";
 import { DrawerResizeHandle, useDrawerResize } from "./drawer-resize.js";
 import { Icon } from "./icons.js";
+import { LawSearch } from "./law-search.js";
 
 const WIDTH_KEY = "gardendesk.law-reader-width";
 
@@ -30,28 +31,31 @@ function LawSections({ act, target }: { act: LawAct; target: LawTarget }) {
   }, [act, target]);
   let group = "";
   return (
-    <div className="law-reader-body" ref={body} tabIndex={0}>
-      {act.sections.map((section, index) => {
-        const heading = sectionHeading(section.citation, section.heading);
-        const newGroup = heading.group !== "" && heading.group !== group;
-        group = heading.group;
-        const targeted = section.citation === target.citation;
-        return (
-          <Fragment key={section.citation}>
-            {newGroup ? <h3 className="law-reader-group">{heading.group}</h3> : null}
-            <article
-              className={`law-reader-section${targeted ? " law-reader-target" : ""}`}
-              data-index={index}
-            >
-              <h4>
-                <span>{heading.label}</span> {heading.title}
-              </h4>
-              <p>{section.text}</p>
-            </article>
-          </Fragment>
-        );
-      })}
-    </div>
+    <>
+      <LawSearch body={body} />
+      <div className="law-reader-body" ref={body} tabIndex={0}>
+        {act.sections.map((section, index) => {
+          const heading = sectionHeading(section.citation, section.heading);
+          const newGroup = heading.group !== "" && heading.group !== group;
+          group = heading.group;
+          const targeted = section.citation === target.citation;
+          return (
+            <Fragment key={section.citation}>
+              {newGroup ? <h3 className="law-reader-group">{heading.group}</h3> : null}
+              <article
+                className={`law-reader-section${targeted ? " law-reader-target" : ""}`}
+                data-index={index}
+              >
+                <h4>
+                  <span>{heading.label}</span> {heading.title}
+                </h4>
+                <p>{section.text}</p>
+              </article>
+            </Fragment>
+          );
+        })}
+      </div>
+    </>
   );
 }
 // biome-ignore-end lint/a11y/noNoninteractiveTabindex: The long law text needs a keyboard scroll target.
