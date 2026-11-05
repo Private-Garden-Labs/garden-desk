@@ -8,14 +8,13 @@ import {
   DEFAULT_THINKING_LEVEL,
   INFERENCE_PROFILE,
   JobIdSchema,
-  LAW_DISCLAIMER,
 } from "@gardendesk/shared";
 import type { InferenceService } from "../runtime/inference.js";
 import { artifactCandidateNames } from "./artifact-results.js";
 import { compactChatHistory } from "./chat-compaction.js";
 import { currentTimeContext, withCurrentTimeContext } from "./chat-current-time.js";
 import { generateWithInferenceRecovery } from "./chat-inference-recovery.js";
-import { initialChatMessages } from "./chat-initial-messages.js";
+import { initialChatMessages, withLawDisclaimer } from "./chat-initial-messages.js";
 import type { ChatAgentInput, ChatRecoveryState, ChatTurnOptions } from "./chat-loop-input.js";
 import { createToolRegistry } from "./chat-loop-registry.js";
 import { streamCallbacks } from "./chat-streaming.js";
@@ -27,11 +26,6 @@ export type { ChatAgentInput } from "./chat-loop-input.js";
 
 const HARD_TURN_LIMIT = 40;
 const COMPACTION_RATIO = 0.8;
-
-function withLawDisclaimer(input: ChatAgentInput, response: string): string {
-  if (input.laws?.searched() !== true || response.includes(LAW_DISCLAIMER)) return response;
-  return `${response}\n\n${LAW_DISCLAIMER}`;
-}
 
 function inferenceStepSummary(turn: number, modelNeedsLoad: boolean | undefined): string {
   if (turn > 0) return "Choosing the next action.";

@@ -5,10 +5,9 @@ import {
   DEFAULT_THINKING_LEVEL,
   INFERENCE_PROFILE,
   JobIdSchema,
-  LAW_DISCLAIMER,
 } from "@gardendesk/shared";
 import { currentTimeContext, withCurrentTimeContext } from "../agent/chat-current-time.js";
-import { replyLanguagePrompt } from "../agent/chat-initial-messages.js";
+import { replyLanguagePrompt, withLawDisclaimer } from "../agent/chat-initial-messages.js";
 import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-input.js";
 import { streamCallbacks } from "../agent/chat-streaming.js";
 import { isSuccessfulExecution } from "../agent/execution-success.js";
@@ -231,8 +230,7 @@ export async function reviewDocument(
   input.onEvent?.("inference.started", "Reviewing the extracted text.");
   const generated = await generateReview(input, chat, request);
   const result = generated.result;
-  const response =
-    law === undefined ? generated.response : `${generated.response}\n\n${LAW_DISCLAIMER}`;
+  const response = withLawDisclaimer(input, generated.response);
   const allocated = result.memory.contextSizeTokens;
   if (allocated !== undefined) input.onContext?.(result.contextUsedTokens, allocated, true);
   input.onResponse?.(response);
