@@ -51,9 +51,10 @@ export async function publicPage(env: Env, options: PublicPage): Promise<Respons
 
 interface AdminPage {
   title: string;
-  section: "/stats/" | "/blog/";
+  section: "/stats/" | "/blog/" | "/keys/";
   body: string;
-  editor?: boolean;
+  wide?: boolean;
+  script?: string;
 }
 
 const appearanceIcons = {
@@ -76,8 +77,8 @@ export function adminPage(options: AdminPage): Response {
     `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(options.title)} | Garden Desk admin</title><link rel="icon" href="/assets/favicon.svg"><script src="/appearance.js"></script><link rel="stylesheet" href="/assets/admin.css"></head>
 <body><a class="skip-link" href="#main">Skip to content</a>
-<header><a class="wordmark" href="/stats/"><img src="/assets/favicon.svg" alt="">Garden Desk <span>Admin</span></a><nav aria-label="Admin">${link("/stats/", "Analytics")}${link("/blog/", "Blog")}<a href="${publicOrigin}/">Website</a></nav><button type="button" id="appearance" class="appearance" aria-label="Appearance: System. Switch to Light">${icons}</button></header>
-<main id="main"${options.editor ? ' class="wide"' : ""}>${options.body}</main>${options.editor ? '<script type="module" src="/editor.js"></script>' : ""}</body></html>`,
+<header><a class="wordmark" href="/stats/"><img src="/assets/favicon.svg" alt="">Garden Desk <span>Admin</span></a><nav aria-label="Admin">${link("/stats/", "Analytics")}${link("/blog/", "Blog")}${link("/keys/", "Keys")}<a href="${publicOrigin}/">Website</a></nav><button type="button" id="appearance" class="appearance" aria-label="Appearance: System. Switch to Light">${icons}</button></header>
+<main id="main"${options.wide ? ' class="wide"' : ""}>${options.body}</main>${options.script === undefined ? "" : `<script type="module" src="${options.script}"></script>`}</body></html>`,
     { headers: responseHeaders("text/html; charset=utf-8", true) },
   );
 }

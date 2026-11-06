@@ -543,6 +543,43 @@ textarea {
 .prose table {
   font-size: 0.875rem;
 }
+.new-key {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+.new-key label {
+  flex: 1;
+  max-width: 24rem;
+  margin: 0;
+}
+.new-key :is(input, button) {
+  height: 2.5rem;
+}
+.keys :is(th, td) {
+  padding-inline: 0.625rem;
+  white-space: nowrap;
+}
+.keys td:first-child {
+  min-width: 8rem;
+  white-space: normal;
+}
+.keys button {
+  min-height: 1.875rem;
+}
+.key {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.8125rem;
+  user-select: all;
+}
+td[align="right"] {
+  text-align: right;
+}
+#key-status {
+  min-height: 1.25rem;
+  margin-bottom: 1rem;
+}
 @media (max-width: 900px) {
   .editor-grid {
     grid-template-columns: minmax(0, 1fr);
