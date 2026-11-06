@@ -1,0 +1,36 @@
+const status = document.querySelector("#key-status");
+const form = document.querySelector("#new-key");
+
+async function change(method, body) {
+  const buttons = document.querySelectorAll("main button");
+  for (const button of buttons) button.disabled = true;
+  status.textContent = "Saving…";
+  try {
+    const response = await fetch("/api/keys", {
+      method,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.headers.get("content-type")?.startsWith("application/json"))
+      throw new Error("Your login has expired. Reload the page to sign in again.");
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error ?? "The request failed.");
+    window.location.reload();
+  } catch (error) {
+    status.textContent = error.message;
+    for (const button of buttons) button.disabled = false;
+  }
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  change("POST", { customer: form.elements.namedItem("customer").value });
+});
+
+for (const button of document.querySelectorAll("[data-key]")) {
+  button.addEventListener("click", () => {
+    const key = button.dataset.key;
+    if (window.confirm(`Delete ${key}? It will no longer download data packs.`))
+      change("DELETE", { key });
+  });
+}

@@ -1,6 +1,7 @@
 import { isOwner } from "./access";
 import { admin } from "./admin";
 import { blog } from "./blog";
+import { keysPage } from "./keys";
 import { localized } from "./locale";
 import { stats } from "./stats";
 
@@ -13,6 +14,7 @@ interface Statement {
 export interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   STATS: { prepare(sql: string): Statement };
+  PACK_KEYS: { prepare(sql: string): Statement };
   ACCESS_TEAM_DOMAIN: string;
   ACCESS_AUD: string;
 }
@@ -48,7 +50,9 @@ export default {
 
 async function serveAdmin(request: Request, env: Env): Promise<Response> {
   if (!(await isOwner(request, env))) return new Response("Forbidden", { status: 403 });
-  return new URL(request.url).pathname === "/stats/" ? stats(env) : admin(request, env);
+  const path = new URL(request.url).pathname;
+  if (path === "/stats/") return stats(env);
+  return path === "/keys/" ? keysPage(env) : admin(request, env);
 }
 
 function counted(request: Request): boolean {

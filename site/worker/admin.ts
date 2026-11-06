@@ -1,12 +1,18 @@
 import appearance from "./admin-appearance.txt";
 import client from "./admin-client.txt";
+import keysClient from "./admin-keys.txt";
 import { type Post, type PostInput, post, posts, save, validInput } from "./blog-store";
 import type { Env } from "./index";
+import { createKey, deleteUnusedKey } from "./keys";
 import { markdown } from "./markdown";
 import { mcp } from "./mcp";
 import { adminPage, escapeHtml, publicOrigin, responseHeaders, time } from "./page";
 
-const scripts: Record<string, string> = { "/editor.js": client, "/appearance.js": appearance };
+const scripts: Record<string, string> = {
+  "/editor.js": client,
+  "/appearance.js": appearance,
+  "/keys.js": keysClient,
+};
 
 export async function admin(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
@@ -38,6 +44,7 @@ async function api(request: Request, env: Env, path: string): Promise<Response> 
     return json({ error: "Invalid request" }, 400);
   }
   if (path === "/api/preview" && request.method === "POST") return preview(input);
+  if (path === "/api/keys") return changeKey(request, env, input);
   const slug = path.match(/^\/api\/posts\/([a-z0-9]+(?:-[a-z0-9]+)*)$/u)?.[1];
   if (
     slug === undefined ||
@@ -53,6 +60,18 @@ async function api(request: Request, env: Env, path: string): Promise<Response> 
   if (!(await save(env, slug, input, request.method === "POST")))
     return json({ error: "This URL name is already used. Choose another name." }, 409);
   return json({ url: `/blog/${slug}/` });
+}
+
+async function changeKey(request: Request, env: Env, input: unknown): Promise<Response> {
+  const { customer, key } = (input ?? {}) as { customer?: unknown; key?: unknown };
+  if (request.method === "DELETE")
+    return typeof key === "string" && (await deleteUnusedKey(env, key))
+      ? json({})
+      : json({ error: "This key was used or no longer exists. Reload the page." }, 409);
+  const name = typeof customer === "string" ? customer.trim() : "";
+  if (request.method !== "POST" || name === "" || name.length > 200)
+    return json({ error: "Enter a customer name of up to 200 characters." }, 400);
+  return json({ key: await createKey(env, name) });
 }
 
 function preview(input: unknown): Response {
@@ -92,7 +111,8 @@ function editor(entry?: Post): Response {
   return adminPage({
     title: entry === undefined ? "New post" : fields.title,
     section: "/blog/",
-    editor: true,
+    wide: true,
+    script: "/editor.js",
     body: `<form id="post-form" data-published="${published}" data-existing="${entry !== undefined}">
 <div class="editor-bar"><div><h1>${entry === undefined ? "New post" : "Edit post"}</h1><p class="meta">${status}</p></div><div class="actions"><p id="save-status" role="status" aria-live="polite"></p>${actions}</div></div>
 <div class="editor-grid"><div class="fields">

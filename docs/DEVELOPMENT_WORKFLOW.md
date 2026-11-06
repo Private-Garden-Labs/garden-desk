@@ -80,7 +80,7 @@ English text lives in the HTML and in `site/locales/en.json`. Mark text with `da
 
 ## Website Admin And Blog
 
-The admin runs at `admin.gardendesk.ai` behind Cloudflare Access. The Worker also validates the Access token and requires the same origin for blog changes. Posts live in the D1 database, and only published posts appear on `/blog/`, in the sitemap, and in the RSS feed. Apply the database migration before deployment. Add the admin hostname to Access before you add its Worker route. To work locally, run `pnpm site:admin`.
+The admin runs at `admin.gardendesk.ai` behind Cloudflare Access. The Worker also validates the Access token and requires the same origin for blog changes. Posts live in the D1 database, and only published posts appear on `/blog/`, in the sitemap, and in the RSS feed. Apply the database migration before deployment. Add the admin hostname to Access before you add its Worker route. The Keys page creates data pack keys, shows how many pack downloads each key made, and deletes a key before its first download; it uses the data pack store's key database. To work locally, run `pnpm site:admin`.
 
 Claude Code and Codex can manage posts through the MCP endpoint (Model Context Protocol, the way coding agents connect to tools) at `https://admin.gardendesk.ai/mcp`. To set it up, create a Cloudflare Access service token and add a Service Auth policy for it. Keep the token's ID and secret in `GARDEN_ACCESS_CLIENT_ID` and `GARDEN_ACCESS_CLIENT_SECRET`. Locally, `http://127.0.0.1:4175/mcp` needs no token.
 

@@ -23,6 +23,11 @@
       "database_name": "garden-desk-stats",
       "database_id": "d169bada-a1cc-465a-ba80-a4e4376b025e",
       "migrations_dir": "migrations"
+    },
+    {
+      "binding": "PACK_KEYS",
+      "database_name": "garden-desk-data-packs",
+      "database_id": "fa420f9a-cc32-40e9-84f7-f4c274a95dbf"
     }
   ],
   "vars": {
