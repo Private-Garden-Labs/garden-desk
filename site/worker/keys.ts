@@ -39,7 +39,7 @@ export async function keysPage(env: Env): Promise<Response> {
   const rows = results
     .map(
       (row) =>
-        `<tr><td>${escapeHtml(row.customer)}${row.revoked_at === null ? "" : ' <span class="meta">Revoked</span>'}</td><td><code class="key">${row.key}</code></td><td>${time(row.created_at)}</td><td align="right">${row.uses}</td><td>${row.last_used_at === null ? "Never" : time(row.last_used_at)}</td><td>${row.uses === 0 ? `<button type="button" class="danger" data-key="${row.key}" aria-label="Delete ${row.key}">Delete</button>` : ""}</td></tr>`,
+        `<tr><td>${escapeHtml(row.customer)}${row.revoked_at === null ? "" : ' <span class="meta">Revoked</span>'}</td><td><code class="key">${escapeHtml(row.key)}</code></td><td>${time(row.created_at)}</td><td align="right">${row.uses}</td><td>${row.last_used_at === null ? "Never" : time(row.last_used_at)}</td><td>${row.uses === 0 ? `<button type="button" class="danger" data-key="${escapeHtml(row.key)}" aria-label="Delete ${escapeHtml(row.key)}">Delete</button>` : ""}</td></tr>`,
     )
     .join("");
   return adminPage({

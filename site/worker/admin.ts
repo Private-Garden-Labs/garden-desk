@@ -64,10 +64,10 @@ async function api(request: Request, env: Env, path: string): Promise<Response> 
 
 async function changeKey(request: Request, env: Env, input: unknown): Promise<Response> {
   const { customer, key } = (input ?? {}) as { customer?: unknown; key?: unknown };
-  if (request.method === "DELETE" && typeof key === "string")
-    return (await deleteUnusedKey(env, key))
+  if (request.method === "DELETE")
+    return typeof key === "string" && (await deleteUnusedKey(env, key))
       ? json({})
-      : json({ error: "This key was already used, so it cannot be deleted." }, 409);
+      : json({ error: "This key was used or no longer exists. Reload the page." }, 409);
   const name = typeof customer === "string" ? customer.trim() : "";
   if (request.method !== "POST" || name === "" || name.length > 200)
     return json({ error: "Enter a customer name of up to 200 characters." }, 400);
