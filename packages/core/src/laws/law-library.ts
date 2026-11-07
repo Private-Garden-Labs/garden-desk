@@ -22,12 +22,17 @@ import {
   interleave,
   keywordQuery,
   keywordText,
+  type LawContext,
+  type LawSection,
   type Ranking,
   type SectionVectors,
   sectionExcerpt,
+  sectionVectorsFrom,
   vectorRanks,
   withinCharacters,
 } from "./law-search.js";
+
+export type { LawContext, LawSection } from "./law-search.js";
 
 const QUERY_INSTRUCTION =
   "Instruct: Given a contract provision, retrieve statutory rights, duties and prohibitions that determine whether it is enforceable\nQuery: ";
@@ -38,27 +43,6 @@ const SECTION_CHARACTERS = 4_000;
 const DOCUMENT_SECTION_CHARACTERS = 2_000;
 const DOCUMENT_LAW_CHARACTERS = 48_000;
 const DOCUMENT_PHRASE_CHARACTERS = DOCUMENT_LAW_CHARACTERS / 2;
-
-export interface LawSection {
-  citation: string;
-  heading: string;
-  source: string;
-  text: string;
-}
-
-export interface LawContext {
-  id: Jurisdiction;
-  name: string;
-  currentAsOf: string;
-  searched(): boolean;
-  citations(): string[];
-  search(query: string, signal?: AbortSignal): Promise<LawSection[]>;
-  forDocument(
-    text: string,
-    phrases: readonly string[],
-    signal?: AbortSignal,
-  ): Promise<LawSection[]>;
-}
 
 export type Embed = (text: string, signal?: AbortSignal) => Promise<number[]>;
 
@@ -151,12 +135,7 @@ export class LawLibrary {
       name: jurisdiction.name,
       currentAsOf: jurisdiction.currentAsOf,
       searched: () => searched,
-      citations: () =>
-        this.citations().flatMap((act) =>
-          jurisdiction.sources.some((source) => source.id === act.source && source.enabled)
-            ? act.citations
-            : [],
-        ),
+      citations: () => this.enabledCitations(jurisdiction),
       search: async (query, signal) => {
         searched = true;
         return reported(
@@ -188,6 +167,14 @@ export class LawLibrary {
         );
       },
     };
+  }
+
+  private enabledCitations(jurisdiction: LawJurisdictionSummary): string[] {
+    return this.citations().flatMap((act) =>
+      jurisdiction.sources.some((source) => source.id === act.source && source.enabled)
+        ? act.citations
+        : [],
+    );
   }
 
   private async rank(id: Jurisdiction, text: string, signal?: AbortSignal): Promise<Ranking> {
@@ -236,18 +223,7 @@ export class LawLibrary {
          ORDER BY chunks.rowid`,
       )
       .all(id, this.disabledSources()) as Array<{ id: number; vector: Uint8Array }>;
-    const dimensions = (rows[0]?.vector.byteLength ?? 0) / 4;
-    const values = new Float32Array(rows.length * dimensions);
-    rows.forEach((row, index) => {
-      values.set(new Float32Array(Uint8Array.from(row.vector).buffer), index * dimensions);
-    });
-    const counts = new Map<number, number>();
-    const chunkIndexes = Int32Array.from(rows, (row) => {
-      const index = counts.get(row.id) ?? 0;
-      counts.set(row.id, index + 1);
-      return index;
-    });
-    const vectors = { sectionIds: Int32Array.from(rows, (row) => row.id), chunkIndexes, values };
+    const vectors = sectionVectorsFrom(rows);
     this.vectors.set(id, vectors);
     return vectors;
   }
