@@ -11,6 +11,7 @@ import {
   MacOsNativeWorkerLauncher,
 } from "@gardendesk/workers";
 import type { AuditLog } from "../audit/log.js";
+import type { DevelopmentPorts } from "../development/ports.js";
 import { resolveAgentSessionCapacity, resolveInferenceHardwarePolicy } from "./hardware.js";
 import { ModelResolver } from "./models.js";
 import { ResourceScheduler } from "./scheduler.js";
@@ -95,6 +96,18 @@ export function unavailableInference(message?: string) {
     unloadModel: async () => false,
     async close() {},
   };
+}
+
+/** Development builds only: production bundling removes this branch and the cloud modules. */
+export async function developmentPorts(
+  workspaceRoot: string,
+  audit: AuditLog,
+): Promise<DevelopmentPorts | undefined> {
+  if (globalThis.__GARDEN_DESK_DEVELOPMENT_BUILD__ === true) {
+    const { createDevelopmentPorts } = await import("../development/ports.js");
+    return createDevelopmentPorts(workspaceRoot, (event) => audit.append(event));
+  }
+  return undefined;
 }
 
 export async function createInferenceService(

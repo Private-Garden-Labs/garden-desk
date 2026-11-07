@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type {
   AgentEventDetail,
   AgentEventType,
@@ -8,6 +9,7 @@ import type { ArtifactExecutionEvidence } from "./artifact-results.js";
 import type { ChatToolState } from "./chat-tool-turn.js";
 import type { AgentToolResult, ToolValidation } from "./generic-tools.js";
 import { toolCompletedSummary } from "./tool-summaries.js";
+import { canonicalJson } from "./trace-store.js";
 
 type ToolEventWriter = (
   type: AgentEventType,
@@ -115,7 +117,13 @@ export function emitCompletedTool(
   result: AgentToolResult,
 ): void {
   const detail = { toolName: call.name, toolCallId: call.id, stdout: result.content };
-  onEvent?.("tool.completed", toolCompletedSummary(call, result.failed), detail);
+  onEvent?.("tool.completed", toolCompletedSummary(call, result.failed), {
+    ...detail,
+    argumentsHash: `sha256:${createHash("sha256")
+      .update(canonicalJson(call.params ?? null))
+      .digest("hex")}`,
+    toolFailed: result.failed,
+  });
   if (call.name === "task") {
     onEvent?.(
       "subagent.completed",

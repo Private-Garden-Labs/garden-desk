@@ -16,7 +16,7 @@ Desktop (Tauri v2, React)
 
 - **Desktop.** The Rust host owns only the window, native dialogs, supervision of the exact packaged Core sidecar, and the connection to it. The webview has no shell, process, environment, network, or filesystem access. It handles opaque IDs, never host paths.
 - **Core.** Core is the only product authority. It owns folder grants, attachments, sessions, the agent loop, policy, audit, inference, worker supervision, and recovery. The desktop reaches it only over a current-user local connection: a Unix socket on macOS and a protected named pipe on Windows. There is no TCP. Core and the desktop never run as administrator.
-- **Inference worker.** This is one resident llama.cpp server on a private Unix socket. macOS confines it with Seatbelt. Windows runs it in a no-capability AppContainer inside a one-process job. It has no tools, network, credentials, or workspace.
+- **Inference worker.** Generation and encoding use separate resident llama.cpp servers, each on a private Unix socket. macOS confines each server with Seatbelt. Windows runs each server in a no-capability AppContainer inside a one-process job. They have no tools, network, credentials, or workspace.
 - **MicroVM.** Each conversation gets a VM with an immutable root image. The VM has Python, Node.js, `/bin/sh`, BusyBox, and a fixed set of offline libraries, and it cannot install packages. `/workspace` is saved as a content-addressed manifest and restored after eviction or restart. Idle VMs stay in a pool sized from installed RAM.
 
 ## Agent
@@ -24,8 +24,11 @@ Desktop (Tauri v2, React)
 - Prompts live in `prompts/`: agents, commands, skills, and system text. They are packaged, hashed, and verified with the app.
 - The main agent has up to 40 turns. Its tools are `bash`, `python`, `node`, `read`, `glob`, `grep`, `list`, `write`, `edit`, `image`, `skill`, `task`, `question`, and `review`. `read` returns numbered text for DOC, DOCX, and PDF through one fixed guest extraction.
 - `task` runs one specialist child at a time in the same VM. The specialists are general, explore, matter chronology, contract obligations, document comparison, and financial review.
-- `/review` reviews one attached document in a single model call with no tools. `/obligations`, `/reconcile`, and `/expenses` run a specialist directly.
+- `/review` reviews one attached document in a single model call with no tools. With a jurisdiction picked, a short model call first writes law search phrases. The model returns its findings as structured data; Core checks each law reference against the installed pack, marks one it cannot find "(unverified)", and writes the findings table to the chat and to a `Review - <document>.md` file delivered like other generated files; the reply appears when the review is complete, it is not streamed. `/obligations`, `/reconcile`, and `/expenses` run a specialist directly.
+- To suggest commands in an empty chat, Core lists the names of up to 10 files in the selected folder; hidden files and links are skipped.
 - Packaged skills are prompt-only. A person can also add, edit, or turn off skill files in the workspace `skills/` folder.
+- Law texts come as data packs that the user downloads from the Data packs page. Core fetches a catalog signed with an Ed25519 key built into the app from `packs.gardendesk.ai`, checks each archive's SHA-256 against it, and unpacks the ready-built SQLite file with text and vectors into `data-packs/` in the app workspace. US federal and EU packs are free; other packs need a key. The Data packs page turns each jurisdiction, and each act inside it, on or off; the chat picks one jurisdiction at a time and searches only its turned-on acts. Each act opens as readable text in a resizable side panel, from the Data packs page or from a law reference in an answer, scrolled to the cited article, linked to its official source, and searchable like a web page. With a jurisdiction picked, the main agent gets a `laws` tool and `/review` gets matching law sections. The `laws` tool combines keyword (SQLite FTS5) and meaning (encoder vectors) results. For Romanian, the keyword index drops common word endings so plural and article forms match. Searches ask the encoder for statutory rights, duties, and prohibitions. `/review` searches each phrase the same way as the `laws` tool, then uses meaning search for each passage, and includes up to 48,000 characters of law text, at most half of it from the phrases. Long excerpts retain opening context beside the matched text within the same size limit. Answers never call a document legal and always say they are not legal advice.
+- A company pack holds an organization's own documents, such as policies, templates, and precedents, and works in chat and `/review` like a law pack, except that its answers carry no legal disclaimer and its `laws` tool describes the pack by name as the user's own company documents. Core builds it from a chosen folder: it reads TXT and Markdown files itself, extracts DOC, DOCX, and PDF text in the no-network microVM, splits the text into sections of about 2,000 characters cited as `<document> §<n>`, embeds them with the app encoder, and signs the result with a publisher Ed25519 key that it creates once and keeps in the workspace. The `.gdpack` file is a zip with `pack.sqlite`, `manifest.json`, and `manifest.sig`. On import Core reads only the manifest and signature first, checks the signature, and asks about trust before it unpacks the size-capped SQLite file and checks its SHA-256; a publisher not in `data-packs/publishers.json` needs the user's one-time approval of its fingerprint, which is audited as `publisher.trusted`. Core installs company packs under `data-packs/company/<id>` and can list `.gdpack` files in a company pack folder the user picks, such as a shared drive; this adds no network destination.
 - Every file created or changed under `/workspace` during a run is delivered to the user. Open uses a verified temporary copy. Save As uses a native dialog and an atomic Core write, and the webview never sees the destination path.
 - Core compacts the conversation at 80 percent of the context. A session summary keeps continuity across runs. After a crash, runs left running are marked failed. Model reasoning is never stored.
 
@@ -35,7 +38,9 @@ Desktop (Tauri v2, React)
 - Network isolation comes from the VM having no network device, not from matching commands or URLs. Do not add filters inside the VM.
 - Selected folders are never writable. Only an explicit Open or Save As crosses back to the host.
 - Guest output that enters host state is checked for schema, path, size, and hash.
-- There is no telemetry, analytics, or crash reporting. Audit records are local and hash-chained, and leave the machine only by explicit export.
+- Core makes network requests only when the user opens the Data packs page or starts a download, and only to `packs.gardendesk.ai`. A key, when saved, is the only user data sent.
+- There is no telemetry, analytics, or crash reporting. Audit records are local and hash-chained, and leave the machine only by explicit export. Besides session, folder, file, and model events, they record each tool call (name and argument hash), each answer to an agent question, each law search (jurisdiction and citations found), and each generated file, tagged with the session. A new record is checked only against the stored chain head; a full check walks the whole chain.
+- Export work record, in the session's technical details, writes a Markdown file and a matching JSON file to a folder the user picks. They list what the user asked, each step, command, and answer, the files read and written, the law consulted, and whether the audit chain verified, with its head and the session's audit rows. They never include model prompts. Each export is itself audited.
 - On Windows, one signed helper elevates once to add the current user to Hyper-V Administrators. The app stays browse-only until the next sign-in. macOS needs no administrator step.
 - The packaged app verifies and read-locks its sidecar, helpers, and prompts against a signed resource manifest before it starts them.
 - Data at rest relies on the operating-system account and disk encryption.
@@ -43,6 +48,7 @@ Desktop (Tauri v2, React)
 ## Model And Hardware
 
 - The generation model is Ternary Bonsai 2 27B (`PQ2_0`) with its Q8_0 image projector. The encoder is Qwen3-Embedding-0.6B. `assets/models.json` pins each file, and `assets/inference-runtime.json` pins the PrismML llama.cpp fork builds for Metal, CUDA 13.3, and AMD HIP.
+- The encoder runs on the CPU and stays loaded beside the generation model, so it does not use the GPU memory budget.
 - Packages are self-contained, so first launch downloads nothing.
 - The context cache is FP16. Core fits the context once to the inference memory budget, between 32K and 128K tokens. The server's reasoning budget is 32,768 tokens. Thinking levels are None, Medium, and Extended.
 - A Mac needs at least 16 GiB of memory. The inference budget is 10 GiB below 24 GiB and 16 GiB from 24 GiB up.
@@ -54,7 +60,7 @@ Desktop (Tauri v2, React)
 packages/shared    versioned contracts (Zod only)
 packages/core      workspace catalog, sessions, agent loop, daemon, policy, audit, inference
 packages/workers   inference client, microVM launchers, guest agent, guest image
-packages/desktop   Tauri and React app, packaging, Windows Hyper-V setup helper; UI in 28 languages in src/i18n, OS language by default
+packages/desktop   Tauri and React app, packaging, Windows Hyper-V setup helper; UI in 28 languages in src/i18n, OS language by default; agent answers use the selected language
 packages/cli       daemon health client
 packages/eval      fixtures, platform gates, golden tasks, model comparison
 prompts/           agent, command, skill, and system prompts
@@ -82,7 +88,6 @@ site/              website, admin, and blog; page copy in 28 languages in site/l
 None of this is active. Each item needs an owner request.
 
 - Document intelligence: parsing, OCR and layout, retrieval, citations, and deterministic checks.
-- Signed offline Knowledge Bundles of reference material.
 - Legal, accounting, and medical administration workflow packs chosen from real use.
 - An office appliance with accounts, permissions, backup, and audit.
 - Managed model downloads through a typed network broker, and Linux support.

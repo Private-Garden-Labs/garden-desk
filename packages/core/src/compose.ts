@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import type { InferenceProfile, WorkspaceStatus } from "@gardendesk/shared";
+import { INFERENCE_PROFILE, type InferenceProfile, type WorkspaceStatus } from "@gardendesk/shared";
 import { createCodeAgentLauncher } from "./agent/launcher.js";
 import { MarkdownDefinitionLibrary } from "./agent/markdown-definition-library.js";
 import { AgentService } from "./agent/service.js";
@@ -13,7 +13,17 @@ import { ConversationStore } from "./conversations/store.js";
 import type { DevelopmentPorts } from "./development/ports.js";
 import { createFacade, type GardenDeskCore } from "./facade.js";
 import { JobStore } from "./jobs/jobs.js";
-import { createInferenceService, unavailableInference } from "./runtime/compose.js";
+import { createLawPorts } from "./law-ports.js";
+import { CompanyPackStore } from "./laws/company-packs.js";
+import { DATA_PACK_SIGNING_KEY, DataPackStore } from "./laws/data-packs.js";
+import { microVmExtraction } from "./laws/document-extraction.js";
+import { type Embed, LawLibrary } from "./laws/law-library.js";
+import { exportWorkRecord } from "./records/work-record.js";
+import {
+  createInferenceService,
+  developmentPorts,
+  unavailableInference,
+} from "./runtime/compose.js";
 import type { InferenceSupervisor } from "./runtime/supervisor.js";
 import { createSkillPorts } from "./skill-ports.js";
 import { ArtifactStore } from "./workspace/artifacts.js";
@@ -45,20 +55,11 @@ interface CoreServices {
   agentStore: AgentStore;
   inference: InferenceSupervisor | ReturnType<typeof unavailableInference>;
   skills: SkillStore;
+  laws: LawLibrary;
+  dataPacks: DataPackStore;
+  companyPacks: CompanyPackStore;
   agent?: AgentService;
-  development?: DevelopmentPorts;
-}
-
-/** Development builds only: production bundling removes this branch and the cloud modules. */
-async function developmentPorts(
-  workspaceRoot: string,
-  audit: AuditLog,
-): Promise<DevelopmentPorts | undefined> {
-  if (globalThis.__GARDEN_DESK_DEVELOPMENT_BUILD__ === true) {
-    const { createDevelopmentPorts } = await import("./development/ports.js");
-    return createDevelopmentPorts(workspaceRoot, (event) => audit.append(event));
-  }
-  return undefined;
+  development?: DevelopmentPorts | undefined;
 }
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: facade assembly intentionally lists every public capability.
@@ -72,6 +73,7 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     ...(services.development === undefined ? {} : { development: services.development }),
     listCommands: async () => services.commands.list(),
     ...createSkillPorts(services.skills, audit),
+    ...createLawPorts(services.laws, services.dataPacks, services.companyPacks, audit),
     status: async () => ({
       workspace,
       catalogSchemaVersion: catalog.schemaVersion,
@@ -108,8 +110,28 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     async removeAttachment(sessionId, attachmentId) {
       return agent?.removeAttachment(sessionId, attachmentId) ?? unavailableAgent();
     },
-    async startAgent(sessionId, task, thinking, developmentModelId) {
-      return agent?.start(sessionId, task, thinking, developmentModelId) ?? unavailableAgent();
+    async startAgent(sessionId, task, thinking, { jurisdiction, ...options }) {
+      const activeAgent = agent ?? unavailableAgent();
+      let runId: string | null = null;
+      const laws =
+        jurisdiction === null
+          ? undefined
+          : services.laws.context(jurisdiction, (sections) =>
+              audit.append({
+                type: "pack.searched",
+                outcome: "succeeded",
+                metadata: {
+                  sessionId,
+                  runId,
+                  jurisdiction,
+                  citations: sections.map((section) => section.citation).join(", "),
+                  count: sections.length,
+                },
+              }),
+            );
+      const run = activeAgent.start(sessionId, task, thinking, { laws, ...options });
+      runId = run.id;
+      return run;
     },
     async listAgentRuns(sessionId) {
       return agent?.listRuns(sessionId) ?? unavailableAgent();
@@ -137,6 +159,8 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
       return cancelled;
     },
     verifyAudit: async () => audit.verify(),
+    exportWorkRecord: (sessionId, directory, labels) =>
+      exportWorkRecord({ audit, conversations, store: agentStore }, sessionId, directory, labels),
     generate: (input, signal, onThinkingDelta, identity) =>
       inference.generate(input, signal, onThinkingDelta, identity),
     chat: (input, signal, streams, identity) => inference.chat(input, signal, streams, identity),
@@ -145,8 +169,10 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     modelStatus: () => inference.modelStatus(),
     unloadModel: () => inference.unloadModel(),
     async close() {
+      await services.companyPacks.close();
       await agent?.close();
       await inference.close();
+      services.laws.close();
       audit.append({ type: "core.closed", outcome: "succeeded", metadata: {} });
       catalog.close();
     },
@@ -190,8 +216,16 @@ export async function createGardenDeskCore(
     catalog.close();
     throw error;
   }
-  const agent =
+  const launcher =
     options.sessionsOnly === true || !inferenceAvailable || options.agentHelperPath === undefined
+      ? undefined
+      : createCodeAgentLauncher(
+          options.agentHelperPath,
+          options.agentImageRoot,
+          resolve(workspaceRoot, ".garden-desk", "agent-workspaces"),
+        );
+  const agent =
+    launcher === undefined
       ? undefined
       : new AgentService(
           catalog.database,
@@ -200,17 +234,45 @@ export async function createGardenDeskCore(
           jobs,
           artifacts,
           inference,
-          createCodeAgentLauncher(
-            options.agentHelperPath,
-            options.agentImageRoot,
-            resolve(workspaceRoot, ".garden-desk", "agent-workspaces"),
-          ),
+          launcher,
           audit,
           agentSessionCapacity,
           new MarkdownDefinitionLibrary(promptDirectory, skills),
           commands,
           development,
         );
+  const packsRoot = resolve(workspaceRoot, "data-packs");
+  const embed: Embed = async (input, signal) =>
+    (
+      await inference.embed(
+        {
+          modelId: INFERENCE_PROFILE.encoderId,
+          input,
+          contextSize: INFERENCE_PROFILE.encoderContextTokens,
+        },
+        signal,
+      )
+    ).vector;
+  const laws = new LawLibrary(packsRoot, resolve(workspaceRoot, "laws", "settings.json"), embed);
+  const dataPacks = new DataPackStore(
+    packsRoot,
+    DATA_PACK_SIGNING_KEY,
+    (pack) => laws.release(pack.jurisdiction),
+    ({ pack, failure }) =>
+      audit.append({
+        type: "data_pack.installed",
+        outcome: failure === undefined ? "succeeded" : "failed",
+        metadata:
+          failure === undefined ? { id: pack.id, sha256: pack.sha256 } : { id: pack.id, failure },
+      }),
+  );
+  const companyPacks = new CompanyPackStore({
+    root: packsRoot,
+    embed,
+    extract: microVmExtraction(launcher),
+    release: (id) => laws.release(id),
+    audit: (event) => audit.append(event),
+  });
   const restoredSessionId = conversations.mostRecentSessionId();
   if (agent !== undefined && restoredSessionId !== undefined) {
     warmConversationSession(agent, audit, restoredSessionId);
@@ -225,7 +287,10 @@ export async function createGardenDeskCore(
     agentStore,
     inference,
     skills,
-    ...(development === undefined ? {} : { development }),
+    laws,
+    dataPacks,
+    companyPacks,
+    development,
     ...(agent === undefined ? {} : { agent }),
   });
 }

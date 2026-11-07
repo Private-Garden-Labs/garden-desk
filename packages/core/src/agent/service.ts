@@ -7,6 +7,7 @@ import {
   type AttachmentSummary,
   DEFAULT_THINKING_LEVEL,
   type SessionDraft,
+  type ThinkingLevel,
 } from "@gardendesk/shared";
 import type { CodeAgentLauncher } from "@gardendesk/workers";
 import type { AuditLog } from "../audit/log.js";
@@ -29,7 +30,7 @@ import { AgentRunCapacity } from "./run-capacity.js";
 import { type ActiveRun, activeRunSnapshot, guestStartDuring } from "./service-active.js";
 import { persistFailedRun, persistSuccessfulRun } from "./service-audit.js";
 import { AgentImageInspector } from "./service-image.js";
-import { type AgentRunRequest, agentHistory, resolveRunInference } from "./service-results.js";
+import { type AgentRunOptions, agentHistory, resolveRunInference } from "./service-results.js";
 import { SessionSummaryQueue } from "./service-summary-queue.js";
 import { AgentSessionManager } from "./session-manager.js";
 import { SessionSummaryStore } from "./session-summary-store.js";
@@ -138,7 +139,7 @@ export class AgentService {
     sessionId: string,
     task: string,
     thinking = DEFAULT_THINKING_LEVEL,
-    developmentModelId?: string,
+    options: AgentRunOptions = {},
   ): AgentRunSummary {
     if (this.closed) throw new Error("agent_service_closed");
     if ([...this.active.values()].some((run) => run.sessionId === sessionId))
@@ -150,13 +151,8 @@ export class AgentService {
       return this.store.createRun(sessionId, job.id);
     })();
     const controller = new AbortController();
-    const request: AgentRunRequest = {
-      task,
-      thinking,
-      ...(developmentModelId === undefined ? {} : { developmentModelId }),
-    };
     const finished = Promise.resolve()
-      .then(async () => await this.execute(run, request, controller.signal))
+      .then(async () => await this.execute(run, { task, thinking, ...options }, controller.signal))
       .finally(() => {
         this.active.delete(run.jobId);
       });
@@ -217,9 +213,10 @@ export class AgentService {
   // biome-ignore lint/complexity/noExcessiveLinesPerFunction: the run lifecycle stays linear so cleanup and terminal persistence remain paired.
   private async execute(
     run: AgentRunSummary,
-    request: AgentRunRequest,
+    request: { task: string; thinking: ThinkingLevel } & AgentRunOptions,
     signal: AbortSignal,
   ): Promise<void> {
+    const { task, thinking, laws, replyLanguage, developmentModelId } = request;
     let releaseCapacity: (() => void) | undefined;
     let measuredContextTokens: number | undefined;
     try {
@@ -235,14 +232,14 @@ export class AgentService {
           "Offline limits: live read-only source, 120 seconds per guest execution, 4 CPUs, 1 GiB memory, and a persistent 128 MiB workspace.",
         );
       })();
-      const command = this.commands.resolve(request.task);
+      const command = this.commands.resolve(task);
       if (command?.agent !== undefined) this.store.setRunAgent(run.id, command.agent);
       const messages = this.conversations.listMessages(run.sessionId);
       const anchored = this.summaries.load(run.sessionId);
       const inference = await resolveRunInference(
         this.inference,
         this.development,
-        request.developmentModelId,
+        developmentModelId,
       );
       const result = await runPrimaryAgent({
         reviewCommand: () => this.commands.resolve("/review"),
@@ -254,6 +251,7 @@ export class AgentService {
         history: agentHistory(messages, anchored),
         inspectImage: this.images.forRun(run.sessionId, signal),
         jobs: this.jobs,
+        ...(laws === undefined ? {} : { laws }),
         onThinking: (thinking) => this.updateActive(run.jobId, { thinking }),
         onResponse: (response) => this.updateActive(run.jobId, { response }),
         onSessionTitle: (title) => this.conversations.setInitialTitle(run.sessionId, title),
@@ -267,8 +265,9 @@ export class AgentService {
         sessions: this.sessions,
         signal,
         store: this.store,
-        task: request.task,
-        thinking: request.thinking,
+        task,
+        thinking,
+        ...(replyLanguage === undefined ? {} : { replyLanguage }),
       });
       this.updateActive(run.jobId, { thinking: null });
       const deliverables = await prepareArtifacts(

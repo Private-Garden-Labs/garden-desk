@@ -4,6 +4,7 @@ import { GenericToolRegistry } from "./generic-tools.js";
 export function createToolRegistry(input: ChatAgentInput): GenericToolRegistry {
   return new GenericToolRegistry({
     executor: input.executor,
+    ...(input.laws === undefined ? {} : { laws: input.laws }),
     skills: input.skills,
     systemPrompt: input.systemPrompt,
     ...(input.subagents === undefined ? {} : { subagents: input.subagents }),

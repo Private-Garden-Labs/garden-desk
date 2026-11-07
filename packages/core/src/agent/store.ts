@@ -29,6 +29,7 @@ import {
   attachmentMediaType,
   type EventRow,
   eventFromRow,
+  insertEvent,
   nextEventSequence,
   type RunRow,
   readSelectedFile,
@@ -36,6 +37,7 @@ import {
 } from "./records.js";
 import { recoverInterruptedRuns } from "./recovery.js";
 import { createRunRecord, setRunAgentRecord } from "./run-record.js";
+import { auditAgentEvent, auditArtifactCreated } from "./store-audit.js";
 import { AgentTraceStore, type TraceAuditAppender } from "./trace-store.js";
 
 interface RunTransition {
@@ -52,10 +54,10 @@ export class AgentStore {
   constructor(
     private readonly database: DatabasePort,
     private readonly artifacts: ArtifactStore,
-    traceAudit?: TraceAuditAppender,
+    private readonly audit: TraceAuditAppender = () => undefined,
   ) {
     this.execution = new AgentExecutionStore(database);
-    this.trace = new AgentTraceStore(database, artifacts, traceAudit);
+    this.trace = new AgentTraceStore(database, artifacts, audit);
   }
 
   saveDraft(sessionId: string, content: string): SessionDraft {
@@ -183,29 +185,10 @@ export class AgentStore {
       ...detail,
       createdAt: new Date().toISOString(),
     });
-    this.database
-      .prepare(
-        "INSERT INTO agent_events (id, run_id, sequence, event_type, summary, tool_name, tool_call_id, language, code, stdout, stderr, termination, created_at, workspace_path, command, exit_code, duration_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      )
-      .run(
-        item.id,
-        item.runId,
-        item.sequence,
-        item.type,
-        item.summary,
-        item.toolName,
-        item.toolCallId,
-        item.language,
-        item.source,
-        item.stdout,
-        item.stderr,
-        item.termination,
-        item.createdAt,
-        item.path,
-        item.command,
-        item.exitCode,
-        item.durationMs,
-      );
+    this.database.transaction(() => {
+      insertEvent(this.database, item);
+      auditAgentEvent(this.database, this.audit, item, detail);
+    })();
     return item;
   }
   recordEventDuration(eventId: string, durationMs: number): void {
@@ -235,6 +218,7 @@ export class AgentStore {
         item.contentHash,
         item.createdAt,
       );
+    auditArtifactCreated(this.database, this.audit, item);
     return item;
   }
   setContext(id: string, used: number, allocated: number): void {

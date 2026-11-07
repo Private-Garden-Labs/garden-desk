@@ -31,6 +31,23 @@ spawnSync(
   { stdio: "inherit", env: { ...process.env, CI: "true" } },
 );
 
+spawnSync(
+  "pnpm",
+  [
+    "exec",
+    "wrangler",
+    "d1",
+    "execute",
+    "garden-desk-data-packs",
+    "--local",
+    "-c",
+    config,
+    "--command",
+    "CREATE TABLE IF NOT EXISTS keys (key TEXT PRIMARY KEY, customer TEXT NOT NULL, created_at TEXT NOT NULL, revoked_at TEXT, uses INTEGER NOT NULL DEFAULT 0, last_used_at TEXT) WITHOUT ROWID",
+  ],
+  { stdio: "inherit", env: { ...process.env, CI: "true" } },
+);
+
 await unstable_startWorker({
   config,
   bindings: {

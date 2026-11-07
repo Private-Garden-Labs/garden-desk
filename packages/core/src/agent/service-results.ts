@@ -3,18 +3,18 @@ import type {
   AgentRunResult,
   AgentSessionSummary,
   ConversationMessage,
-  ThinkingLevel,
 } from "@gardendesk/shared";
 import { commandFailureSummary } from "../commands/failures.js";
 import type { DevelopmentPorts } from "../development/ports.js";
+import type { LawContext } from "../laws/law-library.js";
 import type { InferenceService } from "../runtime/inference.js";
 import { inferenceFailureCode } from "../runtime/inference-errors.js";
 import { AGENT_MODEL_ID } from "./limits.js";
 
-export interface AgentRunRequest {
-  task: string;
-  thinking: ThinkingLevel;
-  developmentModelId?: string;
+export interface AgentRunOptions {
+  laws?: LawContext | undefined;
+  replyLanguage?: string | undefined;
+  developmentModelId?: string | undefined;
 }
 
 export function agentHistory(messages: ConversationMessage[], summary?: AgentSessionSummary) {

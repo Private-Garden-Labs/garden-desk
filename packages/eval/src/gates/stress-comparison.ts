@@ -30,6 +30,7 @@ function argument(name: string): string | undefined {
 const repository = process.cwd();
 const macos = process.platform === "darwin";
 const developmentModel = argument("--development-model");
+const runOptions = { jurisdiction: null, developmentModelId: developmentModel };
 const developmentSettings = argument("--development-settings");
 const label =
   argument("--label") ?? developmentModel?.replace("/", "-") ?? INFERENCE_PROFILE.modelId;
@@ -229,7 +230,7 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
     for (const name of attachments) await core.addAttachment(session.id, join(source, name));
     const prompt =
       task.command === undefined || plainPrompts ? task.prompt : `/${task.command} ${task.prompt}`;
-    const started = await core.startAgent(session.id, prompt, thinking, developmentModel);
+    const started = await core.startAgent(session.id, prompt, thinking, runOptions);
     const watched = await watch({
       core,
       taskId: task.id,

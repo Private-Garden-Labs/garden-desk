@@ -7,11 +7,13 @@ import type {
 import { type FormEvent, type KeyboardEvent, useEffect, useLayoutEffect, useRef } from "react";
 import type { DevelopmentModelApi } from "../api.js";
 import { t } from "../i18n/index.js";
+import type { LawsController } from "../laws.js";
 import { AttachmentChip } from "./attachment-chip.js";
 import { CommandMenu, useCommandMenu } from "./command-menu.js";
 import { DevelopmentModelControl } from "./development-model-control.js";
 import { EffortControl } from "./effort-control.js";
 import { Icon } from "./icons.js";
+import { LawControl } from "./law-control.js";
 
 interface ComposerProps {
   commands: CommandSummary[];
@@ -21,6 +23,7 @@ interface ComposerProps {
   developmentModels?: DevelopmentModelApi | undefined;
   dropActive?: boolean;
   draft: string;
+  laws: LawsController;
   nativeActionMessage?: string | undefined;
   removableAttachmentIds: string[];
   running: boolean;
@@ -129,6 +132,7 @@ export function Composer({
   developmentModels,
   dropActive = false,
   draft,
+  laws,
   nativeActionMessage,
   removableAttachmentIds,
   running,
@@ -168,6 +172,7 @@ export function Composer({
   }
 
   const canSend = !disabled && !running && draft.trim().length > 0;
+  const controlsDisabled = disabled || running;
 
   return (
     <form
@@ -219,11 +224,12 @@ export function Composer({
           <ModelControl
             api={developmentModels}
             developmentModel={developmentModel}
-            disabled={disabled || running}
+            disabled={controlsDisabled}
             onChange={onDevelopmentModelChange}
           />
+          <LawControl disabled={controlsDisabled} laws={laws} />
           <EffortControl
-            disabled={disabled || running}
+            disabled={controlsDisabled}
             onThinkingChange={onThinkingChange}
             thinking={thinking}
           />

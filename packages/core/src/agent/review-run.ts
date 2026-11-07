@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { AgentRunResult, AgentRunSummary } from "@gardendesk/shared";
-import { reviewDocument } from "../commands/document-review.js";
+import { completeReview, reviewDocument } from "../commands/document-review.js";
 import type { CommandInvocation } from "../commands/library.js";
 import type { JobStore } from "../jobs/jobs.js";
 import type { InferenceService } from "../runtime/inference.js";
@@ -96,6 +96,8 @@ function childReviewInput(
     modelId: input.modelId,
     skills: input.skills,
     systemPrompt: input.systemPrompt,
+    ...(input.laws === undefined ? {} : { laws: input.laws }),
+    ...(input.replyLanguage === undefined ? {} : { replyLanguage: input.replyLanguage }),
     ...(input.signal === undefined ? {} : { signal: input.signal }),
     ...(input.thinking === undefined ? {} : { thinking: input.thinking }),
     trace: { runId: child.id, store: ports.store.trace },
@@ -131,12 +133,15 @@ export async function runInternalReview(request: {
   const directory = `.garden-desk-tools/review-${child.id}`;
   const output: ToolExecutionResult = { content: "", failed: false, guestExecutionsStarted: 0 };
   try {
-    const result = await reviewDocument(
-      command,
-      { ...childReviewInput(ports, input, child, output), task: command.arguments },
-      chat,
-      { attachment: { path, displayName }, directory },
-    );
+    const childInput = {
+      ...childReviewInput(ports, input, child, output),
+      task: command.arguments,
+    };
+    const result = await reviewDocument(command, childInput, chat, {
+      attachment: { path, displayName },
+      directory,
+    });
+    completeReview(childInput, result.response);
     completeReviewChild(ports, child, result);
     output.childResponse = result.response;
     output.content = JSON.stringify({

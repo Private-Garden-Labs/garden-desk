@@ -12,6 +12,7 @@ interface IconProps {
     | "compare"
     | "copy"
     | "copy-check"
+    | "chevron-down"
     | "chevron-left"
     | "chevron-right"
     | "chevron-up"
@@ -21,6 +22,7 @@ interface IconProps {
     | "external"
     | "folder"
     | "glob"
+    | "key"
     | "list"
     | "message"
     | "pencil"
@@ -53,6 +55,7 @@ const paths: Record<IconProps["name"], string> = {
   compare: "M3 4h7v16H3zM14 4h7v16h-7zM6 8h1M6 12h1M17 8h1M17 12h1M10 16h4m-2-2 2 2-2 2",
   copy: "M9 9h10v10H9zM5 5h10v4M5 5v10h4",
   "copy-check": "M9 9h10v10H9zM5 5h10v4M5 5v10h4M12 14l2 2 4-4",
+  "chevron-down": "M6 9l6 6 6-6",
   "chevron-left": "M15 6l-6 6 6 6",
   "chevron-right": "M9 6l6 6-6 6",
   "chevron-up": "M6 15l6-6 6 6",
@@ -62,6 +65,7 @@ const paths: Record<IconProps["name"], string> = {
   external: "M12 5H5v14h14v-7M14 4h6v6M20 4l-9 9",
   folder: "M3 7h6l2 2h10v10H3z",
   glob: "M5 6h14M5 12h14M5 18h9",
+  key: "M15 5a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM12 11l-8 8M7 16l2 2",
   list: "M4 6h16M4 12h16M4 18h16",
   message: "M4 5h16v11H8l-4 4z",
   pencil: "M4 20h4L18.5 9.5a2 2 0 0 0-3-3L5 17v3zM14 6l3 3",

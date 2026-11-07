@@ -4,10 +4,16 @@ import type {
   AgentTrace,
   AttachmentSummary,
   CommandSummary,
+  CompanyPacks,
   ConversationMessage,
+  DataPacks,
   DevelopmentModel,
   DevelopmentModelSettings,
   FolderSummary,
+  Jurisdiction,
+  LawAct,
+  LawCitations,
+  LawJurisdictionSummary,
   ModelRuntimeStatus,
   SessionDraft,
   SessionPage,
@@ -67,6 +73,8 @@ export interface SecureWorkspaceSetupResult {
   status: SecureWorkspaceStatus;
 }
 
+export type DataPackKeyStatus = "accepted" | "rejected" | "offline";
+
 export interface DesktopApi {
   bootstrapDesktop(): Promise<DesktopBootstrap>;
   getSecureWorkspaceStatus(): Promise<SecureWorkspaceStatus>;
@@ -99,7 +107,11 @@ export interface DesktopApi {
     sessionId: string,
     task: string,
     thinking: ThinkingLevel,
-    developmentModelId?: string,
+    options: {
+      jurisdiction: Jurisdiction | null;
+      language: string;
+      developmentModelId?: string | undefined;
+    },
   ): Promise<AgentRunSummary>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;
@@ -107,6 +119,10 @@ export interface DesktopApi {
   cancelAgent(jobId: string): Promise<boolean>;
   answerQuestion(runId: string, questionId: string, answers: string[][]): Promise<boolean>;
   dismissQuestion(runId: string, questionId: string): Promise<boolean>;
+  exportWorkRecord(
+    sessionId: string,
+    labels: Record<string, string>,
+  ): Promise<{ file: string; verified: boolean } | undefined>;
   createDebugSnapshot(sessionId: string): Promise<string>;
   revealDebugSnapshot(sessionId: string): Promise<void>;
   openReleasePage(): Promise<void>;
@@ -120,5 +136,19 @@ export interface DesktopApi {
   skillLocations(): Promise<SkillLocations>;
   openPromptFolder(folder: PromptFolder): Promise<void>;
   developmentModels?: DevelopmentModelApi;
+  sampleFolderFiles(folderId: string): Promise<string[]>;
+  listLaws(): Promise<LawJurisdictionSummary[]>;
+  readLaw(id: Jurisdiction, source: string): Promise<LawAct>;
+  listLawCitations(): Promise<LawCitations>;
+  openLawSource(id: Jurisdiction, source: string): Promise<void>;
+  setLawEnabled(id: Jurisdiction, enabled: boolean, source?: string): Promise<boolean>;
+  listDataPacks(): Promise<DataPacks>;
+  saveDataPackKey(key: string): Promise<DataPackKeyStatus>;
+  installDataPack(id: string): Promise<boolean>;
+  companyPacks(): Promise<CompanyPacks>;
+  chooseCompanyPack(): Promise<string | undefined>;
+  importCompanyPack(path: string, trust?: string): Promise<boolean>;
+  chooseCompanyPackFolder(): Promise<void>;
+  buildCompanyPack(name: string, id: string, publisher: string): Promise<void>;
   listenForDroppedPaths?(listener: (event: NativeDropEvent) => void): Promise<() => void>;
 }

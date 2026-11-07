@@ -17,6 +17,8 @@ mod core_transport;
 mod development_commands;
 mod diagnostics;
 mod drop_commands;
+mod folder_commands;
+mod law_commands;
 mod package_integrity;
 mod question_commands;
 mod session_commands;
@@ -227,12 +229,27 @@ fn main() {
             drop_commands::classify_dropped_paths,
             diagnostics::create_debug_snapshot,
             session_commands::delete_session,
+            session_commands::export_work_record,
             commands::desktop_bootstrap,
             commands::get_agent_run,
             commands::get_agent_trace,
             commands::list_agent_runs,
             commands::list_attachments,
             commands::list_messages,
+            folder_commands::sample_folder_files,
+            law_commands::list_laws,
+            law_commands::read_law,
+            law_commands::list_law_citations,
+            law_commands::open_law_source,
+            law_commands::set_law_enabled,
+            law_commands::list_data_packs,
+            law_commands::save_data_pack_key,
+            law_commands::install_data_pack,
+            law_commands::company_packs,
+            law_commands::choose_company_pack,
+            law_commands::import_company_pack,
+            law_commands::choose_company_pack_folder,
+            law_commands::build_company_pack,
             session_commands::list_sessions,
             commands::load_draft,
             development_commands::development_model_save,

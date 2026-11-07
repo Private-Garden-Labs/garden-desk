@@ -5,6 +5,12 @@ import { failure, success } from "./responses.js";
 
 const UNAVAILABLE = "The request could not be completed.";
 
+export const DEVELOPMENT_METHODS = new Set([
+  "development.models.settings",
+  "development.models.search",
+  "development.models.save",
+]);
+
 /** Keeps provider payloads, keys, and local paths out of the returned message. */
 function boundedMessage(error: unknown): string {
   if (!(error instanceof Error)) return UNAVAILABLE;

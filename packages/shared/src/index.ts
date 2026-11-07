@@ -12,6 +12,7 @@ export * from "./ids.js";
 export * from "./inference.js";
 export * from "./inference-profile.js";
 export * from "./jobs.js";
+export * from "./laws.js";
 export {
   type InstalledModelIdentity,
   InstalledModelIdentitySchema,

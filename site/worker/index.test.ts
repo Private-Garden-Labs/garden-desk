@@ -136,6 +136,40 @@ test("the blog MCP endpoint needs the Access token and a matching origin", async
   }
 });
 
+test("the admin deletes a data pack key only before its first download", async () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec(
+    "CREATE TABLE keys (key TEXT PRIMARY KEY, customer TEXT NOT NULL, created_at TEXT NOT NULL, revoked_at TEXT, uses INTEGER NOT NULL DEFAULT 0, last_used_at TEXT)",
+  );
+  const base = blogEnvironment(db);
+  const env = { ...base, PACK_KEYS: base.STATS };
+  const jwt = await blogToken(env);
+  const send = (method: string, body: object) =>
+    worker.fetch(
+      new Request("https://admin.gardendesk.ai/api/keys", {
+        method,
+        headers: {
+          "content-type": "application/json",
+          origin: "https://admin.gardendesk.ai",
+          "cf-access-jwt-assertion": jwt,
+        },
+        body: JSON.stringify(body),
+      }),
+      env,
+      { waitUntil: () => undefined },
+    );
+  try {
+    const { key: used } = await (await send("POST", { customer: "Firm" })).json();
+    const { key: unused } = await (await send("POST", { customer: "Office" })).json();
+    db.prepare("UPDATE keys SET uses = 1 WHERE key = ?").run(used);
+    expect((await send("DELETE", { key: used })).status).toBe(409);
+    expect((await send("DELETE", { key: unused })).status).toBe(200);
+    expect(db.prepare("SELECT key FROM keys").all()).toEqual([{ key: used }]);
+  } finally {
+    db.close();
+  }
+});
+
 function blogEnvironment(db: DatabaseSync): Env {
   db.exec(blogSchema);
   return {

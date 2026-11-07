@@ -4,8 +4,14 @@ import type {
   AgentTrace,
   AttachmentSummary,
   CommandSummary,
+  CompanyPacks,
   ConversationMessage,
+  DataPacks,
   FolderSummary,
+  Jurisdiction,
+  LawAct,
+  LawCitations,
+  LawJurisdictionSummary,
   MessageRole,
   SessionDraft,
   SessionPage,
@@ -16,6 +22,8 @@ import type {
   WorkspaceStatus,
 } from "@gardendesk/shared";
 import type { DevelopmentPorts } from "./development/ports.js";
+import type { CompanyPackRequest } from "./laws/company-pack-build.js";
+import type { WorkRecordLabels } from "./records/work-record.js";
 import type {
   ChatInput,
   EmbeddingInput,
@@ -33,6 +41,7 @@ export interface GardenDeskCorePorts extends InferenceService {
   listFolders(): Promise<FolderSummary[]>;
   reorderFolders(folderIds: string[]): Promise<FolderSummary[]>;
   resolveFolderPath(folderId: string): Promise<string>;
+  sampleFolderFiles(folderId: string): Promise<string[]>;
   revokeFolder(folderId: string): Promise<boolean>;
   createSession(folderId: string | null): Promise<SessionSummary>;
   deleteSession(sessionId: string): Promise<boolean>;
@@ -61,7 +70,11 @@ export interface GardenDeskCorePorts extends InferenceService {
     sessionId: string,
     task: string,
     thinking: ThinkingLevel,
-    developmentModelId?: string,
+    options: {
+      jurisdiction: Jurisdiction | null;
+      replyLanguage?: string;
+      developmentModelId?: string | undefined;
+    },
   ): Promise<AgentRunSummary>;
   listAgentRuns(sessionId: string): Promise<AgentRunSummary[]>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
@@ -77,7 +90,24 @@ export interface GardenDeskCorePorts extends InferenceService {
   removeSkill(name: string): Promise<boolean>;
   setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
   skillLocations(): Promise<SkillLocations>;
+  listLaws(): Promise<LawJurisdictionSummary[]>;
+  readLaw(id: Jurisdiction, source: string): Promise<LawAct | undefined>;
+  lawCitations(): Promise<LawCitations>;
+  lawSourceUrl(id: Jurisdiction, source: string): Promise<string | undefined>;
+  setLawEnabled(id: Jurisdiction, enabled: boolean, source?: string): Promise<boolean>;
+  listDataPacks(): Promise<DataPacks>;
+  saveDataPackKey(key: string): Promise<boolean>;
+  installDataPack(id: string): Promise<boolean>;
+  companyPackStatus(): Promise<CompanyPacks>;
+  setCompanyPackFolder(path: string): Promise<void>;
+  importCompanyPack(path: string, trust?: string): boolean;
+  buildCompanyPack(request: CompanyPackRequest): Promise<boolean>;
   verifyAudit(): Promise<boolean>;
+  exportWorkRecord(
+    sessionId: string,
+    directory: string,
+    labels: WorkRecordLabels,
+  ): Promise<{ file: string; verified: boolean }>;
   close(): Promise<void>;
 }
 
@@ -103,6 +133,19 @@ function skillPorts(ports: GardenDeskCorePorts) {
     removeSkill: (name: string) => ports.removeSkill(name),
     setSkillEnabled: (name: string, enabled: boolean) => ports.setSkillEnabled(name, enabled),
     skillLocations: () => ports.skillLocations(),
+    listLaws: () => ports.listLaws(),
+    readLaw: (id: Jurisdiction, source: string) => ports.readLaw(id, source),
+    lawCitations: () => ports.lawCitations(),
+    lawSourceUrl: (id: Jurisdiction, source: string) => ports.lawSourceUrl(id, source),
+    setLawEnabled: (id: Jurisdiction, enabled: boolean, source?: string) =>
+      ports.setLawEnabled(id, enabled, source),
+    listDataPacks: () => ports.listDataPacks(),
+    saveDataPackKey: (key: string) => ports.saveDataPackKey(key),
+    installDataPack: (id: string) => ports.installDataPack(id),
+    companyPackStatus: () => ports.companyPackStatus(),
+    setCompanyPackFolder: (path: string) => ports.setCompanyPackFolder(path),
+    importCompanyPack: (path: string, trust?: string) => ports.importCompanyPack(path, trust),
+    buildCompanyPack: (request: CompanyPackRequest) => ports.buildCompanyPack(request),
   };
 }
 
@@ -136,6 +179,7 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
     listFolders: () => ports.listFolders(),
     reorderFolders: (folderIds) => ports.reorderFolders(folderIds),
     resolveFolderPath: (folderId) => ports.resolveFolderPath(folderId),
+    sampleFolderFiles: (folderId) => ports.sampleFolderFiles(folderId),
     revokeFolder: (folderId) => ports.revokeFolder(folderId),
     createSession: (folderId) => ports.createSession(folderId),
     deleteSession: (sessionId) => ports.deleteSession(sessionId),
@@ -152,8 +196,8 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
     ...artifactPorts(ports),
     removeAttachment: (sessionId, attachmentId) => ports.removeAttachment(sessionId, attachmentId),
     ...(ports.development === undefined ? {} : { development: ports.development }),
-    startAgent: (sessionId, task, thinking, developmentModelId) =>
-      ports.startAgent(sessionId, task, thinking, developmentModelId),
+    startAgent: (sessionId, task, thinking, options) =>
+      ports.startAgent(sessionId, task, thinking, options),
     listAgentRuns: (sessionId) => ports.listAgentRuns(sessionId),
     getAgentRun: (runId) => ports.getAgentRun(runId),
     getAgentTrace: (runId) => ports.getAgentTrace(runId),
@@ -164,6 +208,8 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
     cancelJob: (jobId) => ports.cancelJob(jobId),
     ...skillPorts(ports),
     verifyAudit: () => ports.verifyAudit(),
+    exportWorkRecord: (sessionId, directory, labels) =>
+      ports.exportWorkRecord(sessionId, directory, labels),
     ...inferencePorts(ports),
     close: () => ports.close(),
   };

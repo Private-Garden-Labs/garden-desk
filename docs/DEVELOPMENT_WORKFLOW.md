@@ -11,7 +11,7 @@ After cloning, run the setup command for your platform:
 
 Setup checks the required tools and asks before it installs a missing one. After you approve, it installs the locked packages, downloads missing model and runtime files, builds a missing guest image (Docker with Linux containers), and starts the app. The first setup needs an internet connection. If an installer asks you to restart, restart and run setup again. On Windows, after the helper adds you to Hyper-V Administrators, sign out and back in.
 
-Later, `pnpm start` runs `pnpm desktop:dev`. Run setup again when dependencies or required assets change. The development terminal shows WebView and Core output. That output is not stored and must never include prompts, messages, tool payloads, reasoning, or file contents.
+Later, `pnpm dev` or `pnpm start` runs `pnpm desktop:dev`. Run setup again when dependencies or required assets change. The development terminal shows WebView and Core output. That output is not stored and must never include prompts, messages, tool payloads, reasoning, or file contents.
 
 ## Make A Change
 
@@ -59,6 +59,10 @@ Use this only as a last resort, and only after the owner approves the exact comm
 - `assets/inference-runtime.json` pins a `stagedSha256` per platform. Packaging stops on a mismatch. A file that already carries a valid vendor signature keeps it.
 - macOS development builds sign ad hoc. A production build sets `APPLE_SIGNING_IDENTITY` to the Developer ID Application identity. It signs the sidecar, inference runtime, and VZ helper with the hardened runtime, then notarizes and staples the DMG with the `garden-desk` notary profile. Create that profile once with `xcrun notarytool store-credentials garden-desk --key <AuthKey_ID.p8> --key-id <key ID> --issuer <issuer ID>`. Allow the terminal to control Finder for the DMG layout, or set `CI=true` to skip the layout.
 
+## Data Packs
+
+Law packs are built, signed, and published outside this repository. The app downloads them from `https://packs.gardendesk.ai`; none are packaged with it. A company pack is built in the app: on the Data packs page, enter a pack name and publisher, choose **Make a pack from a folder…**, then pick the folder with the documents and the folder for the `.gdpack` file. Give that file to employees directly or put it in a shared folder; each employee imports it once, or sets that folder as the company pack folder and imports the packs it lists. The first pack from a publisher asks the employee to trust the publisher's fingerprint, so tell them the fingerprint through another channel. The signing key stays in `data-packs/publisher-key.json` on the machine that built the pack; back it up, because a new key is a new publisher.
+
 ## Publish A Release
 
 A download link must not go live before its file and SHA-256 exist.
@@ -76,7 +80,7 @@ English text lives in the HTML and in `site/locales/en.json`. Mark text with `da
 
 ## Website Admin And Blog
 
-The admin runs at `admin.gardendesk.ai` behind Cloudflare Access. The Worker also validates the Access token and requires the same origin for blog changes. Posts live in the D1 database, and only published posts appear on `/blog/`, in the sitemap, and in the RSS feed. Apply the database migration before deployment. Add the admin hostname to Access before you add its Worker route. To work locally, run `pnpm site:admin`.
+The admin runs at `admin.gardendesk.ai` behind Cloudflare Access. The Worker also validates the Access token and requires the same origin for blog changes. Posts live in the D1 database, and only published posts appear on `/blog/`, in the sitemap, and in the RSS feed. Apply the database migration before deployment. Add the admin hostname to Access before you add its Worker route. The Keys page creates data pack keys, shows how many pack downloads each key made, and deletes a key before its first download; it uses the data pack store's key database. To work locally, run `pnpm site:admin`.
 
 Claude Code and Codex can manage posts through the MCP endpoint (Model Context Protocol, the way coding agents connect to tools) at `https://admin.gardendesk.ai/mcp`. To set it up, create a Cloudflare Access service token and add a Service Auth policy for it. Keep the token's ID and secret in `GARDEN_ACCESS_CLIENT_ID` and `GARDEN_ACCESS_CLIENT_SECRET`. Locally, `http://127.0.0.1:4175/mcp` needs no token.
 

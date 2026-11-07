@@ -1238,12 +1238,17 @@ select:focus-visible {
 }
 
 .suggestions {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 12px;
 }
 
 .suggestions button {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 calc((100% - 36px) / 4);
   min-height: 104px;
   padding: 18px;
   border: 1px solid var(--border-color);
@@ -1256,6 +1261,12 @@ select:focus-visible {
     border-color 160ms ease,
     background 160ms ease,
     transform 160ms ease;
+}
+
+.suggestion-command {
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .suggestions button:hover {
@@ -2042,6 +2053,19 @@ select:focus-visible {
   height: 14px;
 }
 
+.law-menu {
+  width: 280px;
+}
+
+.law-menu-note {
+  margin: 6px 0 0;
+  padding: 8px 10px 4px;
+  border-top: 1px solid var(--reading-border);
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .question-prompt {
   display: flex;
   flex-direction: column;
@@ -2531,6 +2555,268 @@ select:focus-visible {
   border-radius: 9px;
   background: transparent;
   cursor: pointer;
+}
+
+.law-reader {
+  position: relative;
+  display: flex;
+  width: var(--law-reader-width, clamp(380px, 36vw, 560px));
+  min-width: 320px;
+  max-width: 720px;
+  flex: 0 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--ink);
+  border-left: 1px solid var(--reading-border);
+  background: var(--reading-raised);
+}
+
+.app-shell:has(.law-reader) .workspace {
+  min-width: 440px;
+  flex-basis: 440px;
+}
+
+.law-reader-header {
+  display: flex;
+  min-height: var(--chat-header-height);
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 18px 14px 24px;
+  border-bottom: 1px solid var(--reading-border);
+}
+
+.law-reader-header h2 {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-family: "IBM Plex Serif", Charter, "Iowan Old Style", Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.law-reader-header p {
+  margin: 5px 0 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.law-reader-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  color: var(--accent-strong);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.law-reader-source .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.law-reader-source:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.law-reader-source:focus-visible,
+.law-reader-header > button:focus-visible,
+.law-reader-body:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.law-reader-header > button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.law-reader-header > button:hover {
+  background: var(--navigation-hover);
+}
+
+.law-reader-header > button:active {
+  transform: scale(0.97);
+}
+
+.law-reader-search {
+  display: flex;
+  min-height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 18px 4px 24px;
+  padding: 0 4px 0 11px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--ink-soft);
+}
+
+.law-reader-search:focus-within {
+  border-color: var(--accent);
+}
+
+.law-reader-search input {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 0;
+  outline: none;
+  color: var(--ink);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+}
+
+.law-reader-search output {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.law-reader-search button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.law-reader-search button:hover:not(:disabled) {
+  background: var(--navigation-hover);
+}
+
+.law-reader-search button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.law-reader-search button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.law-reader-search button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+::highlight(law-search) {
+  background-color: var(--accent-soft);
+}
+
+::highlight(law-search-current) {
+  color: var(--on-accent);
+  background-color: var(--accent);
+}
+
+.law-reader-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 6px 14px 48px;
+  overflow-y: auto;
+}
+
+.law-reader-group {
+  margin: 22px 10px 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--reading-border);
+  color: var(--ink-soft);
+  font-family: "IBM Plex Serif", Charter, "Iowan Old Style", Georgia, serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.law-reader-group:first-child {
+  margin-top: 8px;
+  border-top: 0;
+}
+
+.law-reader-section {
+  padding: 12px 10px;
+  border-radius: 10px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
+  scroll-margin-top: 10px;
+}
+
+.law-reader-target {
+  background: color-mix(in srgb, var(--accent-soft) 42%, transparent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.law-reader-section h4 {
+  margin: 0 0 6px;
+  font-family: "IBM Plex Serif", Charter, "Iowan Old Style", Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.law-reader-section h4 span {
+  margin-right: 4px;
+  color: var(--accent-strong);
+  font-family: "IBM Plex Sans", ui-sans-serif, -apple-system, sans-serif;
+  font-size: 13px;
+}
+
+.law-reader-section p {
+  max-width: 72ch;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.62;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.law-citation {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  color: var(--accent-strong);
+  background: transparent;
+  font: inherit;
+  text-align: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: text-decoration-color 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.law-citation:hover {
+  text-decoration-color: currentcolor;
+}
+
+.law-citation:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .stream-tabs button:focus-visible,
@@ -3352,6 +3638,179 @@ select:focus-visible {
   transform: translateX(16px);
 }
 
+.law-disclaimer {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--reading-border);
+  border-radius: 12px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.law-list {
+  margin-top: 14px;
+}
+
+.company-packs-title {
+  margin: 28px 0 4px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.law-row {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  row-gap: 0;
+}
+
+.law-row .skill-row-copy {
+  flex: 1 1 0;
+}
+
+.law-sources {
+  flex: 1 0 100%;
+  margin-top: 6px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.law-sources summary {
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.law-sources summary:hover {
+  color: var(--ink);
+}
+
+.law-sources summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.law-sources ul {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.law-sources summary {
+  font-size: 13px;
+}
+
+.law-source {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.law-source + .law-source {
+  border-top: 1px solid var(--reading-border);
+}
+
+.law-source button {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--ink);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.law-source button:hover {
+  background: var(--navigation-hover);
+}
+
+.law-source button::after {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 8px;
+  z-index: 2;
+  padding: 4px 8px;
+  border-radius: 6px;
+  content: attr(data-hint);
+  color: var(--reading);
+  background: var(--ink);
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(3px);
+  transition:
+    opacity 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.law-source button:hover::after,
+.law-source button:focus-visible::after {
+  opacity: 1;
+  transform: none;
+  transition-delay: 100ms;
+}
+
+.law-source button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.law-source button:active {
+  transform: scale(0.99);
+}
+
+.law-source > .icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  opacity: 0;
+  color: var(--ink-soft);
+  transition: opacity 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.law-source:hover > .icon,
+.law-source:focus-within > .icon {
+  opacity: 1;
+}
+
+.law-sources input {
+  accent-color: var(--accent);
+}
+
+.law-sources input:disabled,
+.law-sources input:disabled + button {
+  cursor: not-allowed;
+}
+
+.law-sources input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.law-sources input:disabled,
+.law-sources input:disabled + * {
+  cursor: default;
+}
+
+.law-source-version {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
 .skill-drop-zone {
   display: grid;
   margin-top: 10px;
@@ -3731,8 +4190,8 @@ select:focus-visible {
 }
 
 @media (max-width: 960px) {
-  .suggestions {
-    grid-template-columns: repeat(2, 1fr);
+  .suggestions button {
+    flex-basis: calc((100% - 12px) / 2);
   }
 }
 
@@ -3772,6 +4231,10 @@ select:focus-visible {
   }
 
   .appearance-action:hover:not(:disabled) .icon {
+    transform: none;
+  }
+
+  .law-source button::after {
     transform: none;
   }
 }

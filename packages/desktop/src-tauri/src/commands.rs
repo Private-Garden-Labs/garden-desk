@@ -233,10 +233,12 @@ pub(crate) async fn start_agent(
     session_id: String,
     task: String,
     thinking: String,
-    development_model: Option<String>,
+    jurisdiction: Option<String>,
+    language: String,
+    development_model_id: Option<String>,
 ) -> Result<Value, String> {
     crate::windows_setup::require_ready()?;
-    let development_model = match development_model {
+    let development_model = match development_model_id {
         Some(model) if cfg!(debug_assertions) => Some(model),
         Some(_) => {
             return Err("Development model selection is not available in this build.".to_owned());
@@ -249,6 +251,8 @@ pub(crate) async fn start_agent(
             "sessionId": session_id,
             "task": task,
             "thinking": thinking,
+            "jurisdiction": jurisdiction,
+            "language": language,
             "developmentModelId": development_model,
         }),
     )

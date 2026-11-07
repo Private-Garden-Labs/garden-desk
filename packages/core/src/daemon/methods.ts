@@ -3,6 +3,7 @@ import {
   AttachmentIdSchema,
   FolderIdSchema,
   JobIdSchema,
+  JurisdictionSchema,
   MessageRoleSchema,
   PROTOCOL_VERSION,
   type RpcRequest,
@@ -13,8 +14,10 @@ import {
 } from "@gardendesk/shared";
 import type { GardenDeskCore } from "../facade.js";
 import { dispatchArtifactMethod } from "./artifact-methods.js";
-import { dispatchDevelopmentMethod } from "./development-methods.js";
+import { DEVELOPMENT_METHODS, dispatchDevelopmentMethod } from "./development-methods.js";
+import { dispatchLawMethod, LAW_METHODS } from "./law-methods.js";
 import { dispatchQuestionMethod } from "./question-methods.js";
+import { dispatchRecordMethod } from "./record-methods.js";
 import { failure, success } from "./responses.js";
 import { createSession, deleteSession, listSessions, renameSession } from "./session-methods.js";
 import { dispatchSkillMethod } from "./skill-methods.js";
@@ -63,6 +66,12 @@ async function resolveFolderPath(core: GardenDeskCore, request: RpcRequest): Pro
   const folderId = FolderIdSchema.safeParse(request.params.folderId);
   if (!folderId.success) return failure(request, "invalid_request", "Invalid folder id.");
   return success(request, await core.resolveFolderPath(folderId.data));
+}
+
+async function sampleFolderFiles(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
+  const folderId = FolderIdSchema.safeParse(request.params.folderId);
+  if (!folderId.success) return failure(request, "invalid_request", "Invalid folder id.");
+  return success(request, await core.sampleFolderFiles(folderId.data));
 }
 
 async function appendMessage(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
@@ -126,20 +135,29 @@ async function removeAttachment(core: GardenDeskCore, request: RpcRequest): Prom
   return success(request, { removed: await core.removeAttachment(sessionId, attachmentId.data) });
 }
 
+function languageName(code: unknown): string | undefined {
+  if (typeof code !== "string" || code.length > 35) return undefined;
+  try {
+    return new Intl.DisplayNames(["en"], { type: "language" }).of(code);
+  } catch {
+    return undefined;
+  }
+}
+
 async function startAgent(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
   const sessionId = sessionIdParam(request);
   const thinking = ThinkingLevelSchema.safeParse(request.params.thinking);
+  const jurisdiction = JurisdictionSchema.nullable()
+    .default(null)
+    .safeParse(request.params.jurisdiction);
   const task = typeof request.params.task === "string" ? request.params.task.trim() : "";
-  const developmentModelId =
-    typeof request.params.developmentModelId === "string"
-      ? request.params.developmentModelId
-      : undefined;
-  if (task.length === 0 || !thinking.success)
+  const language = languageName(request.params.language);
+  const model = request.params.developmentModelId;
+  const developmentModelId = typeof model === "string" ? model : undefined;
+  if (task.length === 0 || !thinking.success || !jurisdiction.success || language === undefined)
     return failure(request, "invalid_request", "Invalid task.");
-  return success(
-    request,
-    await core.startAgent(sessionId, task, thinking.data, developmentModelId),
-  );
+  const options = { jurisdiction: jurisdiction.data, replyLanguage: language, developmentModelId };
+  return success(request, await core.startAgent(sessionId, task, thinking.data, options));
 }
 
 async function getAgentRun(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
@@ -181,6 +199,8 @@ async function cancelJob(core: GardenDeskCore, request: RpcRequest): Promise<Rpc
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: the exhaustive protocol switch keeps routing explicit.
 async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
+  if (LAW_METHODS.has(request.method)) return dispatchLawMethod(core, request);
+  if (DEVELOPMENT_METHODS.has(request.method)) return dispatchDevelopmentMethod(core, request);
   switch (request.method) {
     case "commands.list":
       return success(request, await core.listCommands());
@@ -194,6 +214,8 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
       return reorderFolders(core, request);
     case "folders.resolvePath":
       return resolveFolderPath(core, request);
+    case "folders.sampleFiles":
+      return sampleFolderFiles(core, request);
     case "folders.revoke":
       return revokeFolder(core, request);
     case "sessions.create":
@@ -204,6 +226,8 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
       return renameSession(core, request);
     case "sessions.list":
       return listSessions(core, request);
+    case "sessions.export":
+      return dispatchRecordMethod(core, request);
     case "messages.append":
       return appendMessage(core, request);
     case "messages.list":
@@ -252,10 +276,6 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
     case "skills.remove":
     case "skills.setEnabled":
       return dispatchSkillMethod(core, request);
-    case "development.models.settings":
-    case "development.models.search":
-    case "development.models.save":
-      return dispatchDevelopmentMethod(core, request);
     default:
       return failure(request, "unsupported", `Unsupported method: ${request.method}`);
   }

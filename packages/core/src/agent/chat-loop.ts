@@ -13,7 +13,7 @@ import { artifactCandidateNames } from "./artifact-results.js";
 import { compactChatHistory } from "./chat-compaction.js";
 import { currentTimeContext, withCurrentTimeContext } from "./chat-current-time.js";
 import { generateWithInferenceRecovery } from "./chat-inference-recovery.js";
-import { initialChatMessages } from "./chat-initial-messages.js";
+import { initialChatMessages, withLawDisclaimer } from "./chat-initial-messages.js";
 import type { ChatAgentInput, ChatRecoveryState, ChatTurnOptions } from "./chat-loop-input.js";
 import { createToolRegistry } from "./chat-loop-registry.js";
 import { streamCallbacks } from "./chat-streaming.js";
@@ -160,8 +160,9 @@ export class ChatAgentLoop {
     input: ChatAgentInput,
     state: ChatToolState,
     performance: ReturnType<typeof emptyPerformance>,
-    response: string,
+    generatedResponse: string,
   ): AgentRunResult {
+    const response = withLawDisclaimer(input, generatedResponse);
     input.onResponse?.(response);
     input.onEvent?.("assistant.completed", "Response completed.");
     return AgentRunResultSchema.parse({
