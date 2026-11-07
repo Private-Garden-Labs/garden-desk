@@ -175,7 +175,7 @@ export function chatBody(
     ...sampling(request),
     repeat_penalty: 1,
     chat_template_kwargs: thinkingOptions(request),
-    ...(request.operation === "generate"
+    ...(request.operation === "generate" || request.jsonSchema !== undefined
       ? {
           response_format: {
             type: "json_schema",

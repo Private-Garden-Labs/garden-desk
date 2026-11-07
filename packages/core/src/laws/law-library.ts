@@ -51,6 +51,7 @@ export interface LawContext {
   name: string;
   currentAsOf: string;
   searched(): boolean;
+  citations(): string[];
   search(query: string, signal?: AbortSignal): Promise<LawSection[]>;
   forDocument(
     text: string,
@@ -143,6 +144,12 @@ export class LawLibrary {
       name: jurisdiction.name,
       currentAsOf: jurisdiction.currentAsOf,
       searched: () => searched,
+      citations: () =>
+        this.citations().flatMap((act) =>
+          jurisdiction.sources.some((source) => source.id === act.source && source.enabled)
+            ? act.citations
+            : [],
+        ),
       search: async (query, signal) => {
         searched = true;
         return this.sections(

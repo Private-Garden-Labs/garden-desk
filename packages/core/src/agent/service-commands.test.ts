@@ -13,6 +13,10 @@ import {
 
 afterEach(cleanServiceFixtures);
 
+const labels = { summary: "", where: "", mistake: "", fix: "", checked: "" };
+const review = (title: string, issue = "None.") =>
+  JSON.stringify({ title, labels, findings: [{ ...labels, issue, citations: [] }], checked: [] });
+
 it("returns an internal review to the main agent without changing its title", async () => {
   const path = "/source/agreement.txt";
   const source = "1: Amount: 12\n2: Amount: 13";
@@ -36,12 +40,13 @@ it("returns an internal review to the main agent without changing its title", as
           const source = request.messages.at(-1);
           if (source?.role !== "user") throw new Error("Review source is missing.");
           expect(source.text).toBe(JSON.stringify({ source: path, extractedText: source }));
-          streams?.onResponseDelta?.("# Review Internal title\n\nAmounts differ.");
+          const text = review("Internal title", "Amounts differ on lines 1 and 2.");
+          streams?.onResponseDelta?.(text);
           expect(service.snapshot(runId)).toMatchObject({
             sessionTitle: "Check the document.",
             run: { response: null },
           });
-          return chatResult("# Review Internal title\n\nAmounts differ on lines 1 and 2.", []);
+          return chatResult(text, []);
         }
         if (turn === 3) {
           expect(JSON.stringify(request.messages)).toContain("Amounts differ on lines 1 and 2.");
@@ -79,7 +84,7 @@ it("records an internal review as a child run with its own steps", async () => {
             },
           ]);
         }
-        if (turn === 2) return chatResult("# Review Amounts\n\nAmounts differ.", []);
+        if (turn === 2) return chatResult(review("Amounts", "Amounts differ."), []);
         return chatResult("Main answer.", []);
       },
     },
@@ -144,7 +149,7 @@ it("dispatches a Markdown review with one extraction and no tool authority or su
       chat: async (request) => {
         requests.push(request);
         return requests.length === 1
-          ? chatResult("Values differ on lines 1 and 2.", [])
+          ? chatResult(review("Values", "Values differ on lines 1 and 2."), [])
           : chatResult("", [
               { id: "forbidden", name: "python", params: { source: "print('unexpected')" } },
             ]);
@@ -162,7 +167,7 @@ it("dispatches a Markdown review with one extraction and no tool authority or su
     await terminal(service, first.id);
     expect(service.snapshot(first.id).run).toMatchObject({
       state: "succeeded",
-      response: "Values differ on lines 1 and 2.",
+      response: expect.stringContaining("Values differ on lines 1 and 2."),
     });
     const second = service.start(session.id, "/review Compare again.");
     await terminal(service, second.id);
@@ -171,7 +176,7 @@ it("dispatches a Markdown review with one extraction and no tool authority or su
       state: "failed",
       error: "agent_review_tools_unavailable",
     });
-    expect(execute).toHaveBeenCalledTimes(2);
+    expect(execute).toHaveBeenCalledTimes(3);
     expect(requests).toHaveLength(2);
     expect(requests[0]).toMatchObject({
       tools: [],
@@ -190,7 +195,7 @@ it("dispatches a Markdown review with one extraction and no tool authority or su
 
 it("gives a recovery step when a review chat has multiple documents", async () => {
   const { catalog, conversations, service } = await fixture(
-    { chat: async () => chatResult("Review text.", []) },
+    { chat: async () => chatResult(review("Document"), []) },
     async (request) => outputExecution(request, "1: Document text."),
   );
   try {
@@ -226,8 +231,8 @@ it("gives a recovery step when a review chat has multiple documents", async () =
 it("uses the model review heading for a new chat and preserves it on later reviews", async () => {
   const chat = vi
     .fn()
-    .mockResolvedValueOnce(chatResult("# Review Apartment sale agreement\n\nReview text.", []))
-    .mockResolvedValueOnce(chatResult("# Review A different title\n\nFollow-up review.", []));
+    .mockResolvedValueOnce(chatResult(review("Apartment sale agreement"), []))
+    .mockResolvedValueOnce(chatResult(review("A different title"), []));
   const { catalog, conversations, service } = await fixture({ chat }, async (request) =>
     outputExecution(request, "1: Agreement for an apartment sale."),
   );
@@ -261,12 +266,12 @@ it("retains a complete streamed review title when the answer hits the output lim
   const { catalog, conversations, service } = await fixture(
     {
       async chat(_request, _signal, streams) {
-        streams?.onResponseDelta?.("# Review Apartment");
+        streams?.onResponseDelta?.('{"title":"Apartment');
         partialTitle = conversations.listSessions(null).items[0]?.title;
-        streams?.onResponseDelta?.(" sale agreement\n\nUnfinished review");
+        streams?.onResponseDelta?.(' sale agreement","findings":[');
         streamedTitle = conversations.listSessions(null).items[0]?.title;
         return {
-          ...chatResult("# Review Apartment sale agreement\n\nUnfinished review", []),
+          ...chatResult('{"title":"Apartment sale agreement","findings":[', []),
           stopReason: "maxTokens",
         };
       },
