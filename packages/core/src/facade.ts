@@ -4,6 +4,8 @@ import type {
   AgentTrace,
   AttachmentSummary,
   CommandSummary,
+  CompanyPackImport,
+  CompanyPacks,
   ConversationMessage,
   DataPacks,
   FolderSummary,
@@ -20,6 +22,7 @@ import type {
   ThinkingLevel,
   WorkspaceStatus,
 } from "@gardendesk/shared";
+import type { CompanyPackRequest } from "./laws/company-pack-build.js";
 import type {
   ChatInput,
   EmbeddingInput,
@@ -88,6 +91,10 @@ export interface GardenDeskCorePorts extends InferenceService {
   listDataPacks(): Promise<DataPacks>;
   saveDataPackKey(key: string): Promise<boolean>;
   installDataPack(id: string): Promise<boolean>;
+  companyPackStatus(): Promise<CompanyPacks>;
+  setCompanyPackFolder(path: string): Promise<void>;
+  importCompanyPack(path: string, trust?: string): Promise<CompanyPackImport>;
+  buildCompanyPack(request: CompanyPackRequest): Promise<boolean>;
   verifyAudit(): Promise<boolean>;
   close(): Promise<void>;
 }
@@ -123,6 +130,10 @@ function skillPorts(ports: GardenDeskCorePorts) {
     listDataPacks: () => ports.listDataPacks(),
     saveDataPackKey: (key: string) => ports.saveDataPackKey(key),
     installDataPack: (id: string) => ports.installDataPack(id),
+    companyPackStatus: () => ports.companyPackStatus(),
+    setCompanyPackFolder: (path: string) => ports.setCompanyPackFolder(path),
+    importCompanyPack: (path: string, trust?: string) => ports.importCompanyPack(path, trust),
+    buildCompanyPack: (request: CompanyPackRequest) => ports.buildCompanyPack(request),
   };
 }
 

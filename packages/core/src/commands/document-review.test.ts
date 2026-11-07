@@ -32,6 +32,7 @@ it("keeps the document last and its request immediately before it when laws are 
     );
     const run = service.start(session.id, "/review Check the amounts.", "medium", {
       laws: {
+        id: "eu",
         name: "European Union",
         currentAsOf: "2026",
         searched: () => true,

@@ -1,5 +1,6 @@
 import type { AuditLog } from "./audit/log.js";
 import type { GardenDeskCorePorts } from "./facade.js";
+import type { CompanyPackStore } from "./laws/company-packs.js";
 import type { DataPackStore } from "./laws/data-packs.js";
 import type { LawLibrary } from "./laws/law-library.js";
 
@@ -13,11 +14,16 @@ export type LawPorts = Pick<
   | "listDataPacks"
   | "saveDataPackKey"
   | "installDataPack"
+  | "companyPackStatus"
+  | "setCompanyPackFolder"
+  | "importCompanyPack"
+  | "buildCompanyPack"
 >;
 
 export function createLawPorts(
   laws: LawLibrary,
   dataPacks: DataPackStore,
+  companyPacks: CompanyPackStore,
   audit: AuditLog,
 ): LawPorts {
   return {
@@ -49,5 +55,9 @@ export function createLawPorts(
       return saved;
     },
     installDataPack: (id) => dataPacks.install(id),
+    companyPackStatus: () => companyPacks.status(),
+    setCompanyPackFolder: (path) => companyPacks.setFolder(path),
+    importCompanyPack: (path, trust) => companyPacks.import(path, trust),
+    buildCompanyPack: async (request) => companyPacks.start(request),
   };
 }

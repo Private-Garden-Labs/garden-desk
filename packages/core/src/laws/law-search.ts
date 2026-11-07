@@ -82,6 +82,17 @@ export function sectionExcerpt(text: string, chunk: number, limit: number): stri
   return `${opening}${gap}${shown.slice(0, available)}${shown.length > available ? continues : ""}`;
 }
 
+export function withinCharacters<T extends { text: string }>(sections: T[], limit: number): T[] {
+  const kept: T[] = [];
+  let used = 0;
+  for (const section of sections) {
+    used += section.text.length;
+    if (used > limit) break;
+    kept.push(section);
+  }
+  return kept;
+}
+
 function romanianStem(word: string): string {
   if (/\d/u.test(word)) return word;
   const ending = ROMANIAN_ENDINGS.find(

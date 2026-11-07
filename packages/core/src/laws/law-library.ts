@@ -3,12 +3,18 @@ import { DatabaseSync } from "node:sqlite";
 import {
   type Jurisdiction,
   JurisdictionSchema,
-  LAW_PACK_DIRECTORIES,
   type LawAct,
   type LawCitations,
+  LawJurisdictionSchema,
   type LawJurisdictionSummary,
+  packDirectory,
 } from "@gardendesk/shared";
-import { promptDirectoryExists, readPromptFile, writePromptFile } from "../prompt-files.js";
+import {
+  promptDirectoryExists,
+  promptSkillDirectories,
+  readPromptFile,
+  writePromptFile,
+} from "../prompt-files.js";
 import { actCitations, readAct } from "./law-acts.js";
 import {
   documentPassages,
@@ -20,6 +26,7 @@ import {
   type SectionVectors,
   sectionExcerpt,
   vectorRanks,
+  withinCharacters,
 } from "./law-search.js";
 
 const QUERY_INSTRUCTION =
@@ -40,6 +47,7 @@ export interface LawSection {
 }
 
 export interface LawContext {
+  id: Jurisdiction;
   name: string;
   currentAsOf: string;
   searched(): boolean;
@@ -61,17 +69,6 @@ function toggled(values: string[], value: string, enabled: boolean): string[] {
   return (enabled ? kept : [...kept, value]).sort();
 }
 
-function withinCharacters(sections: LawSection[], limit: number): LawSection[] {
-  const kept: LawSection[] = [];
-  let used = 0;
-  for (const section of sections) {
-    used += section.text.length;
-    if (used > limit) break;
-    kept.push(section);
-  }
-  return kept;
-}
-
 export class LawLibrary {
   private readonly databases = new Map<Jurisdiction, DatabaseSync>();
   private readonly vectors = new Map<Jurisdiction, SectionVectors>();
@@ -83,7 +80,7 @@ export class LawLibrary {
 
   list(): LawJurisdictionSummary[] {
     const { disabled, disabledSources } = this.settings();
-    return JurisdictionSchema.options.flatMap((id) => {
+    return this.installed().flatMap((id) => {
       const database = this.open(id);
       if (database === undefined) return [];
       const row = database
@@ -115,7 +112,7 @@ export class LawLibrary {
   }
 
   citations(): LawCitations {
-    return JurisdictionSchema.options.flatMap((id) => {
+    return this.installed().flatMap((id) => {
       const database = this.open(id);
       return database === undefined ? [] : actCitations(database, id);
     });
@@ -142,6 +139,7 @@ export class LawLibrary {
     if (jurisdiction === undefined) throw new Error("law_jurisdiction_unavailable");
     let searched = false;
     return {
+      id,
       name: jurisdiction.name,
       currentAsOf: jurisdiction.currentAsOf,
       searched: () => searched,
@@ -251,8 +249,18 @@ export class LawLibrary {
     });
   }
 
+  private installed(): Jurisdiction[] {
+    const companies = join(this.path, "company");
+    const names = promptDirectoryExists(companies) ? promptSkillDirectories(companies) : [];
+    const ids = names.map(({ name }) => JurisdictionSchema.safeParse(`company:${name}`));
+    return [
+      ...LawJurisdictionSchema.options,
+      ...ids.flatMap((id) => (id.success ? [id.data] : [])),
+    ];
+  }
+
   private open(id: Jurisdiction): DatabaseSync | undefined {
-    const path = join(this.path, LAW_PACK_DIRECTORIES[id], "law-library.sqlite");
+    const path = join(this.path, packDirectory(id), "law-library.sqlite");
     if (!this.databases.has(id) && promptDirectoryExists(path))
       this.databases.set(id, new DatabaseSync(path, { readOnly: true, allowExtension: false }));
     return this.databases.get(id);

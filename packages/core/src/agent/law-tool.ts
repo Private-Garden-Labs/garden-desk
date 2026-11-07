@@ -6,11 +6,17 @@ function sectionText(section: LawSection, index: number): string {
   return `[${index + 1}] ${section.citation}${heading}\nSource: ${section.source}\n${section.text}`;
 }
 
+function lawsDescription(laws: LawContext): string {
+  if (laws.id.startsWith("company:"))
+    return `Search the ${laws.name} pack: the user's own company documents (policies, rules, handbook). Answer questions about company rules from it. Current as of: ${laws.currentAsOf}.`;
+  return `Search the included ${laws.name} law by topic, clause text, or citation. Covers only the acts Garden Desk includes, current as of: ${laws.currentAsOf}.`;
+}
+
 export function lawsTool(laws: LawContext): ToolSpec {
   return {
     definition: {
       name: "laws",
-      description: `Search the included ${laws.name} law by topic, clause text, or citation. Covers only the acts Garden Desk includes, current as of: ${laws.currentAsOf}.`,
+      description: lawsDescription(laws),
       params: objectSchema({ query: { type: "string" } }, ["query"]),
     },
     parse: (value) => ({ query: textParam(object(value), "query", 4_096) }),

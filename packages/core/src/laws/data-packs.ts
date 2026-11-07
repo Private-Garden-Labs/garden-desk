@@ -1,6 +1,6 @@
 import { createPublicKey, type KeyObject, verify } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
-import { mkdir, open, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, open, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
 import { get } from "node:https";
 import { basename, join } from "node:path";
@@ -14,6 +14,7 @@ import {
   type DataPackStatus,
   type DataPacks,
   LAW_PACK_DIRECTORIES,
+  packDirectory,
 } from "@gardendesk/shared";
 import { digest } from "../runtime/models.js";
 
@@ -69,7 +70,11 @@ function failureOf(error: unknown): Failure {
   return message === "key" || message === "invalid" ? message : "unavailable";
 }
 
-async function extract(archive: string, destination: string): Promise<void> {
+export async function extract(
+  archive: string,
+  destination: string,
+  limits?: Map<string, number>,
+): Promise<void> {
   await mkdir(destination, { recursive: true });
   const file = await open(archive);
   try {
@@ -89,16 +94,37 @@ async function extract(archive: string, destination: string): Promise<void> {
       const localOffset = entry.readUInt32LE(42);
       await file.read(local, 0, local.length, localOffset);
       const start = localOffset + 30 + local.readUInt16LE(26) + local.readUInt16LE(28);
-      await pipeline(
-        createReadStream(archive, { start, end: start + entry.readUInt32LE(20) - 1 }),
-        entry.readUInt16LE(10) === 8 ? createInflateRaw() : new PassThrough(),
-        createWriteStream(join(destination, basename(name.toString("utf8")))),
-      );
+      const entryName = basename(name.toString("utf8"));
+      const limit = limits === undefined ? Number.POSITIVE_INFINITY : limits.get(entryName);
+      if (limit !== undefined)
+        await pipeline(
+          createReadStream(archive, { start, end: start + entry.readUInt32LE(20) - 1 }),
+          entry.readUInt16LE(10) === 8 ? createInflateRaw() : new PassThrough(),
+          limitBytes(limit),
+          createWriteStream(join(destination, entryName)),
+        );
       offset += 46 + nameLength + entry.readUInt16LE(30) + entry.readUInt16LE(32);
     }
   } finally {
     await file.close();
   }
+}
+
+export async function replaceDirectory(
+  staged: string,
+  target: string,
+  release: () => void,
+): Promise<void> {
+  const previous = `${target}.old`;
+  await rm(previous, { recursive: true, force: true });
+  release();
+  await rename(target, previous).catch(() => undefined);
+  await rename(staged, target).catch(async (error: unknown) => {
+    await rename(previous, target).catch(() => undefined);
+    throw error;
+  });
+  release();
+  await rm(previous, { recursive: true, force: true });
 }
 
 export class DataPackStore {
@@ -192,17 +218,9 @@ export class DataPackStore {
       await rm(staged, { recursive: true, force: true });
       await extract(archive, staged);
       await writeFile(join(staged, "pack.json"), JSON.stringify(pack));
-      const target = join(this.root, LAW_PACK_DIRECTORIES[pack.jurisdiction]);
-      const previous = `${target}.old`;
-      await rm(previous, { recursive: true, force: true });
-      this.release(pack);
-      await rename(target, previous).catch(() => undefined);
-      await rename(staged, target).catch(async (error: unknown) => {
-        await rename(previous, target).catch(() => undefined);
-        throw error;
-      });
-      this.release(pack);
-      await rm(previous, { recursive: true, force: true });
+      await replaceDirectory(staged, join(this.root, packDirectory(pack.jurisdiction)), () =>
+        this.release(pack),
+      );
     } finally {
       await rm(archive, { force: true });
     }
@@ -233,7 +251,11 @@ export class DataPackStore {
 
   private async installedPacks(): Promise<DataPack[]> {
     const packs: DataPack[] = [];
-    for (const directory of Object.values(LAW_PACK_DIRECTORIES)) {
+    const companies = await readdir(join(this.root, "company")).catch(() => []);
+    for (const directory of [
+      ...Object.values(LAW_PACK_DIRECTORIES),
+      ...companies.map((name) => join("company", name)),
+    ]) {
       const text = await readFile(join(this.root, directory, "pack.json"), "utf8").catch(
         () => undefined,
       );

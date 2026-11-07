@@ -117,6 +117,11 @@ export class DemoDesktopApi implements DesktopApi {
   listDataPacks = async () => ({ keySaved: false, online: false, packs: [] });
   saveDataPackKey = async () => "offline" as const;
   installDataPack = async () => false;
+  companyPacks = async () => ({ folder: null, files: [], build: { state: "idle" as const } });
+  chooseCompanyPack = async () => undefined;
+  importCompanyPack = async () => ({ status: "invalid" as const });
+  chooseCompanyPackFolder = async () => undefined;
+  buildCompanyPack = async () => undefined;
 
   async listSkills() {
     return demoSkills.map((skill) => ({ ...skill }));

@@ -1,12 +1,14 @@
 import type { DataPacks, Jurisdiction, LawJurisdictionSummary } from "@gardendesk/shared";
 import { useCallback, useEffect, useState } from "react";
 import type { DataPackKeyStatus, DesktopApi } from "./api.js";
+import { type CompanyPacksController, useCompanyPacks } from "./company-packs.js";
 import { t } from "./i18n/index.js";
 
 const DOWNLOAD_POLL_MS = 1_000;
 
 export interface LawsController {
   choose(id: Jurisdiction): void;
+  company: CompanyPacksController;
   enabled: LawJurisdictionSummary[];
   error: string | undefined;
   install(id: string): void;
@@ -56,6 +58,7 @@ export function useLaws(api: DesktopApi, open: boolean): LawsController {
   };
   const enabled = laws?.filter((law) => law.enabled) ?? [];
   return {
+    company: useCompanyPacks(api, open, refresh),
     enabled,
     error,
     keyStatus,

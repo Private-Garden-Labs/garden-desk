@@ -1,4 +1,6 @@
 import {
+  CompanyPackImportSchema,
+  CompanyPacksSchema,
   DataPacksSchema,
   LawActSchema,
   LawCitationsSchema,
@@ -20,6 +22,11 @@ export const tauriLawApi: Pick<
   | "listDataPacks"
   | "saveDataPackKey"
   | "installDataPack"
+  | "companyPacks"
+  | "chooseCompanyPack"
+  | "importCompanyPack"
+  | "chooseCompanyPackFolder"
+  | "buildCompanyPack"
 > = {
   async listLaws() {
     return invokeDesktop("list_laws", (value) => LawJurisdictionSummarySchema.array().parse(value));
@@ -52,5 +59,25 @@ export const tauriLawApi: Pick<
   },
   async installDataPack(id) {
     return invokeDesktop("install_data_pack", (value) => record(value).started === true, { id });
+  },
+  async companyPacks() {
+    return invokeDesktop("company_packs", (value) => CompanyPacksSchema.parse(value));
+  },
+  async chooseCompanyPack() {
+    return invokeDesktop("choose_company_pack", (value) =>
+      typeof value === "string" ? value : undefined,
+    );
+  },
+  async importCompanyPack(path, trust) {
+    return invokeDesktop("import_company_pack", (value) => CompanyPackImportSchema.parse(value), {
+      path,
+      trust: trust ?? null,
+    });
+  },
+  async chooseCompanyPackFolder() {
+    await invokeDesktop("choose_company_pack_folder", () => undefined);
+  },
+  async buildCompanyPack(name, id, publisher) {
+    await invokeDesktop("build_company_pack", () => undefined, { name, id, publisher });
   },
 };

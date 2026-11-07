@@ -1,9 +1,12 @@
-import { mkdir, mkdtemp } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { INFERENCE_PROFILE, LAW_PACK_DIRECTORIES } from "@gardendesk/shared";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { zip } from "./company-pack-build.js";
+import { CompanyPackStore } from "./company-packs.js";
+import { extract } from "./data-packs.js";
 import { type Embed, LawLibrary } from "./law-library.js";
 import { chunkText, sectionExcerpt } from "./law-search.js";
 
@@ -112,4 +115,56 @@ describe("law library", () => {
     expect(long?.text).toContain("Online sales may not be banned.");
     laws.close();
   });
+});
+
+async function forgeSignature(archive: string): Promise<string> {
+  const directory = await mkdtemp(join(tmpdir(), "garden-desk-forged-"));
+  await extract(archive, directory);
+  const read = (name: string) => readFile(join(directory, name));
+  const signature = await read("manifest.sig");
+  signature[0] = (signature[0] ?? 0) ^ 1;
+  const forged = join(directory, "forged.gdpack");
+  await writeFile(
+    forged,
+    zip([
+      ["pack.sqlite", await read("pack.sqlite")],
+      ["manifest.json", await read("manifest.json")],
+      ["manifest.sig", signature],
+    ]),
+  );
+  return forged;
+}
+
+it("builds, signs, imports and searches a company pack, and rejects a forged signature", async () => {
+  const source = await mkdtemp(join(tmpdir(), "garden-desk-policies-"));
+  const root = await mkdtemp(join(tmpdir(), "garden-desk-company-packs-"));
+  await writeFile(
+    join(source, "Leave policy.md"),
+    "# Annual leave\n\nStaff get 25 paid days.\n\n# Sick leave\n\nCall in before 9.",
+  );
+  await writeFile(join(source, "Travel.md"), "Book trains for trips under four hours.");
+  const embed: Embed = async () => [1, 0];
+  const packs = new CompanyPackStore({
+    root,
+    embed,
+    extract: async () => [],
+    release: () => undefined,
+    audit: () => undefined,
+  });
+  packs.start({ source, name: "Acme policies", id: "acme", publisher: "Acme", output: source });
+  await vi.waitFor(async () => expect((await packs.status()).build.state).toBe("built"));
+  const archive = join(source, "acme.gdpack");
+  const unknown = await packs.import(archive);
+  if (unknown.status !== "untrusted") throw new Error(unknown.status);
+  const forged = await forgeSignature(archive);
+  expect(await packs.import(forged, unknown.fingerprint)).toEqual({ status: "invalid" });
+  expect(await packs.import(archive, unknown.fingerprint)).toEqual({
+    status: "installed",
+    id: "company:acme",
+  });
+  const laws = new LawLibrary(root, join(root, "settings.json"), embed);
+  expect(laws.list().map((law) => law.name)).toEqual(["Acme policies"]);
+  const sections = await laws.context("company:acme").search("paid days");
+  expect(sections[0]?.citation).toBe("Leave policy §1");
+  laws.close();
 });
