@@ -1,8 +1,19 @@
 import { z } from "zod";
 
-export const JurisdictionSchema = z.enum(["us", "eu", "ro"]);
+export const LawJurisdictionSchema = z.enum(["us", "eu", "ro"]);
+export const CompanyPackIdSchema = z.templateLiteral([
+  "company:",
+  z.string().regex(/^[a-z0-9-]+$/u),
+]);
+export const JurisdictionSchema = z.union([LawJurisdictionSchema, CompanyPackIdSchema]);
 
 export const LAW_PACK_DIRECTORIES = { us: "us-federal", eu: "eu", ro: "romania" } as const;
+
+export function packDirectory(id: z.infer<typeof JurisdictionSchema>): string {
+  return id.startsWith("company:")
+    ? `company/${id.slice("company:".length)}`
+    : LAW_PACK_DIRECTORIES[id as z.infer<typeof LawJurisdictionSchema>];
+}
 
 export const LawSourceSummarySchema = z.object({
   id: z.string(),
@@ -50,9 +61,17 @@ export const DataPackSchema = z.object({
   name: z.string(),
   currentAsOf: z.string(),
   access: z.enum(["free", "key"]),
-  file: z.string().regex(/^[a-z0-9-]+\.zip$/u),
+  file: z.string().regex(/^[a-z0-9-]+\.(zip|gdpack)$/u),
   bytes: z.number().int().positive(),
   sha256: z.string().regex(/^[a-f0-9]{64}$/u),
+  publisher: z.string().min(1).default("Garden Desk"),
+  kind: z.enum(["law", "company"]).default("law"),
+});
+
+export const CompanyPackManifestSchema = DataPackSchema.extend({
+  jurisdiction: CompanyPackIdSchema,
+  kind: z.literal("company"),
+  publicKey: z.string().min(1),
 });
 
 export const DataPackStatusSchema = DataPackSchema.omit({ file: true, sha256: true }).extend({
@@ -66,6 +85,42 @@ export const DataPacksSchema = z.object({
   packs: z.array(DataPackStatusSchema),
 });
 
+export const CompanyPackImportSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("idle") }),
+  z.object({ status: z.literal("importing") }),
+  z.object({ status: z.literal("installed"), id: CompanyPackIdSchema }),
+  z.object({
+    status: z.literal("untrusted"),
+    path: z.string(),
+    publisher: z.string(),
+    fingerprint: z.string(),
+  }),
+  z.object({ status: z.literal("invalid") }),
+  z.object({ status: z.literal("failed"), reason: z.string() }),
+]);
+
+export const CompanyPackBuildSchema = z.union([
+  z.object({ state: z.enum(["idle", "building"]) }),
+  z.object({ state: z.literal("failed"), reason: z.string() }),
+  z.object({
+    state: z.literal("built"),
+    path: z.string(),
+    sections: z.number().int(),
+    skipped: z.number().int(),
+  }),
+]);
+
+export const CompanyPacksSchema = z.object({
+  folder: z.string().nullable(),
+  files: z.array(z.object({ name: z.string(), path: z.string() })),
+  build: CompanyPackBuildSchema,
+  import: CompanyPackImportSchema,
+});
+
 export type DataPack = z.infer<typeof DataPackSchema>;
 export type DataPackStatus = z.infer<typeof DataPackStatusSchema>;
 export type DataPacks = z.infer<typeof DataPacksSchema>;
+export type CompanyPackManifest = z.infer<typeof CompanyPackManifestSchema>;
+export type CompanyPackImport = z.infer<typeof CompanyPackImportSchema>;
+export type CompanyPackBuild = z.infer<typeof CompanyPackBuildSchema>;
+export type CompanyPacks = z.infer<typeof CompanyPacksSchema>;

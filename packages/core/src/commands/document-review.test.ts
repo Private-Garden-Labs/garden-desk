@@ -52,6 +52,7 @@ it("keeps the document last and its request immediately before it when laws are 
     );
     const run = service.start(session.id, "/review Check the amounts.", "medium", {
       laws: {
+        id: "eu",
         name: "European Union",
         currentAsOf: "2026",
         searched: () => true,
@@ -95,6 +96,7 @@ it("checks citations against the pack and delivers the rendered review as a repo
     );
     const run = service.start(session.id, "/review", "medium", {
       laws: {
+        id: "eu",
         name: "European Union",
         currentAsOf: "2026",
         searched: () => true,

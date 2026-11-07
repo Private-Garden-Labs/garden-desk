@@ -3653,6 +3653,13 @@ select:focus-visible {
   margin-top: 14px;
 }
 
+.company-packs-title {
+  margin: 28px 0 4px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+
 .law-row {
   flex-wrap: wrap;
   align-items: flex-start;

@@ -4,6 +4,7 @@ import { t } from "../i18n/index.js";
 import { lawName } from "../law-names.js";
 import type { LawsController } from "../laws.js";
 import { openLaw } from "../side-panel.js";
+import { CompanyPacksSection } from "./company-packs-section.js";
 import { fileSize } from "./generated-files.js";
 import { Icon } from "./icons.js";
 
@@ -48,7 +49,7 @@ function PackRow({ controller, pack }: { controller: LawsController; pack: DataP
   return (
     <li className="skill-row law-row">
       <div className="skill-row-copy">
-        <p className="skill-row-name">{lawName({ id: pack.jurisdiction })}</p>
+        <p className="skill-row-name">{lawName({ id: pack.jurisdiction, name: pack.name })}</p>
         <PackDetails pack={pack} />
       </div>
       <div className="skill-row-actions">
@@ -163,8 +164,8 @@ function LawRow({
 }
 
 function PackList({ controller }: { controller: LawsController }) {
-  const laws = controller.laws ?? [];
-  const packs = controller.packs?.packs ?? [];
+  const laws = (controller.laws ?? []).filter((law) => !law.id.startsWith("company:"));
+  const packs = (controller.packs?.packs ?? []).filter((pack) => pack.kind === "law");
   const packFor = (law: LawJurisdictionSummary) =>
     packs.find((pack) => pack.jurisdiction === law.id);
   return (
@@ -219,6 +220,7 @@ export function LawsPage({ controller, onBack }: { controller: LawsController; o
           ) : (
             <PackList controller={controller} />
           )}
+          <CompanyPacksSection controller={controller} />
         </div>
       </div>
     </main>

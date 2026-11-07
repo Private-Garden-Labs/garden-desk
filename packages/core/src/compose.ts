@@ -13,8 +13,10 @@ import { ConversationStore } from "./conversations/store.js";
 import { createFacade, type GardenDeskCore } from "./facade.js";
 import { JobStore } from "./jobs/jobs.js";
 import { createLawPorts } from "./law-ports.js";
+import { CompanyPackStore } from "./laws/company-packs.js";
 import { DATA_PACK_SIGNING_KEY, DataPackStore } from "./laws/data-packs.js";
-import { LawLibrary } from "./laws/law-library.js";
+import { microVmExtraction } from "./laws/document-extraction.js";
+import { type Embed, LawLibrary } from "./laws/law-library.js";
 import { exportWorkRecord } from "./records/work-record.js";
 import { createInferenceService, unavailableInference } from "./runtime/compose.js";
 import type { InferenceSupervisor } from "./runtime/supervisor.js";
@@ -50,6 +52,7 @@ interface CoreServices {
   skills: SkillStore;
   laws: LawLibrary;
   dataPacks: DataPackStore;
+  companyPacks: CompanyPackStore;
   agent?: AgentService;
 }
 
@@ -63,7 +66,7 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
   return createFacade({
     listCommands: async () => services.commands.list(),
     ...createSkillPorts(services.skills, audit),
-    ...createLawPorts(services.laws, services.dataPacks, audit),
+    ...createLawPorts(services.laws, services.dataPacks, services.companyPacks, audit),
     status: async () => ({
       workspace,
       catalogSchemaVersion: catalog.schemaVersion,
@@ -159,6 +162,7 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     modelStatus: () => inference.modelStatus(),
     unloadModel: () => inference.unloadModel(),
     async close() {
+      await services.companyPacks.close();
       await agent?.close();
       await inference.close();
       services.laws.close();
@@ -204,8 +208,16 @@ export async function createGardenDeskCore(
     catalog.close();
     throw error;
   }
-  const agent =
+  const launcher =
     options.sessionsOnly === true || !inferenceAvailable || options.agentHelperPath === undefined
+      ? undefined
+      : createCodeAgentLauncher(
+          options.agentHelperPath,
+          options.agentImageRoot,
+          resolve(workspaceRoot, ".garden-desk", "agent-workspaces"),
+        );
+  const agent =
+    launcher === undefined
       ? undefined
       : new AgentService(
           catalog.database,
@@ -214,32 +226,25 @@ export async function createGardenDeskCore(
           jobs,
           artifacts,
           inference,
-          createCodeAgentLauncher(
-            options.agentHelperPath,
-            options.agentImageRoot,
-            resolve(workspaceRoot, ".garden-desk", "agent-workspaces"),
-          ),
+          launcher,
           audit,
           agentSessionCapacity,
           new MarkdownDefinitionLibrary(promptDirectory, skills),
           commands,
         );
   const packsRoot = resolve(workspaceRoot, "data-packs");
-  const laws = new LawLibrary(
-    packsRoot,
-    resolve(workspaceRoot, "laws", "settings.json"),
-    async (input, signal) =>
-      (
-        await inference.embed(
-          {
-            modelId: INFERENCE_PROFILE.encoderId,
-            input,
-            contextSize: INFERENCE_PROFILE.encoderContextTokens,
-          },
-          signal,
-        )
-      ).vector,
-  );
+  const embed: Embed = async (input, signal) =>
+    (
+      await inference.embed(
+        {
+          modelId: INFERENCE_PROFILE.encoderId,
+          input,
+          contextSize: INFERENCE_PROFILE.encoderContextTokens,
+        },
+        signal,
+      )
+    ).vector;
+  const laws = new LawLibrary(packsRoot, resolve(workspaceRoot, "laws", "settings.json"), embed);
   const dataPacks = new DataPackStore(
     packsRoot,
     DATA_PACK_SIGNING_KEY,
@@ -252,6 +257,13 @@ export async function createGardenDeskCore(
           failure === undefined ? { id: pack.id, sha256: pack.sha256 } : { id: pack.id, failure },
       }),
   );
+  const companyPacks = new CompanyPackStore({
+    root: packsRoot,
+    embed,
+    extract: microVmExtraction(launcher),
+    release: (id) => laws.release(id),
+    audit: (event) => audit.append(event),
+  });
   const restoredSessionId = conversations.mostRecentSessionId();
   if (agent !== undefined && restoredSessionId !== undefined) {
     warmConversationSession(agent, audit, restoredSessionId);
@@ -268,6 +280,7 @@ export async function createGardenDeskCore(
     skills,
     laws,
     dataPacks,
+    companyPacks,
     ...(agent === undefined ? {} : { agent }),
   });
 }

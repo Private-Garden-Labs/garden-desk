@@ -61,7 +61,7 @@ Use this only as a last resort, and only after the owner approves the exact comm
 
 ## Data Packs
 
-Data packs are built, signed, and published outside this repository. The app downloads them from `https://packs.gardendesk.ai`; none are packaged with it.
+Law packs are built, signed, and published outside this repository. The app downloads them from `https://packs.gardendesk.ai`; none are packaged with it. A company pack is built in the app: on the Data packs page, enter a pack name and publisher, choose **Make a pack from a folder…**, then pick the folder with the documents and the folder for the `.gdpack` file. Give that file to employees directly or put it in a shared folder; each employee imports it once, or sets that folder as the company pack folder and imports the packs it lists. The first pack from a publisher asks the employee to trust the publisher's fingerprint, so tell them the fingerprint through another channel. The signing key stays in `data-packs/publisher-key.json` on the machine that built the pack; back it up, because a new key is a new publisher.
 
 ## Publish A Release
 

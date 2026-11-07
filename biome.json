@@ -72,6 +72,8 @@
         "packages/core/src/workspace/folder-grants.ts",
         "packages/core/src/conversations/folder-files.ts",
         "packages/core/src/laws/data-packs.ts",
+        "packages/core/src/laws/company-pack-build.ts",
+        "packages/core/src/laws/company-packs.ts",
         "packages/core/src/laws/data-packs.test.ts",
         "packages/core/src/conversations/folder-files.test.ts",
         "packages/core/src/daemon/server.ts",

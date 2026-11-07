@@ -1,5 +1,26 @@
 import type { Jurisdiction } from "@gardendesk/shared";
 
+export interface LawSection {
+  citation: string;
+  heading: string;
+  source: string;
+  text: string;
+}
+
+export interface LawContext {
+  id: Jurisdiction;
+  name: string;
+  currentAsOf: string;
+  searched(): boolean;
+  citations(): string[];
+  search(query: string, signal?: AbortSignal): Promise<LawSection[]>;
+  forDocument(
+    text: string,
+    phrases: readonly string[],
+    signal?: AbortSignal,
+  ): Promise<LawSection[]>;
+}
+
 const RANK_DEPTH = 40;
 const FUSION_OFFSET = 5;
 const QUERY_WORDS = 64;
@@ -80,6 +101,17 @@ export function sectionExcerpt(text: string, chunk: number, limit: number): stri
   const continues = " [section continues]";
   const available = limit - opening.length - gap.length - continues.length;
   return `${opening}${gap}${shown.slice(0, available)}${shown.length > available ? continues : ""}`;
+}
+
+export function withinCharacters<T extends { text: string }>(sections: T[], limit: number): T[] {
+  const kept: T[] = [];
+  let used = 0;
+  for (const section of sections) {
+    used += section.text.length;
+    if (used > limit) break;
+    kept.push(section);
+  }
+  return kept;
 }
 
 function romanianStem(word: string): string {
@@ -196,4 +228,21 @@ export function documentPassages(text: string, count: number): string[] {
   }
   if (current.length > 0) passages.push(current);
   return passages.slice(0, count);
+}
+
+export function sectionVectorsFrom(
+  rows: Array<{ id: number; vector: Uint8Array }>,
+): SectionVectors {
+  const dimensions = (rows[0]?.vector.byteLength ?? 0) / 4;
+  const values = new Float32Array(rows.length * dimensions);
+  rows.forEach((row, index) => {
+    values.set(new Float32Array(Uint8Array.from(row.vector).buffer), index * dimensions);
+  });
+  const counts = new Map<number, number>();
+  const chunkIndexes = Int32Array.from(rows, (row) => {
+    const index = counts.get(row.id) ?? 0;
+    counts.set(row.id, index + 1);
+    return index;
+  });
+  return { sectionIds: Int32Array.from(rows, (row) => row.id), chunkIndexes, values };
 }

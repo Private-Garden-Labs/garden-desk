@@ -3,12 +3,18 @@ import { DatabaseSync } from "node:sqlite";
 import {
   type Jurisdiction,
   JurisdictionSchema,
-  LAW_PACK_DIRECTORIES,
   type LawAct,
   type LawCitations,
+  LawJurisdictionSchema,
   type LawJurisdictionSummary,
+  packDirectory,
 } from "@gardendesk/shared";
-import { promptDirectoryExists, readPromptFile, writePromptFile } from "../prompt-files.js";
+import {
+  promptDirectoryExists,
+  promptSkillDirectories,
+  readPromptFile,
+  writePromptFile,
+} from "../prompt-files.js";
 import { actCitations, readAct } from "./law-acts.js";
 import {
   documentPassages,
@@ -16,11 +22,17 @@ import {
   interleave,
   keywordQuery,
   keywordText,
+  type LawContext,
+  type LawSection,
   type Ranking,
   type SectionVectors,
   sectionExcerpt,
+  sectionVectorsFrom,
   vectorRanks,
+  withinCharacters,
 } from "./law-search.js";
+
+export type { LawContext, LawSection } from "./law-search.js";
 
 const QUERY_INSTRUCTION =
   "Instruct: Given a contract provision, retrieve statutory rights, duties and prohibitions that determine whether it is enforceable\nQuery: ";
@@ -32,26 +44,6 @@ const DOCUMENT_SECTION_CHARACTERS = 2_000;
 const DOCUMENT_LAW_CHARACTERS = 48_000;
 const DOCUMENT_PHRASE_CHARACTERS = DOCUMENT_LAW_CHARACTERS / 2;
 
-export interface LawSection {
-  citation: string;
-  heading: string;
-  source: string;
-  text: string;
-}
-
-export interface LawContext {
-  name: string;
-  currentAsOf: string;
-  searched(): boolean;
-  citations(): string[];
-  search(query: string, signal?: AbortSignal): Promise<LawSection[]>;
-  forDocument(
-    text: string,
-    phrases: readonly string[],
-    signal?: AbortSignal,
-  ): Promise<LawSection[]>;
-}
-
 export type Embed = (text: string, signal?: AbortSignal) => Promise<number[]>;
 
 type JurisdictionRow = { id: string; name: string; current_as_of: string };
@@ -60,17 +52,6 @@ type Settings = { disabled: string[]; disabledSources: string[] };
 function toggled(values: string[], value: string, enabled: boolean): string[] {
   const kept = values.filter((item) => item !== value);
   return (enabled ? kept : [...kept, value]).sort();
-}
-
-function withinCharacters(sections: LawSection[], limit: number): LawSection[] {
-  const kept: LawSection[] = [];
-  let used = 0;
-  for (const section of sections) {
-    used += section.text.length;
-    if (used > limit) break;
-    kept.push(section);
-  }
-  return kept;
 }
 
 export class LawLibrary {
@@ -84,7 +65,7 @@ export class LawLibrary {
 
   list(): LawJurisdictionSummary[] {
     const { disabled, disabledSources } = this.settings();
-    return JurisdictionSchema.options.flatMap((id) => {
+    return this.installed().flatMap((id) => {
       const database = this.open(id);
       if (database === undefined) return [];
       const row = database
@@ -116,7 +97,7 @@ export class LawLibrary {
   }
 
   citations(): LawCitations {
-    return JurisdictionSchema.options.flatMap((id) => {
+    return this.installed().flatMap((id) => {
       const database = this.open(id);
       return database === undefined ? [] : actCitations(database, id);
     });
@@ -150,15 +131,11 @@ export class LawLibrary {
       return sections;
     };
     return {
+      id,
       name: jurisdiction.name,
       currentAsOf: jurisdiction.currentAsOf,
       searched: () => searched,
-      citations: () =>
-        this.citations().flatMap((act) =>
-          jurisdiction.sources.some((source) => source.id === act.source && source.enabled)
-            ? act.citations
-            : [],
-        ),
+      citations: () => this.enabledCitations(jurisdiction),
       search: async (query, signal) => {
         searched = true;
         return reported(
@@ -190,6 +167,14 @@ export class LawLibrary {
         );
       },
     };
+  }
+
+  private enabledCitations(jurisdiction: LawJurisdictionSummary): string[] {
+    return this.citations().flatMap((act) =>
+      jurisdiction.sources.some((source) => source.id === act.source && source.enabled)
+        ? act.citations
+        : [],
+    );
   }
 
   private async rank(id: Jurisdiction, text: string, signal?: AbortSignal): Promise<Ranking> {
@@ -238,18 +223,7 @@ export class LawLibrary {
          ORDER BY chunks.rowid`,
       )
       .all(id, this.disabledSources()) as Array<{ id: number; vector: Uint8Array }>;
-    const dimensions = (rows[0]?.vector.byteLength ?? 0) / 4;
-    const values = new Float32Array(rows.length * dimensions);
-    rows.forEach((row, index) => {
-      values.set(new Float32Array(Uint8Array.from(row.vector).buffer), index * dimensions);
-    });
-    const counts = new Map<number, number>();
-    const chunkIndexes = Int32Array.from(rows, (row) => {
-      const index = counts.get(row.id) ?? 0;
-      counts.set(row.id, index + 1);
-      return index;
-    });
-    const vectors = { sectionIds: Int32Array.from(rows, (row) => row.id), chunkIndexes, values };
+    const vectors = sectionVectorsFrom(rows);
     this.vectors.set(id, vectors);
     return vectors;
   }
@@ -269,8 +243,18 @@ export class LawLibrary {
     });
   }
 
+  private installed(): Jurisdiction[] {
+    const companies = join(this.path, "company");
+    const names = promptDirectoryExists(companies) ? promptSkillDirectories(companies) : [];
+    const ids = names.map(({ name }) => JurisdictionSchema.safeParse(`company:${name}`));
+    return [
+      ...LawJurisdictionSchema.options,
+      ...ids.flatMap((id) => (id.success ? [id.data] : [])),
+    ];
+  }
+
   private open(id: Jurisdiction): DatabaseSync | undefined {
-    const path = join(this.path, LAW_PACK_DIRECTORIES[id], "law-library.sqlite");
+    const path = join(this.path, packDirectory(id), "law-library.sqlite");
     if (!this.databases.has(id) && promptDirectoryExists(path))
       this.databases.set(id, new DatabaseSync(path, { readOnly: true, allowExtension: false }));
     return this.databases.get(id);

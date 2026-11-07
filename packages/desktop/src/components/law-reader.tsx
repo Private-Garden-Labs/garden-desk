@@ -71,11 +71,16 @@ function LawReaderHeader({ api, loaded, target }: LawReaderProps & { loaded: Loa
         <h2>{act?.title ?? t(loaded === undefined ? "lawReader.loading" : "lawReader.error")}</h2>
         {act === undefined ? null : (
           <p>
-            {act.version} ·{" "}
-            <button className="law-reader-source" onClick={openSource} type="button">
-              {t("lawReader.source", { host: act.url.split("/")[2] ?? act.url })}
-              <Icon name="external" />
-            </button>
+            {act.version}
+            {act.url === "" ? null : (
+              <>
+                {" · "}
+                <button className="law-reader-source" onClick={openSource} type="button">
+                  {t("lawReader.source", { host: act.url.split("/")[2] ?? act.url })}
+                  <Icon name="external" />
+                </button>
+              </>
+            )}
           </p>
         )}
         {sourceFailed ? <p role="alert">{t("lawReader.sourceError")}</p> : null}
