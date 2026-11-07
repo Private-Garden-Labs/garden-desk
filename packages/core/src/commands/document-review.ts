@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { posix } from "node:path";
 import {
   type AgentRunResult,
   type ChatGenerationResult,
@@ -11,12 +12,33 @@ import { replyLanguagePrompt, withLawDisclaimer } from "../agent/chat-initial-me
 import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-input.js";
 import { streamCallbacks } from "../agent/chat-streaming.js";
 import { isSuccessfulExecution } from "../agent/execution-success.js";
+import { editSource } from "../agent/generic-edit-source.js";
 import type { ChatInput, InferenceService } from "../runtime/inference.js";
 import { inferenceFailureCode } from "../runtime/inference-errors.js";
 import type { CommandInvocation } from "./library.js";
 import { reviewExtractionSource } from "./review-extraction.js";
+import { REVIEW_SCHEMA, type Review, renderReview } from "./review-findings.js";
 
 const LAW_SEARCH_PHRASES = 30;
+const REPORT_DIRECTORY = ".garden-desk-tools";
+
+async function runGuestPython(
+  input: ChatAgentInput,
+  path: string,
+  source: string,
+  summaries: { started: string; completed: string },
+) {
+  input.onEvent?.("execution.started", summaries.started, { language: "python", source });
+  const result = await input.executor.execute({ language: "python", path, source }, input.signal);
+  input.onEvent?.("execution.completed", summaries.completed, {
+    stdout: result.stdout,
+    stderr: result.stderr,
+    exitCode: result.exitCode,
+    durationMs: result.durationMs,
+    termination: result.termination,
+  });
+  return result;
+}
 
 async function extractDocument(
   input: ChatAgentInput,
@@ -27,17 +49,9 @@ async function extractDocument(
     attachment.path,
     `/workspace/${directory}/review-extracted.txt`,
   );
-  input.onEvent?.("execution.started", "Extracting document text.", { language: "python", source });
-  const result = await input.executor.execute(
-    { language: "python", path: `${directory}/review-extract.py`, source },
-    input.signal,
-  );
-  input.onEvent?.("execution.completed", "Document extraction finished.", {
-    stdout: result.stdout,
-    stderr: result.stderr,
-    exitCode: result.exitCode,
-    durationMs: result.durationMs,
-    termination: result.termination,
+  const result = await runGuestPython(input, `${directory}/review-extract.py`, source, {
+    started: "Extracting document text.",
+    completed: "Document extraction finished.",
   });
   if (!isSuccessfulExecution(result)) throw new Error("agent_review_extraction_failed");
   if (result.stdoutTruncated) throw new Error("worker_input_limit_exceeded");
@@ -45,12 +59,25 @@ async function extractDocument(
   return { attachment, result };
 }
 
-function reviewResponse(result: ChatGenerationResult): string {
+async function writeReport(input: ChatAgentInput, displayName: string, markdown: string) {
+  const path = `Review - ${posix.parse(displayName).name}.md`;
+  const source = editSource("write", {
+    path: `/workspace/${path}`,
+    content: Buffer.from(markdown, "utf8").toString("base64"),
+  });
+  const result = await runGuestPython(input, `${REPORT_DIRECTORY}/review-report.py`, source, {
+    started: "Saving the review report.",
+    completed: "Review report saved.",
+  });
+  if (!isSuccessfulExecution(result)) throw new Error("agent_review_report_failed");
+  return { path, result };
+}
+
+function reviewResponse(result: ChatGenerationResult): Review {
   if (result.toolCalls.length > 0) throw new Error("agent_review_tools_unavailable");
   if (result.stopReason === "maxTokens") throw new Error("agent_generation_limit");
-  const response = result.text.trim();
-  if (!response) throw new Error("agent_empty_response");
-  return response;
+  if (!result.text.trim()) throw new Error("agent_empty_response");
+  return JSON.parse(result.text) as Review;
 }
 
 function reviewFailure(error: unknown): unknown {
@@ -64,20 +91,20 @@ function reviewStreams(input: ChatAgentInput) {
   let prefix = "";
   const finishTitle = (text: string) => {
     if (titleHandled) return;
+    const title = /^\s*\{\s*"title"\s*:\s*("(?:[^"\\]|\\.)*")/u.exec(text)?.[1];
+    if (title === undefined) return;
     titleHandled = true;
-    const title = /^# (Review [^\r\n]+)/u.exec(text.trimStart())?.[1]?.trim().slice(0, 60);
-    if (title !== undefined) input.onSessionTitle?.(title);
+    const heading = (JSON.parse(title) as string).replace(/\s+/gu, " ").trim();
+    input.onSessionTitle?.(`Review ${heading}`.slice(0, 60));
   };
-  const streams = streamCallbacks(input, "chat");
   return {
     finishTitle,
     streams: {
-      ...streams,
+      ...streamCallbacks(input, "chat"),
       onResponseDelta(delta: string) {
-        streams.onResponseDelta?.(delta);
         if (titleHandled) return;
         prefix += delta;
-        if (prefix.trimStart().includes("\n")) finishTitle(prefix);
+        finishTitle(prefix);
       },
     },
   };
@@ -113,9 +140,9 @@ async function generateReview(
         result.memory.contextSizeTokens,
       );
     }
-    const response = reviewResponse(result);
+    const review = reviewResponse(result);
     if (turnId !== undefined) trace?.store.recordOutcome(turnId, "accepted_response");
-    return { result, response };
+    return { result, review };
   } catch (error) {
     if (turnId !== undefined)
       trace?.store.recordOutcome(
@@ -185,7 +212,19 @@ export async function runDocumentReview(
   if (input.attachments?.length !== 1 || attachment === undefined) {
     throw new Error("agent_review_attachment_required");
   }
-  return reviewDocument(command, input, chat, { attachment, directory: ".garden-desk-tools" });
+  const result = await reviewDocument(command, input, chat, {
+    attachment,
+    directory: REPORT_DIRECTORY,
+  });
+  const report = await writeReport(input, attachment.displayName, result.response);
+  completeReview(input, result.response);
+  const executions = [...result.executions, report.result];
+  return { ...result, artifacts: [report.path], executions, guestExecutions: executions.length };
+}
+
+export function completeReview(input: ChatAgentInput, response: string): void {
+  input.onResponse?.(response);
+  input.onEvent?.("assistant.completed", "Review completed.");
 }
 
 export async function reviewDocument(
@@ -208,6 +247,7 @@ export async function reviewDocument(
   const law = await packagedLaw(input, chat, settings, extracted.result.stdout);
   const request = {
     ...settings,
+    jsonSchema: REVIEW_SCHEMA,
     messages: withCurrentTimeContext(
       [
         { role: "system", text: [command.body, ...replyLanguagePrompt(input)].join("\n\n") },
@@ -228,13 +268,10 @@ export async function reviewDocument(
     ),
   };
   input.onEvent?.("inference.started", "Reviewing the extracted text.");
-  const generated = await generateReview(input, chat, request);
-  const result = generated.result;
-  const response = withLawDisclaimer(input, generated.response);
+  const { result, review } = await generateReview(input, chat, request);
+  const response = withLawDisclaimer(input, renderReview(review, input.laws?.citations() ?? []));
   const allocated = result.memory.contextSizeTokens;
   if (allocated !== undefined) input.onContext?.(result.contextUsedTokens, allocated, true);
-  input.onResponse?.(response);
-  input.onEvent?.("assistant.completed", "Review completed.");
   return {
     response,
     artifacts: [],
