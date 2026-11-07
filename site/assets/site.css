@@ -2063,6 +2063,10 @@ body {
   line-height: 1.72;
 }
 
+.claims-note + .claims-note {
+  margin-top: 16px;
+}
+
 @media (max-width: 760px) {
   .claim-list {
     width: min(1180px, 100% - 44px);
