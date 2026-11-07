@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { posix } from "node:path";
 import {
   type AgentRunResult,
-  type ChatGenerationResult,
   DEFAULT_THINKING_LEVEL,
   INFERENCE_PROFILE,
   JobIdSchema,
@@ -13,7 +12,7 @@ import type { ChatAgentInput, ChatAttachmentInput } from "../agent/chat-loop-inp
 import { streamCallbacks } from "../agent/chat-streaming.js";
 import { isSuccessfulExecution } from "../agent/execution-success.js";
 import { editSource } from "../agent/generic-edit-source.js";
-import type { ChatInput, InferenceService } from "../runtime/inference.js";
+import type { ChatCompletion, ChatInput, InferenceService } from "../runtime/inference.js";
 import { inferenceFailureCode } from "../runtime/inference-errors.js";
 import type { CommandInvocation } from "./library.js";
 import { reviewExtractionSource } from "./review-extraction.js";
@@ -73,7 +72,7 @@ async function writeReport(input: ChatAgentInput, displayName: string, markdown:
   return { path, result };
 }
 
-function reviewResponse(result: ChatGenerationResult): Review {
+function reviewResponse(result: ChatCompletion): Review {
   if (result.toolCalls.length > 0) throw new Error("agent_review_tools_unavailable");
   if (result.stopReason === "maxTokens") throw new Error("agent_generation_limit");
   if (!result.text.trim()) throw new Error("agent_empty_response");
@@ -137,7 +136,7 @@ async function generateReview(
           toolCalls: result.toolCalls,
           stopReason: result.stopReason,
         },
-        result.memory.contextSizeTokens,
+        result.contextBudgetTokens,
       );
     }
     const review = reviewResponse(result);
@@ -270,7 +269,7 @@ export async function reviewDocument(
   input.onEvent?.("inference.started", "Reviewing the extracted text.");
   const { result, review } = await generateReview(input, chat, request);
   const response = withLawDisclaimer(input, renderReview(review, input.laws?.citations() ?? []));
-  const allocated = result.memory.contextSizeTokens;
+  const allocated = result.contextBudgetTokens;
   if (allocated !== undefined) input.onContext?.(result.contextUsedTokens, allocated, true);
   return {
     response,

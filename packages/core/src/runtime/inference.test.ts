@@ -79,7 +79,7 @@ describe("M2 inference orchestration", () => {
       maxTokens: 8,
     });
     expect(result.value).toEqual({ result: "ready" });
-    expect(result.memory.budgetBytes).toBe(12 * 1024 * 1024 * 1024);
+    expect(result.memory?.budgetBytes).toBe(12 * 1024 * 1024 * 1024);
     expect(events).toMatchObject([{ type: "inference.generate", outcome: "succeeded" }]);
   });
 

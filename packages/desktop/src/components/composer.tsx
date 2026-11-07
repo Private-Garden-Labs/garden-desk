@@ -1,9 +1,16 @@
-import type { AttachmentSummary, CommandSummary, ThinkingLevel } from "@gardendesk/shared";
+import type {
+  AttachmentSummary,
+  CommandSummary,
+  DevelopmentModel,
+  ThinkingLevel,
+} from "@gardendesk/shared";
 import { type FormEvent, type KeyboardEvent, useEffect, useLayoutEffect, useRef } from "react";
+import type { DevelopmentModelApi } from "../api.js";
 import { t } from "../i18n/index.js";
 import type { LawsController } from "../laws.js";
 import { AttachmentChip } from "./attachment-chip.js";
 import { CommandMenu, useCommandMenu } from "./command-menu.js";
+import { DevelopmentModelControl } from "./development-model-control.js";
 import { EffortControl } from "./effort-control.js";
 import { Icon } from "./icons.js";
 import { LawControl } from "./law-control.js";
@@ -12,6 +19,8 @@ interface ComposerProps {
   commands: CommandSummary[];
   attachments: AttachmentSummary[];
   disabled: boolean;
+  developmentModel?: DevelopmentModel | undefined;
+  developmentModels?: DevelopmentModelApi | undefined;
   dropActive?: boolean;
   draft: string;
   laws: LawsController;
@@ -25,6 +34,7 @@ interface ComposerProps {
   onOpenAttachment(attachmentId: string): void;
   onRemoveAttachment(attachmentId: string): void;
   onSend(text: string): void;
+  onDevelopmentModelChange(model: DevelopmentModel | undefined): void;
   onThinkingChange(level: ThinkingLevel): void;
 }
 
@@ -91,11 +101,35 @@ function AttachmentList({
   );
 }
 
+function ModelControl({
+  api,
+  developmentModel,
+  disabled,
+  onChange,
+}: {
+  api: DevelopmentModelApi | undefined;
+  developmentModel: DevelopmentModel | undefined;
+  disabled: boolean;
+  onChange(model: DevelopmentModel | undefined): void;
+}) {
+  if (!import.meta.env.DEV || api === undefined) return null;
+  return (
+    <DevelopmentModelControl
+      api={api}
+      disabled={disabled}
+      onSelect={onChange}
+      selected={developmentModel}
+    />
+  );
+}
+
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: one compact form keeps composer state and accessibility relationships visible.
 export function Composer({
   commands,
   attachments,
   disabled,
+  developmentModel,
+  developmentModels,
   dropActive = false,
   draft,
   laws,
@@ -109,6 +143,7 @@ export function Composer({
   onOpenAttachment,
   onRemoveAttachment,
   onSend,
+  onDevelopmentModelChange,
   onThinkingChange,
 }: ComposerProps) {
   const textarea = useRef<HTMLTextAreaElement>(null);
@@ -137,6 +172,7 @@ export function Composer({
   }
 
   const canSend = !disabled && !running && draft.trim().length > 0;
+  const controlsDisabled = disabled || running;
 
   return (
     <form
@@ -185,9 +221,15 @@ export function Composer({
           <Icon name="add" />
         </button>
         <div className="composer-send-group">
-          <LawControl disabled={disabled || running} laws={laws} />
+          <ModelControl
+            api={developmentModels}
+            developmentModel={developmentModel}
+            disabled={controlsDisabled}
+            onChange={onDevelopmentModelChange}
+          />
+          <LawControl disabled={controlsDisabled} laws={laws} />
           <EffortControl
-            disabled={disabled || running}
+            disabled={controlsDisabled}
             onThinkingChange={onThinkingChange}
             thinking={thinking}
           />

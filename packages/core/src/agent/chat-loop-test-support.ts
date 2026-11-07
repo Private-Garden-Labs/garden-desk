@@ -1,5 +1,5 @@
 import type { AgentExecutionResult, ChatGenerationResult } from "@gardendesk/shared";
-import type { InferenceService } from "../runtime/inference.js";
+import type { ChatCompletion, InferenceService } from "../runtime/inference.js";
 import type { AgentExecutor } from "./agent-executor.js";
 import type { ChatAgentInput } from "./chat-loop.js";
 
@@ -34,7 +34,7 @@ export function generated(
   text: string,
   toolCalls: ChatGenerationResult["toolCalls"] = [],
   promptTokens = 1,
-): ChatGenerationResult {
+): ChatCompletion {
   return {
     protocolVersion: 2,
     requestId: "chat-loop-test",
@@ -44,6 +44,7 @@ export function generated(
     toolCalls,
     stopReason: toolCalls.length === 0 ? "text" : "toolCalls",
     contextUsedTokens: promptTokens,
+    contextBudgetTokens: 8_192,
     memory: memoryReport({ contextSizeTokens: 8_192 }),
     performance: performance(promptTokens),
   };
@@ -65,7 +66,7 @@ export function execution(source: string, stderr = "", exitCode = 0): AgentExecu
 }
 
 export function model(
-  results: ChatGenerationResult[],
+  results: ChatCompletion[],
   requests: Parameters<InferenceService["chat"]>[0][],
 ): Pick<InferenceService, "chat"> {
   return {

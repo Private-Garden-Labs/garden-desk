@@ -1,6 +1,5 @@
-import type { ChatGenerationResult } from "@gardendesk/shared";
 import { afterEach, describe, expect, it } from "vitest";
-import type { ChatInput } from "../runtime/inference.js";
+import type { ChatCompletion, ChatInput } from "../runtime/inference.js";
 import {
   chatResult,
   cleanServiceFixtures,
@@ -16,7 +15,7 @@ function interruptedInference() {
     secondTurnStarted = resolve;
   });
   const inference = {
-    async chat(input: ChatInput, signal?: AbortSignal): Promise<ChatGenerationResult> {
+    async chat(input: ChatInput, signal?: AbortSignal): Promise<ChatCompletion> {
       inputs.push(input);
       if (inputs.length === 1)
         return chatResult("", [

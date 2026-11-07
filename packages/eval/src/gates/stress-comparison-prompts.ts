@@ -1,4 +1,4 @@
-import { cp, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 /** With --without-specialists or --without-review, Core loads a prompt copy without those workflows. */
@@ -32,4 +32,14 @@ async function removeReview(copy: string): Promise<void> {
   if (!text.includes(", review]") || !/^1\. `review`:.*$/mu.test(text))
     throw new Error("review_route_missing");
   await writeFile(primary, text.replace(", review]", "]").replace(/^1\. `review`:.*\r?\n/mu, ""));
+}
+
+/** Copies the development OpenRouter settings into a run's Core state and returns the copy's path. */
+export async function copyDevelopmentSettings(root: string, settings?: string): Promise<string> {
+  const folder = join(root, "state", ".garden-desk");
+  const copy = join(folder, "dev-openrouter.json");
+  if (settings === undefined) return copy;
+  await mkdir(folder, { recursive: true });
+  await copyFile(settings, copy);
+  return copy;
 }

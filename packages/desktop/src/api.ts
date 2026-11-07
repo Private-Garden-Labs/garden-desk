@@ -7,6 +7,8 @@ import type {
   CompanyPacks,
   ConversationMessage,
   DataPacks,
+  DevelopmentModel,
+  DevelopmentModelSettings,
   FolderSummary,
   Jurisdiction,
   LawAct,
@@ -55,6 +57,13 @@ export type SecureWorkspaceState =
 
 export type PromptFolder = "skills" | "built-in-skills" | "system-prompts";
 
+/** Development builds only. Production builds leave `developmentModels` absent. */
+export interface DevelopmentModelApi {
+  settings(): Promise<DevelopmentModelSettings>;
+  search(query: string, apiKey?: string): Promise<DevelopmentModel[]>;
+  save(favorites: DevelopmentModel[], apiKey?: string): Promise<DevelopmentModelSettings>;
+}
+
 export interface SecureWorkspaceStatus {
   state: SecureWorkspaceState;
 }
@@ -98,7 +107,11 @@ export interface DesktopApi {
     sessionId: string,
     task: string,
     thinking: ThinkingLevel,
-    options: { jurisdiction: Jurisdiction | null; language: string },
+    options: {
+      jurisdiction: Jurisdiction | null;
+      language: string;
+      developmentModelId?: string | undefined;
+    },
   ): Promise<AgentRunSummary>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
   getAgentTrace(runId: string): Promise<AgentTrace>;
@@ -122,6 +135,7 @@ export interface DesktopApi {
   setSkillEnabled(name: string, enabled: boolean): Promise<boolean>;
   skillLocations(): Promise<SkillLocations>;
   openPromptFolder(folder: PromptFolder): Promise<void>;
+  developmentModels?: DevelopmentModelApi;
   sampleFolderFiles(folderId: string): Promise<string[]>;
   listLaws(): Promise<LawJurisdictionSummary[]>;
   readLaw(id: Jurisdiction, source: string): Promise<LawAct>;

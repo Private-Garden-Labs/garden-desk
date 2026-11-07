@@ -1,17 +1,17 @@
 import { randomUUID } from "node:crypto";
 import type {
-  ChatGenerationResult,
   EmbeddingResult,
   InferenceWorkerRequest,
   InferenceWorkerResponse,
-  StructuredGenerationResult,
 } from "@gardendesk/shared";
 import { JobIdSchema } from "@gardendesk/shared";
 import type {
+  ChatCompletion,
   ChatInput,
   EmbeddingInput,
   GenerationInput,
   GenerationRequestIdentity,
+  StructuredCompletion,
 } from "./inference.js";
 import { createGenerationRequest } from "./inference.js";
 
@@ -55,20 +55,24 @@ export function createEmbedWorkerRequest(input: EmbeddingInput): InferenceWorker
   };
 }
 
-export function expectGenerateResponse(
-  response: InferenceWorkerResponse,
-): StructuredGenerationResult {
+function contextBudget(memory: { contextSizeTokens?: number | undefined }) {
+  return memory.contextSizeTokens === undefined
+    ? {}
+    : { contextBudgetTokens: memory.contextSizeTokens };
+}
+
+export function expectGenerateResponse(response: InferenceWorkerResponse): StructuredCompletion {
   if (response.status !== "ok" || response.operation !== "generate") {
     throw new Error("unexpected_inference_response");
   }
-  return response;
+  return { ...response, ...contextBudget(response.memory) };
 }
 
-export function expectChatResponse(response: InferenceWorkerResponse): ChatGenerationResult {
+export function expectChatResponse(response: InferenceWorkerResponse): ChatCompletion {
   if (response.status !== "ok" || response.operation !== "chat") {
     throw new Error("unexpected_inference_response");
   }
-  return response;
+  return { ...response, ...contextBudget(response.memory) };
 }
 
 export function expectEmbedResponse(response: InferenceWorkerResponse): EmbeddingResult {
