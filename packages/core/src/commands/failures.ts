@@ -5,6 +5,7 @@ const commandFailures: Record<string, string> = {
   agent_review_extraction_failed:
     "The document text could not be extracted. Use a DOC, DOCX, text PDF, TXT, or MD file.",
   agent_review_input_unsupported: "The review input is not supported. Try a shorter document.",
+  agent_review_report_failed: "The review report could not be saved. Try the review again.",
   agent_review_tools_unavailable:
     "The review requested an unavailable tool. No further action was taken.",
 };
