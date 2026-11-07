@@ -195,11 +195,11 @@ export async function exportWorkRecord(
     const record = buildRecord(sources, sessionId);
     const stem = fileStem(record);
     const encoder = new TextEncoder();
-    await writeNewFile(join(directory, `${stem}.md`), encoder.encode(markdown(record, labels)));
     await writeNewFile(
       join(directory, `${stem}.json`),
       encoder.encode(`${JSON.stringify(record, null, 2)}\n`),
     );
+    await writeNewFile(join(directory, `${stem}.md`), encoder.encode(markdown(record, labels)));
     sources.audit.append({
       type: "session.exported",
       outcome: "succeeded",

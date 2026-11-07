@@ -29,6 +29,7 @@ import {
   attachmentMediaType,
   type EventRow,
   eventFromRow,
+  insertEvent,
   nextEventSequence,
   type RunRow,
   readSelectedFile,
@@ -184,30 +185,10 @@ export class AgentStore {
       ...detail,
       createdAt: new Date().toISOString(),
     });
-    this.database
-      .prepare(
-        "INSERT INTO agent_events (id, run_id, sequence, event_type, summary, tool_name, tool_call_id, language, code, stdout, stderr, termination, created_at, workspace_path, command, exit_code, duration_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      )
-      .run(
-        item.id,
-        item.runId,
-        item.sequence,
-        item.type,
-        item.summary,
-        item.toolName,
-        item.toolCallId,
-        item.language,
-        item.source,
-        item.stdout,
-        item.stderr,
-        item.termination,
-        item.createdAt,
-        item.path,
-        item.command,
-        item.exitCode,
-        item.durationMs,
-      );
-    auditAgentEvent(this.database, this.audit, item, detail);
+    this.database.transaction(() => {
+      insertEvent(this.database, item);
+      auditAgentEvent(this.database, this.audit, item, detail);
+    })();
     return item;
   }
   recordEventDuration(eventId: string, durationMs: number): void {
