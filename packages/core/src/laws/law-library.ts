@@ -137,20 +137,29 @@ export class LawLibrary {
     return true;
   }
 
-  context(id: Jurisdiction): LawContext {
+  context(
+    id: Jurisdiction,
+    onSearched: (sections: LawSection[]) => void = () => undefined,
+  ): LawContext {
     const jurisdiction = this.list().find((item) => item.id === id && item.enabled);
     if (jurisdiction === undefined) throw new Error("law_jurisdiction_unavailable");
     let searched = false;
+    const reported = (sections: LawSection[]) => {
+      onSearched(sections);
+      return sections;
+    };
     return {
       name: jurisdiction.name,
       currentAsOf: jurisdiction.currentAsOf,
       searched: () => searched,
       search: async (query, signal) => {
         searched = true;
-        return this.sections(
-          id,
-          interleave([await this.rank(id, query, signal)]).slice(0, SEARCH_RESULTS),
-          SECTION_CHARACTERS,
+        return reported(
+          this.sections(
+            id,
+            interleave([await this.rank(id, query, signal)]).slice(0, SEARCH_RESULTS),
+            SECTION_CHARACTERS,
+          ),
         );
       },
       forDocument: async (text, phrases, signal) => {
@@ -166,9 +175,11 @@ export class LawLibrary {
         );
         const taken = new Set(fromPhrases.map((section) => section.citation));
         const fromPassages = this.sections(id, interleave(rankings), DOCUMENT_SECTION_CHARACTERS);
-        return withinCharacters(
-          [...fromPhrases, ...fromPassages.filter((section) => !taken.has(section.citation))],
-          DOCUMENT_LAW_CHARACTERS,
+        return reported(
+          withinCharacters(
+            [...fromPhrases, ...fromPassages.filter((section) => !taken.has(section.citation))],
+            DOCUMENT_LAW_CHARACTERS,
+          ),
         );
       },
     };

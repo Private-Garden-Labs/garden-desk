@@ -36,6 +36,7 @@ import {
 } from "./records.js";
 import { recoverInterruptedRuns } from "./recovery.js";
 import { createRunRecord, setRunAgentRecord } from "./run-record.js";
+import { auditAgentEvent, auditArtifactCreated } from "./store-audit.js";
 import { AgentTraceStore, type TraceAuditAppender } from "./trace-store.js";
 
 interface RunTransition {
@@ -52,10 +53,10 @@ export class AgentStore {
   constructor(
     private readonly database: DatabasePort,
     private readonly artifacts: ArtifactStore,
-    traceAudit?: TraceAuditAppender,
+    private readonly audit: TraceAuditAppender = () => undefined,
   ) {
     this.execution = new AgentExecutionStore(database);
-    this.trace = new AgentTraceStore(database, artifacts, traceAudit);
+    this.trace = new AgentTraceStore(database, artifacts, audit);
   }
 
   saveDraft(sessionId: string, content: string): SessionDraft {
@@ -206,6 +207,7 @@ export class AgentStore {
         item.exitCode,
         item.durationMs,
       );
+    auditAgentEvent(this.database, this.audit, item, detail);
     return item;
   }
   recordEventDuration(eventId: string, durationMs: number): void {
@@ -235,6 +237,7 @@ export class AgentStore {
         item.contentHash,
         item.createdAt,
       );
+    auditArtifactCreated(this.database, this.audit, item);
     return item;
   }
   setContext(id: string, used: number, allocated: number): void {

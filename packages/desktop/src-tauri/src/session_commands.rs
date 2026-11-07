@@ -1,6 +1,33 @@
 use crate::CoreBridge;
 use serde_json::{Value, json};
-use tauri::State;
+use tauri::{AppHandle, State};
+use tauri_plugin_dialog::DialogExt;
+
+#[tauri::command]
+pub(crate) async fn export_work_record(
+    app: AppHandle,
+    core: State<'_, CoreBridge>,
+    session_id: String,
+    labels: Value,
+) -> Result<Value, String> {
+    let Some(selection) = app
+        .dialog()
+        .file()
+        .set_title("Choose a folder for the work record")
+        .blocking_pick_folder()
+    else {
+        return Ok(Value::Null);
+    };
+    let path = selection.into_path().map_err(|error| error.to_string())?;
+    core.call(
+        "sessions.export",
+        json!({
+            "sessionId": session_id,
+            "directory": crate::path_text(&path)?,
+            "labels": labels,
+        }),
+    )
+}
 
 #[tauri::command]
 pub(crate) async fn create_session(

@@ -20,6 +20,7 @@ import type {
   ThinkingLevel,
   WorkspaceStatus,
 } from "@gardendesk/shared";
+import type { WorkRecordLabels } from "./records/work-record.js";
 import type {
   ChatInput,
   EmbeddingInput,
@@ -89,6 +90,11 @@ export interface GardenDeskCorePorts extends InferenceService {
   saveDataPackKey(key: string): Promise<boolean>;
   installDataPack(id: string): Promise<boolean>;
   verifyAudit(): Promise<boolean>;
+  exportWorkRecord(
+    sessionId: string,
+    directory: string,
+    labels: WorkRecordLabels,
+  ): Promise<{ file: string; verified: boolean }>;
   close(): Promise<void>;
 }
 
@@ -184,6 +190,8 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
     cancelJob: (jobId) => ports.cancelJob(jobId),
     ...skillPorts(ports),
     verifyAudit: () => ports.verifyAudit(),
+    exportWorkRecord: (sessionId, directory, labels) =>
+      ports.exportWorkRecord(sessionId, directory, labels),
     ...inferencePorts(ports),
     close: () => ports.close(),
   };

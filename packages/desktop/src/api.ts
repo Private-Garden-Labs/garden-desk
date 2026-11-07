@@ -105,6 +105,10 @@ export interface DesktopApi {
   cancelAgent(jobId: string): Promise<boolean>;
   answerQuestion(runId: string, questionId: string, answers: string[][]): Promise<boolean>;
   dismissQuestion(runId: string, questionId: string): Promise<boolean>;
+  exportWorkRecord(
+    sessionId: string,
+    labels: Record<string, string>,
+  ): Promise<{ file: string; verified: boolean } | undefined>;
   createDebugSnapshot(sessionId: string): Promise<string>;
   revealDebugSnapshot(sessionId: string): Promise<void>;
   openReleasePage(): Promise<void>;

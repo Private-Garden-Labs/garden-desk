@@ -16,6 +16,7 @@ import type { GardenDeskCore } from "../facade.js";
 import { dispatchArtifactMethod } from "./artifact-methods.js";
 import { dispatchLawMethod, LAW_METHODS } from "./law-methods.js";
 import { dispatchQuestionMethod } from "./question-methods.js";
+import { dispatchRecordMethod } from "./record-methods.js";
 import { failure, success } from "./responses.js";
 import { createSession, deleteSession, listSessions, renameSession } from "./session-methods.js";
 import { dispatchSkillMethod } from "./skill-methods.js";
@@ -221,6 +222,8 @@ async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promis
       return renameSession(core, request);
     case "sessions.list":
       return listSessions(core, request);
+    case "sessions.export":
+      return dispatchRecordMethod(core, request);
     case "messages.append":
       return appendMessage(core, request);
     case "messages.list":

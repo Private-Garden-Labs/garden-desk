@@ -38,28 +38,50 @@ function eventHash(event: Omit<AuditEvent, "hash">): `sha256:${string}` {
 export class AuditLog {
   constructor(private readonly database: DatabasePort) {}
 
-  private head(): AuditHead | undefined {
+  head(): AuditHead | undefined {
     return this.database
       .prepare("SELECT sequence, hash FROM audit_head WHERE singleton = 1")
       .get() as AuditHead | undefined;
   }
 
   private events(): AuditEvent[] {
-    const rows = this.database
-      .prepare("SELECT event_json FROM audit_events ORDER BY sequence")
-      .all() as Array<{ event_json: string }>;
-    return rows.map((row) => AuditEventSchema.parse(JSON.parse(row.event_json)));
+    return this.parsed(
+      this.database.prepare("SELECT event_json FROM audit_events ORDER BY sequence").all(),
+    );
+  }
+
+  private tail(): AuditEvent | undefined {
+    return this.parsed(
+      this.database
+        .prepare("SELECT event_json FROM audit_events ORDER BY sequence DESC LIMIT 1")
+        .all(),
+    )[0];
+  }
+
+  sessionEvents(sessionId: string): AuditEvent[] {
+    return this.parsed(
+      this.database
+        .prepare(
+          "SELECT event_json FROM audit_events WHERE json_extract(event_json, '$.metadata.sessionId') = ? ORDER BY sequence",
+        )
+        .all(sessionId),
+    );
+  }
+
+  private parsed(rows: unknown[]): AuditEvent[] {
+    return (rows as Array<{ event_json: string }>).map((row) =>
+      AuditEventSchema.parse(JSON.parse(row.event_json)),
+    );
   }
 
   append(input: AuditEventInput): AuditEvent {
     const parsed = AuditEventInputSchema.parse(input);
     return this.database.transaction(() => {
-      const existing = this.events();
-      if (!this.validChain(existing)) throw new Error("audit_chain_invalid");
-      const previous = existing.at(-1);
+      const previous = this.tail();
+      if (!this.matchesHead(previous)) throw new Error("audit_chain_invalid");
       const unsigned = {
         schemaVersion: 1 as const,
-        sequence: existing.length,
+        sequence: (previous?.sequence ?? -1) + 1,
         timestamp: new Date().toISOString(),
         previousHash: previous?.hash ?? null,
         type: parsed.type,
@@ -79,8 +101,14 @@ export class AuditLog {
     })();
   }
 
-  private validChain(events: AuditEvent[]): boolean {
+  private matchesHead(tail: AuditEvent | undefined): boolean {
     const head = this.head();
+    if (tail === undefined) return head === undefined;
+    const { hash, ...unsigned } = tail;
+    return head?.sequence === tail.sequence && head.hash === hash && hash === eventHash(unsigned);
+  }
+
+  private validChain(events: AuditEvent[]): boolean {
     const chainIsValid = events.every((event, index) => {
       const { hash, ...unsigned } = event;
       return (
@@ -89,13 +117,7 @@ export class AuditLog {
         unsigned.previousHash === (events[index - 1]?.hash ?? null)
       );
     });
-    const tail = events.at(-1);
-    return (
-      chainIsValid &&
-      (tail === undefined
-        ? head === undefined
-        : head?.sequence === tail.sequence && head.hash === tail.hash)
-    );
+    return chainIsValid && this.matchesHead(events.at(-1));
   }
 
   verify(): boolean {
