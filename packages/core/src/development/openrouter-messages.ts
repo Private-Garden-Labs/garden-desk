@@ -112,6 +112,14 @@ export function chatRequestBody(options: {
     model: model.id,
     messages: completionMessages(input.messages, options.reasoning),
     ...(input.tools.length === 0 ? {} : { tools: completionTools(input.tools) }),
+    ...(input.jsonSchema === undefined
+      ? {}
+      : {
+          response_format: {
+            type: "json_schema",
+            json_schema: { name: "result", strict: true, schema: input.jsonSchema },
+          },
+        }),
     max_tokens: outputTokenLimit(model, input.maxTokens),
     ...sampling(input),
     provider: providerRouting(options.budget),
