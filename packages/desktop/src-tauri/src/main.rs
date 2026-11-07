@@ -228,6 +228,7 @@ fn main() {
             drop_commands::classify_dropped_paths,
             diagnostics::create_debug_snapshot,
             session_commands::delete_session,
+            session_commands::export_work_record,
             commands::desktop_bootstrap,
             commands::get_agent_run,
             commands::get_agent_trace,

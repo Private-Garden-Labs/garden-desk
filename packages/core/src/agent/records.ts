@@ -27,6 +27,32 @@ export function nextEventSequence(database: DatabasePort, runId: string): number
   return row.sequence;
 }
 
+export function insertEvent(database: DatabasePort, item: AgentEvent): void {
+  database
+    .prepare(
+      "INSERT INTO agent_events (id, run_id, sequence, event_type, summary, tool_name, tool_call_id, language, code, stdout, stderr, termination, created_at, workspace_path, command, exit_code, duration_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    )
+    .run(
+      item.id,
+      item.runId,
+      item.sequence,
+      item.type,
+      item.summary,
+      item.toolName,
+      item.toolCallId,
+      item.language,
+      item.source,
+      item.stdout,
+      item.stderr,
+      item.termination,
+      item.createdAt,
+      item.path,
+      item.command,
+      item.exitCode,
+      item.durationMs,
+    );
+}
+
 export interface RunRow {
   id: string;
   session_id: string;

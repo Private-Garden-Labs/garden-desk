@@ -273,7 +273,7 @@ export type AgentEventDetail = Pick<
   | "stderr"
   | "durationMs"
   | "termination"
->;
+> & { argumentsHash?: string; toolFailed?: boolean };
 export type AgentArtifactSummary = z.infer<typeof AgentArtifactSummarySchema>;
 export type AgentRunSnapshot = z.infer<typeof AgentRunSnapshotSchema>;
 export type AgentGuestStart = z.infer<typeof AgentGuestStartSchema>;
