@@ -216,8 +216,8 @@ export async function runDocumentReview(
     attachment,
     directory: REPORT_DIRECTORY,
   });
-  const report = await writeReport(input, attachment.displayName, result.response);
   completeReview(input, result.response);
+  const report = await writeReport(input, attachment.displayName, result.response);
   const executions = [...result.executions, report.result];
   return { ...result, artifacts: [report.path], executions, guestExecutions: executions.length };
 }
