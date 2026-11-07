@@ -24,6 +24,7 @@ import { invokeDesktop, withDevelopmentError } from "./development-errors.js";
 import { tauriFolderApi } from "./tauri-folders.js";
 import { tauriLawApi } from "./tauri-laws.js";
 import { record } from "./tauri-parse.js";
+import { tauriRecordApi } from "./tauri-records.js";
 import { tauriSkillApi } from "./tauri-skills.js";
 
 function parseDroppedPaths(value: unknown): DroppedPaths {
@@ -281,6 +282,7 @@ export const tauriDesktopApi: DesktopApi = {
   ...tauriSkillApi,
   ...tauriLawApi,
   ...tauriFolderApi,
+  ...tauriRecordApi,
   async listenForDroppedPaths(listener) {
     return await withDevelopmentError("listen_for_dropped_paths", async () =>
       getCurrentWebview().onDragDropEvent(({ payload }) => {

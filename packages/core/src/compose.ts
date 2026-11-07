@@ -17,6 +17,7 @@ import { CompanyPackStore } from "./laws/company-packs.js";
 import { DATA_PACK_SIGNING_KEY, DataPackStore } from "./laws/data-packs.js";
 import { microVmExtraction } from "./laws/document-extraction.js";
 import { type Embed, LawLibrary } from "./laws/law-library.js";
+import { exportWorkRecord } from "./records/work-record.js";
 import { createInferenceService, unavailableInference } from "./runtime/compose.js";
 import type { InferenceSupervisor } from "./runtime/supervisor.js";
 import { createSkillPorts } from "./skill-ports.js";
@@ -103,8 +104,27 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
       return agent?.removeAttachment(sessionId, attachmentId) ?? unavailableAgent();
     },
     async startAgent(sessionId, task, thinking, { jurisdiction, replyLanguage }) {
-      const laws = jurisdiction === null ? undefined : services.laws.context(jurisdiction);
-      return agent?.start(sessionId, task, thinking, { laws, replyLanguage }) ?? unavailableAgent();
+      const activeAgent = agent ?? unavailableAgent();
+      let runId: string | null = null;
+      const laws =
+        jurisdiction === null
+          ? undefined
+          : services.laws.context(jurisdiction, (sections) =>
+              audit.append({
+                type: "pack.searched",
+                outcome: "succeeded",
+                metadata: {
+                  sessionId,
+                  runId,
+                  jurisdiction,
+                  citations: sections.map((section) => section.citation).join(", "),
+                  count: sections.length,
+                },
+              }),
+            );
+      const run = activeAgent.start(sessionId, task, thinking, { laws, replyLanguage });
+      runId = run.id;
+      return run;
     },
     async listAgentRuns(sessionId) {
       return agent?.listRuns(sessionId) ?? unavailableAgent();
@@ -132,6 +152,8 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
       return cancelled;
     },
     verifyAudit: async () => audit.verify(),
+    exportWorkRecord: (sessionId, directory, labels) =>
+      exportWorkRecord({ audit, conversations, store: agentStore }, sessionId, directory, labels),
     generate: (input, signal, onThinkingDelta, identity) =>
       inference.generate(input, signal, onThinkingDelta, identity),
     chat: (input, signal, streams, identity) => inference.chat(input, signal, streams, identity),

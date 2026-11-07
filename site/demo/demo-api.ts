@@ -99,6 +99,7 @@ export class DemoDesktopApi implements DesktopApi {
   removeAttachment = demoUnavailable;
   answerQuestion = demoUnavailable;
   dismissQuestion = demoUnavailable;
+  exportWorkRecord = demoUnavailable;
   createDebugSnapshot = demoUnavailable;
   revealDebugSnapshot = demoUnavailable;
   openCatalogFolder = demoUnavailable;

@@ -19,6 +19,7 @@ import { selectAdjacentTab } from "./tab-keyboard.js";
 import { sessionTitle } from "./technical-details-title.js";
 import { TechnicalOverviewTable } from "./technical-overview-table.js";
 import { TranscriptCopy } from "./transcript-copy.js";
+import { WorkRecordExport } from "./work-record-export.js";
 
 export { shouldFollowLog } from "./technical-logs.js";
 
@@ -111,26 +112,57 @@ function Overview({
         </details>
       </article>
       {sessionId === undefined ? null : (
-        <article className="technical-details-item technical-overview">
-          <p className="debug-snapshot-purpose">{t("technical.troubleshooting")}</p>
-          <p className="technical-limits">{t("technical.troubleshootingNote")}</p>
-          <TranscriptCopy
-            artifacts={artifacts}
-            executions={executions}
-            nativeActionMessage={nativeActionMessage}
-            sessionId={sessionId}
-            timeline={timeline}
-            title={sessionTitle(timeline, sessionId)}
-          />
-          <DebugSnapshotControls
-            api={api}
-            key={sessionId}
-            nativeActionMessage={nativeActionMessage}
-            sessionId={sessionId}
-          />
-        </article>
+        <Troubleshooting
+          api={api}
+          artifacts={artifacts}
+          executions={executions}
+          nativeActionMessage={nativeActionMessage}
+          sessionId={sessionId}
+          timeline={timeline}
+        />
       )}
     </div>
+  );
+}
+
+function Troubleshooting({
+  api,
+  artifacts,
+  executions,
+  nativeActionMessage,
+  sessionId,
+  timeline,
+}: Pick<
+  TechnicalDetailsProps,
+  "api" | "artifacts" | "executions" | "nativeActionMessage" | "timeline"
+> & { sessionId: string }) {
+  return (
+    <>
+      <WorkRecordExport
+        api={api}
+        key={sessionId}
+        nativeActionMessage={nativeActionMessage}
+        sessionId={sessionId}
+      />
+      <article className="technical-details-item technical-overview">
+        <p className="debug-snapshot-purpose">{t("technical.troubleshooting")}</p>
+        <p className="technical-limits">{t("technical.troubleshootingNote")}</p>
+        <TranscriptCopy
+          artifacts={artifacts}
+          executions={executions}
+          nativeActionMessage={nativeActionMessage}
+          sessionId={sessionId}
+          timeline={timeline}
+          title={sessionTitle(timeline, sessionId)}
+        />
+        <DebugSnapshotControls
+          api={api}
+          key={sessionId}
+          nativeActionMessage={nativeActionMessage}
+          sessionId={sessionId}
+        />
+      </article>
+    </>
   );
 }
 

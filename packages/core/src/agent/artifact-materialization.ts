@@ -151,8 +151,11 @@ async function commitExport(destination: ExportTarget, bytes: Uint8Array): Promi
 export async function exportArtifact(reference: ArtifactExport): Promise<void> {
   const item = artifactForSession(reference.database, reference.sessionId, reference.artifactId);
   if (item === undefined) throw new Error("artifact_not_found");
-  const destination = await verifiedExportTarget(reference.destination);
-  await commitExport(destination, await reference.artifacts.read(item.contentHash));
+  await writeNewFile(reference.destination, await reference.artifacts.read(item.contentHash));
+}
+
+export async function writeNewFile(destination: string, bytes: Uint8Array): Promise<void> {
+  await commitExport(await verifiedExportTarget(destination), bytes);
 }
 
 async function auditedArtifactAction<T>(options: {

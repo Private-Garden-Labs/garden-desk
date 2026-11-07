@@ -39,7 +39,8 @@ Desktop (Tauri v2, React)
 - Selected folders are never writable. Only an explicit Open or Save As crosses back to the host.
 - Guest output that enters host state is checked for schema, path, size, and hash.
 - Core makes network requests only when the user opens the Data packs page or starts a download, and only to `packs.gardendesk.ai`. A key, when saved, is the only user data sent.
-- There is no telemetry, analytics, or crash reporting. Audit records are local and hash-chained, and leave the machine only by explicit export.
+- There is no telemetry, analytics, or crash reporting. Audit records are local and hash-chained, and leave the machine only by explicit export. Besides session, folder, file, and model events, they record each tool call (name and argument hash), each answer to an agent question, each law search (jurisdiction and citations found), and each generated file, tagged with the session. A new record is checked only against the stored chain head; a full check walks the whole chain.
+- Export work record, in the session's technical details, writes a Markdown file and a matching JSON file to a folder the user picks. They list what the user asked, each step, command, and answer, the files read and written, the law consulted, and whether the audit chain verified, with its head and the session's audit rows. They never include model prompts. Each export is itself audited.
 - On Windows, one signed helper elevates once to add the current user to Hyper-V Administrators. The app stays browse-only until the next sign-in. macOS needs no administrator step.
 - The packaged app verifies and read-locks its sidecar, helpers, and prompts against a signed resource manifest before it starts them.
 - Data at rest relies on the operating-system account and disk encryption.
