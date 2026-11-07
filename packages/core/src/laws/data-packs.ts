@@ -147,7 +147,7 @@ export class DataPackStore {
     const known = catalog ?? [];
     const packs = [
       ...known,
-      ...installed.filter((pack) => !known.some((item) => item.id === pack.id)),
+      ...installed.filter((pack) => !known.some((item) => item.jurisdiction === pack.jurisdiction)),
     ];
     return {
       keySaved: key !== undefined,
@@ -155,7 +155,7 @@ export class DataPackStore {
       packs: packs.map((pack) =>
         this.status(
           pack,
-          installed.find((item) => item.id === pack.id),
+          installed.find((item) => item.jurisdiction === pack.jurisdiction),
         ),
       ),
     };

@@ -90,7 +90,7 @@ async function companyPackMethod(core: GardenDeskCore, request: RpcRequest): Pro
     return success(request, { saved: true });
   }
   const fingerprint = typeof trust === "string" ? trust : undefined;
-  return success(request, await core.importCompanyPack(path, fingerprint));
+  return success(request, { started: core.importCompanyPack(path, fingerprint) });
 }
 
 async function buildCompanyPack(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {

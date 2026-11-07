@@ -4,7 +4,6 @@ import type {
   AgentTrace,
   AttachmentSummary,
   CommandSummary,
-  CompanyPackImport,
   CompanyPacks,
   ConversationMessage,
   DataPacks,
@@ -93,7 +92,7 @@ export interface GardenDeskCorePorts extends InferenceService {
   installDataPack(id: string): Promise<boolean>;
   companyPackStatus(): Promise<CompanyPacks>;
   setCompanyPackFolder(path: string): Promise<void>;
-  importCompanyPack(path: string, trust?: string): Promise<CompanyPackImport>;
+  importCompanyPack(path: string, trust?: string): boolean;
   buildCompanyPack(request: CompanyPackRequest): Promise<boolean>;
   verifyAudit(): Promise<boolean>;
   close(): Promise<void>;

@@ -140,6 +140,7 @@ function assembleGardenDeskCore(services: CoreServices): GardenDeskCore {
     modelStatus: () => inference.modelStatus(),
     unloadModel: () => inference.unloadModel(),
     async close() {
+      await services.companyPacks.close();
       await agent?.close();
       await inference.close();
       services.laws.close();

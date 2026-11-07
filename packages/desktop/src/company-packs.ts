@@ -1,9 +1,9 @@
-import type { CompanyPacks } from "@gardendesk/shared";
+import type { CompanyPackImport, CompanyPacks } from "@gardendesk/shared";
 import { useCallback, useEffect, useState } from "react";
 import type { DesktopApi } from "./api.js";
 import { t } from "./i18n/index.js";
 
-const BUILD_POLL_MS = 1_000;
+const POLL_MS = 1_000;
 
 export interface TrustRequest {
   path: string;
@@ -33,6 +33,31 @@ function packId(name: string): string {
   return slug === "" ? "pack" : slug;
 }
 
+const FINISHED = new Set(["installed", "untrusted", "invalid", "failed"]);
+
+function importMessage(result: CompanyPackImport): string {
+  if (result.status === "installed" || result.status === "invalid")
+    return t(`companyPacks.${result.status}`);
+  return t("companyPacks.error");
+}
+
+function useImportResult(
+  result: CompanyPackImport | undefined,
+  setMessage: (message: string) => void,
+  refreshLaws: () => Promise<void>,
+) {
+  const [awaiting, setAwaiting] = useState(false);
+  const [trustRequest, setTrustRequest] = useState<TrustRequest>();
+  useEffect(() => {
+    if (!awaiting || result === undefined || !FINISHED.has(result.status)) return;
+    setAwaiting(false);
+    if (result.status === "untrusted") setTrustRequest(result);
+    else setMessage(importMessage(result));
+    void refreshLaws();
+  }, [awaiting, result, setMessage, refreshLaws]);
+  return { awaiting, setAwaiting, trustRequest, setTrustRequest };
+}
+
 export function useCompanyPacks(
   api: DesktopApi,
   open: boolean,
@@ -40,15 +65,14 @@ export function useCompanyPacks(
 ): CompanyPacksController {
   const [status, setStatus] = useState<CompanyPacks>();
   const [message, setMessage] = useState<string>();
-  const [trustRequest, setTrustRequest] = useState<TrustRequest>();
-  const [importing, setImporting] = useState(false);
+  const imports = useImportResult(status?.import, setMessage, refreshLaws);
   const refresh = useCallback(async () => {
     if (open) setStatus(await api.companyPacks().catch(() => undefined));
   }, [api, open]);
   useEffect(() => void refresh(), [refresh]);
   useEffect(() => {
-    if (status?.build.state !== "building") return;
-    const timer = setTimeout(() => void refresh(), BUILD_POLL_MS);
+    if (status?.build.state !== "building" && status?.import.status !== "importing") return;
+    const timer = setTimeout(() => void refresh(), POLL_MS);
     return () => clearTimeout(timer);
   }, [status, refresh]);
   const run = async (action: () => Promise<unknown>) => {
@@ -61,19 +85,15 @@ export function useCompanyPacks(
     await refresh();
   };
   const importPack = async (path: string, trust?: string) => {
-    setImporting(true);
-    const result = await api.importCompanyPack(path, trust).finally(() => setImporting(false));
-    if (result.status === "untrusted") setTrustRequest({ path, ...result });
-    else setMessage(t(`companyPacks.${result.status}`));
-    await refreshLaws();
+    if (await api.importCompanyPack(path, trust)) imports.setAwaiting(true);
   };
   return {
-    importing,
+    importing: imports.awaiting || status?.import.status === "importing",
     message,
     status,
-    trustRequest,
+    trustRequest: imports.trustRequest,
     build: (name, publisher) => void run(() => api.buildCompanyPack(name, packId(name), publisher)),
-    cancelTrust: () => setTrustRequest(undefined),
+    cancelTrust: () => imports.setTrustRequest(undefined),
     chooseFolder: () => void run(() => api.chooseCompanyPackFolder()),
     importPack: (path) =>
       void run(async () => {
@@ -81,9 +101,9 @@ export function useCompanyPacks(
         if (chosen !== undefined) await importPack(chosen);
       }),
     trust: () => {
-      setTrustRequest(undefined);
-      if (trustRequest !== undefined)
-        void run(() => importPack(trustRequest.path, trustRequest.fingerprint));
+      const request = imports.trustRequest;
+      imports.setTrustRequest(undefined);
+      if (request !== undefined) void run(() => importPack(request.path, request.fingerprint));
     },
   };
 }

@@ -1,5 +1,4 @@
 import {
-  CompanyPackImportSchema,
   CompanyPacksSchema,
   DataPacksSchema,
   LawActSchema,
@@ -69,7 +68,7 @@ export const tauriLawApi: Pick<
     );
   },
   async importCompanyPack(path, trust) {
-    return invokeDesktop("import_company_pack", (value) => CompanyPackImportSchema.parse(value), {
+    return invokeDesktop("import_company_pack", (value) => record(value).started === true, {
       path,
       trust: trust ?? null,
     });

@@ -86,9 +86,17 @@ export const DataPacksSchema = z.object({
 });
 
 export const CompanyPackImportSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("idle") }),
+  z.object({ status: z.literal("importing") }),
   z.object({ status: z.literal("installed"), id: CompanyPackIdSchema }),
-  z.object({ status: z.literal("untrusted"), publisher: z.string(), fingerprint: z.string() }),
+  z.object({
+    status: z.literal("untrusted"),
+    path: z.string(),
+    publisher: z.string(),
+    fingerprint: z.string(),
+  }),
   z.object({ status: z.literal("invalid") }),
+  z.object({ status: z.literal("failed"), reason: z.string() }),
 ]);
 
 export const CompanyPackBuildSchema = z.union([
@@ -106,6 +114,7 @@ export const CompanyPacksSchema = z.object({
   folder: z.string().nullable(),
   files: z.array(z.object({ name: z.string(), path: z.string() })),
   build: CompanyPackBuildSchema,
+  import: CompanyPackImportSchema,
 });
 
 export type DataPack = z.infer<typeof DataPackSchema>;

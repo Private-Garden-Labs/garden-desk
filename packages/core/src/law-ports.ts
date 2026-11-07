@@ -57,7 +57,7 @@ export function createLawPorts(
     installDataPack: (id) => dataPacks.install(id),
     companyPackStatus: () => companyPacks.status(),
     setCompanyPackFolder: (path) => companyPacks.setFolder(path),
-    importCompanyPack: (path, trust) => companyPacks.import(path, trust),
+    importCompanyPack: (path, trust) => companyPacks.startImport(path, trust),
     buildCompanyPack: async (request) => companyPacks.start(request),
   };
 }

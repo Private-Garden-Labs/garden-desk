@@ -4,7 +4,6 @@ import type {
   AgentTrace,
   AttachmentSummary,
   CommandSummary,
-  CompanyPackImport,
   CompanyPacks,
   ConversationMessage,
   DataPacks,
@@ -130,7 +129,7 @@ export interface DesktopApi {
   installDataPack(id: string): Promise<boolean>;
   companyPacks(): Promise<CompanyPacks>;
   chooseCompanyPack(): Promise<string | undefined>;
-  importCompanyPack(path: string, trust?: string): Promise<CompanyPackImport>;
+  importCompanyPack(path: string, trust?: string): Promise<boolean>;
   chooseCompanyPackFolder(): Promise<void>;
   buildCompanyPack(name: string, id: string, publisher: string): Promise<void>;
   listenForDroppedPaths?(listener: (event: NativeDropEvent) => void): Promise<() => void>;

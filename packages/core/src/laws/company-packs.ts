@@ -1,5 +1,5 @@
 import { createHash, createPublicKey, verify } from "node:crypto";
-import { mkdir, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
   type AuditEventInput,
@@ -38,6 +38,10 @@ export interface CompanyPackOptions {
   audit(event: AuditEventInput): void;
 }
 
+function reasonOf(error: unknown): string {
+  return error instanceof Error ? error.message : "";
+}
+
 function fingerprintOf(publicKey: string): string {
   const hash = createHash("sha256").update(Buffer.from(publicKey, "base64")).digest("hex");
   return hash.slice(0, 32).replace(/(.{4})(?=.)/gu, "$1 ");
@@ -45,6 +49,8 @@ function fingerprintOf(publicKey: string): string {
 
 export class CompanyPackStore {
   private build: CompanyPackBuild = { state: "idle" };
+  private building: Promise<void> = Promise.resolve();
+  private imported: CompanyPackImport = { status: "idle" };
 
   constructor(private readonly options: CompanyPackOptions) {}
 
@@ -57,7 +63,7 @@ export class CompanyPackStore {
       .filter((name) => name.endsWith(".gdpack") && !installed.has(name.slice(0, -7)))
       .sort()
       .map((name) => ({ name, path: join(saved ?? "", name) }));
-    return { folder: saved ?? null, files, build: this.build };
+    return { folder: saved ?? null, files, build: this.build, import: this.imported };
   }
 
   async setFolder(path: string): Promise<void> {
@@ -73,7 +79,7 @@ export class CompanyPackStore {
     const source = inspectFolderGrant(request.source).canonicalPath;
     const output = inspectFolderGrant(request.output).canonicalPath;
     this.build = { state: "building" };
-    void mkdir(this.options.root, { recursive: true })
+    this.building = mkdir(this.options.root, { recursive: true })
       .then(() => publisherKey(join(this.options.root, "publisher-key.json")))
       .then((key) => buildCompanyPack({ ...request, source, output }, key, this.options))
       .then(
@@ -81,22 +87,41 @@ export class CompanyPackStore {
           this.build = { state: "built", ...built };
         },
         (error: unknown) => {
-          this.build = { state: "failed", reason: error instanceof Error ? error.message : "" };
+          this.build = { state: "failed", reason: reasonOf(error) };
         },
       );
     return true;
   }
 
+  close(): Promise<void> {
+    return this.building;
+  }
+
+  startImport(path: string, trust?: string): boolean {
+    if (this.imported.status === "importing") return false;
+    this.imported = { status: "importing" };
+    void this.import(path, trust).then(
+      (result) => {
+        this.imported = result;
+      },
+      (error: unknown) => {
+        this.imported = { status: "failed", reason: reasonOf(error) };
+      },
+    );
+    return true;
+  }
+
   async import(path: string, trust?: string): Promise<CompanyPackImport> {
-    const staged = join(this.options.root, "company", "import.new");
-    await rm(staged, { recursive: true, force: true });
+    const company = join(this.options.root, "company");
+    await mkdir(company, { recursive: true });
+    const staged = await mkdtemp(join(company, ".import-"));
     try {
       const manifest = await this.verified(path, staged).catch(() => undefined);
       if (manifest === undefined) return { status: "invalid" };
       const fingerprint = fingerprintOf(manifest.publicKey);
       const trusted = await this.trusts(manifest.publicKey);
       if (!trusted && trust !== fingerprint)
-        return { status: "untrusted", publisher: manifest.publisher, fingerprint };
+        return { status: "untrusted", path, publisher: manifest.publisher, fingerprint };
       if (!(await this.unpacked(path, staged, manifest))) return { status: "invalid" };
       if (!trusted)
         await this.trust({ name: manifest.publisher, publicKey: manifest.publicKey, fingerprint });
