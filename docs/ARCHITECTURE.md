@@ -42,7 +42,7 @@ Desktop (Tauri v2, React)
 - There is no telemetry, analytics, or crash reporting. Audit records are local and hash-chained, and leave the machine only by explicit export. Besides session, folder, file, and model events, they record each tool call (name and argument hash), each answer to an agent question, each law search (jurisdiction and citations found), and each generated file, tagged with the session. A new record is checked only against the stored chain head; a full check walks the whole chain.
 - Export work record, in the session's technical details, writes a Markdown file and a matching JSON file to a folder the user picks. They list what the user asked, each step, command, and answer, the files read and written, the law consulted, and whether the audit chain verified, with its head and the session's audit rows. They never include model prompts. Each export is itself audited.
 - On Windows, one signed helper elevates once to add the current user to Hyper-V Administrators. The app stays browse-only until the next sign-in. macOS needs no administrator step.
-- The packaged app verifies and read-locks its sidecar, helpers, and prompts against a signed resource manifest before it starts them.
+- On Windows, the packaged app checks its sidecar, helpers, inference runtime, and prompts against SHA-256 hashes before it starts them, and keeps the files locked against changes while it runs. The hashes come from a resource manifest. The manifest is not signed; its hash and the sidecar's hash are compiled into the desktop host. On macOS the app makes no such check and relies on the app's code signature and notarization.
 - Data at rest relies on the operating-system account and disk encryption.
 
 ## Model And Hardware

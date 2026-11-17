@@ -261,7 +261,7 @@
     },
     {
       "name": "Rust",
-      "version": "1.97.0",
+      "version": "1.98.0",
       "license": "Apache-2.0 OR MIT",
       "use": "test_shell_and_windows_native_helper_toolchain"
     },

@@ -33,9 +33,9 @@ jobs:
           corepack enable pnpm
           corepack prepare pnpm@11.13.1 --activate
           pnpm --version
-      - name: Use Rust 1.97.0
+      - name: Use Rust 1.98.0
         shell: bash
-        run: rustup toolchain install 1.97.0 --profile minimal --component clippy --component rustfmt
+        run: rustup toolchain install 1.98.0 --profile minimal --component clippy --component rustfmt
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
       - name: Verify source and native dependencies

@@ -23,6 +23,8 @@ if (process.platform === "darwin") {
     [
       join(root, "Sources/garden-desk-vz-helper/main.swift"),
       "-parse-as-library",
+      "-target",
+      "arm64-apple-macos13.0",
       "-framework",
       "Virtualization",
       "-module-cache-path",
