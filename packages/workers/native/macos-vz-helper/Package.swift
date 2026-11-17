@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "garden-desk-vz-helper",
-    platforms: [.macOS(.v26)],
+    platforms: [.macOS(.v13)],
     products: [.executable(name: "garden-desk-vz-helper", targets: ["garden-desk-vz-helper"])],
     targets: [.executableTarget(name: "garden-desk-vz-helper")]
 )
