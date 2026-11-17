@@ -151,11 +151,7 @@ export async function summarizeSession(
       const generated = await inference.chat(request, input.signal, undefined, identity);
       const text = generated.text.trim().slice(0, MAX_ANCHORED_SUMMARY_CHARACTERS);
       if (turnId !== undefined) {
-        await input.trace?.store.captureResponse(
-          turnId,
-          { text },
-          generated.memory.contextSizeTokens,
-        );
+        await input.trace?.store.captureResponse(turnId, { text }, generated.contextBudgetTokens);
         input.trace?.store.recordOutcome(
           turnId,
           text.length === 0 ? "invalid_response" : "accepted_compaction",

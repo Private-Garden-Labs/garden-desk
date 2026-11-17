@@ -14,6 +14,7 @@ import {
 } from "@gardendesk/shared";
 import type { GardenDeskCore } from "../facade.js";
 import { dispatchArtifactMethod } from "./artifact-methods.js";
+import { DEVELOPMENT_METHODS, dispatchDevelopmentMethod } from "./development-methods.js";
 import { dispatchLawMethod, LAW_METHODS } from "./law-methods.js";
 import { dispatchQuestionMethod } from "./question-methods.js";
 import { dispatchRecordMethod } from "./record-methods.js";
@@ -151,9 +152,11 @@ async function startAgent(core: GardenDeskCore, request: RpcRequest): Promise<Rp
     .safeParse(request.params.jurisdiction);
   const task = typeof request.params.task === "string" ? request.params.task.trim() : "";
   const language = languageName(request.params.language);
+  const model = request.params.developmentModelId;
+  const developmentModelId = typeof model === "string" ? model : undefined;
   if (task.length === 0 || !thinking.success || !jurisdiction.success || language === undefined)
     return failure(request, "invalid_request", "Invalid task.");
-  const options = { jurisdiction: jurisdiction.data, replyLanguage: language };
+  const options = { jurisdiction: jurisdiction.data, replyLanguage: language, developmentModelId };
   return success(request, await core.startAgent(sessionId, task, thinking.data, options));
 }
 
@@ -197,6 +200,7 @@ async function cancelJob(core: GardenDeskCore, request: RpcRequest): Promise<Rpc
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: the exhaustive protocol switch keeps routing explicit.
 async function dispatchMethod(core: GardenDeskCore, request: RpcRequest): Promise<RpcResponse> {
   if (LAW_METHODS.has(request.method)) return dispatchLawMethod(core, request);
+  if (DEVELOPMENT_METHODS.has(request.method)) return dispatchDevelopmentMethod(core, request);
   switch (request.method) {
     case "commands.list":
       return success(request, await core.listCommands());

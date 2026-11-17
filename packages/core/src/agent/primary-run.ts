@@ -20,7 +20,6 @@ import { ChatAgentLoop } from "./chat-loop.js";
 import type { ChatAgentInput } from "./chat-loop-input.js";
 import type { AgentQuestionOutcome } from "./generic-tool-support.js";
 import { guestAttachmentName } from "./inputs.js";
-import { AGENT_MODEL_ID } from "./limits.js";
 import type { MarkdownDefinitionLibrary } from "./markdown-definition-library.js";
 import { runInternalReview } from "./review-run.js";
 import { createRunExecutor } from "./service-executor.js";
@@ -46,6 +45,7 @@ interface PrimaryRunInput {
   thinking: ThinkingLevel;
   replyLanguage?: string;
   chat: InferenceService["chat"];
+  modelId: string;
   inspectImage(path: string, prompt: string): Promise<string>;
   modelNeedsLoad: boolean;
   onThinking(thinking: string | null): void;
@@ -144,7 +144,7 @@ export async function runPrimaryAgent(input: PrimaryRunInput): Promise<AgentRunR
       });
     },
     attachments,
-    modelId: AGENT_MODEL_ID,
+    modelId: input.modelId,
     modelNeedsLoad: input.modelNeedsLoad,
     onEvent: thinking.onEvent,
     onThinking: thinking.onThinking,
@@ -195,7 +195,7 @@ async function runPrimarySubagent(
       inspectImage: input.inspectImage,
       jobs: input.jobs,
       library: input.definitions,
-      modelId: AGENT_MODEL_ID,
+      modelId: input.modelId,
       parentRunId: input.run.id,
       sessionId: input.run.sessionId,
       sessions: input.sessions,

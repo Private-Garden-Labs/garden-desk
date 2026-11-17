@@ -3,13 +3,12 @@ import {
   type AgentInferenceOutcome,
   type AgentRunResult,
   AgentRunResultSchema,
-  type ChatGenerationResult,
   type ChatMessage,
   DEFAULT_THINKING_LEVEL,
   INFERENCE_PROFILE,
   JobIdSchema,
 } from "@gardendesk/shared";
-import type { InferenceService } from "../runtime/inference.js";
+import type { ChatCompletion, InferenceService } from "../runtime/inference.js";
 import { artifactCandidateNames } from "./artifact-results.js";
 import { compactChatHistory } from "./chat-compaction.js";
 import { currentTimeContext, withCurrentTimeContext } from "./chat-current-time.js";
@@ -49,7 +48,7 @@ export class ChatAgentLoop {
     messages: ChatMessage[],
     tools: ReturnType<GenericToolRegistry["definitions"]>,
     turn: { phase: "chat" | "compaction"; temperature: number },
-  ): Promise<{ result: ChatGenerationResult; turnId?: string }> {
+  ): Promise<{ result: ChatCompletion; turnId?: string }> {
     const { phase, temperature } = turn;
     const identity = {
       requestId: randomUUID(),
@@ -82,13 +81,13 @@ export class ChatAgentLoop {
       await input.trace?.store.captureResponse(
         turnId as string,
         { text: result.text, toolCalls: result.toolCalls, stopReason: result.stopReason },
-        result.memory.contextSizeTokens,
+        result.contextBudgetTokens,
       );
-      this.contextTokens = result.memory.contextSizeTokens ?? this.contextTokens;
+      this.contextTokens = result.contextBudgetTokens ?? this.contextTokens;
       input.onContext?.(
         result.contextUsedTokens,
         this.contextTokens,
-        result.memory.contextSizeTokens !== undefined,
+        result.contextBudgetTokens !== undefined,
       );
       return { result, ...(turnId === undefined ? {} : { turnId }) };
     } catch (error) {
@@ -138,7 +137,7 @@ export class ChatAgentLoop {
   }
   private finish(
     input: ChatAgentInput,
-    generated: { result: ChatGenerationResult; turnId?: string },
+    generated: { result: ChatCompletion; turnId?: string },
     state: ChatToolState,
     performance: ReturnType<typeof emptyPerformance>,
   ): AgentRunResult | undefined {

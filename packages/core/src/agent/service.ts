@@ -13,8 +13,8 @@ import type { CodeAgentLauncher } from "@gardendesk/workers";
 import type { AuditLog } from "../audit/log.js";
 import { CommandLibrary } from "../commands/library.js";
 import type { ConversationStore } from "../conversations/store.js";
+import type { DevelopmentPorts } from "../development/ports.js";
 import type { JobStore } from "../jobs/jobs.js";
-import type { LawContext } from "../laws/law-library.js";
 import type { InferenceService } from "../runtime/inference.js";
 import type { ArtifactStore } from "../workspace/artifacts.js";
 import type { DatabasePort } from "../workspace/database.js";
@@ -30,13 +30,11 @@ import { AgentRunCapacity } from "./run-capacity.js";
 import { type ActiveRun, activeRunSnapshot, guestStartDuring } from "./service-active.js";
 import { persistFailedRun, persistSuccessfulRun } from "./service-audit.js";
 import { AgentImageInspector } from "./service-image.js";
-import { agentHistory, inferenceRunContext } from "./service-results.js";
+import { type AgentRunOptions, agentHistory, resolveRunInference } from "./service-results.js";
 import { SessionSummaryQueue } from "./service-summary-queue.js";
 import { AgentSessionManager } from "./session-manager.js";
 import { SessionSummaryStore } from "./session-summary-store.js";
 import type { AgentStore } from "./store.js";
-
-type AgentRunOptions = { laws?: LawContext | undefined; replyLanguage?: string | undefined };
 
 export class AgentService {
   private readonly active = new Map<string, ActiveRun>();
@@ -62,6 +60,7 @@ export class AgentService {
     maximumConcurrentRuns = 1,
     private readonly definitions = new MarkdownDefinitionLibrary(resolve(process.cwd(), "prompts")),
     private readonly commands = new CommandLibrary(resolve(process.cwd(), "prompts/commands")),
+    private readonly development?: Pick<DevelopmentPorts, "fixModelSelection">,
   ) {
     this.artifactMaterializer = new ArtifactMaterializer(database, artifacts, audit);
     this.images = new AgentImageInspector(database, store, inference);
@@ -217,7 +216,7 @@ export class AgentService {
     request: { task: string; thinking: ThinkingLevel } & AgentRunOptions,
     signal: AbortSignal,
   ): Promise<void> {
-    const { task, thinking, laws, replyLanguage } = request;
+    const { task, thinking, laws, replyLanguage, developmentModelId } = request;
     let releaseCapacity: (() => void) | undefined;
     let measuredContextTokens: number | undefined;
     try {
@@ -237,11 +236,15 @@ export class AgentService {
       if (command?.agent !== undefined) this.store.setRunAgent(run.id, command.agent);
       const messages = this.conversations.listMessages(run.sessionId);
       const anchored = this.summaries.load(run.sessionId);
-      if (this.inference.chat === undefined) throw new Error("agent_chat_unavailable");
+      const inference = await resolveRunInference(
+        this.inference,
+        this.development,
+        developmentModelId,
+      );
       const result = await runPrimaryAgent({
         reviewCommand: () => this.commands.resolve("/review"),
         ...(command === undefined ? {} : { command }),
-        chat: this.inference.chat.bind(this.inference),
+        ...inference,
         contextTokens: "auto",
         database: this.database,
         definitions: this.definitions,
@@ -249,7 +252,6 @@ export class AgentService {
         inspectImage: this.images.forRun(run.sessionId, signal),
         jobs: this.jobs,
         ...(laws === undefined ? {} : { laws }),
-        ...(await inferenceRunContext(this.inference)),
         onThinking: (thinking) => this.updateActive(run.jobId, { thinking }),
         onResponse: (response) => this.updateActive(run.jobId, { response }),
         onSessionTitle: (title) => this.conversations.setInitialTitle(run.sessionId, title),
@@ -276,7 +278,7 @@ export class AgentService {
       );
       persistSuccessfulRun(this.persistencePorts, run, result, deliverables);
       if (command === undefined || command.workflow === "agent")
-        this.summaryQueue.enqueue(run, signal, measuredContextTokens);
+        this.summaryQueue.enqueue(run, signal, measuredContextTokens, inference);
     } catch (error) {
       this.updateActive(run.jobId, { thinking: null, response: null });
       persistFailedRun(this.persistencePorts, run, signal, error);

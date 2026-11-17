@@ -1,4 +1,4 @@
-import { appendFile, mkdir, mkdtemp } from "node:fs/promises";
+import { appendFile, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { createGardenDeskCore, type GardenDeskCore } from "@gardendesk/core";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@gardendesk/shared";
 import { prepareAgentModelStore } from "./agent-model-store.js";
 import { developmentInferenceWorkerEntryPath } from "./development-inference-path.js";
-import { preparePrompts } from "./stress-comparison-prompts.js";
+import { copyDevelopmentSettings, preparePrompts } from "./stress-comparison-prompts.js";
 import { type Deliverable, type StressTask, stressTasks } from "./stress-comparison-tasks.js";
 import {
   allocatedMemory,
@@ -29,7 +29,11 @@ function argument(name: string): string | undefined {
 
 const repository = process.cwd();
 const macos = process.platform === "darwin";
-const label = argument("--label") ?? INFERENCE_PROFILE.modelId;
+const developmentModel = argument("--development-model");
+const runOptions = { jurisdiction: null, developmentModelId: developmentModel };
+const developmentSettings = argument("--development-settings");
+const label =
+  argument("--label") ?? developmentModel?.replace("/", "-") ?? INFERENCE_PROFILE.modelId;
 const runtimeDirectory =
   argument("--runtime") ??
   join(
@@ -216,6 +220,7 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
   await mkdir(source, { recursive: true });
   await task.prepare(source);
   const core = await openCore(root);
+  const settingsCopy = await copyDevelopmentSettings(root, developmentSettings);
   const began = Date.now();
   try {
     const attachments = task.attachments ?? [];
@@ -225,7 +230,7 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
     for (const name of attachments) await core.addAttachment(session.id, join(source, name));
     const prompt =
       task.command === undefined || plainPrompts ? task.prompt : `/${task.command} ${task.prompt}`;
-    const started = await core.startAgent(session.id, prompt, thinking, { jurisdiction: null });
+    const started = await core.startAgent(session.id, prompt, thinking, runOptions);
     const watched = await watch({
       core,
       taskId: task.id,
@@ -245,6 +250,7 @@ async function runTask(task: StressTask): Promise<Record<string, unknown>> {
     return resultRow({ task, watched, output, durationMs, totals, childSteps });
   } finally {
     await core.close();
+    await rm(settingsCopy, { force: true });
   }
 }
 
@@ -259,7 +265,7 @@ console.log(
   JSON.stringify({
     stage: "plan",
     label,
-    model: INFERENCE_PROFILE.modelId,
+    model: developmentModel ?? INFERENCE_PROFILE.modelId,
     runtime: runtimeDirectory,
     withoutSpecialists,
     withoutReview,

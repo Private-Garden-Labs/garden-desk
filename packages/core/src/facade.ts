@@ -21,6 +21,7 @@ import type {
   ThinkingLevel,
   WorkspaceStatus,
 } from "@gardendesk/shared";
+import type { DevelopmentPorts } from "./development/ports.js";
 import type { CompanyPackRequest } from "./laws/company-pack-build.js";
 import type { WorkRecordLabels } from "./records/work-record.js";
 import type {
@@ -32,6 +33,8 @@ import type {
 } from "./runtime/inference.js";
 
 export interface GardenDeskCorePorts extends InferenceService {
+  /** Present only in development builds. */
+  development?: DevelopmentPorts;
   status(): Promise<WorkspaceStatus>;
   listCommands(): Promise<CommandSummary[]>;
   addFolder(rootPath: string): Promise<FolderSummary>;
@@ -67,7 +70,11 @@ export interface GardenDeskCorePorts extends InferenceService {
     sessionId: string,
     task: string,
     thinking: ThinkingLevel,
-    options: { jurisdiction: Jurisdiction | null; replyLanguage?: string },
+    options: {
+      jurisdiction: Jurisdiction | null;
+      replyLanguage?: string;
+      developmentModelId?: string | undefined;
+    },
   ): Promise<AgentRunSummary>;
   listAgentRuns(sessionId: string): Promise<AgentRunSummary[]>;
   getAgentRun(runId: string): Promise<AgentRunSnapshot>;
@@ -188,6 +195,7 @@ export function createFacade(ports: GardenDeskCorePorts): GardenDeskCore {
       ports.materializeAttachment(sessionId, attachmentId),
     ...artifactPorts(ports),
     removeAttachment: (sessionId, attachmentId) => ports.removeAttachment(sessionId, attachmentId),
+    ...(ports.development === undefined ? {} : { development: ports.development }),
     startAgent: (sessionId, task, thinking, options) =>
       ports.startAgent(sessionId, task, thinking, options),
     listAgentRuns: (sessionId) => ports.listAgentRuns(sessionId),

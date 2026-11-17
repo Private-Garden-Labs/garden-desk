@@ -173,6 +173,7 @@ interface SendOptions {
   api: DesktopApi;
   text: string;
   thinking: ThinkingLevel;
+  developmentModelId?: string;
   jurisdiction: Jurisdiction | null;
   activeSessionId: string | undefined;
   newSessionFolderId: string | null | undefined;
@@ -192,10 +193,9 @@ export async function send(options: SendOptions) {
       activeSessionId ??
       (await startSession({ api, dispatch, folderId: newSessionFolderId ?? null, setError }));
     if (sessionId === undefined) return;
-    const run = await api.startAgent(sessionId, text, options.thinking, {
-      jurisdiction: options.jurisdiction,
-      language: currentLocale(),
-    });
+    const { jurisdiction, developmentModelId } = options;
+    const runOptions = { jurisdiction, language: currentLocale(), developmentModelId };
+    const run = await api.startAgent(sessionId, text, options.thinking, runOptions);
     started = true;
     dispatch({ type: "agent.started", run });
     setSubmitting(false);

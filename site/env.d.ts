@@ -1,3 +1,11 @@
+interface ImportMetaEnv {
+  readonly DEV: boolean;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 declare module "*.css";
 
 declare module "flag-icons/flags/4x3/*.svg?no-inline" {

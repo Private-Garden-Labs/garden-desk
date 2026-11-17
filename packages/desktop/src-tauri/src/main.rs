@@ -14,6 +14,7 @@ mod attachment_commands;
 mod commands;
 mod core_arguments;
 mod core_transport;
+mod development_commands;
 mod diagnostics;
 mod drop_commands;
 mod folder_commands;
@@ -251,6 +252,9 @@ fn main() {
             law_commands::build_company_pack,
             session_commands::list_sessions,
             commands::load_draft,
+            development_commands::development_model_save,
+            development_commands::development_model_search,
+            development_commands::development_model_settings,
             commands::model_status,
             commands::open_catalog_folder,
             commands::open_folder,
